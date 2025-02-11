@@ -22,6 +22,7 @@ public class Player extends Entity {
 
     @Override
     public void tick() {
+        //Essa logica de movimentação serve apenas de exemplo
         if(KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")) {
             this.setX(this.getX()-this.speed);
             countAnim++;
