@@ -20,7 +20,6 @@ public class SpriteSheet {
         boolean loss;
         BufferedImage sheet;
         String path = Engine.resPath + module + "/" + sprite + ".png";
-        System.out.println(path);
         try {
             sheet = ImageIO.read(Objects.requireNonNull(getClass().getResource(path)));
             loss = false;

@@ -6,7 +6,7 @@ public interface Activity {
 
     void tick();
 
-    void render(Graphics g);
+    void render(Graphics2D g);
 
     void dispose();
 

@@ -56,7 +56,7 @@ public class Engine implements Runnable {
     }
 
     public synchronized void stop() {
-
+        thread.interrupt();
     }
 
     private void render(Graphics2D graphics) {
