@@ -6,6 +6,8 @@ import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Comparator;
+import java.util.Objects;
 
 public abstract class GameObject {
 
@@ -45,6 +47,10 @@ public abstract class GameObject {
         return sprites;
     }
 
+    public int getID() {
+        return this.values.getInt("id");
+    }
+
     public double getX() {
         return this.values.getDouble("x");
     }
@@ -61,6 +67,10 @@ public abstract class GameObject {
         return this.values.getInt("height");
     }
 
+    public int getDepth() {
+        return this.depth;
+    }
+
     public void setX(double newX) {
         this.values.setDouble("x", newX);
     }
@@ -72,6 +82,8 @@ public abstract class GameObject {
     public void setDepth() {
         this.depth = (int)getY();
     }
+
+    public static Comparator<GameObject> Depth = Comparator.comparingInt(GameObject::getDepth);
 
     public void renderSprite(BufferedImage sprite, Graphics2D g) {
         g.drawImage(sprite, (int)getX() - Game.C.getX(), (int)getY() - Game.C.getY(), getWidth(), getHeight(),null);

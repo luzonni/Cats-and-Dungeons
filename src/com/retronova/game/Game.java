@@ -2,43 +2,72 @@ package com.retronova.game;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
+import com.retronova.game.map.GameMap;
+import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.tiles.Tile;
 import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.List;
 
 public class Game implements Activity {
 
     public static Camera C;
 
-    //Teste
-    private Player p;
+    private GameMap gameMap;
 
-    private final BufferedImage testeISprite;
+    //Teste
 
     public Game() {
         this.C = new Camera();
-        //inicialização do game
-        this.testeISprite = new SpriteSheet("non", "non", Engine.SCALE).getSHEET();
-        p = new Player(0, 0, 0);
+        File playground = new File("maps/playground/");
+        gameMap = new GameMap(playground);
+        gameMap.getEntities().add(new Player(0, 0, 0));
     }
 
     @Override
     public void tick() {
         //tick logic
-        p.tick();
+        List<Entity> entities = gameMap.getEntities();
+        /**
+         * entities.sort(Entity.Depth) ->
+         * Este metodo organizará a lista de objetos de acordo com sua profundidade do eixo Y.
+         */
+        entities.sort(Entity.Depth);
+        for(int i = 0; i < entities.size(); i++) {
+            Entity entity = entities.get(i);
+            entity.tick();
+        }
+        Tile[] map = gameMap.getMap();
+        for(int i = 0; i < map.length; i++) {
+            Tile tile = map[i];
+            tile.tick();
+        }
     }
 
     @Override
     public void render(Graphics2D g) {
         //Render logic
-        int width = testeISprite.getWidth();
-        int height = testeISprite.getHeight();
-        int x = Engine.window.getWidth()/2  - width/2;
-        int y = Engine.window.getHeight()/2 - height/2;
-        g.drawImage(this.testeISprite, x - C.getX(), y - C.getY(), null);
-        p.render(g);
+        renderMap(g);
+        renderEntities(g);
+    }
+
+    private void renderMap(Graphics2D g) {
+        Tile[] map = gameMap.getMap();
+        for(int i = 0; i < map.length; i++) {
+            map[i].render(g);
+        }
+    }
+
+    private void renderEntities(Graphics2D g) {
+        List<Entity> entities = gameMap.getEntities();
+        for(int i = 0; i < entities.size(); i++) {
+            Entity entity = entities.get(i);
+            entity.render(g);
+        }
     }
 
     @Override

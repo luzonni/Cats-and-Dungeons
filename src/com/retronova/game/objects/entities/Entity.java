@@ -5,10 +5,11 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.graphics.SpriteSheet;
 
 import java.awt.image.BufferedImage;
+import java.util.Comparator;
 
 public abstract class Entity extends GameObject {
 
-    public static Entity build(int ID, int x, int y) {
+    public static Entity build(int ID, double x, double y) {
         Entity entity;
         throw new EntityNotFound("Entity not found");
     }
@@ -18,5 +19,4 @@ public abstract class Entity extends GameObject {
         setX(x);
         setY(y);
     }
-
 }

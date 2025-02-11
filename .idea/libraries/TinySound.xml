@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="TinySound">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/res/com/retronova/res/source/TinySound.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
