@@ -1,6 +1,7 @@
 package com.retronova.engine;
 
 import com.retronova.game.Game;
+import com.retronova.ui.UI;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
@@ -18,6 +19,7 @@ public class Engine implements Runnable {
 
     public Activity ACTIVITY;
     public boolean ACTIVITY_RUNNING;
+    public static UI ui;
 
     public static final String resPath = "/com/retronova/res/";
 
@@ -33,6 +35,7 @@ public class Engine implements Runnable {
         Engine.window = new Window(GameTag);
         this.ACTIVITY = new Game();
         this.ACTIVITY_RUNNING = true;
+        ui = new UI();
         start();
     }
 
@@ -91,6 +94,7 @@ public class Engine implements Runnable {
                     if(ACTIVITY_RUNNING && ACTIVITY != null) {
                         ACTIVITY.tick();
                     }
+                    ui.tick();
                     Hz++;
                     delta_HZ--;
                 }
@@ -103,6 +107,7 @@ public class Engine implements Runnable {
                     if(ACTIVITY_RUNNING && ACTIVITY != null) {
                         ACTIVITY.render(g);
                     }
+                    ui.render(g);
                     render(g);
                     frames++;
                     delta_FPS--;
