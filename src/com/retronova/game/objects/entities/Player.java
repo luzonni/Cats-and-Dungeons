@@ -14,10 +14,10 @@ public class Player extends Entity {
     private int indexAnim;
     private int speed;
 
-    public Player(int ID, int x, int y) {
+    Player(int ID, double x, double y) {
         super(ID, x, y);
         this.sprite = getSprite("player");
-        this.speed = 5 * Engine.SCALE;
+        this.speed = 2 * Engine.SCALE;
     }
 
     @Override

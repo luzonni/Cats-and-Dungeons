@@ -1,13 +1,14 @@
 package com.retronova.game.objects.tiles;
 
 import com.retronova.exceptions.TileNotFound;
-import com.retronova.game.map.Mapping;
 import com.retronova.game.objects.GameObject;
 
 public abstract class Tile extends GameObject {
 
+    private boolean solid;
+
     public static Tile build(int ID, int x, int y) {
-        Mapping mapping = Mapping.values()[ID];
+        IDs mapping = IDs.values()[ID];
         x *= GameObject.SIZE();
         y *= GameObject.SIZE();
         switch (mapping) {
@@ -26,4 +27,13 @@ public abstract class Tile extends GameObject {
         setX(x);
         setY(y);
     }
+
+    public void setSolid(boolean solid) {
+        this.solid = solid;
+    }
+
+    public boolean isSolid() {
+        return this.solid;
+    }
+
 }

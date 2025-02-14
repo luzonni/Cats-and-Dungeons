@@ -9,7 +9,6 @@ import com.retronova.game.objects.tiles.Tile;
 import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 
@@ -17,15 +16,15 @@ public class Game implements Activity {
 
     public static Camera C;
 
-    private GameMap gameMap;
+    private static GameMap gameMap;
 
     //Teste
 
     public Game() {
-        this.C = new Camera();
+        Game.C = new Camera();
         File playground = new File("maps/playground/");
         gameMap = new GameMap(playground);
-        gameMap.getEntities().add(new Player(0, 0, 0));
+        gameMap.getEntities().add(Entity.build(0, 0, 0));
     }
 
     @Override
@@ -40,12 +39,20 @@ public class Game implements Activity {
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
             entity.tick();
+            if(entity instanceof Player player) {
+                C.setX((int)player.getX() - Engine.window.getWidth()/2);
+                C.setY((int)player.getY() - Engine.window.getHeight()/2);
+            }
         }
         Tile[] map = gameMap.getMap();
         for(int i = 0; i < map.length; i++) {
             Tile tile = map[i];
             tile.tick();
         }
+    }
+
+    public static GameMap getMap() {
+        return Game.gameMap;
     }
 
     @Override
@@ -74,6 +81,7 @@ public class Game implements Activity {
     public void dispose() {
         //limpar memoria
         System.out.println("Dispose Game");
+        Game.gameMap = null;
     }
 
 }

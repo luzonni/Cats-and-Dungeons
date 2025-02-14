@@ -7,12 +7,12 @@ import com.retronova.graphics.SpriteSheet;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Comparator;
-import java.util.Objects;
 
 public abstract class GameObject {
 
     private final Values values;
     protected int depth;
+    private Rectangle bounds;
 
     public static int SIZE() {
         return 16 * Engine.SCALE;
@@ -21,10 +21,11 @@ public abstract class GameObject {
     public GameObject(int ID) {
         this.values = new Values();
         this.values.addInt("id", ID);
-        this.values.addDouble("x", 0);
-        this.values.addDouble("y", 0);
+        this.values.addDouble("x", 0d);
+        this.values.addDouble("y", 0d);
         this.values.addInt("width", SIZE());
         this.values.addInt("height", SIZE());
+        this.bounds = new Rectangle(getWidth(), getHeight());
     }
 
     public BufferedImage[] getSprite(String spriteName) {
@@ -67,16 +68,22 @@ public abstract class GameObject {
         return this.values.getInt("height");
     }
 
+    public Rectangle getBounds() {
+        return this.bounds;
+    }
+
     public int getDepth() {
         return this.depth;
     }
 
     public void setX(double newX) {
         this.values.setDouble("x", newX);
+        this.bounds.setLocation((int)newX, this.bounds.y);
     }
 
     public void setY(double newY) {
         this.values.setDouble("y", newY);
+        this.bounds.setLocation(this.bounds.x, (int)newY);
     }
 
     public void setDepth() {

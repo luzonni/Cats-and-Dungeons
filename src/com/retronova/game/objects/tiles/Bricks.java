@@ -11,6 +11,7 @@ public class Bricks extends Tile {
         super(id, x, y);
         if(Bricks.sprites == null)
             Bricks.sprites = this.getSprite("brick");
+        setSolid(true);
     }
 
     @Override

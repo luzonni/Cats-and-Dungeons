@@ -1,17 +1,15 @@
-package com.retronova.game.map;
+package com.retronova.game.objects.tiles;
 
-import java.awt.*;
-
-public enum Mapping {
+public enum IDs {
     // 0x_2xRed_2xGreen_2xBlue
     // 00 -> 0
     // ff -> 255
     Brick("0x000000"),
     Stone("0xffffff");
 
-    private String color;
+    private final String color;
 
-    Mapping(String color) {
+    IDs(String color) {
         this.color = color;
     }
 
