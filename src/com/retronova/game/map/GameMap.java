@@ -1,6 +1,7 @@
 package com.retronova.game.map;
 
 import com.retronova.exceptions.MapFileException;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.tiles.IDs;
 import com.retronova.game.objects.tiles.Tile;
@@ -15,7 +16,8 @@ import java.util.List;
 
 public class GameMap {
 
-    private int width;
+    private final int width;
+    private final Rectangle bounds;
     private final Tile[] map;
     private final List<Entity> entities;
 
@@ -30,6 +32,7 @@ public class GameMap {
         }
         int width = mapImage.getWidth();
         int height = mapImage.getHeight();
+        this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
         int[] rgb = mapImage.getRGB(0, 0, width, height, null, 0, width);
         this.width = width;
         this.map = createMap(rgb, width, height);
@@ -63,5 +66,9 @@ public class GameMap {
 
     public List<Entity> getEntities() {
         return this.entities;
+    }
+
+    public Rectangle getBounds() {
+        return this.bounds;
     }
 }

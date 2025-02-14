@@ -21,10 +21,15 @@ public class Game implements Activity {
     //Teste
 
     public Game() {
-        Game.C = new Camera();
         File playground = new File("maps/playground/");
         gameMap = new GameMap(playground);
-        gameMap.getEntities().add(Entity.build(0, 0, 0));
+        Entity p = Entity.build(0, 0, 0);
+        gameMap.getEntities().add(p);
+
+        Game.C = new Camera(gameMap.getBounds(), 0.25d);
+
+        //coloca a camera para serguir a entidade Player.
+        C.setFollowed(p);
     }
 
     @Override
@@ -39,16 +44,15 @@ public class Game implements Activity {
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
             entity.tick();
-            if(entity instanceof Player player) {
-                C.setX((int)player.getX() - Engine.window.getWidth()/2);
-                C.setY((int)player.getY() - Engine.window.getHeight()/2);
-            }
         }
         Tile[] map = gameMap.getMap();
         for(int i = 0; i < map.length; i++) {
             Tile tile = map[i];
             tile.tick();
         }
+
+        //Atualização da camera, sempre no final!
+        C.tick();
     }
 
     public static GameMap getMap() {

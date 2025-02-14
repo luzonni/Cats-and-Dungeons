@@ -1,7 +1,6 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
-import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
@@ -17,7 +16,7 @@ public class Player extends Entity {
     Player(int ID, double x, double y) {
         super(ID, x, y);
         this.sprite = getSprite("player");
-        this.speed = 2 * Engine.SCALE;
+        this.speed = 5 * Engine.SCALE;
     }
 
     @Override
