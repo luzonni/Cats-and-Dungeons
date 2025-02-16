@@ -1,6 +1,8 @@
 package com.retronova.menu;
 
 import com.retronova.engine.Activity;
+import com.retronova.engine.Engine;
+import com.retronova.game.Game;
 import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
 import org.w3c.dom.css.Rect;
@@ -25,6 +27,7 @@ public class Menu implements Activity {
     public void tick() {
         if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
             System.out.println("Jogo Iniciado");
+            Engine.setActivity(new Game());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Opções");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
@@ -35,7 +38,7 @@ public class Menu implements Activity {
     @Override
     public void render(Graphics2D g) {
         g.setFont(new Font("Arial", Font.BOLD, 25));
-        FontMetrics fm = g.getFontMetrics(); // Isso aqui serve basicamente para pra medir a largura e a altura da fonte.
+        FontMetrics fm = g.getFontMetrics(); // Isso aqui serve basicamente para medir a largura e a altura da fonte.
 
         // Botão de Jogar
         g.setColor(Color.RED);

@@ -16,11 +16,12 @@ public class Player extends Entity {
     Player(int ID, double x, double y) {
         super(ID, x, y);
         this.sprite = getSprite("player");
-        this.speed = 5 * Engine.SCALE;
+        this.speed = 2 * Engine.SCALE;
     }
 
     @Override
     public void tick() {
+        super.tick();
         //Essa logica de movimentação serve apenas de exemplo
         if(KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")) {
             this.setX(this.getX()-this.speed);

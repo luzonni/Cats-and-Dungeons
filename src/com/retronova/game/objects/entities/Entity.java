@@ -16,6 +16,9 @@ public abstract class Entity extends GameObject {
             case Player -> {
                 return new Player(ID, x, y);
             }
+            case Zombie -> {
+                return new Zombie(ID, x, y);
+            }
         }
         throw new EntityNotFound("Entity not found");
     }

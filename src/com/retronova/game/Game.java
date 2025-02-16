@@ -23,13 +23,13 @@ public class Game implements Activity {
     public Game() {
         File playground = new File("maps/playground/");
         gameMap = new GameMap(playground);
-        Entity p = Entity.build(0, 0, 0);
-        gameMap.getEntities().add(p);
-
         Game.C = new Camera(gameMap.getBounds(), 0.25d);
 
         //coloca a camera para serguir a entidade Player.
-        C.setFollowed(p);
+        for(Entity e : gameMap.getEntities()) {
+            if(e instanceof Player player)
+                C.setFollowed(player);
+        }
     }
 
     @Override

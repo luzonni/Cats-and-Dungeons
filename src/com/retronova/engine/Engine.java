@@ -6,6 +6,7 @@ import com.retronova.ui.UI;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.util.Random;
 
 public class Engine implements Runnable {
 
@@ -18,8 +19,8 @@ public class Engine implements Runnable {
     public static int FRAMES;
     public static int HERTZ;
 
-    public Activity ACTIVITY;
-    public boolean ACTIVITY_RUNNING;
+    private static Activity ACTIVITY;
+    private static boolean ACTIVITY_RUNNING;
 
     public static final String resPath = "/com/retronova/res/";
 
@@ -31,11 +32,22 @@ public class Engine implements Runnable {
     public static Window window;
     static BufferStrategy BUFFER;
 
+    public static Random RAND = new Random();
+
     public Engine() {
         Engine.window = new Window(GameTag);
         this.ACTIVITY = new Menu();
         this.ACTIVITY_RUNNING = true;
         start();
+    }
+
+    public static boolean setActivity(Activity activity) {
+        try {
+            ACTIVITY = activity;
+            return true;
+        }catch (Exception e) {
+            return false;
+        }
     }
 
     public static int[] getResolution() {
