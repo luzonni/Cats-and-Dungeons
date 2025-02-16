@@ -1,6 +1,7 @@
 package com.retronova.engine;
 
 import com.retronova.game.Game;
+import com.retronova.menu.Menu;
 import com.retronova.ui.UI;
 
 import java.awt.*;
@@ -11,7 +12,7 @@ public class Engine implements Runnable {
     private static String GameTag = "Roguelike";
 
     private Thread thread;
-    private boolean isRunning;
+    public boolean isRunning;
     public static final double HZ = 60;
     public static final double T = 1_000_000_000.0;
     public static int FRAMES;
@@ -19,7 +20,6 @@ public class Engine implements Runnable {
 
     public Activity ACTIVITY;
     public boolean ACTIVITY_RUNNING;
-    public static UI ui;
 
     public static final String resPath = "/com/retronova/res/";
 
@@ -33,9 +33,8 @@ public class Engine implements Runnable {
 
     public Engine() {
         Engine.window = new Window(GameTag);
-        this.ACTIVITY = new Game();
+        this.ACTIVITY = new Menu();
         this.ACTIVITY_RUNNING = true;
-        ui = new UI();
         start();
     }
 
@@ -94,7 +93,6 @@ public class Engine implements Runnable {
                     if(ACTIVITY_RUNNING && ACTIVITY != null) {
                         ACTIVITY.tick();
                     }
-                    ui.tick();
                     Hz++;
                     delta_HZ--;
                 }
@@ -107,7 +105,6 @@ public class Engine implements Runnable {
                     if(ACTIVITY_RUNNING && ACTIVITY != null) {
                         ACTIVITY.render(g);
                     }
-                    ui.render(g);
                     render(g);
                     frames++;
                     delta_FPS--;

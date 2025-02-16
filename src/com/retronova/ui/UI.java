@@ -1,5 +1,7 @@
 package com.retronova.ui;
 
+import com.retronova.engine.Engine;
+import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
 
@@ -12,8 +14,8 @@ public class UI {
     private BufferedImage imagem;
 
     public UI (){
-        quadrado = new Rectangle(10,10,50,50);
-
+        quadrado = new Rectangle(Engine.window.getWidth()/2,Engine.window.getHeight()/2,500,50);
+        imagem = new SpriteSheet("objects", "player", Engine.SCALE).getSHEET();
     }
 
     public void tick(){
@@ -28,7 +30,7 @@ public class UI {
         int width = quadrado.width;
         int height = quadrado.height;
         g.fillRect(x, y, width, height);
-        g.drawImage(imagem, x, y, width, height, null);
+        g.drawImage(imagem, x+width/2-imagem.getWidth()/2, y,null);
     }
 }
 
