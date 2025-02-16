@@ -8,7 +8,7 @@ public class Zombie extends Entity {
     private BufferedImage[] sprite;
 
     public Zombie(int ID, double x, double y) {
-        super(ID, x, y);
+        super(ID, x, y, 1);
         sprite = getSprite("zombie");
     }
 
@@ -20,4 +20,5 @@ public class Zombie extends Entity {
     @Override
     public void dispose() {
     }
+
 }
