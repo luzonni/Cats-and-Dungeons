@@ -3,10 +3,16 @@ package com.retronova.menus;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
+import com.retronova.game.map.GameMap;
+import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.IDs;
+import com.retronova.game.objects.entities.Player;
 import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
 
 import java.awt.*;
+import java.io.File;
 
 public class Menu implements Activity {
 
@@ -33,8 +39,13 @@ public class Menu implements Activity {
     public void tick() {
         telacheia();
         if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
+            GameMap map = new GameMap(new File("maps/playground"));
+            double x = (map.getBounds().getWidth() / GameObject.SIZE()) / 2;
+            double y = (map.getBounds().getHeight() / GameObject.SIZE()) / 2;
+            Player player = (Player)Entity.build(IDs.Player.ordinal(),x,y);
+
             System.out.println("Jogo Iniciado");
-            Engine.setActivity(new Game());
+            Engine.setActivity(new Game(player,map));
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Opções");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {

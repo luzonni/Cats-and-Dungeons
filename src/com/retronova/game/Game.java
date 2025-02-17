@@ -13,23 +13,19 @@ import java.io.File;
 import java.util.List;
 
 public class Game implements Activity {
-
+    private Player player;
     public static Camera C;
-
-    private static GameMap gameMap;
+    private GameMap gameMap;
 
     //Teste
 
-    public Game() {
-        File playground = new File("maps/playground/");
-        gameMap = new GameMap(playground);
-        Game.C = new Camera(gameMap.getBounds(), 0.25d);
+    public Game(Player player, GameMap map) {
+        this.player = player;
+        this.gameMap = map;
+        this.gameMap.getEntities().add(player);
 
-        //coloca a camera para serguir a entidade Player.
-        for(Entity e : gameMap.getEntities()) {
-            if(e instanceof Player player)
-                C.setFollowed(player);
-        }
+        Game.C = new Camera(gameMap.getBounds(), 0.25d);
+        Game.C.setFollowed(player);
     }
 
     @Override
@@ -55,8 +51,8 @@ public class Game implements Activity {
         C.tick();
     }
 
-    public static GameMap getMap() {
-        return Game.gameMap;
+    public GameMap getMap() {
+        return this.gameMap;
     }
 
     @Override
@@ -85,7 +81,5 @@ public class Game implements Activity {
     public void dispose() {
         //limpar memoria
         System.out.println("Dispose Game");
-        Game.gameMap = null;
     }
-
 }
