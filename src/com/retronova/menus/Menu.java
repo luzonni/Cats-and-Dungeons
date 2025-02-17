@@ -49,7 +49,7 @@ public class Menu implements Activity {
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Opções");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
-            System.out.println("Jogo Fechado");
+            Engine.CLOSE();
         }
     }
 

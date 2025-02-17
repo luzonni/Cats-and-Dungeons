@@ -6,10 +6,8 @@ import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.tiles.Tile;
-import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
-import java.io.File;
 import java.util.List;
 
 public class Game implements Activity {
@@ -18,7 +16,6 @@ public class Game implements Activity {
     private GameMap gameMap;
 
     //Teste
-
     public Game(Player player, GameMap map) {
         this.player = player;
         this.gameMap = map;

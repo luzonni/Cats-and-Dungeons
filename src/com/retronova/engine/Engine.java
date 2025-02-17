@@ -10,8 +10,8 @@ public class Engine implements Runnable {
 
     private static String GameTag = "Roguelike";
 
-    private Thread thread;
-    public boolean isRunning;
+    private static Thread thread;
+    private static boolean isRunning;
     public static final double HZ = 60;
     public static final double T = 1_000_000_000.0;
     public static int FRAMES;
@@ -48,6 +48,11 @@ public class Engine implements Runnable {
         }
     }
 
+    public static void CLOSE() {
+        Engine.ACTIVITY.dispose();
+        Engine.isRunning = false;
+    }
+
     public static int[] getResolution() {
         return Engine.resolutions[index_res];
     }
@@ -61,14 +66,14 @@ public class Engine implements Runnable {
         return graphics;
     }
 
-    public synchronized void start() {
-        this.thread = new Thread(this, "Engine");
-        this.isRunning = true;
+    private synchronized void start() {
+        thread = new Thread(this, "Engine");
+        isRunning = true;
         thread.start();
     }
 
-    public synchronized void stop() {
-        thread.interrupt();
+    private synchronized void stop() {
+        window.getFrame().dispose();
     }
 
     private void render(Graphics2D graphics) {
