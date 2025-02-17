@@ -2,6 +2,7 @@ package com.retronova.game.objects;
 
 import com.retronova.engine.Engine;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.inputs.keyboard.KeyBoard;
 
 public class Physical {
 

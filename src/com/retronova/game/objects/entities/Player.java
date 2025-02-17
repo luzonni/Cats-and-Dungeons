@@ -22,6 +22,7 @@ public class Player extends Entity {
     @Override
     public void tick() {
         super.tick();
+        updateMovement();
         if(countAnim > 2) {
             countAnim = 0;
             indexAnim++;
@@ -29,6 +30,33 @@ public class Player extends Entity {
                 indexAnim = 0;
             }
         }
+    }
+
+    private void updateMovement(){
+        int vertical = 0;
+        int horizontal = 0;
+
+
+        if(KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")){
+            vertical = -1;
+        }
+        if(KeyBoard.KeyPressing("S") || KeyBoard.KeyPressing("Down")){
+            vertical = 1;
+        }
+        if(KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")){
+            horizontal = -1;
+        }
+        if(KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")){
+            horizontal = 1;
+        }
+
+        double randians = Math.atan2(vertical, horizontal);
+
+        if(vertical != 0 || horizontal != 0){
+            getPhysical().addForce(5, randians);
+        }
+
+
     }
 
     @Override
