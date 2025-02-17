@@ -23,16 +23,18 @@ public abstract class Entity extends GameObject {
         throw new EntityNotFound("Entity not found");
     }
 
-    public Entity(int ID, double x, double y) {
+    public Entity(int ID, double x, double y, double friction) {
         super(ID);
         setX(x);
         setY(y);
-        this.physical = new Physical(this);
+        this.physical = new Physical(this, friction);
+
     }
 
     @Override
     public void tick() {
         setDepth();
+        getPhysical().moment();
     }
 
 

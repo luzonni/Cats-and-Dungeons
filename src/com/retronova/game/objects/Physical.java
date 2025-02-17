@@ -1,14 +1,68 @@
 package com.retronova.game.objects;
 
+import com.retronova.engine.Engine;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.inputs.keyboard.KeyBoard;
 
 public class Physical {
 
     private final Entity entity;
+    private double speed;
+    private double angleForce;
+    private double vectorX, vectorY;
+    private double friction; //taxa de fricção do mapa
+    private boolean[] colliders;
+    private boolean isMoving;
 
-    public Physical(Entity entity) {
+
+    public Physical(Entity entity, double friction) {
         this.entity = entity;
+        this.friction = friction;
+
     }
+
+    public void moment(){
+        calcFriction();
+        this.vectorX = Math.cos(angleForce) * speed;
+        this.vectorY = Math.sin(angleForce) * speed;
+        this.isMoving = moveSystem(vectorX, vectorY);
+
+    }
+
+    public void addForce(double force, double radians){
+        this.angleForce = radians;
+        this.speed = force;
+    }
+
+    private boolean moveSystem(double vectorX, double vectorY){
+        double x = entity.getX();
+        double y = entity.getY();
+        this.colliders = colliding(x + vectorX, y + vectorY); //analisando a próxima posição
+        boolean isMoving = false;
+        if(!colliders[0]) {
+            entity.setX(x + vectorX);
+            isMoving = vectorX != 0; //true
+        }
+        if(!colliders[1]) {
+            entity.setY(y + vectorY);
+            isMoving = vectorY != 0; //true
+        }
+        return isMoving;
+    }
+
+    private boolean[] colliding(double nextX, double nextY){
+        return new boolean[]{
+                false, false
+        };
+
+    }
+
+    private void calcFriction() {
+        this.speed *= friction;
+    }
+
+
+
 
     /*
         Aqui, precisará existir um sistema de movimentação que funcionará para todas as entidades, então todas

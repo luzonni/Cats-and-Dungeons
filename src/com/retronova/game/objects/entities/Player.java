@@ -11,34 +11,18 @@ public class Player extends Entity {
     private BufferedImage[] sprite;
     private int countAnim;
     private int indexAnim;
-    private int speed;
+
 
     Player(int ID, double x, double y) {
-        super(ID, x, y);
+        super(ID, x, y, 0.9);
         this.sprite = getSprite("player");
-        this.speed = 2 * Engine.SCALE;
+        getPhysical().addForce(100,Math.toRadians(45));
     }
 
     @Override
     public void tick() {
         super.tick();
-        //Essa logica de movimentação serve apenas de exemplo
-        if(KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")) {
-            this.setX(this.getX()-this.speed);
-            countAnim++;
-        }
-        if(KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")) {
-            this.setX(this.getX()+this.speed);
-            countAnim++;
-        }
-        if(KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")) {
-            this.setY(this.getY()-this.speed);
-            countAnim++;
-        }
-        if(KeyBoard.KeyPressing("S") || KeyBoard.KeyPressing("Down")) {
-            this.setY(this.getY()+this.speed);
-            countAnim++;
-        }
+        updateMovement();
         if(countAnim > 2) {
             countAnim = 0;
             indexAnim++;
@@ -46,6 +30,33 @@ public class Player extends Entity {
                 indexAnim = 0;
             }
         }
+    }
+
+    private void updateMovement(){
+        int vertical = 0;
+        int horizontal = 0;
+
+
+        if(KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")){
+            vertical = -1;
+        }
+        if(KeyBoard.KeyPressing("S") || KeyBoard.KeyPressing("Down")){
+            vertical = 1;
+        }
+        if(KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")){
+            horizontal = -1;
+        }
+        if(KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")){
+            horizontal = 1;
+        }
+
+        double randians = Math.atan2(vertical, horizontal);
+
+        if(vertical != 0 || horizontal != 0){
+            getPhysical().addForce(5, randians);
+        }
+
+
     }
 
     @Override
