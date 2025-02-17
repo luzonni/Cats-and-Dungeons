@@ -1,14 +1,12 @@
-package com.retronova.menu;
+package com.retronova.menus;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
-import org.w3c.dom.css.Rect;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class Menu implements Activity {
 

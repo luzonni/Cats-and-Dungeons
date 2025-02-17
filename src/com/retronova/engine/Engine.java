@@ -1,8 +1,6 @@
 package com.retronova.engine;
 
-import com.retronova.game.Game;
-import com.retronova.menu.Menu;
-import com.retronova.ui.UI;
+import com.retronova.menus.Menu;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
