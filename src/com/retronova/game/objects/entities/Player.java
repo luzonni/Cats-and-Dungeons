@@ -1,6 +1,5 @@
 package com.retronova.game.objects.entities;
 
-import com.retronova.engine.Engine;
 import com.retronova.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
@@ -16,7 +15,6 @@ public class Player extends Entity {
     Player(int ID, double x, double y) {
         super(ID, x, y, 0.9);
         this.sprite = getSprite("player");
-        getPhysical().addForce(100,Math.toRadians(45));
     }
 
     @Override
