@@ -1,7 +1,10 @@
 package com.retronova.game.objects;
 
 import com.retronova.engine.Engine;
+import com.retronova.game.Game;
+import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.tiles.Tile;
 import com.retronova.inputs.keyboard.KeyBoard;
 
 public class Physical {
@@ -51,10 +54,17 @@ public class Physical {
     }
 
     private boolean[] colliding(double nextX, double nextY){
+        int indexX = (int)(nextX / GameObject.SIZE());
+        int indexY = (int)(nextY / GameObject.SIZE());
+        Tile tile = Game.getMap().getTile(indexX, indexY);
+        if(tile.isSolid()) {
+            return new boolean[]{
+                    true, true
+            };
+        }
         return new boolean[]{
                 false, false
         };
-
     }
 
     private void calcFriction() {

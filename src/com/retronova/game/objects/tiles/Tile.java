@@ -22,13 +22,14 @@ public abstract class Tile extends GameObject {
         throw new TileNotFound("Tile not found");
     }
 
-    Tile(int ID, int x, int y) {
+    Tile(int ID, int x, int y, boolean solid) {
         super(ID);
         setX(x);
         setY(y);
+        setSolid(solid);
     }
 
-    public void setSolid(boolean solid) {
+    private void setSolid(boolean solid) {
         this.solid = solid;
     }
 

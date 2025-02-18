@@ -34,18 +34,27 @@ public class Engine implements Runnable {
 
     public Engine() {
         Engine.window = new Window(GameTag);
-        this.ACTIVITY = new Menu();
-        this.ACTIVITY_RUNNING = true;
+        setActivity(new Menu());
         start();
     }
 
+    //Sempre usar essa função para mudar de Activity! Nunca usar a variável direto.
     public static boolean setActivity(Activity activity) {
+        ACTIVITY_RUNNING = true;
         try {
             ACTIVITY = activity;
             return true;
         }catch (Exception e) {
             return false;
         }
+    }
+
+    public static void pause() { //quando essa função é chamada, o jogo é pausado.
+        ACTIVITY_RUNNING = !ACTIVITY_RUNNING;
+    }
+
+    public static Activity getACTIVITY() {
+        return Engine.ACTIVITY;
     }
 
     public static void CLOSE() {

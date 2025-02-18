@@ -8,7 +8,7 @@ public class Stone extends Tile {
     private static BufferedImage[] sprites;
 
     Stone(int id, int x, int y) {
-        super(id, x, y);
+        super(id, x, y, false);
         if(Stone.sprites == null)
             Stone.sprites = this.getSprite("stone");
     }

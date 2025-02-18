@@ -8,10 +8,9 @@ public class Bricks extends Tile {
     private static BufferedImage[] sprites;
 
     Bricks(int id, int x, int y) {
-        super(id, x, y);
+        super(id, x, y, true);
         if(Bricks.sprites == null)
             Bricks.sprites = this.getSprite("brick");
-        setSolid(true);
     }
 
     @Override

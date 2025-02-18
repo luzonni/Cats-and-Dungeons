@@ -2,6 +2,7 @@ package com.retronova.game;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
+import com.retronova.exceptions.NotInActivity;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
@@ -11,6 +12,7 @@ import java.awt.*;
 import java.util.List;
 
 public class Game implements Activity {
+
     private Player player;
     public static Camera C;
     private GameMap gameMap;
@@ -48,8 +50,18 @@ public class Game implements Activity {
         C.tick();
     }
 
-    public GameMap getMap() {
-        return this.gameMap;
+    public static GameMap getMap() {
+        if(Engine.getACTIVITY() instanceof Game game) {
+            return game.gameMap;
+        }
+        throw new NotInActivity("Não é possível retornar o mapa pois a activity atual não é o jogo!");
+    }
+
+    public static Player getPlayer() {
+        if(Engine.getACTIVITY() instanceof Game game) {
+            return game.player;
+        }
+        throw new NotInActivity("Não é possível retornar o mapa pois a activity atual não é o jogo!");
     }
 
     @Override
