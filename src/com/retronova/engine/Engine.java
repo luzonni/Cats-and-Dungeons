@@ -39,7 +39,7 @@ public class Engine implements Runnable {
 
     public Engine() {
         //TODO trocar para o nome da fonte que estará no res/com/retronova/res/source
-        FontG.addFont("NOMEDAFONTE");
+        //FontG.addFont("NOMEDAFONTE");
         Engine.window = new Window(GameTag);
         //TODO trocar para 'setActivity(new Menu());'
 

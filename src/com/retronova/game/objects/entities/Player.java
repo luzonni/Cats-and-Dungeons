@@ -16,9 +16,9 @@ public class Player extends Entity {
     private double damege;
     private final double speed;
 
-    public Player(double x, double y, String nome, double friction, double damege, double speed) {
+    public Player(double x, double y, String nome, double friction, double damage, double speed) {
         super(0, x, y, friction);
-        this.damege = damege;
+        this.damege = damage;
         this.speed = speed * Engine.SCALE;
         this.sprite = getSprite("player", nome);
     }
@@ -32,11 +32,13 @@ public class Player extends Entity {
     public void tick() {
         super.tick();
         updateMovement();
-        if(countAnim > 2) {
-            countAnim = 0;
-            indexAnim++;
-            if(indexAnim >= sprite.length) {
-                indexAnim = 0;
+        if(getPhysical().isMoving()) {
+            if (countAnim > 2) {
+                countAnim = 0;
+                indexAnim++;
+                if (indexAnim >= sprite.length) {
+                    indexAnim = 0;
+                }
             }
         }
     }

@@ -14,24 +14,20 @@ public class Physical {
     private final Entity entity;
     private double speed;
     private double angleForce;
-    private double vectorX, vectorY;
-    private double friction; //taxa de fricção do mapa
-    private boolean[] colliders;
+    private final double friction; //taxa de fricção do mapa
     private boolean isMoving;
 
 
     public Physical(Entity entity, double friction) {
         this.entity = entity;
         this.friction = friction;
-
     }
 
     public void moment(){
         calcFriction();
-        this.vectorX = Math.cos(angleForce) * speed;
-        this.vectorY = Math.sin(angleForce) * speed;
+        double vectorX = Math.cos(angleForce) * speed;
+        double vectorY = Math.sin(angleForce) * speed;
         this.isMoving = moveSystem(vectorX, vectorY);
-
     }
 
     public void addForce(double force, double radians){
@@ -42,47 +38,70 @@ public class Physical {
     private boolean moveSystem(double vectorX, double vectorY){
         double x = entity.getX();
         double y = entity.getY();
-        this.colliders = colliding(x + vectorX, y + vectorY); //analisando a próxima posição
-        boolean isMoving = false;
+        boolean[] colliders = colliding(x + vectorX, y + vectorY); //analisando a próxima posição
         if(!colliders[0]) {
             entity.setX(x + vectorX);
-            isMoving = vectorX != 0; //true
         }
         if(!colliders[1]) {
             entity.setY(y + vectorY);
-            isMoving = vectorY != 0; //true
         }
-        return isMoving;
+
+        return (int)vectorX != 0 || (int)vectorY != 0;
     }
 
     private boolean[] colliding(double nextX, double nextY){
         double currentX = entity.getX();
         double currentY = entity.getY();
-
-        int indexX = (int)(nextX / GameObject.SIZE());
-        int indexY = (int)(nextY / GameObject.SIZE());
-        Tile tile = Game.getMap().getTile(indexX, indexY);
+        double speedX = nextX - currentX;
+        double speedY = nextY - currentY;
+        int dirX = (int)Math.signum(speedX);
+        int dirY = (int)Math.signum(speedY);
         boolean[] colliders = {false, false};
-        Rectangle hbox = new Rectangle((int)nextX, (int)currentY, entity.getWidth(), entity.getHeight());
-        Rectangle vbox = new Rectangle((int)currentX, (int)nextY, entity.getWidth(), entity.getHeight());
-        if(tile.isSolid()) {
-            if (nextX != currentX) {
-                if (hbox.intersects(tile.getBounds())) {
+
+        if(collidingTile(currentX+dirX, currentY)) {
+            colliders[0] = true;
+        }else {
+            while((int)currentX != (int)nextX) {
+                if(collidingTile(currentX+dirX, currentY)) {
                     colliders[0] = true;
+                    entity.setX(currentX);
+                    break;
                 }
-            }
-            if(nextY != currentY) {
-                if(vbox.intersects(tile.getBounds())) {
-                    colliders[1] = true;
-                }
+                currentX+=dirX;
             }
         }
 
+        if(collidingTile(currentX, currentY+dirY)) {
+            colliders[1] = true;
+        }else {
+            while((int)currentY != (int)nextY) {
+                if(collidingTile(currentX, currentY+dirY)) {
+                    colliders[1] = true;
+                    entity.setY(currentY);
+                    break;
+                }
+                currentY+=dirY;
+            }
+        }
         return colliders;
+    }
+
+    private boolean collidingTile(double nextX, double nextY) {
+        int leftX = (int)(nextX / GameObject.SIZE());
+        int rightX = (int)((nextX + entity.getWidth()) / GameObject.SIZE());
+        int upY = (int)(nextY / GameObject.SIZE());
+        int downY = (int)((nextY + entity.getHeight()) / GameObject.SIZE());
+        Tile tile1 = Game.getMap().getTile(leftX, upY);
+        Tile tile2 = Game.getMap().getTile(rightX, downY);
+        return tile1.isSolid() || tile2.isSolid();
     }
 
     private void calcFriction() {
         this.speed *= friction;
+    }
+
+    public boolean isMoving() {
+        return this.isMoving;
     }
 
 
