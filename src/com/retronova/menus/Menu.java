@@ -67,7 +67,7 @@ public class Menu implements Activity {
         int[] cores_quadrados = {0x00A878, 0x4169E1, 0x708090};
         String[] quadrados_nomes = {"Play", "Options", "Exit"};
 
-        Font fonteQuadrados = FontG.font(10 * Engine.SCALE);
+        Font fonteQuadrados = FontG.font(10 * Engine.UISCALE);
         FontMetrics fmQuadrados = g.getFontMetrics(fonteQuadrados);
 
         g.setFont(fonteQuadrados);
