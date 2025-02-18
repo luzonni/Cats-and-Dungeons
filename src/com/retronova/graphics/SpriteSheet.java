@@ -68,9 +68,9 @@ public class SpriteSheet {
     public BufferedImage getSprite(int indexX, int indexY) {
         if(loss)
             return SHEET;
-        int x = indexX * 16 * scale;
-        int y = indexY * 16 * scale;
         int size = 16 * scale;
+        int x = indexX * size;
+        int y = indexY * size;
         if(x < 0 || x + size > SHEET.getWidth() || y < 0 || y + size > SHEET.getHeight()) {
             throw new OutOfPixels("the subimage is out of image pixels");
         }

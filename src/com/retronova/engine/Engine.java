@@ -27,7 +27,7 @@ public class Engine implements Runnable {
 
     public static final String resPath = "/com/retronova/res/";
 
-    public static final int SCALE = 3;
+    public static final int SCALE = 4;
     public static final int[][] resolutions = {{1280, 720}, {1366, 768}, {1600, 900}, {1920, 1080}, {2560, 1440}, {3840, 2160}};
     public static double MaxFrames = 60;
     public static int index_res = 0;
@@ -38,14 +38,9 @@ public class Engine implements Runnable {
     public static Random RAND = new Random();
 
     public Engine() {
-        //TODO trocar para o nome da fonte que estará no res/com/retronova/res/source
         FontG.addFont("game");
         Engine.window = new Window(GameTag);
-        //TODO trocar para 'setActivity(new Menu());'
         setActivity(new Menu());
-//        GameMap map = new GameMap(new File("maps/playground"));
-//        Player player = new Player(map.getBounds().width/2, map.getBounds().height/2, "cinzento", 0.85d, 12, 5);
-//        setActivity(new Game(player, map));
         start();
     }
 
