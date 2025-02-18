@@ -13,6 +13,11 @@ public class Zombie extends Entity {
     }
 
     @Override
+    public BufferedImage getSprite() {
+        return sprite[0];
+    }
+
+    @Override
     public void render(Graphics2D g) {
         renderSprite(sprite[0], g);
     }

@@ -39,13 +39,20 @@ public class Menu implements Activity {
     public void tick() {
         telacheia();
         if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
+
             GameMap map = new GameMap(new File("maps/playground"));
             double x = (map.getBounds().getWidth() / GameObject.SIZE()) / 2;
             double y = (map.getBounds().getHeight() / GameObject.SIZE()) / 2;
-            Player player = (Player)Entity.build(IDs.Player.ordinal(),x,y);
+
+            Player[] player = new Player[] {
+                    new Player(x, y, "cinzento", 0.8, 12, 5),
+                    new Player(x, y, "balofo", 0.8, 12, 10),
+            };
+
+            Player player1 = player[0];
 
             System.out.println("Jogo Iniciado");
-            Engine.setActivity(new Game(player,map));
+            Engine.setActivity(new Personagens());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Opções");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {

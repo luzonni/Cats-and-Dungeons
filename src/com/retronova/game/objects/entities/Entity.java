@@ -13,9 +13,6 @@ public abstract class Entity extends GameObject {
         x *= GameObject.SIZE();
         y *= GameObject.SIZE();
         switch (entityId) {
-            case Player -> {
-                return new Player(ID, x, y);
-            }
             case Zombie -> {
                 return new Zombie(ID, x, y);
             }

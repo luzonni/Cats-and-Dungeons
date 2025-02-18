@@ -15,6 +15,11 @@ public class Bricks extends Tile {
     }
 
     @Override
+    public BufferedImage getSprite() {
+        return sprites[0];
+    }
+
+    @Override
     public void tick() {
         //Logic tile
         //codes here usually is deprecated to optimization.

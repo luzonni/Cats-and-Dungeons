@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Engine;
 import com.retronova.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
@@ -11,10 +12,19 @@ public class Player extends Entity {
     private int countAnim;
     private int indexAnim;
 
+    private double damege;
+    private final double speed;
 
-    Player(int ID, double x, double y) {
-        super(ID, x, y, 0.9);
-        this.sprite = getSprite("player");
+    public Player(double x, double y, String nome, double friction, double damege, double speed) {
+        super(0, x, y, friction);
+        this.damege = damege;
+        this.speed = speed * Engine.SCALE;
+        this.sprite = getSprite("player", nome);
+    }
+
+    @Override
+    public BufferedImage getSprite() {
+        return sprite[0];
     }
 
     @Override
@@ -48,10 +58,10 @@ public class Player extends Entity {
             horizontal = 1;
         }
 
-        double randians = Math.atan2(vertical, horizontal);
+        double radians = Math.atan2(vertical, horizontal);
 
         if(vertical != 0 || horizontal != 0){
-            getPhysical().addForce(5, randians);
+            getPhysical().addForce(this.speed, radians);
         }
 
 
