@@ -7,6 +7,8 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.inputs.keyboard.KeyBoard;
 
+import java.awt.*;
+
 public class Physical {
 
     private final Entity entity;
@@ -54,17 +56,29 @@ public class Physical {
     }
 
     private boolean[] colliding(double nextX, double nextY){
+        double currentX = entity.getX();
+        double currentY = entity.getY();
+
         int indexX = (int)(nextX / GameObject.SIZE());
         int indexY = (int)(nextY / GameObject.SIZE());
         Tile tile = Game.getMap().getTile(indexX, indexY);
+        boolean[] colliders = {false, false};
+        Rectangle hbox = new Rectangle((int)nextX, (int)currentY, entity.getWidth(), entity.getHeight());
+        Rectangle vbox = new Rectangle((int)currentX, (int)nextY, entity.getWidth(), entity.getHeight());
         if(tile.isSolid()) {
-            return new boolean[]{
-                    true, true
-            };
+            if (nextX != currentX) {
+                if (hbox.intersects(tile.getBounds())) {
+                    colliders[0] = true;
+                }
+            }
+            if(nextY != currentY) {
+                if(vbox.intersects(tile.getBounds())) {
+                    colliders[1] = true;
+                }
+            }
         }
-        return new boolean[]{
-                false, false
-        };
+
+        return colliders;
     }
 
     private void calcFriction() {

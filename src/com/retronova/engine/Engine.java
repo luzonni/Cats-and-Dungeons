@@ -1,9 +1,14 @@
 package com.retronova.engine;
 
+import com.retronova.game.Game;
+import com.retronova.game.map.GameMap;
+import com.retronova.game.objects.entities.Player;
+import com.retronova.graphics.FontG;
 import com.retronova.menus.Menu;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.io.File;
 import java.util.Random;
 
 public class Engine implements Runnable {
@@ -33,8 +38,14 @@ public class Engine implements Runnable {
     public static Random RAND = new Random();
 
     public Engine() {
+        //TODO trocar para o nome da fonte que estará no res/com/retronova/res/source
+        FontG.addFont("NOMEDAFONTE");
         Engine.window = new Window(GameTag);
-        setActivity(new Menu());
+        //TODO trocar para 'setActivity(new Menu());'
+
+        GameMap map = new GameMap(new File("maps/playground"));
+        Player player = new Player(map.getBounds().width/2, map.getBounds().height/2, "cinzento", 0.85d, 12, 5);
+        setActivity(new Game(player, map));
         start();
     }
 
