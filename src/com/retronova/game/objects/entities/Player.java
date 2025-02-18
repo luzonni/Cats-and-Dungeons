@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 
 public class Player extends Entity {
 
+
     private BufferedImage[] sprite;
     private int countAnim;
     private int indexAnim;

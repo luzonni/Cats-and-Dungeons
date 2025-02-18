@@ -21,7 +21,6 @@ public class Menu implements Activity {
     public Menu() {
         quadrados = new Rectangle[3];
         telacheia();
-
     }
 
     private void telacheia() {
