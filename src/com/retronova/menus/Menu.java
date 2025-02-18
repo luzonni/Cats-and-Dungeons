@@ -45,8 +45,8 @@ public class Menu implements Activity {
             double y = (map.getBounds().getHeight() / GameObject.SIZE()) / 2;
 
             Player[] player = new Player[] {
-                    new Player(x, y, "cinzento", 0.8, 12, 5),
-                    new Player(x, y, "mago", 0.8, 12, 10),
+                    new Player(100, 100, "cinzento", 0.8, 12, 5),
+                    new Player(100, 100, "mago", 0.8, 12, 10),
             };
 
             Player player1 = player[1];
@@ -66,10 +66,10 @@ public class Menu implements Activity {
         int[] cores_quadrados = {0x00A878, 0x4169E1, 0x708090};
         String[] quadrados_nomes = {"Play", "Options", "Exit"};
 
-        Font fonteQuadrados = FontG.font(10 * Engine.SCALE);
+        Font fonteQuadrados = FontG.font(10 * Engine.UISCALE);
         FontMetrics fmQuadrados = g.getFontMetrics(fonteQuadrados);
-
         g.setFont(fonteQuadrados);
+
 
 
         for (int i = 0; i < quadrados.length; i++) {

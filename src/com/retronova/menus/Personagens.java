@@ -35,7 +35,7 @@ public class Personagens implements Activity {
 
         String[] gatos = {"cinzento", "mago", "sortudo"};
         for (String nome : gatos) {
-            BufferedImage imagem = new SpriteSheet("objects/player", nome, Engine.SCALE).getSHEET();
+            BufferedImage imagem = new SpriteSheet("objects/player", nome, Engine.UISCALE).getSHEET();
             imagens.add(imagem);
         }
         quadrados();
@@ -48,12 +48,12 @@ public class Personagens implements Activity {
         botoes = new Rectangle[2];
 
         selecao[1] = new Rectangle((Engine.window.getWidth() - 200) / 2, (Engine.window.getHeight() - 300) / 2, 200, 300); // Gato Magico
-        selecao[0] = new Rectangle(selecao[1].x - Engine.SCALE-220, (Engine.window.getHeight() - 300) / 2, 200, 300); // Gato Normal
-        selecao[2] = new Rectangle(selecao[1].x + Engine.SCALE+220, (Engine.window.getHeight() - 300) / 2, 200, 300); // Gato Sortudo
+        selecao[0] = new Rectangle(selecao[1].x - Engine.UISCALE-220, (Engine.window.getHeight() - 300) / 2, 200, 300); // Gato Normal
+        selecao[2] = new Rectangle(selecao[1].x + Engine.UISCALE+220, (Engine.window.getHeight() - 300) / 2, 200, 300); // Gato Sortudo
 
         dificuldade[1] = new Rectangle((Engine.window.getWidth() - 50) / 2, (Engine.window.getHeight() - 120), 50, 50); // Dificuldade 2
-        dificuldade[0] = new Rectangle(dificuldade[1].x - Engine.SCALE*25, (Engine.window.getHeight() - 120) , 50, 50); // Dificuldade 1
-        dificuldade[2] = new Rectangle(dificuldade[1].x + Engine.SCALE*25, (Engine.window.getHeight() - 120), 50, 50); // Dificuldade 3
+        dificuldade[0] = new Rectangle(dificuldade[1].x - Engine.UISCALE*25, (Engine.window.getHeight() - 120) , 50, 50); // Dificuldade 1
+        dificuldade[2] = new Rectangle(dificuldade[1].x + Engine.UISCALE*25, (Engine.window.getHeight() - 120), 50, 50); // Dificuldade 3
 
         botoes[0] = new Rectangle(50, dificuldade[1].y, 150, 50); // Voltar
         botoes[1] = new Rectangle(Engine.window.getWidth() - 200, dificuldade[1].y, 150, 50); // Jogar
@@ -73,8 +73,7 @@ public class Personagens implements Activity {
     public void render(Graphics2D g) {
         quadrados();
 
-        g.setFont(FontG.font(22 * Engine.SCALE));
-        g.setStroke(new BasicStroke(Engine.SCALE));
+        g.setFont(FontG.font(22 * Engine.UISCALE));
         FontMetrics fmTitulo = g.getFontMetrics();
 
         g.setColor(Color.white);
@@ -87,7 +86,7 @@ public class Personagens implements Activity {
 
         for (int i = 0; i < selecao.length; i++) {
             int[] cores_gatos = {0x555555, 0x222244, 0x663300};
-            g.setFont(FontG.font(18));
+            g.setFont(FontG.font(7 * Engine.UISCALE));
             FontMetrics fmGatos = g.getFontMetrics();
 
             g.setColor(new Color(cores_gatos[i], false));
@@ -110,12 +109,12 @@ public class Personagens implements Activity {
         int[] cores_dificuldade = {0x90EE90, 0xFFA500, 0xFF0000};
         String[] numeros = {"1", "2", "3"};
 
-        Font fonteDificuldade = FontG.font(10 * Engine.SCALE);
+        Font fonteDificuldade = FontG.font(10 * Engine.UISCALE);
         FontMetrics fmDificuldade = g.getFontMetrics(fonteDificuldade);
 
         g.setFont(fonteDificuldade);
 
-        FontMetrics dificuldade_titulo = g.getFontMetrics(FontG.font(10 * Engine.SCALE));
+        FontMetrics dificuldade_titulo = g.getFontMetrics(FontG.font(10 * Engine.UISCALE));
         g.setColor(Color.white);
         String titulo = "Difficulty";
 
@@ -140,7 +139,7 @@ public class Personagens implements Activity {
         int[] cores_botoes = {0x4A4A4A, 0x00A878};
         String[] botoes_nomes = {"Back", "Play"};
 
-        Font fonteBotoes = FontG.font(10 * Engine.SCALE);
+        Font fonteBotoes = FontG.font(10 * Engine.UISCALE);
         FontMetrics fmBotoes = g.getFontMetrics(fonteBotoes);
 
         g.setFont(fonteBotoes);
