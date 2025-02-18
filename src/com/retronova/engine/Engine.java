@@ -39,13 +39,14 @@ public class Engine implements Runnable {
 
     public Engine() {
         //TODO trocar para o nome da fonte que estará no res/com/retronova/res/source
-        FontG.addFont("NOMEDAFONTE");
+        FontG.addFont("game");
         Engine.window = new Window(GameTag);
         //TODO trocar para 'setActivity(new Menu());'
 
-        GameMap map = new GameMap(new File("maps/playground"));
-        Player player = new Player(map.getBounds().width/2, map.getBounds().height/2, "cinzento", 0.85d, 12, 5);
-        setActivity(new Game(player, map));
+        //GameMap map = new GameMap(new File("maps/playground"));
+        //Player player = new Player(map.getBounds().width/2, map.getBounds().height/2, "cinzento", 0.85d, 12, 5);
+        //setActivity(new Game(player, map));
+        setActivity(new Menu());
         start();
     }
 
