@@ -38,16 +38,6 @@ public abstract class GameObject {
         return sprites;
     }
 
-    public BufferedImage[] getSprite(String module, String spriteName) {
-        SpriteSheet sheet = new SpriteSheet("objects/" + module + "/", spriteName, Engine.SCALE);
-        int length = sheet.getWidth() / 16;
-        BufferedImage[] sprites = new BufferedImage[length];
-        for(int i = 0; i < length; i++) {
-            sprites[i] = sheet.getSprite(i, 0);
-        }
-        return sprites;
-    }
-
     public BufferedImage[] getSprite(String spriteName, int prefix) {
         SpriteSheet sheet = new SpriteSheet("objects", spriteName, Engine.SCALE);
         int length = sheet.getWidth() / 16;

@@ -41,18 +41,19 @@ public class Menu implements Activity {
         if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
 
             GameMap map = new GameMap(new File("maps/playground"));
-            double x = (map.getBounds().getWidth() / GameObject.SIZE()) / 2;
-            double y = (map.getBounds().getHeight() / GameObject.SIZE()) / 2;
+            double x = (map.getBounds().getWidth() / 2) ;
+            double y = (map.getBounds().getHeight() / 2);
 
             Player[] player = new Player[] {
-                    new Player(100, 100, "cinzento", 0.8, 12, 5),
-                    new Player(100, 100, "mago", 0.8, 12, 10),
+                    new Player(x, y, "cinzento", 0.8, 12, 5),
+                    new Player(x, y, "mago", 0.8, 12, 5),
+                    new Player(x, y, "sortudo", 0.8, 12, 5),
             };
 
-            Player player1 = player[1];
+            Player player1 = player[2];
 
             System.out.println("Seleção de Personagens aberta");
-            Engine.setActivity(new Personagens());
+            Engine.setActivity(new Game(player1, map));
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Opções");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
@@ -66,10 +67,10 @@ public class Menu implements Activity {
         int[] cores_quadrados = {0x00A878, 0x4169E1, 0x708090};
         String[] quadrados_nomes = {"Play", "Options", "Exit"};
 
-        Font fonteQuadrados = FontG.font(10 * Engine.UISCALE);
+        Font fonteQuadrados = FontG.font(10 * Engine.SCALE);
         FontMetrics fmQuadrados = g.getFontMetrics(fonteQuadrados);
-        g.setFont(fonteQuadrados);
 
+        g.setFont(fonteQuadrados);
 
 
         for (int i = 0; i < quadrados.length; i++) {

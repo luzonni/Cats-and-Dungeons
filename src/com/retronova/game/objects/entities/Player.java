@@ -1,6 +1,7 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
+import com.retronova.game.Game;
 import com.retronova.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
@@ -9,9 +10,10 @@ import java.awt.image.BufferedImage;
 public class Player extends Entity {
 
 
-    private BufferedImage[] sprite;
+    private BufferedImage[][] sprite;
     private int countAnim;
     private int indexAnim;
+    private int stateAnim;
 
     private double damege;
     private final double speed;
@@ -20,34 +22,37 @@ public class Player extends Entity {
         super(0, x, y, friction);
         this.damege = damage;
         this.speed = speed * Engine.SCALE;
-        this.sprite = getSprite("player", nome);
+        this.sprite = new BufferedImage[][]{
+                getSprite("player/"+nome, 0),
+                getSprite("player/"+nome, 1)
+        };
     }
 
     @Override
     public BufferedImage getSprite() {
-        return sprite[0];
+        return sprite[stateAnim][indexAnim];
     }
 
     @Override
     public void tick() {
         super.tick();
         updateMovement();
-        if(getPhysical().isMoving()) {
-            if (countAnim > 2) {
-                countAnim = 0;
-                indexAnim++;
-                if (indexAnim >= sprite.length) {
-                    indexAnim = 0;
-                }
+        countAnim++;
+        if (countAnim > 10) {
+            countAnim = 0;
+            indexAnim++;
+            if (indexAnim >= sprite[stateAnim].length) {
+                indexAnim = 0;
             }
         }
     }
 
     private void updateMovement(){
+        if(!(Engine.getACTIVITY() instanceof Game))
+            return;
+        stateAnim = getPhysical().isMoving() ? 1 : 0;
         int vertical = 0;
         int horizontal = 0;
-
-
         if(KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")){
             vertical = -1;
         }
@@ -60,19 +65,15 @@ public class Player extends Entity {
         if(KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")){
             horizontal = 1;
         }
-
         double radians = Math.atan2(vertical, horizontal);
-
         if(vertical != 0 || horizontal != 0){
             getPhysical().addForce(this.speed, radians);
         }
-
-
     }
 
     @Override
     public void render(Graphics2D g) {
-        renderSprite(sprite[indexAnim], g);
+        renderSprite(getSprite(), g);
     }
 
     @Override
