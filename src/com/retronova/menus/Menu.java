@@ -8,6 +8,7 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.IDs;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.graphics.FontG;
 import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
 
@@ -45,51 +46,44 @@ public class Menu implements Activity {
 
             Player[] player = new Player[] {
                     new Player(x, y, "cinzento", 0.8, 12, 5),
-                    new Player(x, y, "balofo", 0.8, 12, 10),
+                    new Player(x, y, "mago", 0.8, 12, 10),
             };
 
-            Player player1 = player[0];
+            Player player1 = player[1];
 
-            System.out.println("Jogo Iniciado");
+            System.out.println("Seleção de Personagens aberta");
             Engine.setActivity(new Personagens());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Opções");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
             Engine.CLOSE();
+            System.out.println("Jogo Fechado");
         }
     }
 
     @Override
     public void render(Graphics2D g) {
-        g.setFont(new Font("Arial", Font.BOLD, 25));
-        FontMetrics fm = g.getFontMetrics();
+        int[] cores_quadrados = {0x00A878, 0x4169E1, 0x708090};
+        String[] quadrados_nomes = {"Play", "Options", "Exit"};
 
-        // Botão de Jogar
-        g.setColor(Color.RED);
-        g.fillRect(quadrados[0].x, quadrados[0].y, quadrados[0].width, quadrados[0].height);
-        g.setColor(new Color(255, 255, 255));
-        g.drawRect(quadrados[0].x, quadrados[0].y, quadrados[0].width, quadrados[0].height);
-        g.setColor(Color.WHITE);
-        g.drawString("Jogar", quadrados[0].x + (quadrados[0].width - fm.stringWidth("Jogar")) / 2, quadrados[0].y + (quadrados[0].height - fm.getHeight()) / 2 + fm.getAscent());
+        Font fonteQuadrados = FontG.font(10 * Engine.SCALE);
+        FontMetrics fmQuadrados = g.getFontMetrics(fonteQuadrados);
 
-        // Botão de Opções
-        g.setColor(Color.BLUE);
-        g.fillRect(quadrados[1].x, quadrados[1].y, quadrados[1].width, quadrados[1].height);
-        g.setColor(new Color(255, 255, 255));
-        g.drawRect(quadrados[1].x, quadrados[1].y, quadrados[1].width, quadrados[1].height);
-        g.setColor(Color.WHITE);
-        g.drawString("Opções", quadrados[1].x + (quadrados[1].width - fm.stringWidth("Opções")) / 2, quadrados[1].y + (quadrados[1].height - fm.getHeight()) / 2 + fm.getAscent());
+        g.setFont(fonteQuadrados);
 
-        // Botão de Sair
-        g.setColor(Color.GREEN);
-        g.fillRect(quadrados[2].x, quadrados[2].y, quadrados[2].width, quadrados[2].height);
-        g.setColor(new Color(255, 255, 255));
-        g.drawRect(quadrados[2].x, quadrados[2].y, quadrados[2].width, quadrados[2].height);
-        g.setColor(Color.WHITE);
-        g.drawString("Sair", quadrados[2].x + (quadrados[2].width - fm.stringWidth("Sair")) / 2, quadrados[2].y + (quadrados[2].height - fm.getHeight()) / 2 + fm.getAscent());
 
-        // Ordem das cores - Retangulo, borda e fonte
-        // A formula é X + (largura do retangulo - largura da font) /2 , Y + (altura do retangulo - altura da fonte) /2 + Ascent (não sei muito bem explicar o ascent)
+        for (int i = 0; i < quadrados.length; i++) {
+            g.setColor(new Color(cores_quadrados[i], false));
+
+            g.fillRect(quadrados[i].x, quadrados[i].y, quadrados[i].width, quadrados[i].height);
+            g.setColor(Color.WHITE);
+            g.drawRect(quadrados[i].x, quadrados[i].y, quadrados[i].width, quadrados[i].height);
+
+            g.drawString(quadrados_nomes[i], quadrados[i].x + (quadrados[i].width - fmQuadrados.stringWidth(quadrados_nomes[i])) / 2, quadrados[i].y + (quadrados[i].height - fmQuadrados.getHeight()) / 2 + fmQuadrados.getAscent());
+
+            // A formula é X + (largura do retangulo - largura da font) /2 , Y + (altura do retangulo - altura da fonte) /2 + Ascent (não sei muito bem explicar o ascent)
+        }
+
     }
 
     @Override
