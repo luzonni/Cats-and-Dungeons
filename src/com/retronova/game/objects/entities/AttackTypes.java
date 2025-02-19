@@ -1,16 +1,17 @@
 package com.retronova.game.objects.entities;
 
 public enum AttackTypes {
-    //TODO Colocar os tipos de ataque que o jogo permite, isso funcionara para calculo de dano de acordo com o tipo de ataque! Os valores atuais são apenas de exemplo!
-    Fire(0.4), Piercing(0.6), Melee(0.8);
+    Fire(0.5),      // 50% de resistência de fogo né
+    Piercing(0.2),  // 20% de resistência, perfuração de flexas ou outros
+    Melee(0.0);     // Sem resistência a ataques de perto
 
-    final double resistence;
+    private final double resistance;
 
-    AttackTypes(double resistence) {
-        this.resistence = resistence;
+    AttackTypes(double resistance) {
+        this.resistance = resistance;
     }
 
-    public double getResistence() {
-        return resistence;
+    public double getResistance() {
+        return resistance;
     }
 }

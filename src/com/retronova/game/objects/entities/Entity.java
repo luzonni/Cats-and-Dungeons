@@ -48,17 +48,20 @@ public abstract class Entity extends GameObject {
     }
 
     public void strike(AttackTypes type, double damage) {
-        if(this.resistanceOf != null && type != null)
-            for(AttackTypes resistence : this.resistanceOf) {
-                if(resistence.equals(type)) {
-                    //TODO calculo de dano com a resistência
-                    this.life -= damage * resistence.getResistence();
+        if (this.resistanceOf != null && type != null) {
+            for (AttackTypes resistance : this.resistanceOf) {
+                if (resistance.equals(type)) {
+                    this.life -= damage * (1 - resistance.getResistance()); // Calculando o dano
                     return;
                 }
             }
-        //TODO damo total caso não exista resistência ( dano bruto )
-        this.life -= damage;
+        }
+        this.life -= damage; // Dano total
+        if (this.life <= 0) {
+            die();
+        }
     }
+
 
     public void die() {
         //TODO adicionar particula de morte

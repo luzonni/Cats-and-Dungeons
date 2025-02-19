@@ -6,6 +6,8 @@ import com.retronova.game.objects.GameObject;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Skeleton extends Entity {
 
@@ -17,6 +19,8 @@ public class Skeleton extends Entity {
     public Skeleton(int ID, double x, double y) {
         super(ID, x, y, 0.8);
         sprite = new BufferedImage[][] {getSprite("skeleton", 0), getSprite("skeleton", 1)};
+
+        setResistances(AttackTypes.Fire, AttackTypes.Piercing);
     }
 
     @Override
@@ -44,6 +48,12 @@ public class Skeleton extends Entity {
             getPhysical().addForce(Engine.SCALE, radians);
         }
         this.indexState = getPhysical().isMoving() ? 1 : 0;
+    }
+
+    public void takeDamage(AttackTypes attackType, double baseDamage) {
+        strike(attackType, baseDamage); // Aplica o dano
+        System.out.println("Skeleton tomou " + baseDamage + " de dano de " + attackType + ". Vida restante: " + getLife());
+        // TODO fazer tanto no skeleton como no zombie, o impacto do item que vai dar dano, e tirar essa bosta que aparece no terminal.
     }
 
     @Override

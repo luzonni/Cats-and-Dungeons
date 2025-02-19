@@ -123,7 +123,7 @@ public class Personagens implements Activity {
         int y = 50;
         g.drawString("Choose your character", x, y + fmTitulo.getAscent());
 
-        String[] gatos = {"Normal Cat", "Magic Cat", "Luck Cat"};
+        String[] gatos = {"Normal Cat", "Magic Cat", "Lucky Cat"};
 
 
         for (int i = 0; i < selecao.length; i++) {
