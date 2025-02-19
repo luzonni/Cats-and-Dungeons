@@ -5,6 +5,7 @@ import com.retronova.exceptions.OutOfPixels;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
@@ -91,6 +92,18 @@ public class SpriteSheet {
 
     public BufferedImage getSHEET() {
         return this.SHEET;
+    }
+
+    public static BufferedImage flip(BufferedImage image, int horizontal, int vertical) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        BufferedImage flippedImage = new BufferedImage(width, height, image.getType());
+        Graphics2D g = flippedImage.createGraphics();
+        AffineTransform transform = AffineTransform.getScaleInstance(vertical, horizontal);
+        transform.translate(vertical < 0 ? -width : 0, horizontal < 0 ? -height : 0);
+        g.drawImage(image, transform, null);
+        g.dispose();
+        return flippedImage;
     }
 
 }

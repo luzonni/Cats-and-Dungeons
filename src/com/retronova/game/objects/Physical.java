@@ -16,11 +16,13 @@ public class Physical {
     private double angleForce;
     private final double friction; //taxa de fricção do mapa
     private boolean isMoving;
+    private int[] orientation;
 
 
     public Physical(Entity entity, double friction) {
         this.entity = entity;
         this.friction = friction;
+        this.orientation = new int[] {0, 0};
     }
 
     public void moment(){
@@ -39,6 +41,7 @@ public class Physical {
         double x = entity.getX();
         double y = entity.getY();
         boolean[] colliders = colliding(x + vectorX, y + vectorY); //analisando a próxima posição
+        this.orientation = new int[] {(int)Math.signum(vectorX), (int)Math.signum(vectorY)};
         if(!colliders[0]) {
             entity.setX(x + vectorX);
         }
@@ -47,6 +50,10 @@ public class Physical {
         }
 
         return (int)vectorX != 0 || (int)vectorY != 0;
+    }
+
+    public int[] getOrientation() {
+        return this.orientation;
     }
 
     private boolean[] colliding(double nextX, double nextY){
