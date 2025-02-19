@@ -19,11 +19,14 @@ public abstract class Entity extends GameObject {
             case Zombie -> {
                 return new Zombie(ID, x, y);
             }
+            case Skeleton -> {
+                return new Skeleton(ID, x, y);
+            }
         }
         throw new EntityNotFound("Entity not found");
     }
 
-    public Entity(int ID, double x, double y, double friction) {
+    public Entity(int   ID, double x, double y, double friction) {
         super(ID);
         setX(x);
         setY(y);
