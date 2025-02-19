@@ -24,6 +24,7 @@ public class Personagens implements Activity {
     private ArrayList<BufferedImage> imagens;
     private int personagemSelecionado = -1;
     private int dificuldadeSelecionada = -1;
+    private int personagemInformacoes = -1;
 
 
     Player[] player = new Player[] {
@@ -66,17 +67,47 @@ public class Personagens implements Activity {
     public void tick() {
         for (int i = 0; i < selecao.length; i++) {
             if (Mouse.clickOn(Mouse_Button.LEFT, selecao[i])) {
-                personagemSelecionado = i;
-                System.out.println("Personagem selecionado: " + i);
+                if (personagemSelecionado == i) {
+                    personagemSelecionado = -1;
+                    System.out.println("Personagem deselecionado");
+                } else {
+                    personagemSelecionado = i;
+                    System.out.println("Personagem selecionado: " + i);
+                }
                 break;
-            } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
-                Engine.setActivity(new Menu());
-                System.out.println("Menu aberto");
-            } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
-                Engine.setActivity(new Game(player[personagemSelecionado],new GameMap(new File("maps/playground"))));
-                System.out.println("Jogo iniciado");
             }
         }
+
+        if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
+            Engine.setActivity(new Menu());
+            System.out.println("Menu aberto");
+        }
+
+        for (int i = 0; i < dificuldade.length; i++) {
+            if (Mouse.clickOn(Mouse_Button.LEFT, dificuldade[i])) {
+                if (dificuldadeSelecionada == i) {
+                    dificuldadeSelecionada = -1;
+                    System.out.println("Dificuldade deselecionada");
+                } else {
+                    dificuldadeSelecionada = i;
+                    System.out.println("Dificuldade selecionada: " + i);
+                }
+                break;
+            }
+        }
+
+        if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
+            Engine.setActivity(new Menu());
+            System.out.println("Menu aberto");
+        } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
+            if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
+                Engine.setActivity(new Game(player[personagemSelecionado], new GameMap(new File("maps/playground"))));
+                System.out.println("Jogo iniciado");
+            } else {
+                System.out.println("Selecione um personagem e/ou dificuldade antes de jogar!");
+            }
+        }
+
     }
 
 
@@ -114,11 +145,28 @@ public class Personagens implements Activity {
 
             if (personagemSelecionado == i) {
                 int[] cores_personagens = {0xA9A9A9, 0x483D8B, 0xFFA500};
+
                 g.setColor(new Color(cores_personagens[i], false));
                 float thickness = 5.0f; // Espessura da borda - PFV NÃO APAGUE ESSA MENSAGEM EU NUNCA LEMBRO COMO ARRUMA A ESPESSURA
                 g.setStroke(new BasicStroke(thickness));
                 g.drawRect(selecao[i].x, selecao[i].y, selecao[i].width, selecao[i].height);
                 g.setStroke(new BasicStroke(1.0f));
+            }
+
+            if (personagemInformacoes == i) {
+                int[] cores_selecionado = {0xA9A9A9, 0x483D8B, 0xFFA500};
+                String[] personagens = {"Testando", "Testando2", "Testando3"};
+                Font fonteselecionado = FontG.font(10 * Engine.UISCALE);
+                FontMetrics fmSelecionado = g.getFontMetrics(fonteselecionado);
+
+                g.setColor(new Color(cores_selecionado[i], false));
+                float thickness = 5.0f;
+                g.setStroke(new BasicStroke(thickness));
+                g.drawRect(selecao[i].x, selecao[i].y, selecao[i].width, selecao[i].height);
+                g.setStroke(new BasicStroke(1.0f));
+
+                g.setColor(Color.white);
+                g.drawString(personagens[i], selecao[i].x + (selecao[i].width - fmSelecionado.stringWidth(personagens[i])) / 2, selecao[i].y + (selecao[i].height - fmSelecionado.getHeight()) / 2 + fmSelecionado.getAscent());
             }
         }
 
@@ -154,8 +202,8 @@ public class Personagens implements Activity {
             g.drawString(numeros[i], dificuldade[i].x + (dificuldade[i].width - fmDificuldade.stringWidth(numeros[i])) / 2, dificuldade[i].y + (dificuldade[i].height - fmDificuldade.getHeight()) / 2 + fmDificuldade.getAscent());
 
             if (dificuldadeSelecionada == i) {
-                int[] cores_personagens = {0xA9A9A9, 0x483D8B, 0xFFA500};
-                g.setColor(new Color(cores_personagens[i], false));
+                int[] cores_dificuldade_att = {0x6aa84f, 0xf1c232, 0xcc0000};
+                g.setColor(new Color(cores_dificuldade_att[i], false));
                 float thickness = 5.0f;
                 g.setStroke(new BasicStroke(thickness));
                 g.drawRect(dificuldade[i].x, dificuldade[i].y, dificuldade[i].width, dificuldade[i].height);
