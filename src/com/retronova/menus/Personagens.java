@@ -22,12 +22,14 @@ public class Personagens implements Activity {
     private Rectangle[] dificuldade;
     private Rectangle[] botoes;
     private ArrayList<BufferedImage> imagens;
+    private int personagemSelecionado = -1;
+    private int dificuldadeSelecionada = -1;
 
 
     Player[] player = new Player[] {
-            new Player(0, 0, "cinzento", 0.8, 12, 5),
-            new Player(0, 0, "mago", 0.8, 12, 10),
-            new Player(0,0, "sortudo", 0.8, 12, 20),
+            new Player(100, 100, "cinzento", 0.8, 10, 5),
+            new Player(100, 100, "mago", 0.8, 15, 10),
+            new Player(100,100, "sortudo", 0.8, 15, 15),
     };
 
     public Personagens() {
@@ -62,9 +64,18 @@ public class Personagens implements Activity {
 
     @Override
     public void tick() {
-        if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
-            System.out.println("Menu Aberto");
-            Engine.setActivity(new Menu());
+        for (int i = 0; i < selecao.length; i++) {
+            if (Mouse.clickOn(Mouse_Button.LEFT, selecao[i])) {
+                personagemSelecionado = i;
+                System.out.println("Personagem selecionado: " + i);
+                break;
+            } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
+                Engine.setActivity(new Menu());
+                System.out.println("Menu aberto");
+            } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
+                Engine.setActivity(new Game(player[personagemSelecionado],new GameMap(new File("maps/playground"))));
+                System.out.println("Jogo iniciado");
+            }
         }
     }
 
@@ -97,8 +108,18 @@ public class Personagens implements Activity {
 
             g.drawString(gatos[i], selecao[i].x + (selecao[i].width - fmGatos.stringWidth(gatos[i])) / 2, selecao[i].y - 10);
 
-            BufferedImage imagem = imagens.get(i);
+            BufferedImage imagem = player[i].getSprite();
             g.drawImage(imagem, selecao[i].x + (selecao[i].width - imagem.getWidth() * 3) / 2, selecao[i].y + (selecao[i].height - imagem.getHeight() * 3) / 2, imagem.getWidth() * 3, imagem.getHeight() * 3, null);
+
+
+            if (personagemSelecionado == i) {
+                int[] cores_personagens = {0xA9A9A9, 0x483D8B, 0xFFA500};
+                g.setColor(new Color(cores_personagens[i], false));
+                float thickness = 5.0f; // Espessura da borda - PFV NÃO APAGUE ESSA MENSAGEM EU NUNCA LEMBRO COMO ARRUMA A ESPESSURA
+                g.setStroke(new BasicStroke(thickness));
+                g.drawRect(selecao[i].x, selecao[i].y, selecao[i].width, selecao[i].height);
+                g.setStroke(new BasicStroke(1.0f));
+            }
         }
 
         dificuldadequadrados(g);
@@ -131,6 +152,15 @@ public class Personagens implements Activity {
             g.drawRect(dificuldade[i].x, dificuldade[i].y, dificuldade[i].width, dificuldade[i].height);
 
             g.drawString(numeros[i], dificuldade[i].x + (dificuldade[i].width - fmDificuldade.stringWidth(numeros[i])) / 2, dificuldade[i].y + (dificuldade[i].height - fmDificuldade.getHeight()) / 2 + fmDificuldade.getAscent());
+
+            if (dificuldadeSelecionada == i) {
+                int[] cores_personagens = {0xA9A9A9, 0x483D8B, 0xFFA500};
+                g.setColor(new Color(cores_personagens[i], false));
+                float thickness = 5.0f;
+                g.setStroke(new BasicStroke(thickness));
+                g.drawRect(dificuldade[i].x, dificuldade[i].y, dificuldade[i].width, dificuldade[i].height);
+                g.setStroke(new BasicStroke(1.0f));
+            }
         }
 
     }
@@ -153,6 +183,7 @@ public class Personagens implements Activity {
             g.drawRect(botoes[i].x, botoes[i].y, botoes[i].width, botoes[i].height);
 
             g.drawString(botoes_nomes[i], botoes[i].x + (botoes[i].width - fmBotoes.stringWidth(botoes_nomes[i])) / 2, botoes[i].y + (botoes[i].height - fmBotoes.getHeight()) / 2 + fmBotoes.getAscent());
+
         }
 
     }

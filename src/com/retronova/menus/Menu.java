@@ -39,26 +39,13 @@ public class Menu implements Activity {
     public void tick() {
         telacheia();
         if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
-
-            GameMap map = new GameMap(new File("maps/playground"));
-            double x = (map.getBounds().getWidth() / 2) ;
-            double y = (map.getBounds().getHeight() / 2);
-
-            Player[] player = new Player[] {
-                    new Player(x, y, "cinzento", 0.8, 12, 5),
-                    new Player(x, y, "mago", 0.8, 12, 5),
-                    new Player(x, y, "sortudo", 0.8, 12, 5),
-            };
-
-            Player player1 = player[2];
-
-            System.out.println("Seleção de Personagens aberta");
-            Engine.setActivity(new Game(player1, map));
+            System.out.println("Seleção de personagens aberta");
+            Engine.setActivity(new Personagens());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Opções");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
             Engine.CLOSE();
-            System.out.println("Jogo Fechado");
+            System.out.println("Jogo fechado");
         }
     }
 
