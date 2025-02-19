@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 
 public class Zombie extends Entity {
 
-    private BufferedImage[][] sprite;
+    private final BufferedImage[][] sprite;
     private int countAnim;
     private int indexState;
     private int indexAnim;
@@ -39,7 +39,7 @@ public class Zombie extends Entity {
 
     private void moveIA() {
         Player player = Game.getPlayer();
-        if(Math.sqrt(Math.pow((player.getX() - getX()), 2) - Math.pow((player.getY() - getY()), 2)) < GameObject.SIZE()*4) {
+        if(Math.sqrt(Math.pow((player.getX() - getX()), 2) + Math.pow(player.getY() - getY(), 2)) < GameObject.SIZE()*4) {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
             getPhysical().addForce(Engine.SCALE, radians);
         }
