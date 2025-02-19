@@ -91,9 +91,11 @@ public class Physical {
         int rightX = (int)((nextX + entity.getWidth()) / GameObject.SIZE());
         int upY = (int)(nextY / GameObject.SIZE());
         int downY = (int)((nextY + entity.getHeight()) / GameObject.SIZE());
-        Tile tile1 = Game.getMap().getTile(leftX, upY);
-        Tile tile2 = Game.getMap().getTile(rightX, downY);
-        return tile1.isSolid() || tile2.isSolid();
+        Tile leftup = Game.getMap().getTile(leftX, upY);
+        Tile leftdown = Game.getMap().getTile(leftX, downY);
+        Tile rightup = Game.getMap().getTile(rightX, upY);
+        Tile rightdown = Game.getMap().getTile(rightX, downY);
+        return leftup.isSolid() || leftdown.isSolid() || rightdown.isSolid() || rightup.isSolid();
     }
 
     private void calcFriction() {
