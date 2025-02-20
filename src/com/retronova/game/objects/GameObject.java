@@ -92,6 +92,10 @@ public abstract class GameObject {
         this.depth = (int)getY();
     }
 
+    public double getDistance(GameObject object) {
+        return Math.sqrt(Math.pow((object.getX() - this.getX()), 2) + Math.pow(object.getY() - this.getY(), 2));
+    }
+
     public static Comparator<GameObject> Depth = Comparator.comparingInt(GameObject::getDepth);
 
     public void renderSprite(BufferedImage sprite, Graphics2D g) {

@@ -1,6 +1,7 @@
 package com.retronova.graphics;
 
 import com.retronova.engine.Engine;
+import com.retronova.exceptions.FlipException;
 import com.retronova.exceptions.OutOfPixels;
 
 import javax.imageio.ImageIO;
@@ -95,12 +96,16 @@ public class SpriteSheet {
     }
 
     public static BufferedImage flip(BufferedImage image, int horizontal, int vertical) {
+        if(horizontal == 0 || vertical == 0)
+            throw new FlipException("Valores precisam ser 1 (default) ou -1 (invertido)");
         int width = image.getWidth();
         int height = image.getHeight();
         BufferedImage flippedImage = new BufferedImage(width, height, image.getType());
         Graphics2D g = flippedImage.createGraphics();
         AffineTransform transform = AffineTransform.getScaleInstance(vertical, horizontal);
-        transform.translate(vertical < 0 ? -width : 0, horizontal < 0 ? -height : 0);
+        int translateX = vertical < 0 ? -width : 0;
+        int translateY = horizontal < 0 ? -height : 0;
+        transform.translate(translateX, translateY);
         g.drawImage(image, transform, null);
         g.dispose();
         return flippedImage;

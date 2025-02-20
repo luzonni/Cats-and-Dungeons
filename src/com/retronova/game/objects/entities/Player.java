@@ -2,6 +2,7 @@ package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
+import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
@@ -73,7 +74,10 @@ public class Player extends Entity {
 
     @Override
     public void render(Graphics2D g) {
-        renderSprite(getSprite(), g);
+        BufferedImage sprite = getSprite();
+        if(getPhysical().getOrientation()[0] == -1)
+            sprite = SpriteSheet.flip(sprite, 1, -1);
+        renderSprite(sprite, g);
     }
 
     @Override

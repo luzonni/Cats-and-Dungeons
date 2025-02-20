@@ -42,7 +42,7 @@ public class Zombie extends Entity {
 
     private void moveIA() {
         Player player = Game.getPlayer();
-        if(Math.sqrt(Math.pow((player.getX() - getX()), 2) + Math.pow(player.getY() - getY(), 2)) < GameObject.SIZE()*4) {
+        if(this.getDistance(player) < GameObject.SIZE()*4) {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
             getPhysical().addForce(Engine.SCALE, radians);
         }
@@ -55,6 +55,7 @@ public class Zombie extends Entity {
         // TODO fazer tanto no skeleton como no zombie, o impacto do item que vai dar dano, e tirar essa bosta que aparece no terminal quando toma dano.
 
     }
+
 
     @Override
     public void render(Graphics2D g) {

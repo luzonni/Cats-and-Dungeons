@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Engine;
 import com.retronova.exceptions.EntityNotFound;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
@@ -62,6 +63,23 @@ public abstract class Entity extends GameObject {
         }
     }
 
+    public void strike(AttackTypes type, double damage, double angle) {
+        if (this.resistanceOf != null && type != null) {
+            for (AttackTypes resistance : this.resistanceOf) {
+                if (resistance.equals(type)) {
+                    this.life -= damage * (1 - resistance.getResistance()); // Calculando o dano
+                    return;
+                }
+            }
+        }
+        this.life -= damage; // Dano total
+        if (this.life <= 0) {
+            die();
+        }
+        getPhysical().addForce(3 * Engine.SCALE, angle);
+
+    }
+
 
     public void die() {
         //TODO adicionar particula de morte
@@ -73,10 +91,7 @@ public abstract class Entity extends GameObject {
     public void tick() {
         setDepth();
         getPhysical().moment();
-        if(this.life <= 0)
-            this.die();
     }
-
 
     public Physical getPhysical() {
         return this.physical;
