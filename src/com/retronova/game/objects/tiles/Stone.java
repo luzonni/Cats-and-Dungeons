@@ -1,16 +1,20 @@
 package com.retronova.game.objects.tiles;
 
+import com.retronova.engine.Engine;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Stone extends Tile {
 
     private static BufferedImage[] sprites;
+    private int index = 0;
 
     Stone(int id, int x, int y) {
         super(id, x, y, false);
         if(Stone.sprites == null)
             Stone.sprites = this.getSprite("stone");
+        index = Engine.RAND.nextInt(Stone.sprites.length);
     }
 
     @Override
@@ -26,7 +30,7 @@ public class Stone extends Tile {
 
     @Override
     public void render(Graphics2D g) {
-        renderSprite(sprites[0], g);
+        renderSprite(sprites[index], g);
     }
 
     @Override
