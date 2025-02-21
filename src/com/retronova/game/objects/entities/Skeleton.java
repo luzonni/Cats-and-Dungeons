@@ -29,7 +29,6 @@ public class Skeleton extends Entity {
     }
 
     public void tick() {
-        super.tick();
         moveIA();
         countAnim++;
         if(countAnim > 10) {

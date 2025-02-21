@@ -38,6 +38,8 @@ public class Game implements Activity {
         entities.sort(Entity.Depth);
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
+            entity.setDepth();
+            entity.getPhysical().moment();
             entity.tick();
         }
         Tile[] map = gameMap.getMap();

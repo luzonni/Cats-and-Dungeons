@@ -8,6 +8,7 @@ import com.retronova.game.objects.tiles.Tile;
 import com.retronova.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
+import java.util.List;
 
 public class Physical {
 
@@ -25,13 +26,23 @@ public class Physical {
         this.orientation = new int[] {0, 0};
     }
 
+    /**
+     * Funcionamento do physical!
+     * Essa função precisa ser executado para a física da entidade funcionar.
+     */
     public void moment(){
         calcFriction();
         double vectorX = Math.cos(angleForce) * speed;
         double vectorY = Math.sin(angleForce) * speed;
         this.isMoving = moveSystem(vectorX, vectorY);
+        repulsion();
     }
 
+    /**
+     *
+     * @param force é um double que será a força aplicada no objeto
+     * @param radians é a direção que essa força será aplicada
+     */
     public void addForce(double force, double radians){
         this.angleForce = radians;
         this.speed = force;
@@ -52,6 +63,11 @@ public class Physical {
         return (int)vectorX != 0 || (int)vectorY != 0;
     }
 
+    /**
+     * Calcula a soma de dois inteiros.
+     *
+     * @return retorna int[2] onde o primeiro valor é o X (-1, 0, 1) e o segundo é o Y (-1, 0, 1);
+     */
     public int[] getOrientation() {
         return this.orientation;
     }
@@ -113,8 +129,29 @@ public class Physical {
         return this.isMoving;
     }
 
-
-
+    //TODO colocar características nas entidades para filtrar melhor o que colide com o que n colide, por exemplo, dizer o que está vivo do que não esta...
+    private void repulsion() {
+        List<Entity> entities = Game.getMap().getEntities();
+        for(int i = 0; i < entities.size(); i++) {
+            Entity e1 = this.entity;
+            Entity e2 = entities.get(i);
+            if(e2 == e1)
+                continue;
+            double e1_radius = e1.getWidth() / 2d;
+            double e2_radius = e2.getWidth() / 2d;
+            if(e1.getBounds().intersects(e2.getBounds())) {
+                double radians = Math.atan2((e2.getY() - e1.getY()), (e2.getX() - e1.getX()));
+                double distance = e1.getDistance(e2);
+                if((e1_radius + e2_radius) > distance) {
+                    double inside = (e1_radius + e2_radius) - distance;
+                    double rx = Math.cos(radians) * inside/2d;
+                    double ry = Math.sin(radians) * inside/2d;
+                    e1.getPhysical().moveSystem(rx*-1, ry*-1);
+                    e2.getPhysical().moveSystem(rx, ry);
+                }
+            }
+        }
+    }
 
     /*
         Aqui, precisará existir um sistema de movimentação que funcionará para todas as entidades, então todas

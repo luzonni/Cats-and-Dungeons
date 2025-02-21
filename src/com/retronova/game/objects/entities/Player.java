@@ -36,7 +36,6 @@ public class Player extends Entity {
 
     @Override
     public void tick() {
-        super.tick();
         updateMovement();
         countAnim++;
         if (countAnim > 10) {

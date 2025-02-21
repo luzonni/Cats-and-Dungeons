@@ -30,7 +30,7 @@ public class Personagens implements Activity {
     Player[] player = new Player[] {
             new Player(100, 100, "cinzento", 0.8, 10, 5),
             new Player(100, 100, "mago", 0.8, 15, 10),
-            new Player(100,100, "sortudo", 0.8, 15, 15),
+            new Player(100,100, "sortudo", 0.4, 15, 20),
     };
 
     public Personagens() {

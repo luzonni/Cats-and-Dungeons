@@ -28,7 +28,6 @@ public class Zombie extends Entity {
     }
 
     public void tick() {
-        super.tick();
         moveIA();
         countAnim++;
         if(countAnim > 10) {
@@ -59,7 +58,6 @@ public class Zombie extends Entity {
 
     @Override
     public void render(Graphics2D g) {
-        //TODO ajeitar esse sistema... está meio quebrado, estou espirrando pra krl e sem paciencia...
         int orientation = getPhysical().getOrientation()[0] * -1;
         if (orientation == 0)
             orientation = -1;
@@ -69,6 +67,7 @@ public class Zombie extends Entity {
 
     @Override
     public void dispose() {
+
     }
 
 }

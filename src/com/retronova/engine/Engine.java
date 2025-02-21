@@ -30,7 +30,7 @@ public class Engine implements Runnable {
     public static final int SCALE = 4;
     public static final int UISCALE = 3;
     public static final int[][] resolutions = {{1280, 720}, {1366, 768}, {1600, 900}, {1920, 1080}, {2560, 1440}, {3840, 2160}};
-    public static double MaxFrames = 14400;
+    public static double MaxFrames = 60;
     public static int index_res = 0;
 
     public static Window window;
