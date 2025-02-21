@@ -4,6 +4,7 @@ public enum IDs {
 
     Player,
     Zombie,
-    Skeleton;
+    Skeleton,
+    Slime;
     
 }

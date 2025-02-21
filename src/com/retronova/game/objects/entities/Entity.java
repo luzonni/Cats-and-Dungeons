@@ -23,6 +23,9 @@ public abstract class Entity extends GameObject {
             case Skeleton -> {
                 return new Skeleton(ID, x, y);
             }
+            case Slime -> {
+                return new Slime(ID, x, y);
+            }
         }
         throw new EntityNotFound("Entity not found");
     }

@@ -21,7 +21,7 @@ public class Slime extends Entity {
 
     public Slime(int ID, double x, double y) {
         super(ID, x, y, 0.8);
-        sprite = new BufferedImage[][] {getSprite("sprite", 0)}; //algo relacionado aos estados da imagem
+        sprite = new BufferedImage[][] {getSprite("sprite", 0),getSprite("sprite", 1)}; //algo relacionado aos estados da imagem
         jumpCoolDown = 0;
         isJumping = false;
         random = new Random(); //usei random para encontrar valores aleatórios no mapa
@@ -48,6 +48,7 @@ public class Slime extends Entity {
     }
 
     private void moveIA() {
+        double radians;
         //impedir que o slime fique pulando o tempo todo
         if(jumpCoolDown > 0) {
             jumpCoolDown--;
@@ -57,18 +58,25 @@ public class Slime extends Entity {
         Player player = Game.getPlayer();
         double distance = Math.sqrt(Math.pow((player.getX() - getX()), 2) + Math.pow(player.getY() - getY(), 2)); //calcula a distância entre o slime e o player
 
-        double radians;
-        //caso o jogador esteja perto o bastante ele vai calcular a direção do pulo
-        if(distance < GameObject.SIZE() * 6) {
-            radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        }else{
-            radians = random.nextDouble() * (2 * Math.PI); //se não estiver perto usa o random pra pular aleatoriamente
-            //OBS: NÃO CONSEGUI ENTENDER COMO ELE NÃO VAI PASSAR DOS LIMITES DO MAPA
+        if(distance < GameObject.SIZE() * 1.5) {
+            indexState = 0;
+            return;
         }
 
-        getPhysical().addForce(Engine.SCALE * 2, radians);
-        isJumping = true;
-        indexState = 1;
+
+        //caso o jogador esteja perto o bastante ele vai calcular a direção do pulo
+        if(distance < GameObject.SIZE() * 6) {
+             radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+             getPhysical().addForce(Engine.SCALE * 8, radians);
+             indexState = 1;
+        }else{
+             radians = random.nextDouble() * (2 * Math.PI);
+             getPhysical().addForce(Engine.SCALE * 8, radians);
+             indexState = 1;//se não estiver perto usa o random pra pular aleatoriamente
+            //OBS: NÃO CONSEGUI ENTENDER COMO ELE NÃO VAI PASSAR DOS LIMITES DO MAPA
+        }
+        this.indexState = getPhysical().isMoving() ? 1 : 0;
+
         jumpCoolDown = 30 + random.nextInt(20); //calculo do tempo de espera pra pular
     }
 
