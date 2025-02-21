@@ -21,7 +21,7 @@ public class Slime extends Entity {
 
     public Slime(int ID, double x, double y) {
         super(ID, x, y, 0.8);
-        sprite = new BufferedImage[][] {getSprite("sprite", 0),getSprite("sprite", 1)}; //algo relacionado aos estados da imagem
+        sprite = new BufferedImage[][] {getSprite("sprite", 0),getSprite("sprite", 1)}; //carregamento das imagens
         jumpCoolDown = 0;
         isJumping = false;
         random = new Random(); //usei random para encontrar valores aleatórios no mapa
@@ -29,7 +29,7 @@ public class Slime extends Entity {
     }
 
     @Override
-    public BufferedImage getSprite(){
+    public BufferedImage getSprite(){ //retorna o estado da imagem baseado no estado e na animação
         return sprite[indexState][indexAnim];
     }
 
@@ -58,7 +58,7 @@ public class Slime extends Entity {
         Player player = Game.getPlayer();
         double distance = Math.sqrt(Math.pow((player.getX() - getX()), 2) + Math.pow(player.getY() - getY(), 2)); //calcula a distância entre o slime e o player
 
-        if(distance < GameObject.SIZE() * 1.5) {
+        if(distance < GameObject.SIZE() * 1.0) {
             indexState = 0;
             return;
         }
@@ -67,13 +67,12 @@ public class Slime extends Entity {
         //caso o jogador esteja perto o bastante ele vai calcular a direção do pulo
         if(distance < GameObject.SIZE() * 6) {
              radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-             getPhysical().addForce(Engine.SCALE * 8, radians);
+             getPhysical().addForce(Engine.SCALE * 6, radians);
              indexState = 1;
         }else{
              radians = random.nextDouble() * (2 * Math.PI);
              getPhysical().addForce(Engine.SCALE * 8, radians);
              indexState = 1;//se não estiver perto usa o random pra pular aleatoriamente
-            //OBS: NÃO CONSEGUI ENTENDER COMO ELE NÃO VAI PASSAR DOS LIMITES DO MAPA
         }
         this.indexState = getPhysical().isMoving() ? 1 : 0;
 
