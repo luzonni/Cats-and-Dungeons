@@ -90,12 +90,6 @@ public abstract class Entity extends GameObject {
         Game.getMap().getEntities().remove(this);
     }
 
-    @Override
-    public void tick() {
-        setDepth();
-        getPhysical().moment();
-    }
-
     public Physical getPhysical() {
         return this.physical;
     }
