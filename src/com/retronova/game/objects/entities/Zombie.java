@@ -39,15 +39,16 @@ public class Zombie extends Entity {
         }
         Player player = Game.getPlayer();
         if(player.getBounds().intersects(this.getBounds())) {
-            player.strike(AttackTypes.Melee, 1);
+            player.strike(AttackTypes.Melee, 12);
+            player.getPhysical().addForce(4.5d, getPhysical().getAngleForce());
         }
     }
 
     private void moveIA() {
         Player player = Game.getPlayer();
-        if(this.getDistance(player) < GameObject.SIZE()*4) {
+        if(this.getDistance(player) < GameObject.SIZE()*7) {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(Engine.SCALE, radians);
+            getPhysical().addForce(0.5d, radians);
         }
         this.indexState = getPhysical().isMoving() ? 1 : 0;
     }

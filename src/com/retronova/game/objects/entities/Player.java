@@ -22,7 +22,7 @@ public class Player extends Entity {
     public Player(double x, double y, String nome, double friction, double damage, double speed) {
         super(0, x, y, friction);
         this.damege = damage;
-        this.speed = speed * Engine.SCALE;
+        this.speed = speed;
         this.sprite = new BufferedImage[][]{
                 getSprite("player/"+nome, 0),
                 getSprite("player/"+nome, 1)

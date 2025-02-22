@@ -63,10 +63,10 @@ public class Slime extends Entity {
         //caso o jogador esteja perto o bastante ele vai calcular a direção do pulo
         if(distance < GameObject.SIZE() * 6) {
              radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-             getPhysical().addForce(Engine.SCALE * 6, radians);
+             getPhysical().addForce(6, radians);
         }else{
              radians = random.nextDouble() * (2 * Math.PI);
-             getPhysical().addForce(Engine.SCALE * 8, radians);
+             getPhysical().addForce(8, radians);
         }
 
         jumpCoolDown = 30 + random.nextInt(20); //calculo do tempo de espera pra pular

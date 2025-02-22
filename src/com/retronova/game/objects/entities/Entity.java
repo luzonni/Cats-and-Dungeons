@@ -74,12 +74,6 @@ public abstract class Entity extends GameObject {
         }
     }
 
-    public void strike(AttackTypes type, double damage, double angle) {
-        strike(type, damage);
-        //TODO melhorar a lógica de adicionar uma força ao causar dano a uma entidade!
-        getPhysical().addForce(3 * Engine.SCALE, angle);
-    }
-
 
     public void die() {
         //TODO adicionar particula de morte

@@ -45,7 +45,7 @@ public class Physical {
      */
     public void addForce(double force, double radians){
         this.angleForce = radians;
-        this.speed = force;
+        this.speed = force * Engine.SCALE;
     }
 
     private boolean moveSystem(double vectorX, double vectorY){
@@ -59,8 +59,7 @@ public class Physical {
         if(!colliders[1]) {
             entity.setY(y + vectorY);
         }
-
-        return (int)vectorX != 0 || (int)vectorY != 0;
+        return (int)(x+vectorX) != (int)x || (int)(y+vectorY) != (int)y;
     }
 
     /**
@@ -70,6 +69,14 @@ public class Physical {
      */
     public int[] getOrientation() {
         return this.orientation;
+    }
+
+    /**
+     *
+     * @return retorna o ângulo que a entidade está se movendo.
+     */
+    public double getAngleForce() {
+        return this.angleForce;
     }
 
     private boolean[] colliding(double nextX, double nextY){
