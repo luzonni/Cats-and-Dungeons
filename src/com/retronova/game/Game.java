@@ -24,24 +24,28 @@ public class Game implements Activity {
     public static Camera C;
     private GameMap gameMap;
 
-    private GameMenu ui;
+    //Este é apenas o menu do pause.
+    private GameMenu pauseMenu;
+    //Aqui estara toda a parte de interface do jogo, como barras de vida, slots dos items, etc...
+    private UI ui;
 
     //Teste
     public Game(Player player, GameMap map) {
         this.player = player;
         this.gameMap = map;
         this.gameMap.getEntities().add(player);
-        ui = new GameMenu();
+        this.pauseMenu = new GameMenu();
         Game.C = new Camera(gameMap.getBounds(), 0.25d);
         Game.C.setFollowed(player);
         player.setX(map.getBounds().getWidth()/2);
         player.setY(map.getBounds().getHeight()/2);
+        this.ui = new UI(player);
     }
 
     @Override
     public void tick() {
         if(KeyBoard.KeyPressed("ESCAPE")) {
-            Engine.pause(ui);
+            Engine.pause(pauseMenu);
         }
         //tick logic
         List<Entity> entities = gameMap.getEntities();
@@ -64,6 +68,7 @@ public class Game implements Activity {
 
         //Atualização da camera, sempre no final!
         C.tick();
+        ui.tick();
     }
 
     public static GameMap getMap() {
@@ -80,7 +85,7 @@ public class Game implements Activity {
         throw new NotInActivity("Não é possível retornar o player pois a activity atual não é o jogo!");
     }
 
-    public static Activity getUI() {
+    public static UI getUI() {
         if(Engine.getACTIVITY() instanceof Game game) {
             return game.ui;
         }
@@ -92,6 +97,7 @@ public class Game implements Activity {
         //Render logic
         renderMap(g);
         renderEntities(g);
+        ui.render(g);
     }
 
     private void renderMap(Graphics2D g) {

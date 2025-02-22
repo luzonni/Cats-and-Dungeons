@@ -10,7 +10,7 @@ public abstract class Entity extends GameObject {
 
     private final Physical physical;
     private AttackTypes[] resistanceOf;
-    private double life;
+    private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
 
     public static Entity build(int ID, double x, double y) {
         IDs entityId = IDs.values()[ID];
@@ -30,7 +30,7 @@ public abstract class Entity extends GameObject {
         throw new EntityNotFound("Entity not found");
     }
 
-    public Entity(int   ID, double x, double y, double friction) {
+    public Entity(int ID, double x, double y, double friction) {
         super(ID);
         setX(x);
         setY(y);
@@ -40,11 +40,19 @@ public abstract class Entity extends GameObject {
     }
 
     public double getLife() {
-        return this.life;
+        return this.life[1];
+    }
+
+    public double getLifeSize() {
+        return this.life[0];
     }
 
     protected void setLife(double life) {
-        this.life = life;
+        if(this.life == null) {
+            this.life = new double[] {life, life};
+            return;
+        }
+        this.life[1] = life;
     }
 
     protected void setResistances(AttackTypes... resistences) {
@@ -55,32 +63,21 @@ public abstract class Entity extends GameObject {
         if (this.resistanceOf != null && type != null) {
             for (AttackTypes resistance : this.resistanceOf) {
                 if (resistance.equals(type)) {
-                    this.life -= damage * (1 - resistance.getResistance()); // Calculando o dano
+                    setLife(getLife() - damage * (1 - resistance.getResistance()));
                     return;
                 }
             }
         }
-        this.life -= damage; // Dano total
-        if (this.life <= 0) {
+        setLife(getLife() - damage); // Dano total
+        if (getLife() <= 0) {
             die();
         }
     }
 
     public void strike(AttackTypes type, double damage, double angle) {
-        if (this.resistanceOf != null && type != null) {
-            for (AttackTypes resistance : this.resistanceOf) {
-                if (resistance.equals(type)) {
-                    this.life -= damage * (1 - resistance.getResistance()); // Calculando o dano
-                    return;
-                }
-            }
-        }
-        this.life -= damage; // Dano total
-        if (this.life <= 0) {
-            die();
-        }
+        strike(type, damage);
+        //TODO melhorar a lógica de adicionar uma força ao causar dano a uma entidade!
         getPhysical().addForce(3 * Engine.SCALE, angle);
-
     }
 
 

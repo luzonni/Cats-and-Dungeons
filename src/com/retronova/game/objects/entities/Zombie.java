@@ -37,6 +37,10 @@ public class Zombie extends Entity {
                 indexAnim = 0;
             }
         }
+        Player player = Game.getPlayer();
+        if(player.getBounds().intersects(this.getBounds())) {
+            player.strike(AttackTypes.Melee, 1);
+        }
     }
 
     private void moveIA() {
