@@ -24,14 +24,14 @@ public class Game implements Activity {
     public static Camera C;
     private GameMap gameMap;
 
-    private GameUI ui;
+    private GameMenu ui;
 
     //Teste
     public Game(Player player, GameMap map) {
         this.player = player;
         this.gameMap = map;
         this.gameMap.getEntities().add(player);
-        ui = new GameUI();
+        ui = new GameMenu();
         Game.C = new Camera(gameMap.getBounds(), 0.25d);
         Game.C.setFollowed(player);
         player.setX(map.getBounds().getWidth()/2);

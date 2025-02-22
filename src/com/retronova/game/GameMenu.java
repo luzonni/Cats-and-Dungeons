@@ -7,7 +7,7 @@ import com.retronova.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
 
-public class GameUI implements Activity {
+public class GameMenu implements Activity {
 
     @Override
     public void tick() {
