@@ -7,28 +7,42 @@ import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.tiles.Tile;
+import com.retronova.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
 import java.util.List;
 
 public class Game implements Activity {
 
+    public static final Player[] PLAYERS = new Player[] {
+            new Player(0, 0, "cinzento", 0.8, 10, 5),
+            new Player(0, 0, "mago", 0.8, 15, 10),
+            new Player(0,0, "sortudo", 0.4, 15, 20),
+    };
+
     private Player player;
     public static Camera C;
     private GameMap gameMap;
+
+    private GameUI ui;
 
     //Teste
     public Game(Player player, GameMap map) {
         this.player = player;
         this.gameMap = map;
         this.gameMap.getEntities().add(player);
-
+        ui = new GameUI();
         Game.C = new Camera(gameMap.getBounds(), 0.25d);
         Game.C.setFollowed(player);
+        player.setX(map.getBounds().getWidth()/2);
+        player.setY(map.getBounds().getHeight()/2);
     }
 
     @Override
     public void tick() {
+        if(KeyBoard.KeyPressed("ESCAPE")) {
+            Engine.pause(ui);
+        }
         //tick logic
         List<Entity> entities = gameMap.getEntities();
         /**
@@ -63,7 +77,14 @@ public class Game implements Activity {
         if(Engine.getACTIVITY() instanceof Game game) {
             return game.player;
         }
-        throw new NotInActivity("Não é possível retornar o mapa pois a activity atual não é o jogo!");
+        throw new NotInActivity("Não é possível retornar o player pois a activity atual não é o jogo!");
+    }
+
+    public static Activity getUI() {
+        if(Engine.getACTIVITY() instanceof Game game) {
+            return game.ui;
+        }
+        throw new NotInActivity("Não é possível retornar a UI pois a activity atual não é um jogo");
     }
 
     @Override

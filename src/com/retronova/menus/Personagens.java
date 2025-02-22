@@ -27,11 +27,7 @@ public class Personagens implements Activity {
     private int personagemInformacoes = -1;
 
 
-    Player[] player = new Player[] {
-            new Player(100, 100, "cinzento", 0.8, 10, 5),
-            new Player(100, 100, "mago", 0.8, 15, 10),
-            new Player(100,100, "sortudo", 0.4, 15, 20),
-    };
+
 
     public Personagens() {
         imagens = new ArrayList<>();
@@ -101,7 +97,7 @@ public class Personagens implements Activity {
             System.out.println("Menu aberto");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
             if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
-                Engine.setActivity(new Game(player[personagemSelecionado], new GameMap(new File("maps/playground"))));
+                Engine.setActivity(new Game(Game.PLAYERS[personagemSelecionado], new GameMap(new File("maps/playground"))));
                 System.out.println("Jogo iniciado");
             } else {
                 System.out.println("Selecione um personagem e/ou dificuldade antes de jogar!");
@@ -139,7 +135,7 @@ public class Personagens implements Activity {
 
             g.drawString(gatos[i], selecao[i].x + (selecao[i].width - fmGatos.stringWidth(gatos[i])) / 2, selecao[i].y - 10);
 
-            BufferedImage imagem = player[i].getSprite();
+            BufferedImage imagem = Game.PLAYERS[i].getSprite();
             g.drawImage(imagem, selecao[i].x + (selecao[i].width - imagem.getWidth() * 3) / 2, selecao[i].y + (selecao[i].height - imagem.getHeight() * 3) / 2, imagem.getWidth() * 3, imagem.getHeight() * 3, null);
 
 

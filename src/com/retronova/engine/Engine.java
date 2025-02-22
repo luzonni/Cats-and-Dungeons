@@ -22,6 +22,7 @@ public class Engine implements Runnable {
     public static int FRAMES;
     public static int HERTZ;
 
+    private static Activity UI;
     private static Activity ACTIVITY;
     private static boolean ACTIVITY_RUNNING;
 
@@ -56,8 +57,21 @@ public class Engine implements Runnable {
         }
     }
 
-    public static void pause() { //quando essa função é chamada, o jogo é pausado.
-        ACTIVITY_RUNNING = !ACTIVITY_RUNNING;
+    /**
+     * Chame essa função com uma UI para pausar a activity atual e sobrepor outra activity
+     * Pausar a activity atual não impede a renderização, apenas os ticks...
+     * Caso insira null como parametro, a activity é despausada.
+     *
+     * @param ui é a activity que será exibida por cima da activity atual.
+     */
+    public static void pause(Activity ui) { //quando essa função é chamada, o jogo é pausado.
+        if(ui != null) {
+            ACTIVITY_RUNNING = false;
+            Engine.UI = ui;
+        }else {
+            ACTIVITY_RUNNING = true;
+            Engine.UI = null;
+        }
     }
 
     public static Activity getACTIVITY() {
@@ -124,6 +138,9 @@ public class Engine implements Runnable {
                     if(ACTIVITY_RUNNING && ACTIVITY != null) {
                         ACTIVITY.tick();
                     }
+                    if(UI != null) {
+                        UI.tick();
+                    }
                     Hz++;
                     delta_HZ--;
                 }
@@ -133,8 +150,11 @@ public class Engine implements Runnable {
                 lastTimeFPS = nowFPS;
                 if(delta_FPS >= 1) {
                     Graphics2D g = getGraphics();
-                    if(ACTIVITY_RUNNING && ACTIVITY != null) {
+                    if(ACTIVITY != null) {
                         ACTIVITY.render(g);
+                    }
+                    if(UI != null) {
+                        UI.render(g);
                     }
                     render(g);
                     frames++;
