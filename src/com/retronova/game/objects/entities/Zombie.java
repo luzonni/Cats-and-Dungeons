@@ -48,7 +48,7 @@ public class Zombie extends Entity {
         Player player = Game.getPlayer();
         if(this.getDistance(player) < GameObject.SIZE()*7) {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(0.5d, radians);
+            getPhysical().addForce(0.86d, radians);
         }
         this.indexState = getPhysical().isMoving() ? 1 : 0;
     }
