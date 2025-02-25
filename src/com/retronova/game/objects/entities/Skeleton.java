@@ -44,7 +44,7 @@ public class Skeleton extends Entity {
         Player player = Game.getPlayer();
         if(Math.sqrt(Math.pow((player.getX() - getX()), 2) + Math.pow(player.getY() - getY(), 2)) < GameObject.SIZE()*4) {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(Engine.SCALE, radians);
+            getPhysical().addForce(1, radians);
         }
         this.indexState = getPhysical().isMoving() ? 1 : 0;
     }
