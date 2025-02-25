@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage;
 
 public class Player extends Entity {
 
-
+    private String name;
     private BufferedImage[][] sprite;
     private int countAnim;
     private int indexAnim;
@@ -19,19 +19,24 @@ public class Player extends Entity {
     private double damege;
     private final double speed;
 
-    public Player(double x, double y, String nome, double friction, double damage, double speed) {
+    public Player(double x, double y, String name, double friction, double damage, double speed) {
         super(0, x, y, friction);
+        this.name = name;
         this.damege = damage;
         this.speed = speed;
         this.sprite = new BufferedImage[][]{
-                getSprite("player/"+nome, 0),
-                getSprite("player/"+nome, 1)
+                getSprite("player/"+name, 0),
+                getSprite("player/"+name, 1)
         };
     }
 
     @Override
     public BufferedImage getSprite() {
         return sprite[stateAnim][indexAnim];
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     @Override
@@ -83,4 +88,5 @@ public class Player extends Entity {
     public void dispose() {
         this.sprite = null;
     }
+
 }
