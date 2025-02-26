@@ -11,7 +11,7 @@ import com.retronova.menus.Menu;
 import java.awt.*;
 
 public class GameMenu implements Activity {
-    private final Game game;
+
     private Rectangle[] quadrados;
     private final Font fonteTitulo = FontG.font(15 * Engine.UISCALE);
     private final Font fonteBotoes = FontG.font(8 * Engine.UISCALE);
@@ -21,8 +21,7 @@ public class GameMenu implements Activity {
     private final Color corTexto = Color.WHITE;
     private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Menu", "Quit"};
 
-    public GameMenu(Game game) {
-        this.game = game;
+    public GameMenu() {
         atualizarPosicoes(); // Serve para inicializar os quadrados
     }
 
@@ -52,7 +51,7 @@ public class GameMenu implements Activity {
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Jogo reiniciado");
             Engine.pause(null);
-            game.reiniciarJogo();
+            Game.reiniciarJogo();
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
             System.out.println("Opções abertas");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[3])) {
