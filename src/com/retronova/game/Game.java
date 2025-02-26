@@ -46,22 +46,17 @@ public class Game implements Activity {
         this.hud = new HUD(this.player);
     }
 
-    /**
-     * Função para reiniciar o jogo
-     */
-    public static void reiniciarJogo() {
-        Game game = Game.getGame();
-        Engine.setActivity(new Game(game.indexPlayer, game.difficulty, new GameMap()));
-        //TODO output de teste deve ser tirado após termino.
-        System.out.println("Jogo reiniciado com personagem " + game.indexPlayer + " e dificuldade " + game.difficulty);
-    }
-
     @Override
     public void tick() {
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(pauseMenu);
         }
+        //tick logic
         List<Entity> entities = gameMap.getEntities();
+        /**
+         * entities.sort(Entity.Depth) ->
+         * Este metodo organizará a lista de objetos de acordo com sua profundidade do eixo Y.
+         */
         entities.sort(Entity.Depth);
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
@@ -75,9 +70,16 @@ public class Game implements Activity {
             tile.tick();
         }
 
-        //Atualização da camera e hud, sempre no final!
+        //Atualização da camera, sempre no final!
         C.tick();
         hud.tick();
+    }
+
+    public static void reiniciarJogo() {
+        Game game = getGame();
+        Engine.setActivity(new Game(game.indexPlayer, game.difficulty, new GameMap()));
+        //TODO tirar saídas de console após finalização da lógica.
+        System.out.println("Jogo reiniciado com personagem " + game.indexPlayer + " e dificuldade " + game.difficulty);
     }
 
     public static Game getGame() {
