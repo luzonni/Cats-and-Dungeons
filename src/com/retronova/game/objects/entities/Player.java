@@ -1,6 +1,7 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
+import com.retronova.exceptions.PlayerInstanceException;
 import com.retronova.game.Game;
 import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
@@ -9,6 +10,16 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Player extends Entity {
+
+    public static final Player[] TEMPLATES = new Player[] {
+            new Player("cinzento", 10, 5),
+            new Player("mago", 15, 4),
+            new Player("sortudo", 15, 6)
+    };
+
+    public static Player newPlayer(int index) {
+        return new Player(TEMPLATES[index].getName(), TEMPLATES[index].damege, TEMPLATES[index].speed);
+    }
 
     private String name;
     private BufferedImage[][] sprite;
@@ -19,8 +30,13 @@ public class Player extends Entity {
     private double damege;
     private final double speed;
 
-    public Player(double x, double y, String name, double friction, double damage, double speed) {
-        super(0, x, y, friction);
+    public Player() {
+        super(0, 0, 0, 0);
+        throw new PlayerInstanceException("Não é permitido instancia o player dessa maneira!");
+    }
+
+    private Player(String name, double damage, double speed) {
+        super(0, 0, 0, 0.5);
         this.name = name;
         this.damege = damage;
         this.speed = speed;
@@ -38,6 +54,8 @@ public class Player extends Entity {
     public String getName() {
         return this.name;
     }
+
+
 
     @Override
     public void tick() {

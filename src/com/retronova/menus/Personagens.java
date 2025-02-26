@@ -4,6 +4,7 @@ import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
+import com.retronova.game.objects.entities.Player;
 import com.retronova.graphics.FontG;
 import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.mouse.Mouse;
@@ -120,7 +121,7 @@ public class Personagens implements Activity {
             g.setColor(corTexto);
             g.drawRect(selecao[i].x, selecao[i].y, selecao[i].width, selecao[i].height);
             g.drawString(gatos[i], selecao[i].x + (selecao[i].width - fmGatos.stringWidth(gatos[i])) / 2, selecao[i].y - 10);
-            BufferedImage imagem = Game.PLAYERS[i].getSprite();
+            BufferedImage imagem = Player.TEMPLATES[i].getSprite();
             g.drawImage(imagem, selecao[i].x + (selecao[i].width - imagem.getWidth() * 3) / 2, selecao[i].y + (selecao[i].height - imagem.getHeight() * 3) / 2, imagem.getWidth() * 3, imagem.getHeight() * 3, null);
             if (personagemSelecionado == i) {
                 g.setColor(coresPersonagensSelecionados[i]);

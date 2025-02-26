@@ -185,5 +185,6 @@ public class Engine implements Runnable {
             }
         }
         stop();
+        System.out.println("Exit");
     }
 }

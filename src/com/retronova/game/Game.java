@@ -14,17 +14,11 @@ import java.util.List;
 
 public class Game implements Activity {
 
-    public static final Player[] PLAYERS = new Player[] {
-            new Player(0, 0, "cinzento", 0.5, 10, 5),
-            new Player(0, 0, "mago", 0.8, 15, 4),
-            new Player(0,0, "sortudo", 0.4, 15, 6),
-    };
-
-    private final Player player;
+    private Player player;
     public static Camera C;
     private final int difficulty;
     private final int indexPlayer;
-    private final GameMap gameMap;
+    private final GameMap map;
 
     //Este é apenas o menu do pause.
     private GameMenu pauseMenu;
@@ -32,18 +26,18 @@ public class Game implements Activity {
     private HUD hud;
 
     //Teste
-    public Game(int player, int difficulty, GameMap map) {
-        this.player = PLAYERS[player];
-        this.difficulty = difficulty;
-        this.indexPlayer = player;
-        this.gameMap = map;
-        this.gameMap.getEntities().add(this.player);
+    public Game(int indexPlayer, int difficulty, GameMap map) {
         this.pauseMenu = new GameMenu();
-        Game.C = new Camera(gameMap.getBounds(), 0.25d);
-        Game.C.setFollowed(this.player);
-        this.player.setX(map.getBounds().getWidth()/2);
-        this.player.setY(map.getBounds().getHeight()/2);
-        this.hud = new HUD(this.player);
+        this.difficulty = difficulty;
+        this.indexPlayer = indexPlayer;
+        this.map = map;
+        Player player = Player.newPlayer(indexPlayer);
+        this.player = player;
+        this.map.addPlayer(player);
+
+        Game.C = new Camera(this.map.getBounds(), 0.25d);
+        Game.C.setFollowed(player);
+        this.hud = new HUD(player);
     }
 
     @Override
@@ -52,7 +46,7 @@ public class Game implements Activity {
             Engine.pause(pauseMenu);
         }
         //tick logic
-        List<Entity> entities = gameMap.getEntities();
+        List<Entity> entities = map.getEntities();
         /**
          * entities.sort(Entity.Depth) ->
          * Este metodo organizará a lista de objetos de acordo com sua profundidade do eixo Y.
@@ -64,7 +58,7 @@ public class Game implements Activity {
             entity.getPhysical().moment();
             entity.tick();
         }
-        Tile[] map = gameMap.getMap();
+        Tile[] map = this.map.getMap();
         for(int i = 0; i < map.length; i++) {
             Tile tile = map[i];
             tile.tick();
@@ -91,7 +85,7 @@ public class Game implements Activity {
 
     public static GameMap getMap() {
         if(Engine.getACTIVITY() instanceof Game game) {
-            return game.gameMap;
+            return game.map;
         }
         throw new NotInActivity("Não é possível retornar o mapa pois a activity atual não é o jogo!");
     }
@@ -119,14 +113,14 @@ public class Game implements Activity {
     }
 
     private void renderMap(Graphics2D g) {
-        Tile[] map = gameMap.getMap();
+        Tile[] map = this.map.getMap();
         for(int i = 0; i < map.length; i++) {
             map[i].render(g);
         }
     }
 
     private void renderEntities(Graphics2D g) {
-        List<Entity> entities = gameMap.getEntities();
+        List<Entity> entities = map.getEntities();
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
             entity.render(g);

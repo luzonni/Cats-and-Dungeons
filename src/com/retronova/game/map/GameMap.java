@@ -1,9 +1,9 @@
 package com.retronova.game.map;
 
 import com.retronova.engine.Engine;
-import com.retronova.exceptions.MapFileException;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.tiles.IDs;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.graphics.SpriteSheet;
@@ -11,14 +11,15 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class GameMap {
-    private final Random random = new Random();
-    private int width;
+
+    private int length;
     private Rectangle bounds;
+
+    private List<Entity> entities;
     private final Tile[] map;
-    private List<Entity> entities = new ArrayList<>();
+
     private final Waves waves;
 
     public GameMap() {
@@ -27,6 +28,12 @@ public class GameMap {
         this.entities = new ArrayList<>();
     }
 
+    public Player addPlayer(Player player) {
+        getEntities().add(player);
+        player.setX(getBounds().getWidth()/2);
+        player.setY(getBounds().getHeight()/2);
+        return player;
+    }
 
     private Tile[] loadMap() {
         BufferedImage mapImage = new SpriteSheet("maps", "easy", 1).getSHEET();
@@ -34,7 +41,7 @@ public class GameMap {
         int height = mapImage.getHeight();
         this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
         int[] rgb = mapImage.getRGB(0, 0, width, height, null, 0, width);
-        this.width = width;
+        this.length = width;
         return convertMap(rgb, width, height);
     }
 
@@ -58,7 +65,7 @@ public class GameMap {
         for (int i = 0; i < count; i++) {
             int[] spawnPos = getRandomValidPosition();
             if (spawnPos != null) {
-                int enemyType = random.nextInt(3) + 1; // 1 = Zombie, 2 = Skeleton, 3 = Slime, pelo ID, SE COLOCAR 0 BUGA QUE É O ID DO PLAYER
+                int enemyType = Engine.RAND.nextInt(3) + 1; // 1 = Zombie, 2 = Skeleton, 3 = Slime, pelo ID, SE COLOCAR 0 BUGA QUE É O ID DO PLAYER
                 Entity enemy = Entity.build(enemyType, spawnPos[0], spawnPos[1]);
                 entities.add(enemy);
                 System.out.println("Spawned: " + enemy.getClass().getSimpleName() + " at " + spawnPos[0] + "," + spawnPos[1]);
@@ -83,7 +90,7 @@ public class GameMap {
             System.out.println("No walkable tiles found!");
             return null;
         }
-        return validPositions.get(random.nextInt(validPositions.size()));
+        return validPositions.get(Engine.RAND.nextInt(validPositions.size()));
     }
 
     private boolean isTileWalkable(int x, int y) {
@@ -96,10 +103,10 @@ public class GameMap {
     }
 
     public Tile getTile(int x, int y) {
-        if (x < 0 || y < 0 || x >= width || y >= map.length / width) {
+        if (x < 0 || y < 0 || x >= length || y >= map.length / length) {
             return null; // Evita erro
         }
-        return getMap()[x + y * width];
+        return getMap()[x + y * length];
     }
 
     public void update() {

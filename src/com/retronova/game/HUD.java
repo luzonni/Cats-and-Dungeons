@@ -22,10 +22,10 @@ public class HUD implements Activity {
         this.padding = Engine.MARGIN;
         SpriteSheet sp = new SpriteSheet("ui","HUD", Engine.HUDSCALE);
         this.HUD = sp.getSHEET().getSubimage(0, 0, 64 * Engine.HUDSCALE, 16 * Engine.HUDSCALE);
-        this.busts = new BufferedImage[Game.PLAYERS.length];
+        this.busts = new BufferedImage[Player.TEMPLATES.length];
         for(int i = 0; i < busts.length; i++) {
             this.busts[i] = sp.getSprite(i, 1);
-            if(player.getName().equals(Game.PLAYERS[i].getName())) {
+            if(player.getName().equals(Player.TEMPLATES[i].getName())) {
                 this.indexBust = i;
             }
         }
