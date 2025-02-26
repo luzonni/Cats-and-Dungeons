@@ -15,9 +15,9 @@ import java.util.List;
 public class Game implements Activity {
 
     public static final Player[] PLAYERS = new Player[] {
-            new Player(0, 0, "cinzento", 0.8, 10, 5),
-            new Player(0, 0, "mago", 0.8, 15, 10),
-            new Player(0,0, "sortudo", 0.4, 15, 20),
+            new Player(0, 0, "cinzento", 0.5, 10, 5),
+            new Player(0, 0, "mago", 0.8, 15, 4),
+            new Player(0,0, "sortudo", 0.4, 15, 6),
     };
 
     private Player player;

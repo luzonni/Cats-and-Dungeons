@@ -97,7 +97,7 @@ public class Personagens implements Activity {
             System.out.println("Menu aberto");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
             if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
-                Engine.setActivity(new Game(Game.PLAYERS[personagemSelecionado], new GameMap(new File("maps/playground"))));
+                Engine.setActivity(new Game(Game.PLAYERS[personagemSelecionado], new GameMap()));
                 System.out.println("Jogo iniciado");
             } else {
                 System.out.println("Selecione um personagem e/ou dificuldade antes de jogar!");
