@@ -22,6 +22,8 @@ public class Game implements Activity {
 
     private Player player;
     public static Camera C;
+    private int difficulty;
+    private int indexPlayer;
     private GameMap gameMap;
 
     //Este é apenas o menu do pause.
@@ -30,16 +32,18 @@ public class Game implements Activity {
     private UI ui;
 
     //Teste
-    public Game(Player player, GameMap map) {
-        this.player = player;
+    public Game(int player, int difficulty, GameMap map) {
+        this.player = PLAYERS[player];
+        this.difficulty = difficulty;
+        this.indexPlayer = player;
         this.gameMap = map;
-        this.gameMap.getEntities().add(player);
-        this.pauseMenu = new GameMenu();
+        this.gameMap.getEntities().add(this.player);
+        this.pauseMenu = new GameMenu(this);
         Game.C = new Camera(gameMap.getBounds(), 0.25d);
-        Game.C.setFollowed(player);
-        player.setX(map.getBounds().getWidth()/2);
-        player.setY(map.getBounds().getHeight()/2);
-        this.ui = new UI(player);
+        Game.C.setFollowed(this.player);
+        this.player.setX(map.getBounds().getWidth()/2);
+        this.player.setY(map.getBounds().getHeight()/2);
+        this.ui = new UI(this.player);
     }
 
     @Override
@@ -69,6 +73,11 @@ public class Game implements Activity {
         //Atualização da camera, sempre no final!
         C.tick();
         ui.tick();
+    }
+
+    void reiniciarJogo() {
+            Engine.setActivity(new Game(indexPlayer, difficulty, new GameMap()));
+            System.out.println("Jogo reiniciado com personagem " + indexPlayer + " e dificuldade " + difficulty);
     }
 
     public static GameMap getMap() {
