@@ -8,6 +8,8 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.inputs.keyboard.KeyBoard;
+import com.retronova.menus.Menu;
+import com.retronova.menus.Personagens;
 
 import java.awt.*;
 import java.util.List;
@@ -25,9 +27,9 @@ public class Game implements Activity {
     private GameMap gameMap;
 
     //Este é apenas o menu do pause.
-    private GameMenu pauseMenu;
+    private Activity pauseMenu;
     //Aqui estara toda a parte de interface do jogo, como barras de vida, slots dos items, etc...
-    private UI ui;
+    private HUD hud;
 
     //Teste
     public Game(Player player, GameMap map) {
@@ -39,7 +41,7 @@ public class Game implements Activity {
         Game.C.setFollowed(player);
         player.setX(map.getBounds().getWidth()/2);
         player.setY(map.getBounds().getHeight()/2);
-        this.ui = new UI(player);
+        this.hud = new HUD(player);
     }
 
     @Override
@@ -68,7 +70,7 @@ public class Game implements Activity {
 
         //Atualização da camera, sempre no final!
         C.tick();
-        ui.tick();
+        hud.tick();
     }
 
     public static GameMap getMap() {
@@ -85,9 +87,9 @@ public class Game implements Activity {
         throw new NotInActivity("Não é possível retornar o player pois a activity atual não é o jogo!");
     }
 
-    public static UI getUI() {
+    public static HUD getUI() {
         if(Engine.getACTIVITY() instanceof Game game) {
-            return game.ui;
+            return game.hud;
         }
         throw new NotInActivity("Não é possível retornar a UI pois a activity atual não é um jogo");
     }
@@ -97,7 +99,7 @@ public class Game implements Activity {
         //Render logic
         renderMap(g);
         renderEntities(g);
-        ui.render(g);
+        hud.render(g);
     }
 
     private void renderMap(Graphics2D g) {

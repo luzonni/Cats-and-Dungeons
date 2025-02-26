@@ -9,19 +9,19 @@ import com.retronova.graphics.SpriteSheet;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class UI implements Activity {
+public class HUD implements Activity {
 
-    private int padding;
-    private Player player;
-    private BufferedImage HUD;
-    private BufferedImage[] busts;
+    private final int padding;
+    private final Player player;
+    private final BufferedImage HUD;
+    private final BufferedImage[] busts;
     private int indexBust;
 
-    UI(Player player) {
-        this.padding = Engine.UISCALE * 3;
+    HUD(Player player) {
+        this.padding = Engine.MARGIN;
         this.player = player;
-        SpriteSheet sp = new SpriteSheet("ui","HUD", Engine.UISCALE);
-        this.HUD = sp.getSHEET().getSubimage(0, 0, 64 * Engine.UISCALE, 16 * Engine.UISCALE);
+        SpriteSheet sp = new SpriteSheet("ui","HUD", Engine.HUDSCALE);
+        this.HUD = sp.getSHEET().getSubimage(0, 0, 64 * Engine.HUDSCALE, 16 * Engine.HUDSCALE);
         this.busts = new BufferedImage[Game.PLAYERS.length];
         for(int i = 0; i < busts.length; i++) {
             this.busts[i] = sp.getSprite(i, 1);
@@ -43,21 +43,21 @@ public class UI implements Activity {
 
     private void drawPlayerLife(int x, int y,Graphics2D g) {
         g.drawImage(HUD, x, y, null);
-        int prefX = x + 15 * Engine.UISCALE;
-        int prefY = y + 7 * Engine.UISCALE;
-        int width = 47 * Engine.UISCALE;
-        int height = 2 * Engine.UISCALE;
+        int prefX = x + 15 * Engine.HUDSCALE;
+        int prefY = y + 7 * Engine.HUDSCALE;
+        int width = 47 * Engine.HUDSCALE;
+        int height = 2 * Engine.HUDSCALE;
         double lifeLength = width * ( 1 - (player.getLife() / player.getLifeSize()));
         if(lifeLength < 0)
             lifeLength = 0;
         g.setColor(Color.black);
         g.fillRect(prefX + width - (int)lifeLength, prefY, (int)lifeLength, height);
         g.drawImage(this.busts[indexBust], x, y, null);
-        Font font = FontG.font(Engine.UISCALE*4);
+        Font font = FontG.font(Engine.HUDSCALE*4);
         String value = "" + (int)player.getLife() + "/" + (int)player.getLifeSize();
         g.setFont(font);
         g.setColor(Color.white);
-        g.drawString(value, x + 16 * Engine.UISCALE, y + 14 * Engine.UISCALE);
+        g.drawString(value, x + 16 * Engine.HUDSCALE, y + 14 * Engine.HUDSCALE);
     }
 
     @Override
