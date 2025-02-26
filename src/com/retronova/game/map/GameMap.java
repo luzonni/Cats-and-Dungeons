@@ -6,39 +6,30 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.tiles.IDs;
 import com.retronova.game.objects.tiles.Tile;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-import javax.imageio.ImageIO;
+import com.retronova.graphics.SpriteSheet;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class GameMap {
-
+    private final Random random = new Random();
     private int width;
     private Rectangle bounds;
     private final Tile[] map;
-    private final List<Entity> entities;
+    private List<Entity> entities = new ArrayList<>();
+    private final Waves waves;
 
-    public GameMap(File map) {
-        this.map = loadMap(map);
-        this.entities = loadEntities(map);
+    public GameMap() {
+        this.waves = new Waves(this); // caio é o gamemap, so usar o this para usa ele mesmo
+        this.map = loadMap();
+        this.entities = new ArrayList<>();
     }
 
-    private Tile[] loadMap(File map) {
-        BufferedImage mapImage;
-        try {
-            String path = map.getAbsolutePath() + "/mapImage.png";
-            System.out.println(path);
-            mapImage = ImageIO.read(new File(path));
-        } catch (IOException e) {
-            throw new MapFileException(e.getMessage());
-        }
+
+    private Tile[] loadMap() {
+        BufferedImage mapImage = new SpriteSheet("maps", "easy", 1).getSHEET();
         int width = mapImage.getWidth();
         int height = mapImage.getHeight();
         this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
@@ -47,16 +38,15 @@ public class GameMap {
         return convertMap(rgb, width, height);
     }
 
-    // O(N³)
     private Tile[] convertMap(int[] rgb, int width, int height) {
-        Tile[] map = new Tile[width*height];
+        Tile[] map = new Tile[width * height];
         IDs[] values = IDs.values();
-        for(int y = 0; y < height; y++) {
-            for(int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
                 int index = x + y * width;
-                for(int i = 0; i < values.length; i++) {
-                    if(Color.decode(values[i].getColor()).getRGB() == rgb[index]) {
-                        map[index] = Tile.build(values[i].ordinal(), x, y);
+                for (IDs value : values) {
+                    if (Color.decode(value.getColor()).getRGB() == rgb[index]) {
+                        map[index] = Tile.build(value.ordinal(), x, y);
                     }
                 }
             }
@@ -64,28 +54,41 @@ public class GameMap {
         return map;
     }
 
-    private List<Entity> loadEntities(File map) {
-        List<Entity> entities = new ArrayList<>();
-        JSONObject mapEntities;
-        try {
-            String path = map.getAbsolutePath() + "/entities.json";
-            InputStream stream = new FileInputStream(path);
-            Reader isr = new InputStreamReader(stream);
-            JSONParser parse = new JSONParser();
-            parse.reset();
-            mapEntities = (JSONObject) parse.parse(isr);
-        }catch (IOException | ParseException e) {
-            throw new MapFileException("Entity file cannot read");
+    public void spawnEnemies(int count) { // pegar os inimigos pelo ID, spawn em pois~]ao valida
+        for (int i = 0; i < count; i++) {
+            int[] spawnPos = getRandomValidPosition();
+            if (spawnPos != null) {
+                int enemyType = random.nextInt(3) + 1; // 1 = Zombie, 2 = Skeleton, 3 = Slime, pelo ID, SE COLOCAR 0 BUGA QUE É O ID DO PLAYER
+                Entity enemy = Entity.build(enemyType, spawnPos[0], spawnPos[1]);
+                entities.add(enemy);
+                System.out.println("Spawned: " + enemy.getClass().getSimpleName() + " at " + spawnPos[0] + "," + spawnPos[1]);
+            } else {
+                System.out.println("No valid spawn position found!");
+            }
         }
-        JSONArray arr = (JSONArray) mapEntities.get("Entities");
-        for(int i = 0; i < arr.size(); i++) {
-            JSONArray entity = (JSONArray) arr.get(i);
-            int id = ((Number)entity.get(0)).intValue();
-            int x = ((Number)entity.get(1)).intValue();
-            int y = ((Number)entity.get(2)).intValue();
-            entities.add(Entity.build(id, x, y));
+    }
+
+    private int[] getRandomValidPosition() {
+        List<int[]> validPositions = new ArrayList<>();
+        for (int y = 0; y < bounds.height / GameObject.SIZE(); y++) {
+            for (int x = 0; x < bounds.width / GameObject.SIZE(); x++) {
+                if (isTileWalkable(x, y)) {
+                    validPositions.add(new int[]{x, y});
+                }
+            }
         }
-        return entities;
+
+        System.out.println("Valid positions: " + validPositions.size());
+        if (validPositions.isEmpty()) {
+            System.out.println("No walkable tiles found!");
+            return null;
+        }
+        return validPositions.get(random.nextInt(validPositions.size()));
+    }
+
+    private boolean isTileWalkable(int x, int y) {
+        Tile tile = getTile(x, y);
+        return tile != null && !tile.isSolid(); // isSolid() verifica se o tile bloqueia o bonecoy
     }
 
     public Tile[] getMap() {
@@ -93,54 +96,25 @@ public class GameMap {
     }
 
     public Tile getTile(int x, int y) {
+        if (x < 0 || y < 0 || x >= width || y >= map.length / width) {
+            return null; // Evita erro
+        }
         return getMap()[x + y * width];
     }
 
-    public List<Entity> getEntities() {
-        return this.entities;
+    public void update() {
+        waves.updateWave(); // ualiza as ondas e spawns de inimigos
     }
+
+    public List<Entity> getEntities() {
+        if (entities == null) {
+            entities = new ArrayList<>(); // evita erro de ponteiro
+        }
+        return entities;
+    }
+
 
     public Rectangle getBounds() {
         return this.bounds;
     }
-
-    public static void main(String[] args) {
-        File file = new File(args[0]);
-        File imgFile = new File(file.getAbsolutePath() + "/mapImage.png");
-        BufferedImage mapImage;
-        try {
-            mapImage = ImageIO.read(imgFile);
-        } catch (IOException e) {
-            System.err.println("Erro no diretorio do mapa");
-            return;
-        }
-        int width = mapImage.getWidth();
-        int height = mapImage.getHeight();
-        JSONObject object = new JSONObject();
-        JSONArray entitiesArr = new JSONArray();
-        JSONArray player = new JSONArray();
-        player.add(0);
-        player.add(width/2);
-        player.add(height/2);
-        entitiesArr.add(player);
-
-        for(int i = 0; i < 25; i++) {
-            JSONArray zombie = new JSONArray();
-            zombie.add(1);
-            zombie.add(1 + Engine.RAND.nextInt(width-2));
-            zombie.add(1 + Engine.RAND.nextInt(height-2));
-            entitiesArr.add(zombie);
-        }
-
-        object.put("Entities", entitiesArr);
-        try {
-            String l = args[0] + "/" + "entities.json";
-            FileWriter writer = new FileWriter(l);
-            writer.write(object.toJSONString());
-            writer.close();
-        } catch (IOException e) {
-            throw new MapFileException("Erro ao salvar as entidades do: " + args[0]);
-        }
-    }
-
 }

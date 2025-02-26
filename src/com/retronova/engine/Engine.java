@@ -29,6 +29,7 @@ public class Engine implements Runnable {
     public static final String resPath = "/com/retronova/res/";
 
     //TODO mudar as configurações para uma classe especifica!
+    public static boolean vignette = true;
     public static int SCALE = 4; //Escala do jogo
     public static int UISCALE = 3; //Escala dos menus
     public static int HUDSCALE = 5; //Escala do Hud do jogo

@@ -8,8 +8,6 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.inputs.keyboard.KeyBoard;
-import com.retronova.menus.Menu;
-import com.retronova.menus.Personagens;
 
 import java.awt.*;
 import java.util.List;
@@ -17,31 +15,45 @@ import java.util.List;
 public class Game implements Activity {
 
     public static final Player[] PLAYERS = new Player[] {
-            new Player(0, 0, "cinzento", 0.8, 10, 5),
-            new Player(0, 0, "mago", 0.8, 15, 10),
-            new Player(0,0, "sortudo", 0.4, 15, 20),
+            new Player(0, 0, "cinzento", 0.5, 10, 5),
+            new Player(0, 0, "mago", 0.8, 15, 4),
+            new Player(0,0, "sortudo", 0.4, 15, 6),
     };
 
-    private Player player;
+    private final Player player;
     public static Camera C;
-    private GameMap gameMap;
+    private final int difficulty;
+    private final int indexPlayer;
+    private final GameMap gameMap;
 
     //Este é apenas o menu do pause.
-    private Activity pauseMenu;
+    private GameMenu pauseMenu;
     //Aqui estara toda a parte de interface do jogo, como barras de vida, slots dos items, etc...
     private HUD hud;
 
     //Teste
-    public Game(Player player, GameMap map) {
-        this.player = player;
+    public Game(int player, int difficulty, GameMap map) {
+        this.player = PLAYERS[player];
+        this.difficulty = difficulty;
+        this.indexPlayer = player;
         this.gameMap = map;
-        this.gameMap.getEntities().add(player);
-        this.pauseMenu = new GameMenu();
+        this.gameMap.getEntities().add(this.player);
+        this.pauseMenu = new GameMenu(this);
         Game.C = new Camera(gameMap.getBounds(), 0.25d);
-        Game.C.setFollowed(player);
-        player.setX(map.getBounds().getWidth()/2);
-        player.setY(map.getBounds().getHeight()/2);
-        this.hud = new HUD(player);
+        Game.C.setFollowed(this.player);
+        this.player.setX(map.getBounds().getWidth()/2);
+        this.player.setY(map.getBounds().getHeight()/2);
+        this.hud = new HUD(this.player);
+    }
+
+    /**
+     * Função para reiniciar o jogo
+     */
+    public static void reiniciarJogo() {
+        Game game = Game.getGame();
+        Engine.setActivity(new Game(game.indexPlayer, game.difficulty, new GameMap()));
+        //TODO output de teste deve ser tirado após termino.
+        System.out.println("Jogo reiniciado com personagem " + game.indexPlayer + " e dificuldade " + game.difficulty);
     }
 
     @Override
@@ -49,12 +61,7 @@ public class Game implements Activity {
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(pauseMenu);
         }
-        //tick logic
         List<Entity> entities = gameMap.getEntities();
-        /**
-         * entities.sort(Entity.Depth) ->
-         * Este metodo organizará a lista de objetos de acordo com sua profundidade do eixo Y.
-         */
         entities.sort(Entity.Depth);
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
@@ -68,9 +75,16 @@ public class Game implements Activity {
             tile.tick();
         }
 
-        //Atualização da camera, sempre no final!
+        //Atualização da camera e hud, sempre no final!
         C.tick();
         hud.tick();
+    }
+
+    public static Game getGame() {
+        if(Engine.getACTIVITY() instanceof Game game) {
+            return game;
+        }
+        throw new NotInActivity("Não é possível retornar o mapa pois a activity atual não é o jogo!");
     }
 
     public static GameMap getMap() {
