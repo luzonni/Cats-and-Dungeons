@@ -38,7 +38,7 @@ public class Game implements Activity {
         this.indexPlayer = player;
         this.gameMap = map;
         this.gameMap.getEntities().add(this.player);
-        this.pauseMenu = new GameMenu(this);
+        this.pauseMenu = new GameMenu();
         Game.C = new Camera(gameMap.getBounds(), 0.25d);
         Game.C.setFollowed(this.player);
         this.player.setX(map.getBounds().getWidth()/2);
