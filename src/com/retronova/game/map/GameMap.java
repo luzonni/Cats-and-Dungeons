@@ -18,12 +18,13 @@ public class GameMap {
     private int width;
     private Rectangle bounds;
     private final Tile[] map;
-    private final List<Entity> entities;
+    private List<Entity> entities = new ArrayList<>();
+    private final Waves waves;
 
     public GameMap() {
+        this.waves = new Waves(this); // caio é o gamemap, so usar o this para usa ele mesmo
         this.map = loadMap();
         this.entities = new ArrayList<>();
-        spawnEnemies(10); // spawna inimigos ao carregar o mapa
     }
 
 
@@ -53,11 +54,11 @@ public class GameMap {
         return map;
     }
 
-    public void spawnEnemies(int count) { // pegar os inimigos pelo ID
+    public void spawnEnemies(int count) { // pegar os inimigos pelo ID, spawn em pois~]ao valida
         for (int i = 0; i < count; i++) {
             int[] spawnPos = getRandomValidPosition();
             if (spawnPos != null) {
-                int enemyType = random.nextInt(3) + 1; // 1 = Zombie, 2 = Skeleton, 3 = Slime, pelo ID, SE COLOCAR 0 BUGA QUE È O ID DO PLAYER
+                int enemyType = random.nextInt(3) + 1; // 1 = Zombie, 2 = Skeleton, 3 = Slime, pelo ID, SE COLOCAR 0 BUGA QUE É O ID DO PLAYER
                 Entity enemy = Entity.build(enemyType, spawnPos[0], spawnPos[1]);
                 entities.add(enemy);
                 System.out.println("Spawned: " + enemy.getClass().getSimpleName() + " at " + spawnPos[0] + "," + spawnPos[1]);
@@ -101,9 +102,17 @@ public class GameMap {
         return getMap()[x + y * width];
     }
 
-    public List<Entity> getEntities() {
-        return this.entities;
+    public void update() {
+        waves.updateWave(); // ualiza as ondas e spawns de inimigos
     }
+
+    public List<Entity> getEntities() {
+        if (entities == null) {
+            entities = new ArrayList<>(); // evita erro de ponteiro
+        }
+        return entities;
+    }
+
 
     public Rectangle getBounds() {
         return this.bounds;
