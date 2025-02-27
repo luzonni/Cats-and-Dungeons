@@ -8,6 +8,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Waves {
+
     private int waveNumber = 1;
     private int enemyCount;
     private int enemiesSpawned;
@@ -55,10 +56,8 @@ public class Waves {
                     endWave();
                     return;
                 }
-
                 spawnEnemy();
                 enemiesSpawned++;
-
                 // aumenta a frequência no final da onda, e vai aumentando, tem que ver se vai ficar dms (últimos 5 segundos)
                 if (enemiesSpawned >= enemyCount - 3) {
                     System.out.println("⚠️ Acelerando spawn!");
