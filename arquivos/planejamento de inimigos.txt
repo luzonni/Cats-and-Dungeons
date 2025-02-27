@@ -1,0 +1,66 @@
+1. Rato Explosivo 
+- Corre em direção ao jogador até explodir;
+- Causa 10 -> 15 de dano por explosão;
+- Resistência: Nenhuma;
+- Fraquezas: Morre com um único ataque;
+- Habilidade especial: Se chegar perto do jogador ele explode
+
+2. rato Escudeiro 🛡️🐱
+Um gato guerreiro que usa um pequeno escudo preso à cabeça como capacete, protegendo-se de ataques frontais. 
+Ele avança contra o jogador e rebate projéteis com sua cabeça.
+Dano: 6 (investida com o escudo) -> 8.
+Resistência: Resistente a ataques frontais e projéteis.
+Fraqueza: Vulnerável a ataques laterais ou por trás.
+Habilidade Especial: Pode abaixar a cabeça para refletir projéteis de volta para o jogador.
+
+3. Brinquedo de gato Assombrado 🎭🐱
+Um brinquedo de pelúcia possuído por uma entidade maligna. Seus olhos brilham de forma ameaçadora enquanto ele se move sozinho pelo ambiente.
+Dano: 7 (arranhões sombrios).
+Fraqueza: Vulnerável ao fogo e ataques mágicos.
+Resistência: Resistente a ataques físicos normais.
+Habilidade Especial: Se desmancha em pedaços ao ser atingido e depois se reconstrói, podendo continuar atacando.
+
+4. Rato Vampiro 🦇🐱
+
+Sugador de energia vital, recupera vida ao atacar.
+Dano: 8.
+Fraqueza: Magia.
+Resistência: Ataques físicos.
+Habilidade Especial: Torna-se invisível por alguns segundos ao atacar, mas se for atingido, perde a invisibilidade e recebe dano extra.
+
+5. Esqueleto Feiticeiro
+- Lança orbes de energia maligna;
+- Causa 8 de dano a cada orbe;
+- Resistente a danos mágicos;
+- Fraqueza: ataque corpo a corpo;
+- Habilidade especial: Pode lançar até 3 orbes de energia.
+
+6. Slime Multiplicador
+- se divide ao ser atacado;
+- Dano: falta pensar
+- Resistência: Nenhuma
+- Fraquezas: ....
+- Habilidade especial: Ao morrer se divide em slimes menores
+
+
+
+
+
+
+Bosses
+
+1. Rei Gato Amaldiçoado
+-Habilidade especial: Consegue invocar gatos corrompidos; 
+-Muito resistentes a ataques físicos;
+- Fraqueza: Ataques mágicos;
+
+2. Rato Monarca
+- Habilidade especial: Consegue invocar pequenos ratos em grandes quantidades
+- Consegue desaparecer por um momento da batalha e aparecer em outra parte do mapa;
+- Resistentes a venenos e ataques físicos leves;
+
+3. Serpente Sombria
+-Habilidade especial: Mordida venenosa, se move rápido
+- Resistentes a ataques físicos 
+
+
