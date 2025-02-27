@@ -1,6 +1,7 @@
 package com.retronova.menus;
 
 import com.retronova.engine.Activity;
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
@@ -32,18 +33,18 @@ public class Personagens implements Activity {
     private final Color corTexto = Color.WHITE;
 
     // Fontes de todos os botões (quadrados)
-    private final Font fonteTitulo = FontG.font(22 * Engine.UISCALE);
-    private final Font fonteGatos = FontG.font(7 * Engine.UISCALE);
-    private final Font fonteDificuldade = FontG.font(8 * Engine.UISCALE);
-    private final Font fonteBotoes = FontG.font(8 * Engine.UISCALE);
-    private final Font fonteDificuldadeTitulo = FontG.font(10 * Engine.UISCALE);
+    private final Font fonteTitulo = FontG.font(22 * Configs.UISCALE);
+    private final Font fonteGatos = FontG.font(7 * Configs.UISCALE);
+    private final Font fonteDificuldade = FontG.font(8 * Configs.UISCALE);
+    private final Font fonteBotoes = FontG.font(8 * Configs.UISCALE);
+    private final Font fonteDificuldadeTitulo = FontG.font(10 * Configs.UISCALE);
 
     public Personagens() {
         imagens = new ArrayList<>();
 
         String[] gatos = {"cinzento", "mago", "sortudo"};
         for (String nome : gatos) {
-            BufferedImage imagem = new SpriteSheet("objects/player", nome, Engine.UISCALE).getSHEET();
+            BufferedImage imagem = new SpriteSheet("objects/player", nome, Configs.UISCALE).getSHEET();
             imagens.add(imagem);
         }
     }
@@ -91,12 +92,12 @@ public class Personagens implements Activity {
         int alturaTela = Engine.window.getHeight();
 
         selecao[1] = new Rectangle((larguraTela - 200) / 2, (alturaTela - 300) / 2, 200, 300);
-        selecao[0] = new Rectangle(selecao[1].x - Engine.UISCALE - 220, (alturaTela - 300) / 2, 200, 300);
-        selecao[2] = new Rectangle(selecao[1].x + Engine.UISCALE + 220, (alturaTela - 300) / 2, 200, 300);
+        selecao[0] = new Rectangle(selecao[1].x - Configs.UISCALE - 220, (alturaTela - 300) / 2, 200, 300);
+        selecao[2] = new Rectangle(selecao[1].x + Configs.UISCALE + 220, (alturaTela - 300) / 2, 200, 300);
 
         dificuldade[1] = new Rectangle((larguraTela - 50) / 2, (alturaTela - 120), 50, 50);
-        dificuldade[0] = new Rectangle(dificuldade[1].x - Engine.UISCALE * 25, (alturaTela - 120), 50, 50);
-        dificuldade[2] = new Rectangle(dificuldade[1].x + Engine.UISCALE * 25, (alturaTela - 120), 50, 50);
+        dificuldade[0] = new Rectangle(dificuldade[1].x - Configs.UISCALE * 25, (alturaTela - 120), 50, 50);
+        dificuldade[2] = new Rectangle(dificuldade[1].x + Configs.UISCALE * 25, (alturaTela - 120), 50, 50);
 
         botoes[0] = new Rectangle(50, dificuldade[1].y, 150, 50);
         botoes[1] = new Rectangle(larguraTela - 200, dificuldade[1].y, 150, 50);

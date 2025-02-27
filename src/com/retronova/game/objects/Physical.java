@@ -1,13 +1,10 @@
 package com.retronova.game.objects;
 
-import com.retronova.engine.Engine;
+import com.retronova.engine.Configs;
 import com.retronova.game.Game;
-import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.tiles.Tile;
-import com.retronova.inputs.keyboard.KeyBoard;
 
-import java.awt.*;
 import java.util.List;
 
 public class Physical {
@@ -45,7 +42,7 @@ public class Physical {
      */
     public void addForce(double force, double radians){
         this.angleForce = radians;
-        this.speed = force * Engine.SCALE;
+        this.speed = force * Configs.SCALE;
     }
 
     private boolean moveSystem(double vectorX, double vectorY){

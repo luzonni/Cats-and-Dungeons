@@ -1,6 +1,7 @@
 package com.retronova.game;
 
 import com.retronova.engine.Activity;
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.graphics.FontG;
@@ -19,9 +20,9 @@ public class HUD implements Activity {
     private BufferedImage vignette;
 
     HUD(Player player) {
-        this.padding = Engine.MARGIN;
-        SpriteSheet sp = new SpriteSheet("ui","HUD", Engine.HUDSCALE);
-        this.HUD = sp.getSHEET().getSubimage(0, 0, 64 * Engine.HUDSCALE, 16 * Engine.HUDSCALE);
+        this.padding = Configs.MARGIN;
+        SpriteSheet sp = new SpriteSheet("ui","HUD", Configs.HUDSCALE);
+        this.HUD = sp.getSHEET().getSubimage(0, 0, 64 * Configs.HUDSCALE, 16 * Configs.HUDSCALE);
         this.busts = new BufferedImage[Player.TEMPLATES.length];
         for(int i = 0; i < busts.length; i++) {
             this.busts[i] = sp.getSprite(i, 1);
@@ -73,25 +74,25 @@ public class HUD implements Activity {
     private void drawPlayerLife(int x, int y,Graphics2D g) {
         Player player = Game.getPlayer();
         g.drawImage(HUD, x, y, null);
-        int prefX = x + 15 * Engine.HUDSCALE;
-        int prefY = y + 7 * Engine.HUDSCALE;
-        int width = 47 * Engine.HUDSCALE;
-        int height = 2 * Engine.HUDSCALE;
+        int prefX = x + 15 * Configs.HUDSCALE;
+        int prefY = y + 7 * Configs.HUDSCALE;
+        int width = 47 * Configs.HUDSCALE;
+        int height = 2 * Configs.HUDSCALE;
         double lifeLength = width * ( 1 - (player.getLife() / player.getLifeSize()));
         if(lifeLength < 0)
             lifeLength = 0;
         g.setColor(Color.black);
         g.fillRect(prefX + width - (int)lifeLength, prefY, (int)lifeLength, height);
         g.drawImage(this.busts[indexBust], x, y, null);
-        Font font = FontG.font(Engine.HUDSCALE*4);
+        Font font = FontG.font(Configs.HUDSCALE*4);
         String value = "" + (int)player.getLife() + "/" + (int)player.getLifeSize();
         g.setFont(font);
         g.setColor(Color.white);
-        g.drawString(value, x + 16 * Engine.HUDSCALE, y + 14 * Engine.HUDSCALE);
+        g.drawString(value, x + 16 * Configs.HUDSCALE, y + 14 * Configs.HUDSCALE);
     }
 
     private void vignette(Graphics2D g) {
-        if(Engine.vignette)
+        if(Configs.vignette)
             g.drawImage(vignette, 0, 0, null);
     }
 

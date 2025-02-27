@@ -1,6 +1,7 @@
 package com.retronova.menus;
 
 import com.retronova.engine.Activity;
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 
 import com.retronova.graphics.FontG;
@@ -14,7 +15,7 @@ public class Menu implements Activity {
     private Rectangle[] quadrados;
     private final Color[] coresQuadrados = {new Color(0x00A878), new Color(0x4169E1), new Color(0x708090)};
     private final String[] quadradosNomes = {"Play", "Options", "Exit"};
-    private final Font fonteQuadrados = FontG.font(8 * Engine.UISCALE);
+    private final Font fonteQuadrados = FontG.font(8 * Configs.UISCALE);
     private FontMetrics fmQuadrados;
 
     public Menu() {

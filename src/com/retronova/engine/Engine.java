@@ -1,14 +1,10 @@
 package com.retronova.engine;
 
-import com.retronova.game.Game;
-import com.retronova.game.map.GameMap;
-import com.retronova.game.objects.entities.Player;
 import com.retronova.graphics.FontG;
 import com.retronova.menus.Menu;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
-import java.io.File;
 import java.util.Random;
 
 public class Engine implements Runnable {
@@ -27,15 +23,6 @@ public class Engine implements Runnable {
     private static boolean ACTIVITY_RUNNING;
 
     public static final String resPath = "/com/retronova/res/";
-
-    //TODO mudar as configurações para uma classe especifica!
-    public static boolean vignette = true;
-    public static int SCALE = 4; //Escala do jogo
-    public static int UISCALE = 3; //Escala dos menus
-    public static int HUDSCALE = 5; //Escala do Hud do jogo
-    public static int MARGIN = 20; //Margin para interfaces e HUD
-    public static int VOLUM = 100; //Volume dos dons
-    public static int MUSIC = 100; // Volume das musicas
 
     public static final int[][] resolutions = {{1280, 720}, {1366, 768}, {1600, 900}, {1920, 1080}, {2560, 1440}, {3840, 2160}};
     public static double MaxFrames = 60;

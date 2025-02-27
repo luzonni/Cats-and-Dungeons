@@ -1,6 +1,6 @@
 package com.retronova.game.objects;
 
-import com.retronova.engine.Engine;
+import com.retronova.engine.Configs;
 import com.retronova.game.Game;
 import com.retronova.graphics.SpriteSheet;
 
@@ -15,7 +15,7 @@ public abstract class GameObject {
     private Rectangle bounds;
 
     public static int SIZE() {
-        return 16 * Engine.SCALE;
+        return 16 * Configs.SCALE;
     }
 
     public GameObject(int ID) {
@@ -29,7 +29,7 @@ public abstract class GameObject {
     }
 
     public BufferedImage[] getSprite(String spriteName) {
-        SpriteSheet sheet = new SpriteSheet("objects", spriteName, Engine.SCALE);
+        SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
         int length = sheet.getWidth() / 16;
         BufferedImage[] sprites = new BufferedImage[length];
         for(int i = 0; i < length; i++) {
@@ -39,7 +39,7 @@ public abstract class GameObject {
     }
 
     public BufferedImage[] getSprite(String spriteName, int prefix) {
-        SpriteSheet sheet = new SpriteSheet("objects", spriteName, Engine.SCALE);
+        SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
         int length = sheet.getWidth() / 16;
         BufferedImage[] sprites = new BufferedImage[length];
         for(int i = 0; i < length; i++) {

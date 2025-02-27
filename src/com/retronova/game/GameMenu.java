@@ -1,6 +1,7 @@
 package com.retronova.game;
 
 import com.retronova.engine.Activity;
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.graphics.FontG;
 import com.retronova.inputs.keyboard.KeyBoard;
@@ -13,8 +14,8 @@ import java.awt.*;
 public class GameMenu implements Activity {
 
     private Rectangle[] quadrados;
-    private final Font fonteTitulo = FontG.font(15 * Engine.UISCALE);
-    private final Font fonteBotoes = FontG.font(8 * Engine.UISCALE);
+    private final Font fonteTitulo = FontG.font(15 * Configs.UISCALE);
+    private final Font fonteBotoes = FontG.font(8 * Configs.UISCALE);
     private final Color corFundo = new Color(50, 50, 50, 150);
     private final Color corBotao = Color.GRAY;
     private final Color corBorda = Color.WHITE;
