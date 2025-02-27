@@ -54,12 +54,18 @@ public class Personagens implements Activity {
         for (int i = 0; i < selecao.length; i++) {
             if (Mouse.clickOn(Mouse_Button.LEFT, selecao[i])) {
                 personagemSelecionado = (personagemSelecionado == i) ? -1 : i;
+                if (personagemSelecionado != -1 && dificuldadeSelecionada == -1) {
+                    System.out.println("Personagem selecionado. Escolha a dificuldade para prosseguir.");
+                }
             }
         }
 
         for (int i = 0; i < dificuldade.length; i++) {
             if (Mouse.clickOn(Mouse_Button.LEFT, dificuldade[i])) {
                 dificuldadeSelecionada = (dificuldadeSelecionada == i) ? -1 : i;
+                if (personagemSelecionado == -1 && dificuldadeSelecionada != -1) {
+                    System.out.println("Dificuldade selecionada. Escolha o personagem para prosseguir.");
+                }
             }
         }
 
@@ -69,7 +75,13 @@ public class Personagens implements Activity {
             if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
                 Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new GameMap()));
             } else {
-                System.out.println("Selecione um personagem e/ou dificuldade antes de jogar!");
+                if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
+                    System.out.println("Selecione um personagem e dificuldade antes de jogar!");
+                } else if (personagemSelecionado == -1) {
+                    System.out.println("Selecione um personagem antes de jogar!");
+                } else if (dificuldadeSelecionada == -1) {
+                    System.out.println("Selecione a dificuldade antes de jogar!");
+                }
             }
         }
     }
@@ -163,11 +175,23 @@ public class Personagens implements Activity {
         String[] botoesNomes = {"Back", "Play"};
         g.setFont(fonteBotoes);
         FontMetrics fmBotoes = g.getFontMetrics();
+        Stroke defaultStroke = g.getStroke();
+
         for (int i = 0; i < botoes.length; i++) {
             g.setColor(coresBotoes[i]);
             g.fillRect(botoes[i].x, botoes[i].y, botoes[i].width, botoes[i].height);
+
+            if (botoes[i].contains(Mouse.getX(), Mouse.getY())) {
+                g.setStroke(new BasicStroke(3.0f));
+            } else {
+                g.setStroke(new BasicStroke(1.0f));
+            }
+
             g.setColor(corTexto);
             g.drawRect(botoes[i].x, botoes[i].y, botoes[i].width, botoes[i].height);
+
+            g.setStroke(defaultStroke);
+
             g.drawString(botoesNomes[i], botoes[i].x + (botoes[i].width - fmBotoes.stringWidth(botoesNomes[i])) / 2, botoes[i].y + (botoes[i].height - fmBotoes.getHeight()) / 2 + fmBotoes.getAscent());
         }
     }

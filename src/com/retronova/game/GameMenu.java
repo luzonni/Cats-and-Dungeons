@@ -21,9 +21,10 @@ public class GameMenu implements Activity {
     private final Color corBorda = Color.WHITE;
     private final Color corTexto = Color.WHITE;
     private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Menu", "Quit"};
+    private int quadradoSeta = -1;
 
     public GameMenu() {
-        atualizarPosicoes(); // Serve para inicializar os quadrados
+        atualizarPosicoes();
     }
 
     private void atualizarPosicoes() {
@@ -43,6 +44,7 @@ public class GameMenu implements Activity {
 
     @Override
     public void tick() {
+        atualizarSeta();
         if (KeyBoard.KeyPressed("ESCAPE")) {
             System.out.println("Jogo pausado");
             Engine.pause(null);
@@ -65,12 +67,23 @@ public class GameMenu implements Activity {
         }
     }
 
+    private void atualizarSeta() {
+        quadradoSeta = -1;
+        for (int i = 0; i < quadrados.length; i++) {
+            if (quadrados[i].contains(Mouse.getX(), Mouse.getY())) {
+                quadradoSeta = i;
+                break;
+            }
+        }
+    }
+
     @Override
     public void render(Graphics2D g) {
-        atualizarPosicoes(); // Aqui serve para recalcular as posições dos quadrados na hora de redimensionar
+        atualizarPosicoes();
         desenharFundo(g);
         desenharTitulo(g);
         desenharBotoes(g);
+        desenharSeta(g);
     }
 
     private void desenharFundo(Graphics2D g) {
@@ -88,16 +101,39 @@ public class GameMenu implements Activity {
     }
 
     private void desenharBotoes(Graphics2D g) {
+        Stroke defaultStroke = g.getStroke();
+
         for (int i = 0; i < quadrados.length; i++) {
             g.setFont(fonteBotoes);
             g.setColor(corBotao);
             g.fillRect(quadrados[i].x, quadrados[i].y, quadrados[i].width, quadrados[i].height);
-            g.setStroke(new BasicStroke(2.0f));
+
+            if (quadrados[i].contains(Mouse.getX(), Mouse.getY())) {
+                g.setStroke(new BasicStroke(3.0f));
+            } else {
+                g.setStroke(new BasicStroke(2.0f));
+            }
+
             g.setColor(corBorda);
             g.drawRect(quadrados[i].x, quadrados[i].y, quadrados[i].width, quadrados[i].height);
+
+            g.setStroke(defaultStroke);
+
             g.setColor(corTexto);
             FontMetrics fmQuadrados = g.getFontMetrics();
             g.drawString(quadradosNomes[i], quadrados[i].x + (quadrados[i].width - fmQuadrados.stringWidth(quadradosNomes[i])) / 2, quadrados[i].y + (quadrados[i].height - fmQuadrados.getHeight()) / 2 + fmQuadrados.getAscent());
+        }
+    }
+
+
+    private void desenharSeta(Graphics2D g) {
+        if (quadradoSeta != -1) {
+            int setaX = quadrados[quadradoSeta].x - 20;
+            int setaY = quadrados[quadradoSeta].y + quadrados[quadradoSeta].height / 2;
+            g.setColor(Color.WHITE);
+            g.setStroke(new BasicStroke(3.0f));
+            g.drawLine(setaX, setaY, setaX - 10, setaY - 8);
+            g.drawLine(setaX, setaY, setaX - 10, setaY + 8);
         }
     }
 
