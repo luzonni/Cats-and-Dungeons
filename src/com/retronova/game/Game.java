@@ -45,6 +45,7 @@ public class Game implements Activity {
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(pauseMenu);
         }
+        map.getWaves().tick();
         //tick logic
         List<Entity> entities = map.getEntities();
         /**

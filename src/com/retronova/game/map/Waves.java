@@ -1,126 +1,92 @@
 package com.retronova.game.map;
 
+import com.retronova.engine.Engine;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.EntityID;
+import com.retronova.game.objects.tiles.Tile;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Waves {
 
-    private int waveNumber = 1;
-    private int enemyCount;
-    private int enemiesSpawned;
-    private boolean waveActive;
-    private final GameMap gameMap; // referência ao GameMap
-    private final Random random;
-    private Timer waveTimer;
-    private long lastSpawnTime;
-    private long spawnInterval = 2000; // tempo entre spawns em MS (2s)
-    private int currentEnemyCount = 3; // inicia com 3 inimigos por wave
+    private int wave = 20;
+    private double waveMultiplier = 1;
+    private int counter;
+    private int lastCounter;
+    private boolean paused;
+    private final GameMap gameMap;
+    List<Entity> listSpawn;
 
     public Waves(GameMap gameMap) {
-        this.gameMap = gameMap; // armazena a referência ao GameMap
-        this.random = new Random();
-        this.lastSpawnTime = System.currentTimeMillis();
-        startNextWave();
+        this.gameMap = gameMap;
+        this.listSpawn = new ArrayList<>();
     }
 
-    public void updateWave() {
-        if (System.currentTimeMillis() - lastSpawnTime >= spawnInterval) {
-            spawnEnemies(currentEnemyCount);
-            lastSpawnTime = System.currentTimeMillis();
+    public boolean getPause(){
+        return paused;
+    }
+    public void setPause(boolean paused){
+        this.paused = paused;
+    }
+
+    public int getWave() {
+        return wave;
+    }
+
+    public void setWave(int wave) {
+        this.wave = wave;
+    }
+
+    private void wavingHandling(){
+        if(!paused){
+            counter++;
+
+        }
+
+        if(counter > 60 * 60){
+            counter = 0;
+            wave++;
+            paused = true;
+            System.out.println("Fim");
+        }else if(counter > lastCounter + 3.5 * 60){
+            lastCounter = counter;
+            //TODO criar sistemas para excolher os inimigos que aparecerão em cada wave!
+            EntityID[] types = {EntityID.Zombie, EntityID.Skeleton, EntityID.Slime};
+            int amount = (int) (4 * waveMultiplier);
+            System.out.println("Contador para adicionar: " + amount);
+            listSpawn = listEntity(types, amount);
+            waveMultiplier += 0.09 + wave * 0.2; // testar balenceamento apos adicionar armas
         }
     }
 
-    public void startNextWave() {
-        waveActive = true;
-        enemyCount = 5 + waveNumber * 2; // a cada wave, spawna +2 inimigos, alteravel também.
-        enemiesSpawned = 0;
-
-        System.out.println("🚀 Iniciando Wave " + waveNumber + " com " + enemyCount + " inimigos!");
-
-        waveTimer = new Timer();
-        scheduleSpawning();
-    }
-
-    private void scheduleSpawning() {
-        int totalWaveTime = 20 * 1000; // 20 segundos
-        int initialSpawnRate = totalWaveTime / enemyCount; // tempo entre spawns, ajustavel também, tudo aqui.
-
-        waveTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                if (enemiesSpawned >= enemyCount) {
-                    endWave();
-                    return;
-                }
-                spawnEnemy();
-                enemiesSpawned++;
-                // aumenta a frequência no final da onda, e vai aumentando, tem que ver se vai ficar dms (últimos 5 segundos)
-                if (enemiesSpawned >= enemyCount - 3) {
-                    System.out.println("⚠️ Acelerando spawn!");
-                    waveTimer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            if (enemiesSpawned < enemyCount) {
-                                spawnEnemy();
-                                enemiesSpawned++;
-                            }
-                        }
-                    }, 1000);
-                }
-            }
-        }, 0, initialSpawnRate);
-    }
-
-    private void spawnEnemy() {
-        int enemyType = random.nextInt(3) + 1; // 1 = Zombie, 2 = Skeleton, 3 = Slime
-        int[] spawnPos = getRandomSpawnLocation();
-
-        if (spawnPos != null) {
-            Entity enemy = Entity.build(enemyType, spawnPos[0], spawnPos[1]);
-            gameMap.getEntities().add(enemy); // adiciona ao GameMap
-            System.out.println("🧟 Spawned: " + enemy.getClass().getSimpleName() + " at " + spawnPos[0] + "," + spawnPos[1]);
+    private List<Entity> listEntity(EntityID[] types, int amount){
+        List<Entity> lista = new ArrayList<>();
+        for(int i = 0; i < amount;i++){
+            lista.add(Entity.build(types[Engine.RAND.nextInt(types.length)].ordinal(), 0, 0));
         }
+        return lista;
     }
 
-    public void spawnEnemies(int count) {
-        for (int i = 0; i < count; i++) {
-            int[] spawnPos = getRandomSpawnLocation();
-            if (spawnPos != null) {
-                int enemyType = random.nextInt(3) + 1; // 1 = Zombie, 2 = Skeleton, 3 = Slime
-                Entity enemy = Entity.build(enemyType, spawnPos[0], spawnPos[1]);
-                gameMap.getEntities().add(enemy); // agora ta usando a instância correta!!!!!!!
-                System.out.println("Spawned: " + enemy.getClass().getSimpleName() + " at " + spawnPos[0] + "," + spawnPos[1]);
-            } else {
-                System.out.println("No valid spawn position found!");
+    private void spawner(List<Entity> entidades) {
+        while (!entidades.isEmpty()){
+            int x = Engine.RAND.nextInt(gameMap.getBounds().width);
+            int y = Engine.RAND.nextInt(gameMap.getBounds().height);
+            Tile tile = gameMap.getTile(x / GameObject.SIZE(),y / GameObject.SIZE());
+            if(!tile.isSolid()){
+                Entity e = entidades.getFirst();
+                e.setX(x);
+                e.setY(y);
+                gameMap.getEntities().add(e);
+                entidades.remove(e);
             }
         }
     }
 
-    private int[] getRandomSpawnLocation() {
-        int x = random.nextInt(20); // tamanho do mapa, ajustavel, só mexer.
-        int y = random.nextInt(20);
-        return new int[]{x, y};
+    public void tick() {
+        wavingHandling();
+        spawner(listSpawn);
     }
 
-    private void endWave() {
-        waveActive = false;
-        waveTimer.cancel();
-        System.out.println("🎉 Wave " + waveNumber + " concluída!");
-
-        waveNumber++;
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                startNextWave();
-            }
-        }, 5000); // delay de 5 segundos para a proxima onda
-    }
-
-    public List<Entity> getEntities() {
-        return gameMap.getEntities(); // return dos inimigos do gamemap
-    }
 }

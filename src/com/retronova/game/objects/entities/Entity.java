@@ -1,6 +1,5 @@
 package com.retronova.game.objects.entities;
 
-import com.retronova.engine.Engine;
 import com.retronova.exceptions.EntityNotFound;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
@@ -13,7 +12,7 @@ public abstract class Entity extends GameObject {
     private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
 
     public static Entity build(int ID, double x, double y) {
-        IDs entityId = IDs.values()[ID];
+        EntityID entityId = EntityID.values()[ID];
         x *= GameObject.SIZE();
         y *= GameObject.SIZE();
         switch (entityId) {
