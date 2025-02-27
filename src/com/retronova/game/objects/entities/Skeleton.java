@@ -15,6 +15,7 @@ public class Skeleton extends Entity {
     private int countAnim;
     private int indexState;
     private int indexAnim;
+    // teste
 
     public Skeleton(int ID, double x, double y) {
         super(ID, x, y, 0.8);
