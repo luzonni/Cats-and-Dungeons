@@ -63,5 +63,6 @@ Os itens são voláteis e poderão sempre ser perdidos caso o jogador seja derro
 - Caio Renato
 - Caio Gabriel
 - Jose Francisco
+- Jose Nogueira
 
 
