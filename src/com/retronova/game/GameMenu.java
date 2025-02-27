@@ -10,6 +10,7 @@ import com.retronova.inputs.mouse.Mouse_Button;
 import com.retronova.menus.Menu;
 
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
 
 public class GameMenu implements Activity {
 
@@ -104,23 +105,37 @@ public class GameMenu implements Activity {
         Stroke defaultStroke = g.getStroke();
 
         for (int i = 0; i < quadrados.length; i++) {
-            g.setFont(fonteBotoes);
-            g.setColor(corBotao);
-            g.fillRect(quadrados[i].x, quadrados[i].y, quadrados[i].width, quadrados[i].height);
+            int tamanhoFonte = 8 * Configs.UISCALE;
+            Font fonteAtual = FontG.font(tamanhoFonte);
+            FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 
-            if (quadrados[i].contains(Mouse.getX(), Mouse.getY())) {
-                g.setStroke(new BasicStroke(3.0f));
-            } else {
-                g.setStroke(new BasicStroke(2.0f));
+            while (fmQuadrados.stringWidth(quadradosNomes[i]) > quadrados[i].width - 20) {
+                tamanhoFonte--;
+                fonteAtual = FontG.font(tamanhoFonte);
+                fmQuadrados = g.getFontMetrics(fonteAtual);
             }
 
-            g.setColor(corBorda);
-            g.drawRect(quadrados[i].x, quadrados[i].y, quadrados[i].width, quadrados[i].height);
+            RoundRectangle2D arredondar = new RoundRectangle2D.Double(quadrados[i].x, quadrados[i].y, quadrados[i].width, quadrados[i].height, 15, 15);
+
+            GradientPaint gradient = new GradientPaint(quadrados[i].x, quadrados[i].y, corBotao.brighter(), quadrados[i].x, quadrados[i].y + quadrados[i].height, corBotao.darker());
+
+            g.setPaint(gradient);
+            g.fill(arredondar);
+
+            g.setColor(corBotao.brighter().darker());
+            g.setStroke(new BasicStroke(1.0f));
+            g.draw(arredondar);
+
+            if (quadrados[i].contains(Mouse.getX(), Mouse.getY())) {
+                g.setColor(Color.WHITE);
+                g.setStroke(new BasicStroke(2.0f));
+                g.draw(arredondar);
+            }
 
             g.setStroke(defaultStroke);
 
             g.setColor(corTexto);
-            FontMetrics fmQuadrados = g.getFontMetrics();
+            g.setFont(fonteAtual);
             g.drawString(quadradosNomes[i], quadrados[i].x + (quadrados[i].width - fmQuadrados.stringWidth(quadradosNomes[i])) / 2, quadrados[i].y + (quadrados[i].height - fmQuadrados.getHeight()) / 2 + fmQuadrados.getAscent());
         }
     }

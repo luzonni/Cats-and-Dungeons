@@ -12,6 +12,7 @@ import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
 
 import java.awt.*;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
@@ -23,6 +24,7 @@ public class Personagens implements Activity {
     private ArrayList<BufferedImage> imagens;
     private int personagemSelecionado = -1;
     private int dificuldadeSelecionada = -1;
+    private Player[] players;
 
     // Cores de todos os botões (quadrados)
     private final Color[] coresGatos = {new Color(0x555555), new Color(0x222244), new Color(0x663300)};
@@ -47,44 +49,55 @@ public class Personagens implements Activity {
             BufferedImage imagem = new SpriteSheet("objects/player", nome, Configs.UISCALE).getSHEET();
             imagens.add(imagem);
         }
-    }
 
-    @Override
-    public void tick() {
-        for (int i = 0; i < selecao.length; i++) {
-            if (Mouse.clickOn(Mouse_Button.LEFT, selecao[i])) {
-                personagemSelecionado = (personagemSelecionado == i) ? -1 : i;
-                if (personagemSelecionado != -1 && dificuldadeSelecionada == -1) {
-                    System.out.println("Personagem selecionado. Escolha a dificuldade para prosseguir.");
-                }
-            }
-        }
-
-        for (int i = 0; i < dificuldade.length; i++) {
-            if (Mouse.clickOn(Mouse_Button.LEFT, dificuldade[i])) {
-                dificuldadeSelecionada = (dificuldadeSelecionada == i) ? -1 : i;
-                if (personagemSelecionado == -1 && dificuldadeSelecionada != -1) {
-                    System.out.println("Dificuldade selecionada. Escolha o personagem para prosseguir.");
-                }
-            }
-        }
-
-        if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
-            Engine.setActivity(new Menu());
-        } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
-            if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
-                Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new GameMap()));
-            } else {
-                if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
-                    System.out.println("Selecione um personagem e dificuldade antes de jogar!");
-                } else if (personagemSelecionado == -1) {
-                    System.out.println("Selecione um personagem antes de jogar!");
-                } else if (dificuldadeSelecionada == -1) {
-                    System.out.println("Selecione a dificuldade antes de jogar!");
-                }
-            }
+        players = new Player[3];
+        for (int i = 0; i < players.length; i++) {
+            players[i] = Player.TEMPLATES[i];
         }
     }
+
+        @Override
+        public void tick() {
+            for (int i = 0; i < selecao.length; i++) {
+                if (Mouse.clickOn(Mouse_Button.LEFT, selecao[i])) {
+                    personagemSelecionado = (personagemSelecionado == i) ? -1 : i;
+                    if (personagemSelecionado != -1 && dificuldadeSelecionada == -1) {
+                        System.out.println("Personagem selecionado. Escolha a dificuldade para prosseguir.");
+                    }
+                }
+            }
+
+            for (int i = 0; i < dificuldade.length; i++) {
+                if (Mouse.clickOn(Mouse_Button.LEFT, dificuldade[i])) {
+                    dificuldadeSelecionada = (dificuldadeSelecionada == i) ? -1 : i;
+                    if (personagemSelecionado == -1 && dificuldadeSelecionada != -1) {
+                        System.out.println("Dificuldade selecionada. Escolha o personagem para prosseguir.");
+                    }
+                }
+            }
+
+            for (int i = 0; i < players.length; i++) {
+                if (personagemSelecionado == i) {
+                    players[i].tick();
+                }
+            }
+
+            if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
+                Engine.setActivity(new Menu());
+            } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
+                if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
+                    Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new GameMap()));
+                } else {
+                    if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
+                        System.out.println("Selecione um personagem e dificuldade antes de jogar!");
+                    } else if (personagemSelecionado == -1) {
+                        System.out.println("Selecione um personagem antes de jogar!");
+                    } else if (dificuldadeSelecionada == -1) {
+                        System.out.println("Selecione a dificuldade antes de jogar!");
+                    }
+                }
+            }
+        }
 
     @Override
     public void render(Graphics2D g) {
@@ -129,17 +142,24 @@ public class Personagens implements Activity {
         g.setFont(fonteGatos);
         FontMetrics fmGatos = g.getFontMetrics();
         for (int i = 0; i < selecao.length; i++) {
-            g.setColor(coresGatos[i]);
-            g.fillRect(selecao[i].x, selecao[i].y, selecao[i].width, selecao[i].height);
+            RoundRectangle2D arredondar = new RoundRectangle2D.Double(selecao[i].x, selecao[i].y, selecao[i].width, selecao[i].height, 15, 15);
+
+            GradientPaint gradient = new GradientPaint(selecao[i].x, selecao[i].y, coresGatos[i].brighter(), selecao[i].x + selecao[i].width, selecao[i].y + selecao[i].height, coresGatos[i].darker());
+            g.setPaint(gradient);
+            g.fill(arredondar);
+
             g.setColor(corTexto);
-            g.drawRect(selecao[i].x, selecao[i].y, selecao[i].width, selecao[i].height);
+            g.draw(arredondar);
+
             g.drawString(gatos[i], selecao[i].x + (selecao[i].width - fmGatos.stringWidth(gatos[i])) / 2, selecao[i].y - 10);
-            BufferedImage imagem = Player.TEMPLATES[i].getSprite();
-            g.drawImage(imagem, selecao[i].x + (selecao[i].width - imagem.getWidth() * 3) / 2, selecao[i].y + (selecao[i].height - imagem.getHeight() * 3) / 2, imagem.getWidth() * 3, imagem.getHeight() * 3, null);
+
+            BufferedImage imagem = players[i].getSprite();
+            g.drawImage(imagem, selecao[i].x + (int) ((selecao[i].width - imagem.getWidth() * 2.5f) / 2), selecao[i].y + (int) ((selecao[i].height - imagem.getHeight() * 2.5f) / 2), (int) (imagem.getWidth() * 2.5f), (int) (imagem.getHeight() * 2.5f), null);
+
             if (personagemSelecionado == i) {
                 g.setColor(coresPersonagensSelecionados[i]);
-                g.setStroke(new BasicStroke(5.0f));
-                g.drawRect(selecao[i].x, selecao[i].y, selecao[i].width, selecao[i].height);
+                g.setStroke(new BasicStroke(2.0f));
+                g.draw(arredondar);
                 g.setStroke(new BasicStroke(1.0f));
             }
         }
@@ -157,15 +177,23 @@ public class Personagens implements Activity {
         g.drawString("   Difficulty", xTitulo, yTitulo);
 
         for (int i = 0; i < dificuldade.length; i++) {
-            g.setColor(coresDificuldade[i]);
-            g.fillRect(dificuldade[i].x, dificuldade[i].y, dificuldade[i].width, dificuldade[i].height);
+            RoundRectangle2D arredondar = new RoundRectangle2D.Double(dificuldade[i].x, dificuldade[i].y, dificuldade[i].width, dificuldade[i].height, 15, 15);
+
+            GradientPaint gradient = new GradientPaint(dificuldade[i].x, dificuldade[i].y, coresDificuldade[i].brighter(), dificuldade[i].x + dificuldade[i].width, dificuldade[i].y + dificuldade[i].height, coresDificuldade[i].darker());
+
+            g.setPaint(gradient);
+            g.fill(arredondar);
+
+
             g.setColor(corTexto);
-            g.drawRect(dificuldade[i].x, dificuldade[i].y, dificuldade[i].width, dificuldade[i].height);
+            g.draw(arredondar);
+
             g.drawString(numeros[i], dificuldade[i].x + (dificuldade[i].width - fmDificuldade.stringWidth(numeros[i])) / 2, dificuldade[i].y + (dificuldade[i].height - fmDificuldade.getHeight()) / 2 + fmDificuldade.getAscent());
+
             if (dificuldadeSelecionada == i) {
                 g.setColor(coresDificuldadeSelecionada[i]);
-                g.setStroke(new BasicStroke(5.0f));
-                g.drawRect(dificuldade[i].x, dificuldade[i].y, dificuldade[i].width, dificuldade[i].height);
+                g.setStroke(new BasicStroke(2.0f));
+                g.draw(arredondar);
                 g.setStroke(new BasicStroke(1.0f));
             }
         }
@@ -175,23 +203,28 @@ public class Personagens implements Activity {
         String[] botoesNomes = {"Back", "Play"};
         g.setFont(fonteBotoes);
         FontMetrics fmBotoes = g.getFontMetrics();
-        Stroke defaultStroke = g.getStroke();
 
         for (int i = 0; i < botoes.length; i++) {
-            g.setColor(coresBotoes[i]);
-            g.fillRect(botoes[i].x, botoes[i].y, botoes[i].width, botoes[i].height);
+            RoundRectangle2D arredondar = new RoundRectangle2D.Double(botoes[i].x, botoes[i].y, botoes[i].width, botoes[i].height, 15, 15);
+
+            GradientPaint gradient = new GradientPaint(botoes[i].x, botoes[i].y, coresBotoes[i].brighter(), botoes[i].x + botoes[i].width, botoes[i].y + botoes[i].height, coresBotoes[i].darker());
+
+            g.setPaint(gradient);
+            g.fill(arredondar);
+
+            g.setColor(coresBotoes[i].brighter());
+            g.setStroke(new BasicStroke(2.0f));
+            g.draw(arredondar);
 
             if (botoes[i].contains(Mouse.getX(), Mouse.getY())) {
-                g.setStroke(new BasicStroke(3.0f));
-            } else {
+                g.setColor(Color.WHITE);
                 g.setStroke(new BasicStroke(1.0f));
+                g.draw(arredondar);
             }
 
-            g.setColor(corTexto);
-            g.drawRect(botoes[i].x, botoes[i].y, botoes[i].width, botoes[i].height);
+            g.setStroke(new BasicStroke(1.0f));
 
-            g.setStroke(defaultStroke);
-
+            g.setColor(Color.WHITE);
             g.drawString(botoesNomes[i], botoes[i].x + (botoes[i].width - fmBotoes.stringWidth(botoesNomes[i])) / 2, botoes[i].y + (botoes[i].height - fmBotoes.getHeight()) / 2 + fmBotoes.getAscent());
         }
     }
