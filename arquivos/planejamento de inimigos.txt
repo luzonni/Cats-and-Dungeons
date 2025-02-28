@@ -1,11 +1,13 @@
-1. Rato Explosivo 
+O nome da classe de cada personagem tá do lado
+
+1. Rato Explosivo - RatExplode
 - Corre em direção ao jogador até explodir;
 - Causa 10 -> 15 de dano por explosão;
 - Resistência: Nenhuma;
 - Fraquezas: Morre com um único ataque;
 - Habilidade especial: Se chegar perto do jogador ele explode
 
-2. rato Escudeiro 🛡️🐱
+2. rato Escudeiro 🛡️🐱 - MouseSquire
 Um gato guerreiro que usa um pequeno escudo preso à cabeça como capacete, protegendo-se de ataques frontais. 
 Ele avança contra o jogador e rebate projéteis com sua cabeça.
 Dano: 6 (investida com o escudo) -> 8.
