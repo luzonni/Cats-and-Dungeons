@@ -4,8 +4,12 @@ import com.retronova.engine.Engine;
 import com.retronova.exceptions.PlayerInstanceException;
 import com.retronova.game.Game;
 import com.retronova.game.interfaces.inventory.Inventory;
+import com.retronova.game.items.Item;
+import com.retronova.game.items.ItemIDs;
+import com.retronova.game.map.Camera;
 import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
+import com.retronova.inputs.mouse.Mouse;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -43,12 +47,12 @@ public class Player extends Entity {
         this.name = name;
         this.damege = damage;
         this.speed = speed;
-        this.sprite = new BufferedImage[][]{
+        this.sprite = new BufferedImage[][] {
                 getSprite("player/"+name, 0),
                 getSprite("player/"+name, 1)
         };
         //TODO faze cada player ter o tamanho da mochila diferente!
-        this.inventory = new Inventory(3, 3);
+        this.inventory = new Inventory(5, 1);
     }
 
     @Override
@@ -107,6 +111,17 @@ public class Player extends Entity {
         if(getPhysical().getOrientation()[0] == -1)
             sprite = SpriteSheet.flip(sprite, 1, -1);
         renderSprite(sprite, g);
+        drawItem(g);
+    }
+
+    private void drawItem(Graphics2D g) {
+        Item item = getInventory().getItemHand();
+        if(item == null)
+            return;
+        double angle = Math.atan2((getY() - Game.C.getY()) - Mouse.getY(), (getX() - Game.C.getX()) - Mouse.getX());
+        g.rotate(angle, getX() - Game.C.getX(), getY() - Game.C.getY());
+        g.drawImage(item.getSprite(), (int)(getX() - Game.C.getX()), (int)(getY() - Game.C.getY()), null);
+        g.rotate(-angle, getX() - Game.C.getX(), getY() - Game.C.getY());
     }
 
     @Override

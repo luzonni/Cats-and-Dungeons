@@ -5,11 +5,14 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
+import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
 import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 public class Inventory implements Activity {
 
@@ -17,25 +20,57 @@ public class Inventory implements Activity {
     private final Slot[] hotbar;
     private final Slot[] slots;
 
+    private Item itemHand;
+
+    private Point inventoryPosition;
+    private BufferedImage inventory;
+
     public Inventory(int width, int height) {
+        this.inventoryPosition = new Point(Configs.MARGIN, Configs.MARGIN);
+        this.inventory = new SpriteSheet("ui", "inventory", Configs.UISCALE).getSHEET();
+
         this.insurer = new Slot(0, 0);
         this.slots = new Slot[width * height];
-        this.hotbar = new Slot[3];
-        int spaceBetween = Configs.UISCALE;
-        int x = 100;
-        int y = 100;
+        this.hotbar = new Slot[5];
+        int xh = inventoryPosition.x + Configs.UISCALE*6;
+        int yh = inventoryPosition.y + Configs.UISCALE*70;
+        for(int i = 0; i < hotbar.length; i++) {
+            int w = 16 * Configs.UISCALE;
+            this.hotbar[i] = new Slot(xh + i * w, yh);
+        }
+
+        int xi = inventoryPosition.x + Configs.UISCALE*6;
+        int yi = inventoryPosition.y + Configs.UISCALE*6;
         for(int yy = 0; yy < height; yy++) {
             for(int xx = 0; xx < width; xx++) {
                 int index = xx + yy * width;
                 int w = 16 * Configs.UISCALE;
                 int h = 16 * Configs.UISCALE;
-                int xxx = x + (xx * w + xx * spaceBetween);
-                int yyy = y + (yy * h + yy * spaceBetween);
+                int xxx = xi + (xx * w);
+                int yyy = yi + (yy * h);
                 slots[index] = new Slot(xxx, yyy);
             }
         }
+
+        //Teste
         slots[0].put(Item.build(ItemIDs.Gun));
-        slots[5].put(Item.build(ItemIDs.Sword));
+        hotbar[2].put(Item.build(ItemIDs.Sword));
+    }
+
+    public void setItemHand(Item item) {
+        this.itemHand = item;
+    }
+
+    public Item getItemHand() {
+        return this.itemHand;
+    }
+
+    public Item[] getHotbar() {
+        Item[] items = new Item[hotbar.length];
+        for(int i = 0; i < items.length; i++) {
+            items[i] = hotbar[i].item();
+        }
+        return items;
     }
 
     @Override
@@ -43,8 +78,13 @@ public class Inventory implements Activity {
         if(KeyBoard.KeyPressed("E")) {
             Engine.pause(null);
         }
-        for(int i = 0; i < slots.length; i++) {
-            Slot slot = slots[i];
+        interation();
+    }
+
+    private void interation() {
+        Slot[] currentSlots = merge();
+        for(int i = 0; i < currentSlots.length; i++) {
+            Slot slot = currentSlots[i];
             if(Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
                 if(!slot.isEmpty() && insurer.isEmpty()) {
                     insurer.put(slot.take());
@@ -61,6 +101,18 @@ public class Inventory implements Activity {
         }
     }
 
+    private Slot[] merge() {
+        Slot[] merged = new Slot[slots.length + hotbar.length];
+        int index = 0;
+        for(int i = 0; i < slots.length; i++, index++) {
+            merged[index] = slots[i];
+        }
+        for(int i = 0; i < hotbar.length; i++, index++) {
+            merged[index] = hotbar[i];
+        }
+        return merged;
+    }
+
     @Override
     public void render(Graphics2D g) {
         int fw = Engine.window.getWidth();
@@ -72,8 +124,12 @@ public class Inventory implements Activity {
     }
 
     private void renderInventory(Graphics2D g) {
+        g.drawImage(this.inventory, inventoryPosition.x, inventoryPosition.y, null);
         for(int i = 0; i < slots.length; i++) {
             slots[i].render(g);
+        }
+        for(int i = 0; i < hotbar.length; i++) {
+            hotbar[i].render(g);
         }
     }
 

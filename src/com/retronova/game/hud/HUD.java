@@ -20,7 +20,10 @@ public class HUD implements Activity {
     private int indexBust;
     private BufferedImage vignette;
 
-    HUD(Player player) {
+    private Hotbar hotbar;
+
+    public HUD(Player player) {
+        this.hotbar = new Hotbar(player);
         this.padding = Configs.MARGIN;
         SpriteSheet sp = new SpriteSheet("ui","HUD", Configs.HUDSCALE);
         this.HUD = sp.getSHEET().getSubimage(0, 0, 64 * Configs.HUDSCALE, 16 * Configs.HUDSCALE);
@@ -64,12 +67,14 @@ public class HUD implements Activity {
     @Override
     public void tick() {
         createVignette();
+        hotbar.tick();
     }
 
     @Override
     public void render(Graphics2D g) {
         vignette(g);
         drawPlayerLife(padding, padding, g);
+        hotbar.render(g);
     }
 
     private void drawPlayerLife(int x, int y,Graphics2D g) {

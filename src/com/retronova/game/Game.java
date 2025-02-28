@@ -103,7 +103,7 @@ public class Game implements Activity {
         throw new NotInActivity("Não é possível retornar o player pois a activity atual não é o jogo!");
     }
 
-    public static HUD getUI() {
+    public static HUD getHUD() {
         if(Engine.getACTIVITY() instanceof Game game) {
             return game.hud;
         }

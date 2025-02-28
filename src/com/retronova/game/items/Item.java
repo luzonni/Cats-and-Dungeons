@@ -10,12 +10,13 @@ import java.awt.image.BufferedImage;
 public abstract class Item {
 
     public static Item build(ItemIDs id) {
+        int i = id.ordinal();
         switch (id) {
             case Sword -> {
-                return new Sword(id.ordinal());
+                return new Sword(i);
             }
             case Gun -> {
-                return new Gun(id.ordinal());
+                return new Gun(i);
             }
         }
         throw new NotFound("Item not found");
