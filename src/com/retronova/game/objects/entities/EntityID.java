@@ -5,6 +5,7 @@ public enum EntityID {
     Player,
     Zombie,
     Skeleton,
-    Slime;
+    Slime,
+    RatExplode;
     
 }

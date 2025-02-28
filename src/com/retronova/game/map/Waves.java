@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Waves {
 
-    private int wave = 20;
+    private int wave = 1;
     private double waveMultiplier = 1;
     private int counter;
     private int lastCounter;
@@ -53,7 +53,7 @@ public class Waves {
         }else if(counter > lastCounter + 3.5 * 60){
             lastCounter = counter;
             //TODO criar sistemas para excolher os inimigos que aparecerão em cada wave!
-            EntityID[] types = {EntityID.Zombie, EntityID.Skeleton, EntityID.Slime};
+            EntityID[] types = {EntityID.Zombie, EntityID.Skeleton, EntityID.Slime, EntityID.RatExplode};
             int amount = (int) (4 * waveMultiplier);
             System.out.println("Contador para adicionar: " + amount);
             listSpawn = listEntity(types, amount);
