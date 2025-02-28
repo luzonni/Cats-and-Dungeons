@@ -12,7 +12,7 @@ import java.util.List;
 
 public class Waves {
 
-    private int wave = 20;
+    private int wave = 1;
     private double waveMultiplier = 1;
     private int counter;
     private int lastCounter;
