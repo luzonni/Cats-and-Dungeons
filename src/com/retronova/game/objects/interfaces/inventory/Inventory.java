@@ -4,6 +4,7 @@ import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.items.Item;
+import com.retronova.game.items.ItemIDs;
 import com.retronova.game.items.Sword;
 import com.retronova.inputs.keyboard.KeyBoard;
 import com.retronova.inputs.mouse.Mouse;
@@ -34,8 +35,8 @@ public class Inventory implements Activity {
                 slots[index] = new Slot(xxx, yyy);
             }
         }
-        slots[0].put(new Sword());
-        slots[5].put(new Sword());
+        slots[0].put(Item.build(ItemIDs.Gun));
+        slots[5].put(Item.build(ItemIDs.Sword));
     }
 
     @Override

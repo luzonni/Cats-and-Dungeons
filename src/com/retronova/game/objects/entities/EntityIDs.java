@@ -1,6 +1,6 @@
 package com.retronova.game.objects.entities;
 
-public enum EntityID {
+public enum EntityIDs {
 
     Player,
     Zombie,

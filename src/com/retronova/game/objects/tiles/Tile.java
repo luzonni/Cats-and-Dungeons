@@ -8,7 +8,7 @@ public abstract class Tile extends GameObject {
     private boolean solid;
 
     public static Tile build(int ID, int x, int y) {
-        IDs mapping = IDs.values()[ID];
+        TileIDs mapping = TileIDs.values()[ID];
         x *= GameObject.SIZE();
         y *= GameObject.SIZE();
         switch (mapping) {

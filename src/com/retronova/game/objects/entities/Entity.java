@@ -12,7 +12,7 @@ public abstract class Entity extends GameObject {
     private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
 
     public static Entity build(int ID, double x, double y) {
-        EntityID entityId = EntityID.values()[ID];
+        EntityIDs entityId = EntityIDs.values()[ID];
         x *= GameObject.SIZE();
         y *= GameObject.SIZE();
         switch (entityId) {

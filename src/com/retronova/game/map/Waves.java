@@ -3,7 +3,7 @@ package com.retronova.game.map;
 import com.retronova.engine.Engine;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
-import com.retronova.game.objects.entities.EntityID;
+import com.retronova.game.objects.entities.EntityIDs;
 import com.retronova.game.objects.tiles.Tile;
 
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class Waves {
         }else if(counter > lastCounter + 3.5 * 60){
             lastCounter = counter;
             //TODO criar sistemas para excolher os inimigos que aparecerão em cada wave!
-            EntityID[] types = {EntityID.Zombie, EntityID.Skeleton, EntityID.Slime, EntityID.RatExplode};
+            EntityIDs[] types = {EntityIDs.Zombie, EntityIDs.Skeleton, EntityIDs.Slime, EntityIDs.RatExplode};
             int amount = (int) (4 * waveMultiplier);
             System.out.println("Contador para adicionar: " + amount);
             listSpawn = listEntity(types, amount);
@@ -61,7 +61,7 @@ public class Waves {
         }
     }
 
-    private List<Entity> listEntity(EntityID[] types, int amount){
+    private List<Entity> listEntity(EntityIDs[] types, int amount){
         List<Entity> lista = new ArrayList<>();
         for(int i = 0; i < amount;i++){
             lista.add(Entity.build(types[Engine.RAND.nextInt(types.length)].ordinal(), 0, 0));

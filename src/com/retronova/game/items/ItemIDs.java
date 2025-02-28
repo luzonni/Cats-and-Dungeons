@@ -1,4 +1,8 @@
 package com.retronova.game.items;
 
-public class ItemIDs {
+public enum ItemIDs {
+
+    Sword,
+    Gun;
+
 }

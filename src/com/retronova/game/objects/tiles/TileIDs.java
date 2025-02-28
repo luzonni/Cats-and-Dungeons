@@ -1,6 +1,6 @@
 package com.retronova.game.objects.tiles;
 
-public enum IDs {
+public enum TileIDs {
     // 0x_2xRed_2xGreen_2xBlue
     // 00 -> 0
     // ff -> 255
@@ -9,7 +9,7 @@ public enum IDs {
 
     private final String color;
 
-    IDs(String color) {
+    TileIDs(String color) {
         this.color = color;
     }
 

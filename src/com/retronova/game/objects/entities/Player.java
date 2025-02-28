@@ -23,8 +23,6 @@ public class Player extends Entity {
         return new Player(TEMPLATES[index].getName(), TEMPLATES[index].damege, TEMPLATES[index].speed);
     }
 
-    private Sword testeItem = new Sword();
-
     private String name;
     private BufferedImage[][] sprite;
     private int countAnim;

@@ -1,11 +1,9 @@
 package com.retronova.game.map;
 
-import com.retronova.engine.Configs;
-import com.retronova.engine.Engine;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.game.objects.tiles.IDs;
+import com.retronova.game.objects.tiles.TileIDs;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.graphics.SpriteSheet;
 import java.awt.*;
@@ -48,11 +46,11 @@ public class GameMap {
 
     private Tile[] convertMap(int[] rgb, int width, int height) {
         Tile[] map = new Tile[width * height];
-        IDs[] values = IDs.values();
+        TileIDs[] values = TileIDs.values();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int index = x + y * width;
-                for (IDs value : values) {
+                for (TileIDs value : values) {
                     if (Color.decode(value.getColor()).getRGB() == rgb[index]) {
                         map[index] = Tile.build(value.ordinal(), x, y);
                     }
