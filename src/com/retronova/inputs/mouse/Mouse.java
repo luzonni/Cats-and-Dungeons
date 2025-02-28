@@ -33,18 +33,18 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
     }
 
     public static synchronized boolean clickOn(Mouse_Button button, Rectangle rec) {
-        if(button.equals(Mouse_Button.LEFT))
-            if(rec.contains(xClicked, yClicked) && clickLeftOn) {
+        if (button.equals(Mouse_Button.LEFT))
+            if (rec.contains(xClicked, yClicked) && clickLeftOn) {
                 clickLeftOn = false;
                 return true;
             }
-        if(button.equals(Mouse_Button.RIGHT))
-            if(rec.contains(xClicked, yClicked) && clickRightOn)  {
+        if (button.equals(Mouse_Button.RIGHT))
+            if (rec.contains(xClicked, yClicked) && clickRightOn) {
                 clickRightOn = false;
                 return true;
             }
-        if(button.equals(Mouse_Button.SCROOL))
-            if(rec.contains(xClicked, yClicked) && clickScroolOn) {
+        if (button.equals(Mouse_Button.SCROOL))
+            if (rec.contains(xClicked, yClicked) && clickScroolOn) {
                 clickScroolOn = false;
                 return true;
             }

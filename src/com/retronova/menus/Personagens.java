@@ -25,6 +25,13 @@ public class Personagens implements Activity {
     private int personagemSelecionado = -1;
     private int dificuldadeSelecionada = -1;
     private Player[] players;
+    private boolean[] quadradoClicadoDireito = {false, false, false};
+    private String[][] infoPersonagens = {
+            {"Normal Cat", "HP: 100", "Attack: 10", "Speed: Normal"},
+            {"Magic Cat", "HP: 80", "Attack: 15", "Speed: Slow"},
+            {"Lucky Cat", "HP: 120", "Attack: 8", "Speed: Fast"}
+    };
+
 
     // Cores de todos os botões (quadrados)
     private final Color[] coresGatos = {new Color(0x555555), new Color(0x222244), new Color(0x663300)};
@@ -40,6 +47,7 @@ public class Personagens implements Activity {
     private final Font fonteDificuldade = FontG.font(8 * Configs.UISCALE);
     private final Font fonteBotoes = FontG.font(8 * Configs.UISCALE);
     private final Font fonteDificuldadeTitulo = FontG.font(10 * Configs.UISCALE);
+    private final Font fonteInfoPersonagens = FontG.font(5 * Configs.UISCALE);
 
     public Personagens() {
         imagens = new ArrayList<>();
@@ -64,6 +72,9 @@ public class Personagens implements Activity {
                     if (personagemSelecionado != -1 && dificuldadeSelecionada == -1) {
                         System.out.println("Personagem selecionado. Escolha a dificuldade para prosseguir.");
                     }
+                }
+                if (Mouse.clickOn(Mouse_Button.RIGHT, selecao[i])) {
+                    quadradoClicadoDireito[i] = !quadradoClicadoDireito[i];
                 }
             }
 
@@ -151,10 +162,24 @@ public class Personagens implements Activity {
             g.setColor(corTexto);
             g.draw(arredondar);
 
+
             g.drawString(gatos[i], selecao[i].x + (selecao[i].width - fmGatos.stringWidth(gatos[i])) / 2, selecao[i].y - 10);
 
-            BufferedImage imagem = players[i].getSprite();
-            g.drawImage(imagem, selecao[i].x + (int) ((selecao[i].width - imagem.getWidth() * 2.5f) / 2), selecao[i].y + (int) ((selecao[i].height - imagem.getHeight() * 2.5f) / 2), (int) (imagem.getWidth() * 2.5f), (int) (imagem.getHeight() * 2.5f), null);
+            if (!quadradoClicadoDireito[i]) { // Desenha a imagem se não clicado com o direito, ou seja, o original
+                BufferedImage imagem = players[i].getSprite();
+                g.drawImage(imagem, selecao[i].x + (int) ((selecao[i].width - imagem.getWidth() * 2.5f) / 2), selecao[i].y + (int) ((selecao[i].height - imagem.getHeight() * 2.5f) / 2), (int) (imagem.getWidth() * 2.5f), (int) (imagem.getHeight() * 2.5f), null);
+            } else { // Desenha as informações dos personagens quando clica com o direito
+                Font fonteOriginal = g.getFont();
+                g.setFont(fonteInfoPersonagens);
+                FontMetrics fmInfo = g.getFontMetrics();
+                String[] info = infoPersonagens[i];
+                int y = selecao[i].y + 20;
+                for (String line : info) {
+                    g.drawString(line, selecao[i].x + 10, y);
+                    y += fmInfo.getHeight();
+                }
+                g.setFont(fonteOriginal);
+            }
 
             if (personagemSelecionado == i) {
                 g.setColor(coresPersonagensSelecionados[i]);
