@@ -21,7 +21,6 @@ public class RatExplode extends Entity {
     private final int raioExplosao;
     private final double danoExplosao;
 
-    // TODO: ajustar a movimentação
     public RatExplode(int ID, double x, double y) {
         super(ID,x,y,0.85);
         //this.velocityRun = 2.2;
