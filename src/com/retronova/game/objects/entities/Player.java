@@ -70,9 +70,6 @@ public class Player extends Entity {
 
     @Override
     public void tick() {
-        if(KeyBoard.KeyPressed("F")) {
-            getInventory().plusHotbar(1);
-        }
         updateMovement();
         countAnim++;
         if (countAnim > 10) {
