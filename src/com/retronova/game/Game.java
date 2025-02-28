@@ -6,6 +6,8 @@ import com.retronova.exceptions.NotInActivity;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.interfaces.Pause;
+import com.retronova.game.objects.interfaces.inventory.Inventory;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.inputs.keyboard.KeyBoard;
 
@@ -21,13 +23,12 @@ public class Game implements Activity {
     private final GameMap map;
 
     //Este é apenas o menu do pause.
-    private GameMenu pauseMenu;
+    private Activity inerface;
     //Aqui estara toda a parte de interface do jogo, como barras de vida, slots dos items, etc...
     private HUD hud;
 
     //Teste
     public Game(int indexPlayer, int difficulty, GameMap map) {
-        this.pauseMenu = new GameMenu();
         this.difficulty = difficulty;
         this.indexPlayer = indexPlayer;
         this.map = map;
@@ -43,7 +44,10 @@ public class Game implements Activity {
     @Override
     public void tick() {
         if(KeyBoard.KeyPressed("ESCAPE")) {
-            Engine.pause(pauseMenu);
+            Engine.pause(new Pause());
+        }
+        if(KeyBoard.KeyPressed("E")) {
+            Engine.pause(player.getInventory());
         }
         map.getWaves().tick();
         //tick logic

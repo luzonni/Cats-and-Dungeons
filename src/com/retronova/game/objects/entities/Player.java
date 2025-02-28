@@ -3,6 +3,8 @@ package com.retronova.game.objects.entities;
 import com.retronova.engine.Engine;
 import com.retronova.exceptions.PlayerInstanceException;
 import com.retronova.game.Game;
+import com.retronova.game.items.Sword;
+import com.retronova.game.objects.interfaces.inventory.Inventory;
 import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
 
@@ -21,6 +23,8 @@ public class Player extends Entity {
         return new Player(TEMPLATES[index].getName(), TEMPLATES[index].damege, TEMPLATES[index].speed);
     }
 
+    private Sword testeItem = new Sword();
+
     private String name;
     private BufferedImage[][] sprite;
     private int countAnim;
@@ -29,6 +33,8 @@ public class Player extends Entity {
 
     private double damege;
     private final double speed;
+
+    private Inventory inventory;
 
     public Player() {
         super(0, 0, 0, 0);
@@ -44,6 +50,8 @@ public class Player extends Entity {
                 getSprite("player/"+name, 0),
                 getSprite("player/"+name, 1)
         };
+        //TODO faze cada player ter o tamanho da mochila diferente!
+        this.inventory = new Inventory(3, 3);
     }
 
     @Override
@@ -55,7 +63,9 @@ public class Player extends Entity {
         return this.name;
     }
 
-
+    public Inventory getInventory() {
+        return this.inventory;
+    }
 
     @Override
     public void tick() {

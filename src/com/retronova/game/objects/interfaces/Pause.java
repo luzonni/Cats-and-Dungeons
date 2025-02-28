@@ -1,8 +1,9 @@
-package com.retronova.game;
+package com.retronova.game.objects.interfaces;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.game.Game;
 import com.retronova.graphics.FontG;
 import com.retronova.inputs.keyboard.KeyBoard;
 import com.retronova.inputs.mouse.Mouse;
@@ -12,7 +13,7 @@ import com.retronova.menus.Menu;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
-public class GameMenu implements Activity {
+public class Pause implements Activity {
 
     private Rectangle[] quadrados;
     private final Font fonteTitulo = FontG.font(15 * Configs.UISCALE);
@@ -24,7 +25,7 @@ public class GameMenu implements Activity {
     private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Menu", "Quit"};
     private int quadradoSeta = -1;
 
-    public GameMenu() {
+    public Pause() {
         atualizarPosicoes();
     }
 
