@@ -52,7 +52,7 @@ public class Player extends Entity {
                 getSprite("player/"+name, 1)
         };
         //TODO faze cada player ter o tamanho da mochila diferente!
-        this.inventory = new Inventory(5, 1);
+        this.inventory = new Inventory(4, 3);
     }
 
     @Override
@@ -70,6 +70,9 @@ public class Player extends Entity {
 
     @Override
     public void tick() {
+        if(KeyBoard.KeyPressed("F")) {
+            getInventory().plusHotbar(1);
+        }
         updateMovement();
         countAnim++;
         if (countAnim > 10) {

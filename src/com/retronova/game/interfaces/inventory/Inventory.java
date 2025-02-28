@@ -3,6 +3,7 @@ package com.retronova.game.interfaces.inventory;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.exceptions.InventoryOutsOfBounds;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
 import com.retronova.graphics.SpriteSheet;
@@ -12,25 +13,30 @@ import com.retronova.inputs.mouse.Mouse_Button;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 
 public class Inventory implements Activity {
 
     private final Slot insurer;
     private final Slot[] hotbar;
-    private final Slot[] slots;
+    private int lengthHotbar;
+    private final Slot[] bag;
+    private int lengthBag;
 
     private Item itemHand;
 
     private Point inventoryPosition;
     private BufferedImage inventory;
 
-    public Inventory(int width, int height) {
+    public Inventory(int lengthBag, int lengthHotbar) {
+        if(lengthBag > 15 || lengthHotbar > 5) {
+            throw new InventoryOutsOfBounds("Valor de slots acima do permitido");
+        }
+        this.lengthBag = lengthBag;
+        this.lengthHotbar = lengthHotbar;
         this.inventoryPosition = new Point(Configs.MARGIN, Configs.MARGIN);
         this.inventory = new SpriteSheet("ui", "inventory", Configs.UISCALE).getSHEET();
-
         this.insurer = new Slot(0, 0);
-        this.slots = new Slot[width * height];
+        this.bag = new Slot[15];
         this.hotbar = new Slot[5];
         int xh = inventoryPosition.x + Configs.UISCALE*6;
         int yh = inventoryPosition.y + Configs.UISCALE*70;
@@ -41,19 +47,19 @@ public class Inventory implements Activity {
 
         int xi = inventoryPosition.x + Configs.UISCALE*6;
         int yi = inventoryPosition.y + Configs.UISCALE*6;
-        for(int yy = 0; yy < height; yy++) {
-            for(int xx = 0; xx < width; xx++) {
-                int index = xx + yy * width;
+        for(int yy = 0; yy < 3; yy++) {
+            for(int xx = 0; xx < 5; xx++) {
+                int index = xx + yy * 5;
                 int w = 16 * Configs.UISCALE;
                 int h = 16 * Configs.UISCALE;
                 int xxx = xi + (xx * w);
                 int yyy = yi + (yy * h);
-                slots[index] = new Slot(xxx, yyy);
+                bag[index] = new Slot(xxx, yyy);
             }
         }
 
         //Teste
-        slots[0].put(Item.build(ItemIDs.Gun));
+        bag[0].put(Item.build(ItemIDs.Gun));
         hotbar[2].put(Item.build(ItemIDs.Sword));
     }
 
@@ -65,8 +71,32 @@ public class Inventory implements Activity {
         return this.itemHand;
     }
 
+    public int getHotbarSize() {
+        return this.lengthHotbar;
+    }
+
+    public int getBagSize() {
+        return this.lengthBag;
+    }
+
+    public void plusBag(int amount) {
+        if(this.lengthBag + amount <= 15) {
+            this.lengthBag += amount;
+            return;
+        }
+        throw new InventoryOutsOfBounds("Aumento da BAG fora do tamanho limite");
+    }
+
+    public void plusHotbar(int amount) {
+        if(this.lengthHotbar + amount <= 5) {
+            this.lengthHotbar += amount;
+            return;
+        }
+        throw new InventoryOutsOfBounds("Aumento da HOTBAR fora do tamanho limite");
+    }
+
     public Item[] getHotbar() {
-        Item[] items = new Item[hotbar.length];
+        Item[] items = new Item[lengthHotbar];
         for(int i = 0; i < items.length; i++) {
             items[i] = hotbar[i].item();
         }
@@ -102,12 +132,12 @@ public class Inventory implements Activity {
     }
 
     private Slot[] merge() {
-        Slot[] merged = new Slot[slots.length + hotbar.length];
+        Slot[] merged = new Slot[lengthBag + lengthHotbar];
         int index = 0;
-        for(int i = 0; i < slots.length; i++, index++) {
-            merged[index] = slots[i];
+        for(int i = 0; i < lengthBag; i++, index++) {
+            merged[index] = bag[i];
         }
-        for(int i = 0; i < hotbar.length; i++, index++) {
+        for(int i = 0; i < lengthHotbar; i++, index++) {
             merged[index] = hotbar[i];
         }
         return merged;
@@ -125,10 +155,10 @@ public class Inventory implements Activity {
 
     private void renderInventory(Graphics2D g) {
         g.drawImage(this.inventory, inventoryPosition.x, inventoryPosition.y, null);
-        for(int i = 0; i < slots.length; i++) {
-            slots[i].render(g);
+        for(int i = 0; i < lengthBag; i++) {
+            bag[i].render(g);
         }
-        for(int i = 0; i < hotbar.length; i++) {
+        for(int i = 0; i < lengthHotbar; i++) {
             hotbar[i].render(g);
         }
     }
