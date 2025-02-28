@@ -15,8 +15,8 @@ public class Skeleton extends Entity {
     private final BufferedImage[][] sprite;
     private int countAnim;
     private int indexState;
-    private int indexAnim;
-    // teste
+    private int indexAnim; //
+
 
     public Skeleton(int ID, double x, double y) {
         super(ID, x, y, 0.8);

@@ -52,7 +52,7 @@ public class RatExplode extends Entity {
         else if (distance < raioDeteccao) {
             chasing = true;
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(2, radians);
+            getPhysical().addForce(2.45, radians);
         }
         else {
             chasing = false;

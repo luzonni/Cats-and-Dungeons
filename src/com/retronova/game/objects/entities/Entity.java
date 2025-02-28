@@ -6,6 +6,7 @@ import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Physical;
+import com.retronova.inputs.mouse.Mouse;
 
 public abstract class Entity extends GameObject {
 
@@ -29,6 +30,9 @@ public abstract class Entity extends GameObject {
             }
             case RatExplode -> {
                 return new RatExplode(ID, x , y);
+            }
+            case MouseSquire -> {
+                return new MouseSquire(ID, x, y);
             }
         }
         throw new EntityNotFound("Entity not found");
