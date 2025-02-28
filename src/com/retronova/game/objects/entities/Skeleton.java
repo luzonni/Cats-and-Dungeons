@@ -19,7 +19,7 @@ public class Skeleton extends Entity {
 
 
     public Skeleton(int ID, double x, double y) {
-        super(ID, x, y, 0.8);
+        super(ID, x, y, 0.4);
         sprite = new BufferedImage[][] {getSprite("skeleton", 0), getSprite("skeleton", 1)};
 
         setResistances(AttackTypes.Fire, AttackTypes.Piercing);
