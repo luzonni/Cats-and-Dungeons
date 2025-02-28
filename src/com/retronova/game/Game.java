@@ -6,11 +6,13 @@ import com.retronova.exceptions.NotInActivity;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.map.Camera;
 import com.retronova.game.map.GameMap;
+import com.retronova.game.map.Waves;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.interfaces.Pause;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.inputs.keyboard.KeyBoard;
+import com.retronova.menus.Menu;
 
 import java.awt.*;
 import java.util.List;
@@ -101,6 +103,13 @@ public class Game implements Activity {
             return game.player;
         }
         throw new NotInActivity("Não é possível retornar o player pois a activity atual não é o jogo!");
+    }
+
+    public static Waves getWave(){
+        if(Engine.getACTIVITY() instanceof Game game) {
+            return game.map.getWaves();
+        }
+        throw new NotInActivity("Não é possível retornar a Wave pois a activity atual não é o jogo!");
     }
 
     public static HUD getHUD() {

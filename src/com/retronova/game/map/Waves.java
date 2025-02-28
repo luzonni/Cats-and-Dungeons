@@ -1,6 +1,7 @@
 package com.retronova.game.map;
 
 import com.retronova.engine.Engine;
+import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.EntityIDs;
@@ -11,17 +12,15 @@ import java.util.List;
 
 public class Waves {
 
-    private int wave = 1;
+    private int wave = 20;
     private double waveMultiplier = 1;
     private int counter;
     private int lastCounter;
     private boolean paused;
     private final GameMap gameMap;
-    List<Entity> listSpawn;
 
     public Waves(GameMap gameMap) {
         this.gameMap = gameMap;
-        this.listSpawn = new ArrayList<>();
     }
 
     public boolean getPause(){
@@ -42,7 +41,6 @@ public class Waves {
     private void wavingHandling(){
         if(!paused){
             counter++;
-
         }
 
         if(counter > 60 * 60){
@@ -56,8 +54,10 @@ public class Waves {
             EntityIDs[] types = {EntityIDs.Zombie, EntityIDs.Skeleton, EntityIDs.Slime, EntityIDs.RatExplode};
             int amount = (int) (4 * waveMultiplier);
             System.out.println("Contador para adicionar: " + amount);
-            listSpawn = listEntity(types, amount);
             waveMultiplier += 0.09 + wave * 0.2; // testar balenceamento apos adicionar armas
+            new Thread(() -> {
+                spawner(listEntity(types, amount));
+            }).start();
         }
     }
 
@@ -71,13 +71,13 @@ public class Waves {
 
     private void spawner(List<Entity> entidades) {
         while (!entidades.isEmpty()){
-            int x = Engine.RAND.nextInt(gameMap.getBounds().width);
-            int y = Engine.RAND.nextInt(gameMap.getBounds().height);
-            Tile tile = gameMap.getTile(x / GameObject.SIZE(),y / GameObject.SIZE());
+            int x = Engine.RAND.nextInt(gameMap.getBounds().width / GameObject.SIZE());
+            int y = Engine.RAND.nextInt(gameMap.getBounds().height / GameObject.SIZE());
+            Tile tile = gameMap.getTile(x ,y );
             if(!tile.isSolid()){
                 Entity e = entidades.getFirst();
-                e.setX(x);
-                e.setY(y);
+                e.setX(x * GameObject.SIZE());
+                e.setY(y * GameObject.SIZE());
                 gameMap.getEntities().add(e);
                 entidades.remove(e);
             }
@@ -86,7 +86,5 @@ public class Waves {
 
     public void tick() {
         wavingHandling();
-        spawner(listSpawn);
     }
-
 }

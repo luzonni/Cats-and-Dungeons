@@ -1,7 +1,9 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Engine;
 import com.retronova.exceptions.EntityNotFound;
 import com.retronova.game.Game;
+import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Physical;
 
