@@ -3,6 +3,7 @@ package com.retronova.game.objects.entities;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
+import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -58,7 +59,12 @@ public class Skeleton extends Entity {
 
     @Override
     public void render(Graphics2D g) {
-        renderSprite(getSprite(), g);
+        int orientation = getPhysical().getOrientation()[0] * -1;
+        if(orientation == 0) {
+            orientation = -1;
+        }
+        BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
+        renderSprite(sprite, g);
     }
 
     @Override

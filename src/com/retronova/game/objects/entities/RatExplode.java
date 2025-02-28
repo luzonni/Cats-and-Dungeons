@@ -3,6 +3,7 @@ package com.retronova.game.objects.entities;
 import com.retronova.game.Game;
 import com.retronova.engine.Engine;
 import com.retronova.game.objects.GameObject;
+import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -15,17 +16,15 @@ public class RatExplode extends Entity {
     private int indexAnim;
 
     private boolean chasing;
-    private final double velocitydefault;
-    private final double velocityRun;
+    //private final double velocityRun;
     private final int raioDeteccao;
     private final int raioExplosao;
     private final double danoExplosao;
 
     // TODO: ajustar a movimentação
     public RatExplode(int ID, double x, double y) {
-        super(ID,x,y,0.85d);
-        this.velocitydefault = 0.5;
-        this.velocityRun = 2.0;
+        super(ID,x,y,0.85);
+        //this.velocityRun = 2.2;
         this.raioDeteccao = GameObject.SIZE() * 3;
         this.raioExplosao = GameObject.SIZE();
         this.danoExplosao = 5;
@@ -58,10 +57,6 @@ public class RatExplode extends Entity {
         }
         else {
             chasing = false;
-            if(Engine.RAND.nextInt(100) < 2) {
-                double randomAngle = Engine.RAND.nextDouble() * 2 * Math.PI;
-                getPhysical().addForce(0.2, randomAngle);
-            }
         }
         this.indexState = getPhysical().isMoving() ? 1 : 0;
 
@@ -74,7 +69,7 @@ public class RatExplode extends Entity {
 
     private void animar() {
         countAnim ++;
-        if (countAnim > 10) {
+        if (countAnim > 9) {
             countAnim = 0;
             indexAnim ++;
             if (indexAnim >= sprite[indexState].length) {
@@ -85,7 +80,12 @@ public class RatExplode extends Entity {
 
 
     public void render(Graphics2D d) {
-        renderSprite(getSprite(), d);
+        int orientation = getPhysical().getOrientation()[0] * -1;
+        if(orientation == 0) {
+            orientation = -1;
+        }
+        BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
+        renderSprite(sprite, d);
     }
 
     public void dispose() {}
