@@ -1,11 +1,10 @@
-package com.retronova.game.objects.interfaces.inventory;
+package com.retronova.game.interfaces.inventory;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
-import com.retronova.game.items.Sword;
 import com.retronova.inputs.keyboard.KeyBoard;
 import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;

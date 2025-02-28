@@ -1,4 +1,4 @@
-package com.retronova.game.objects.interfaces.inventory;
+package com.retronova.game.interfaces.inventory;
 
 import com.retronova.engine.Configs;
 import com.retronova.game.items.Item;

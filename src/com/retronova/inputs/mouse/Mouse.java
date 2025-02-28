@@ -1,6 +1,6 @@
 package com.retronova.inputs.mouse;
 
-import com.retronova.game.Camera;
+import com.retronova.game.map.Camera;
 
 import java.awt.*;
 import java.awt.event.*;

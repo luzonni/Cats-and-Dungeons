@@ -1,4 +1,4 @@
-package com.retronova.game;
+package com.retronova.game.map;
 
 import com.retronova.engine.Engine;
 import com.retronova.game.objects.GameObject;

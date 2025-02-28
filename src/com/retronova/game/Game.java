@@ -3,11 +3,12 @@ package com.retronova.game;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
 import com.retronova.exceptions.NotInActivity;
+import com.retronova.game.hud.HUD;
+import com.retronova.game.map.Camera;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.game.objects.interfaces.Pause;
-import com.retronova.game.objects.interfaces.inventory.Inventory;
+import com.retronova.game.interfaces.Pause;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.inputs.keyboard.KeyBoard;
 

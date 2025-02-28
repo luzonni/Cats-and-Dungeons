@@ -1,8 +1,9 @@
-package com.retronova.game;
+package com.retronova.game.hud;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.graphics.FontG;
 import com.retronova.graphics.SpriteSheet;

@@ -3,8 +3,7 @@ package com.retronova.game.objects.entities;
 import com.retronova.engine.Engine;
 import com.retronova.exceptions.PlayerInstanceException;
 import com.retronova.game.Game;
-import com.retronova.game.items.Sword;
-import com.retronova.game.objects.interfaces.inventory.Inventory;
+import com.retronova.game.interfaces.inventory.Inventory;
 import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
 
