@@ -51,7 +51,7 @@ public class Zombie extends Entity {
 
     private void moveIA() {
         Player player = Game.getPlayer();
-        if(this.getDistance(player) < GameObject.SIZE()*7) {
+        if(this.getDistance(player) < GameObject.SIZE()*20) {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
             getPhysical().addForce(0.86d, radians);
         }

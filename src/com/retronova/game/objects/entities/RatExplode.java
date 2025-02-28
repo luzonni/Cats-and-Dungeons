@@ -16,19 +16,15 @@ public class RatExplode extends Entity {
     private int indexAnim;
 
     private boolean chasing;
-    //private final double velocityRun;
-    private final int raioDeteccao;
     private final int raioExplosao;
     private final double danoExplosao;
 
     public RatExplode(int ID, double x, double y) {
-        super(ID,x,y,0.85);
-        //this.velocityRun = 2.2;
-        this.raioDeteccao = GameObject.SIZE() * 3;
+        super(ID,x,y,0.55);
         this.raioExplosao = GameObject.SIZE();
         this.danoExplosao = 5;
         sprite = new BufferedImage[][]{getSprite("ratexplose", 0), getSprite("ratexplose", 1)};
-        this.chasing = false;
+        //this.chasing = false;
     }
 
     @Override
@@ -48,15 +44,12 @@ public class RatExplode extends Entity {
         if(distance < raioExplosao) {
             explodir(player);
 
-        }
-        else if (distance < raioDeteccao) {
-            chasing = true;
+        }else {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(2.45, radians);
+            getPhysical().addForce(1, radians);
         }
-        else {
-            chasing = false;
-        }
+
+
         this.indexState = getPhysical().isMoving() ? 1 : 0;
 
     }
@@ -68,7 +61,7 @@ public class RatExplode extends Entity {
 
     private void animar() {
         countAnim ++;
-        if (countAnim > 9) {
+        if (countAnim > 10) {
             countAnim = 0;
             indexAnim ++;
             if (indexAnim >= sprite[indexState].length) {
