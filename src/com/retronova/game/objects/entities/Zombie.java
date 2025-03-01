@@ -18,7 +18,7 @@ public class Zombie extends Entity {
     private int cooldown;
 
     public Zombie(int ID, double x, double y) {
-        super(ID, x, y, 0.6);
+        super(ID, x, y, 0.4);
         sprite = new BufferedImage[][] {getSprite("zombie", 0), getSprite("zombie", 1)};
 
         // Zumbi não deve ter resistencia a nada não eu acho, que eles são lascado já né.
@@ -51,10 +51,9 @@ public class Zombie extends Entity {
 
     private void moveIA() {
         Player player = Game.getPlayer();
-        if(this.getDistance(player) < GameObject.SIZE()*20) {
-            double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(0.86d, radians);
-        }
+        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        getPhysical().addForce(0.86d, radians);
+
         this.indexState = getPhysical().isMoving() ? 1 : 0;
     }
 

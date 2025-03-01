@@ -126,7 +126,7 @@ public class Physical {
     }
 
     private void calcFriction() {
-        this.speed *= friction;
+        this.speed *= (1 - friction);
     }
 
     public boolean isMoving() {

@@ -16,15 +16,14 @@ public class RatExplode extends Entity {
     private int indexAnim;
 
     private boolean chasing;
-    private final int raioExplosao;
+    //private final int raioExplosao;
     private final double danoExplosao;
 
+    // TODO: Entender pq a sprite ta nervosa virando de um lado pro outro sem motivo
     public RatExplode(int ID, double x, double y) {
-        super(ID,x,y,0.55);
-        this.raioExplosao = GameObject.SIZE();
+        super(ID,x,y,0.3);
         this.danoExplosao = 5;
         sprite = new BufferedImage[][]{getSprite("ratexplose", 0), getSprite("ratexplose", 1)};
-        //this.chasing = false;
     }
 
     @Override
@@ -39,24 +38,22 @@ public class RatExplode extends Entity {
 
     public void moveIA() {
         Player player = Game.getPlayer();
-        double distance = this.getDistance(player);
 
-        if(distance < raioExplosao) {
+        if(this.getDistance(player) < GameObject.SIZE()) {
             explodir(player);
-
         }else {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(1, radians);
+            getPhysical().addForce(0.86d, radians);
         }
 
 
-        this.indexState = getPhysical().isMoving() ? 1 : 0;
+        //this.indexState = getPhysical().isMoving() ? 1 : 0;
 
     }
 
     private void explodir(Player player) {
         System.out.println("Mouse explodiu causando " + danoExplosao + " de dano");
-        this.dispose();
+
     }
 
     private void animar() {
@@ -73,9 +70,8 @@ public class RatExplode extends Entity {
 
     public void render(Graphics2D d) {
         int orientation = getPhysical().getOrientation()[0] * -1;
-        if(orientation == 0) {
+        if(orientation == 0)
             orientation = -1;
-        }
         BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
         renderSprite(sprite, d);
     }
