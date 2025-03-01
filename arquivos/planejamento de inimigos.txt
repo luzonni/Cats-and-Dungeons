@@ -51,11 +51,11 @@ Bosses
 
 Primeiro Boss:
 
-1. Brinquedo de Gato Assombrado
+1. Brinquedo de Gato Assombrado - CatToyBoss
 Um brinquedo de pelúcia possuído por uma entidade maligna. Seus olhos brilham (em vermelho) de forma ameaçadora enquanto ele se move sozinho pelo ambiente.
-Dano: 7 (Pancadas sombrias).
-Fraqueza: Vulnerável ao fogo e ataques mágicos.
-Resistência: Resistente a ataques físicos normais.
+Dano: 7 (Pancadas sombrias)
+Fraqueza: Vulnerável ao fogo e ataques mágicos
+Resistência: Resistente a ataques físicos normais
 Habilidade Especial: Se desmancha em pedaços ao ser atingido e depois se reconstrói, podendo continuar atacando.
 
 2. Rei Gato Amaldiçoado

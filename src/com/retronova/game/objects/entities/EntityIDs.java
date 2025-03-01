@@ -8,6 +8,7 @@ public enum EntityIDs {
     Slime,
     RatExplode,
     MouseSquire,
-    MouseVampire;
+    MouseVampire,
+    CatToyBoss;
     
 }
