@@ -1,7 +1,6 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.game.Game;
-import com.retronova.engine.Engine;
 import com.retronova.game.objects.GameObject;
 import com.retronova.graphics.SpriteSheet;
 
@@ -15,7 +14,7 @@ public class RatExplode extends Entity {
     private int indexState;
     private int indexAnim;
 
-    private boolean chasing;
+
     //private final int raioExplosao;
     private final double danoExplosao;
 
@@ -41,13 +40,13 @@ public class RatExplode extends Entity {
 
         if(this.getDistance(player) < GameObject.SIZE()) {
             explodir(player);
+            getPhysical().addForce(0,0);
         }else {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
             getPhysical().addForce(0.86d, radians);
         }
 
-
-        //this.indexState = getPhysical().isMoving() ? 1 : 0;
+        this.indexState = getPhysical().isMoving() ? 1 : 0;
 
     }
 

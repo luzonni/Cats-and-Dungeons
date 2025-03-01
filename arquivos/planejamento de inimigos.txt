@@ -15,7 +15,7 @@ Resistência: Resistente a ataques frontais e projéteis.
 Fraqueza: Vulnerável a ataques laterais ou por trás.
 Habilidade Especial: Pode abaixar a cabeça para refletir projéteis de volta para o jogador.
 
-3. Rato Vampiro 🦇🐱
+3. Rato Vampiro  - mousevampire🦇🐱
 
 Sugador de energia vital, recupera vida ao atacar.
 Dano: 8.
@@ -23,21 +23,21 @@ Fraqueza: Magia.
 Resistência: Ataques físicos.
 Habilidade Especial: Torna-se invisível por alguns segundos ao atacar, mas se for atingido, perde a invisibilidade e recebe dano extra.
 
-4. Esqueleto Feiticeiro
+4. Esqueleto Feiticeiro - skeleton
 - Lança orbes de energia maligna;
 - Causa 8 de dano a cada orbe;
 - Resistente a danos mágicos;
 - Fraqueza: ataque corpo a corpo;
 - Habilidade especial: Pode lançar até 3 orbes de energia.
 
-5. Slime Multiplicador
+5. Slime Multiplicador - slime
 - se divide ao ser atacado;
 - Dano: falta pensar
 - Resistência: Nenhuma
 - Fraquezas: ....
 - Habilidade especial: Ao morrer se divide em slimes menores
 
-6. Rato Zumbi
+6. Rato Zumbi - zombie
 - É o mob mais basico, não tem resistencia alguma, e é fraco;
 - Dano: Pouco porém suficiente;
 - Resistencia: Nenhuma;
