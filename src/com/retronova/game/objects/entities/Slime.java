@@ -19,7 +19,7 @@ public class Slime extends Entity {
     private boolean isJumping; //verifica se está pulando
 
     public Slime(int ID, double x, double y) {
-        super(ID, x, y, 0.85);
+        super(ID, x, y, 0.4);
         sprite = getSprite("slime", 0); //carregamento das imagens
         jumpCoolDown = 0;
         isJumping = false;
