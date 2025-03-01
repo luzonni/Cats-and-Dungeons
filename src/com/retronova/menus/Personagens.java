@@ -12,6 +12,7 @@ import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -27,11 +28,15 @@ public class Personagens implements Activity {
     private Player[] players;
     private boolean[] quadradoClicadoDireito = {false, false, false};
     private String[][] infoPersonagens = {
-            {"Normal Cat", "HP: 100", "Attack: 10", "Speed: Normal"},
-            {"Magic Cat", "HP: 80", "Attack: 15", "Speed: Slow"},
-            {"Lucky Cat", "HP: 120", "Attack: 8", "Speed: Fast"}
+            {"HP: 100", "Attack: 10", "Speed: Normal"},
+            {"HP: 80", "Attack: 15", "Speed: Slow"},
+            {"HP: 120", "Attack: 8", "Speed: Fast"}
     };
 
+    // Variáveis para a animação de virada de carta
+    private float[] rotacao = {0, 0, 0};
+    private boolean[] animando = {false, false, false};
+    private final float VELOCIDADE_ROTACAO = 0.1f;
 
     // Cores de todos os botões (quadrados)
     private final Color[] coresGatos = {new Color(0x555555), new Color(0x222244), new Color(0x663300)};
@@ -62,53 +67,72 @@ public class Personagens implements Activity {
         for (int i = 0; i < players.length; i++) {
             players[i] = Player.TEMPLATES[i];
         }
+
+        for (int i = 0; i < rotacao.length; i++) {
+            rotacao[i] = 1;
+        }
     }
 
-        @Override
-        public void tick() {
-            for (int i = 0; i < selecao.length; i++) {
-                if (Mouse.clickOn(Mouse_Button.LEFT, selecao[i])) {
-                    personagemSelecionado = (personagemSelecionado == i) ? -1 : i;
-                    if (personagemSelecionado != -1 && dificuldadeSelecionada == -1) {
-                        System.out.println("Personagem selecionado. Escolha a dificuldade para prosseguir.");
-                    }
-                }
-                if (Mouse.clickOn(Mouse_Button.RIGHT, selecao[i])) {
-                    quadradoClicadoDireito[i] = !quadradoClicadoDireito[i];
+    @Override
+    public void tick() {
+        for (int i = 0; i < selecao.length; i++) {
+            if (Mouse.clickOn(Mouse_Button.LEFT, selecao[i])) {
+                personagemSelecionado = (personagemSelecionado == i) ? -1 : i;
+                if (personagemSelecionado != -1 && dificuldadeSelecionada == -1) {
+                    System.out.println("Personagem selecionado. Escolha a dificuldade para prosseguir.");
                 }
             }
 
-            for (int i = 0; i < dificuldade.length; i++) {
-                if (Mouse.clickOn(Mouse_Button.LEFT, dificuldade[i])) {
-                    dificuldadeSelecionada = (dificuldadeSelecionada == i) ? -1 : i;
-                    if (personagemSelecionado == -1 && dificuldadeSelecionada != -1) {
-                        System.out.println("Dificuldade selecionada. Escolha o personagem para prosseguir.");
-                    }
-                }
+            if (Mouse.clickOn(Mouse_Button.RIGHT, selecao[i])) {
+                quadradoClicadoDireito[i] = !quadradoClicadoDireito[i];
+                animando[i] = true;
+                rotacao[i] = 0;
             }
 
-            for (int i = 0; i < players.length; i++) {
-                if (personagemSelecionado == i) {
-                    players[i].tick();
-                }
-            }
-
-            if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
-                Engine.setActivity(new Menu());
-            } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
-                if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
-                    Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new GameMap()));
-                } else {
-                    if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
-                        System.out.println("Selecione um personagem e dificuldade antes de jogar!");
-                    } else if (personagemSelecionado == -1) {
-                        System.out.println("Selecione um personagem antes de jogar!");
-                    } else if (dificuldadeSelecionada == -1) {
-                        System.out.println("Selecione a dificuldade antes de jogar!");
-                    }
+            if (animando[i]) {
+                rotacao[i] += VELOCIDADE_ROTACAO;
+                if (rotacao[i] >= 1) {
+                    rotacao[i] = 1;
+                    animando[i] = false;
                 }
             }
         }
+
+        for (int i = 0; i < dificuldade.length; i++) {
+            if (Mouse.clickOn(Mouse_Button.LEFT, dificuldade[i])) {
+                dificuldadeSelecionada = (dificuldadeSelecionada == i) ? -1 : i;
+                if (personagemSelecionado == -1 && dificuldadeSelecionada != -1) {
+                    System.out.println("Dificuldade selecionada. Escolha o personagem para prosseguir.");
+                }
+            }
+        }
+
+        for (int i = 0; i < players.length; i++) {
+            // O personagem só será atualizado se ele estiver visível
+            if (personagemSelecionado == i && !quadradoClicadoDireito[i]) {
+                players[i].tick();
+            }
+        }
+
+        if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
+            Engine.setActivity(new Menu());
+        } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
+            if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
+                Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new GameMap()));
+            } else {
+                if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
+                    System.out.println("Selecione um personagem e dificuldade antes de jogar!");
+                } else if (personagemSelecionado == -1) {
+                    System.out.println("Selecione um personagem antes de jogar!");
+                } else if (dificuldadeSelecionada == -1) {
+                    System.out.println("Selecione a dificuldade antes de jogar!");
+                }
+            }
+        }
+    }
+
+
+
 
     @Override
     public void render(Graphics2D g) {
@@ -152,9 +176,9 @@ public class Personagens implements Activity {
         String[] gatos = {"Normal Cat", "Magic Cat", "Lucky Cat"};
         g.setFont(fonteGatos);
         FontMetrics fmGatos = g.getFontMetrics();
+
         for (int i = 0; i < selecao.length; i++) {
             RoundRectangle2D arredondar = new RoundRectangle2D.Double(selecao[i].x, selecao[i].y, selecao[i].width, selecao[i].height, 15, 15);
-
             GradientPaint gradient = new GradientPaint(selecao[i].x, selecao[i].y, coresGatos[i].brighter(), selecao[i].x + selecao[i].width, selecao[i].y + selecao[i].height, coresGatos[i].darker());
             g.setPaint(gradient);
             g.fill(arredondar);
@@ -162,23 +186,36 @@ public class Personagens implements Activity {
             g.setColor(corTexto);
             g.draw(arredondar);
 
-
             g.drawString(gatos[i], selecao[i].x + (selecao[i].width - fmGatos.stringWidth(gatos[i])) / 2, selecao[i].y - 10);
 
-            if (!quadradoClicadoDireito[i]) { // Desenha a imagem se não clicado com o direito, ou seja, o original
+            AffineTransform originalTransform = g.getTransform();
+            g.translate(selecao[i].x + selecao[i].width / 2, selecao[i].y + selecao[i].height / 2);
+
+            float escala = quadradoClicadoDireito[i] ? (1 - rotacao[i]) : rotacao[i];
+            g.scale(Math.max(escala, 0.1), 1);
+
+            if (!quadradoClicadoDireito[i] || escala > 0.1) {
                 BufferedImage imagem = players[i].getSprite();
-                g.drawImage(imagem, selecao[i].x + (int) ((selecao[i].width - imagem.getWidth() * 2.5f) / 2), selecao[i].y + (int) ((selecao[i].height - imagem.getHeight() * 2.5f) / 2), (int) (imagem.getWidth() * 2.5f), (int) (imagem.getHeight() * 2.5f), null);
-            } else { // Desenha as informações dos personagens quando clica com o direito
+                g.drawImage(imagem, (int) (-imagem.getWidth() * 2.5f / 2), (int) (-imagem.getHeight() * 2.5f / 2), (int) (imagem.getWidth() * 2.5f), (int) (imagem.getHeight() * 2.5f), null);
+            }
+            g.setTransform(originalTransform);
+
+            if (quadradoClicadoDireito[i]) {
+                originalTransform = g.getTransform();
+                g.translate(selecao[i].x + selecao[i].width / 2, selecao[i].y + selecao[i].height / 2);
+                g.scale(rotacao[i], 1);
+
                 Font fonteOriginal = g.getFont();
                 g.setFont(fonteInfoPersonagens);
                 FontMetrics fmInfo = g.getFontMetrics();
                 String[] info = infoPersonagens[i];
-                int y = selecao[i].y + 20;
+                int y = -selecao[i].height / 2 + 20;
                 for (String line : info) {
-                    g.drawString(line, selecao[i].x + 10, y);
+                    g.drawString(line, -selecao[i].width / 2 + 10, y);
                     y += fmInfo.getHeight();
                 }
                 g.setFont(fonteOriginal);
+                g.setTransform(originalTransform);
             }
 
             if (personagemSelecionado == i) {
@@ -189,6 +226,10 @@ public class Personagens implements Activity {
             }
         }
     }
+
+
+
+
 
     private void desenharDificuldade(Graphics2D g) {
         String[] numeros = {"1", "2", "3"};
@@ -208,7 +249,6 @@ public class Personagens implements Activity {
 
             g.setPaint(gradient);
             g.fill(arredondar);
-
 
             g.setColor(corTexto);
             g.draw(arredondar);

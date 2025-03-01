@@ -19,7 +19,7 @@ public class Zombie extends Entity {
 
     public Zombie(int ID, double x, double y) {
         super(ID, x, y, 0.6);
-        sprite = new BufferedImage[][] {getSprite("zombie", 0), getSprite("zombie", 1)};
+        sprite = new BufferedImage[][] {getSprite("mousezombie", 0), getSprite("mousezombie", 1)};
 
         // Zumbi não deve ter resistencia a nada não eu acho, que eles são lascado já né.
     }
