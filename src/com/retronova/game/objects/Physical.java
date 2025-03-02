@@ -117,12 +117,10 @@ public class Physical {
     }
 
     private boolean collidingTile(double nextX, double nextY) {
-        //TODO este metodo está mugado pra krl!
-        System.err.println("ERRO NO KARALHO DO SISTEMA DE COLISÃO COM TILES!");
         int leftX = (int)(nextX) / GameObject.SIZE();
-        int rightX = (int)(nextX + entity.getWidth()) / GameObject.SIZE();
+        int rightX = (int)(nextX + entity.getWidth() - 1) / GameObject.SIZE();
         int upY = (int)(nextY) / GameObject.SIZE();
-        int downY = (int)(nextY + entity.getHeight()) / GameObject.SIZE();
+        int downY = (int)(nextY + entity.getHeight() - 1) / GameObject.SIZE();
         boolean leftup = Game.getMap().getTile(leftX, upY).isSolid();
         boolean leftdown = Game.getMap().getTile(leftX, downY).isSolid();
         boolean rightup = Game.getMap().getTile(rightX, upY).isSolid();
