@@ -21,7 +21,7 @@ public class MouseVampire extends Entity {
 
     @Override
     public BufferedImage getSprite(){
-        return sprite[indexState][indexState];
+        return sprite[indexState][indexAnim];
     }
 
     public void tick() {
@@ -39,10 +39,10 @@ public class MouseVampire extends Entity {
     }
 
     public void animation() {
-        countAnim++;
+        countAnim ++;
         if(countAnim > 10) {
             countAnim = 0;
-            indexAnim++;
+            indexAnim ++;
             if(indexAnim >= sprite[indexState].length) {
                 indexAnim = 0;
             }

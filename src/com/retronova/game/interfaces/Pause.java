@@ -3,6 +3,7 @@ package com.retronova.game.interfaces;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.Sounds;
 import com.retronova.game.Game;
 import com.retronova.graphics.FontG;
 import com.retronova.inputs.keyboard.KeyBoard;
@@ -17,16 +18,16 @@ public class Pause implements Activity {
 
     private Rectangle[] quadrados;
     private final Font fonteTitulo = FontG.font(15 * Configs.UISCALE);
-    private final Font fonteBotoes = FontG.font(8 * Configs.UISCALE);
     private final Color corFundo = new Color(50, 50, 50, 150);
     private final Color corBotao = Color.GRAY;
-    private final Color corBorda = Color.WHITE;
     private final Color corTexto = Color.WHITE;
     private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Menu", "Quit"};
     private int quadradoSeta = -1;
 
+
     public Pause() {
         atualizarPosicoes();
+        Sounds.pauseMenuMusic();
     }
 
     private void atualizarPosicoes() {
@@ -50,9 +51,11 @@ public class Pause implements Activity {
         if (KeyBoard.KeyPressed("ESCAPE")) {
             System.out.println("Jogo pausado");
             Engine.pause(null);
+            Sounds.resumeMenuMusic();
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
             System.out.println("Jogo continuado");
             Engine.pause(null);
+            Sounds.resumeMenuMusic();
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Jogo reiniciado");
             Engine.pause(null);

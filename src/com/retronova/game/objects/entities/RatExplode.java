@@ -22,7 +22,7 @@ public class RatExplode extends Entity {
     public RatExplode(int ID, double x, double y) {
         super(ID,x,y,0.3);
         this.danoExplosao = 5;
-        sprite = new BufferedImage[][]{getSprite("ratexplose", 0), getSprite("ratexplose", 1)};
+        sprite = new BufferedImage[][]{getSprite("ratexplode", 0), getSprite("ratexplode", 1)};
     }
 
     @Override
