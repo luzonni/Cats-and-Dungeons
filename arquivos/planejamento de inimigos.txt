@@ -15,7 +15,7 @@ Resistência: Resistente a ataques frontais e projéteis.
 Fraqueza: Vulnerável a ataques laterais ou por trás.
 Habilidade Especial: Pode abaixar a cabeça para refletir projéteis de volta para o jogador.
 
-3. Rato Vampiro 🦇🐱
+3. Rato Vampiro  - mousevampire🦇🐱
 
 Sugador de energia vital, recupera vida ao atacar.
 Dano: 8.
@@ -23,21 +23,21 @@ Fraqueza: Magia.
 Resistência: Ataques físicos.
 Habilidade Especial: Torna-se invisível por alguns segundos ao atacar, mas se for atingido, perde a invisibilidade e recebe dano extra.
 
-4. Esqueleto Feiticeiro
+4. Esqueleto Feiticeiro - skeleton
 - Lança orbes de energia maligna;
 - Causa 8 de dano a cada orbe;
 - Resistente a danos mágicos;
 - Fraqueza: ataque corpo a corpo;
 - Habilidade especial: Pode lançar até 3 orbes de energia.
 
-5. Slime Multiplicador
+5. Slime Multiplicador - slime
 - se divide ao ser atacado;
 - Dano: falta pensar
 - Resistência: Nenhuma
 - Fraquezas: ....
 - Habilidade especial: Ao morrer se divide em slimes menores
 
-6. Rato Zumbi
+6. Rato Zumbi - zombie
 - É o mob mais basico, não tem resistencia alguma, e é fraco;
 - Dano: Pouco porém suficiente;
 - Resistencia: Nenhuma;
@@ -51,19 +51,19 @@ Bosses
 
 Primeiro Boss:
 
-1. Brinquedo de Gato Assombrado
+1. Brinquedo de Gato Assombrado - CatToyBoss
 Um brinquedo de pelúcia possuído por uma entidade maligna. Seus olhos brilham (em vermelho) de forma ameaçadora enquanto ele se move sozinho pelo ambiente.
-Dano: 7 (Pancadas sombrias).
-Fraqueza: Vulnerável ao fogo e ataques mágicos.
-Resistência: Resistente a ataques físicos normais.
+Dano: 7 (Pancadas sombrias)
+Fraqueza: Vulnerável ao fogo e ataques mágicos
+Resistência: Resistente a ataques físicos normais
 Habilidade Especial: Se desmancha em pedaços ao ser atingido e depois se reconstrói, podendo continuar atacando.
 
-2. Rei Gato Amaldiçoado
+2. Rei Gato Amaldiçoado - KingCursedCatBoss
 -Habilidade especial: Consegue invocar gatos corrompidos; 
 -Muito resistentes a ataques físicos;
 - Fraqueza: Ataques mágicos;
 
-3. Rato Monarca
+3. Rato Monarca - MonarkMouse
 - Habilidade especial: Consegue invocar pequenos ratos em grandes quantidades
 - Consegue desaparecer por um momento da batalha e aparecer em outra parte do mapa;
 - Resistentes a venenos e ataques físicos leves;
