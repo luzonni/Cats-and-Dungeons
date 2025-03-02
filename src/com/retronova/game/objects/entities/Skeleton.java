@@ -18,7 +18,7 @@ public class Skeleton extends Entity {
     private int indexAnim; //
 
 
-    public Skeleton(int ID, double x, double y) {
+    Skeleton(int ID, double x, double y) {
         super(ID, x, y, 0.5);
         sprite = new BufferedImage[][] {getSprite("mouseskeleton", 0), getSprite("mouseskeleton", 1)};
 

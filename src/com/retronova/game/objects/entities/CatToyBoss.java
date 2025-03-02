@@ -12,7 +12,7 @@ public class CatToyBoss extends Entity {
     private int indexState;
     private int indexAnim;
 
-    public CatToyBoss(int ID, double x, double y) {
+    CatToyBoss(int ID, double x, double y) {
         super(ID, x, y, 0.4);
         sprite = new BufferedImage[][] {getSprite("cattoyboss", 0), getSprite("cattoyboss", 1)};
         //adicionar resistência

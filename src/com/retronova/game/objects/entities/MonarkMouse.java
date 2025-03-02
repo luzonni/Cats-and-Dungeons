@@ -12,7 +12,7 @@ public class MonarkMouse extends Entity{
     private int indexState;
     private int indexAnim;
 
-    public MonarkMouse(int ID, double x, double y) {
+    MonarkMouse(int ID, double x, double y) {
         super(ID, x, y, 0.6);
         sprite = new BufferedImage[][] {getSprite("monarkmouse", 0), getSprite("monarkmouse", 1)};
         //adicionar resistência

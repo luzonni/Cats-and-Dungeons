@@ -12,7 +12,7 @@ public class KingCursedCatBoss extends Entity {
     private int indexState;
     private int indexAnim;
 
-    public KingCursedCatBoss(int ID, double x, double y) {
+    KingCursedCatBoss(int ID, double x, double y) {
         super(ID,x,y, 0.3);
         sprite = new BufferedImage[][] {getSprite("kingcursedcatboss", 0), getSprite("kingcursedcatboss")};
     }

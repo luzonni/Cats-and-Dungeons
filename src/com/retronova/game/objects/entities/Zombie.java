@@ -17,7 +17,7 @@ public class Zombie extends Entity {
 
     private int cooldown;
 
-    public Zombie(int ID, double x, double y) {
+    Zombie(int ID, double x, double y) {
         super(ID, x, y, 0.4);
         sprite = new BufferedImage[][] {getSprite("mousezombie", 0), getSprite("mousezombie", 1)};
 

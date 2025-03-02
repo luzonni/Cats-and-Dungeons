@@ -1,7 +1,9 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Engine;
 import com.retronova.exceptions.EntityNotFound;
 import com.retronova.game.Game;
+import com.retronova.game.items.Item;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Physical;
 
@@ -47,7 +49,7 @@ public abstract class Entity extends GameObject {
         throw new EntityNotFound("Entity not found");
     }
 
-    public Entity(int ID, double x, double y, double friction) {
+    Entity(int ID, double x, double y, double friction) {
         super(ID);
         setX(x);
         setY(y);
@@ -96,6 +98,12 @@ public abstract class Entity extends GameObject {
         //TODO adicionar particula de morte
         //TODO adicionar som de morte
         Game.getMap().getEntities().remove(this);
+    }
+
+    public void dropLoot(Item loot) {
+        Entity drop = new Drop(getX(), getY(), loot);
+        Game.getMap().getEntities().add(drop);
+        drop.getPhysical().addForce(Engine.RAND.nextInt(10), Engine.RAND.nextDouble(Math.PI*2));
     }
 
     public Physical getPhysical() {

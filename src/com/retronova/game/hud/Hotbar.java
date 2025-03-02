@@ -5,6 +5,7 @@ import com.retronova.engine.Engine;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.graphics.SpriteSheet;
+import com.retronova.inputs.keyboard.KeyBoard;
 import com.retronova.inputs.mouse.Mouse;
 
 import java.awt.*;
@@ -61,6 +62,11 @@ class Hotbar {
         }
         Item itemHand = player.getInventory().getHotbar()[index];
         player.getInventory().setItemHand(itemHand);
+        if(KeyBoard.KeyPressed("Q") && itemHand != null) {
+            if(player.getInventory().drop(itemHand)) {
+                player.dropLoot(itemHand);
+            }
+        }
     }
 
     public void render(Graphics2D g) {

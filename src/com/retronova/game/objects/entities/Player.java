@@ -37,12 +37,7 @@ public class Player extends Entity {
 
     private Inventory inventory;
 
-    public Player() {
-        super(0, 0, 0, 0);
-        throw new PlayerInstanceException("Não é permitido instancia o player dessa maneira!");
-    }
-
-    private Player(String name, double damage, double speed) {
+    Player(String name, double damage, double speed) {
         super(0, 0, 0, 0.5);
         this.name = name;
         this.damege = damage;

@@ -39,10 +39,7 @@ public class Inventory implements Activity {
         this.inventory = new SpriteSheet("ui", "inventory", Configs.UISCALE).getSHEET();
 
         refreshPositions();
-
-        //Teste
-        bag[0].put(Item.build(ItemIDs.Gun));
-        hotbar[2].put(Item.build(ItemIDs.Sword));
+        this.bag[lengthBag-1].put(Item.build(ItemIDs.Sword));
     }
 
     public void refreshPositions() {
@@ -93,6 +90,28 @@ public class Inventory implements Activity {
                 bag[index].setPosition(xxx, yyy);
             }
         }
+    }
+
+    public boolean give(Item item) {
+        Slot[] slots = merge();
+        for(int i = 0; i < slots.length; i++) {
+            if(slots[i].isEmpty()) {
+                if(slots[i].put(item))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean drop(Item item) {
+        Slot[] slots = merge();
+        for(int i = 0; i < slots.length; i++) {
+            if(!slots[i].isEmpty() && slots[i].item().equals(item)) {
+                slots[i].take();
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setItemHand(Item item) {
@@ -151,10 +170,8 @@ public class Inventory implements Activity {
             if(Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
                 if(!slot.isEmpty() && insurer.isEmpty()) {
                     insurer.put(slot.take());
-                    Engine.window.setCursor(insurer.item().getSprite());
                 }else if(slot.isEmpty() && !insurer.isEmpty()) {
                     slot.put(insurer.take());
-                    Engine.window.resetCursor();
                 }else if(!slot.isEmpty() && !insurer.isEmpty()) {
                     Item insureItem = insurer.take();
                     Item slotItem = slot.take();
@@ -210,4 +227,5 @@ public class Inventory implements Activity {
     public void dispose() {
 
     }
+
 }
