@@ -9,6 +9,7 @@ public enum EntityIDs {
     RatExplode,
     MouseSquire,
     MouseVampire,
-    CatToyBoss;
+    CatToyBoss,
+    KingCursedCatBoss;
     
 }

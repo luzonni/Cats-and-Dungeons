@@ -40,6 +40,9 @@ public abstract class Entity extends GameObject {
             case CatToyBoss -> {
                 return new CatToyBoss(ID,x,y);
             }
+            case KingCursedCatBoss -> {
+                return new KingCursedCatBoss(ID, x,y);
+            }
         }
         throw new EntityNotFound("Entity not found");
     }
