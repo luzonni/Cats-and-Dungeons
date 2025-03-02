@@ -6,43 +6,40 @@ import com.retronova.graphics.SpriteSheet;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class MouseVampire extends Entity {
-
+public class MonarkMouse extends Entity{
     private final BufferedImage[][] sprite;
     private int countAnim;
     private int indexState;
     private int indexAnim;
 
-    public MouseVampire(int ID, double x, double y) {
-        super(ID,x,y,0.3);
-        sprite = new BufferedImage[][] {getSprite("mousevampire", 0), getSprite("mousevampire", 1)};
-        //adicionar a resistência a algo
+    public MonarkMouse(int ID, double x, double y) {
+        super(ID, x, y, 0.6);
+        sprite = new BufferedImage[][] {getSprite("monarkmouse", 0), getSprite("monarkmouse", 1)};
+        //adicionar resistência
+
     }
 
     @Override
-    public BufferedImage getSprite(){
-        return sprite[indexState][indexAnim];
+    public BufferedImage getSprite() {
+        return sprite[indexState][indexState];
     }
 
     public void tick() {
         moveIA();
         animation();
-        //criar função de dano
     }
 
     public void moveIA() {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
         getPhysical().addForce(0.50, radians);
-
-
     }
 
     public void animation() {
-        countAnim ++;
+        countAnim++;
         if(countAnim > 10) {
             countAnim = 0;
-            indexAnim ++;
+            indexAnim++;
             if(indexAnim >= sprite[indexState].length) {
                 indexAnim = 0;
             }
@@ -62,3 +59,9 @@ public class MouseVampire extends Entity {
     @Override
     public void dispose() {}
 }
+
+
+
+
+
+

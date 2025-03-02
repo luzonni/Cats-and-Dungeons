@@ -18,6 +18,7 @@ public class Waves {
     private int lastCounter;
     private boolean paused;
     private final GameMap gameMap;
+    volatile List<Entity> listAppend;
 
     public Waves(GameMap gameMap) {
         this.gameMap = gameMap;
@@ -42,7 +43,6 @@ public class Waves {
         if(!paused){
             counter++;
         }
-
         if(counter > 60 * 60){
             counter = 0;
             wave++;
@@ -51,13 +51,15 @@ public class Waves {
         }else if(counter > lastCounter + 3.5 * 60){
             lastCounter = counter;
             //TODO criar sistemas para excolher os inimigos que aparecerão em cada wave!
-            EntityIDs[] types = {EntityIDs.Zombie, EntityIDs.Skeleton, EntityIDs.Slime, EntityIDs.RatExplode, EntityIDs.MouseSquire, EntityIDs.MouseVampire};
+            EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie};
             int amount = (int) (4 * waveMultiplier);
             System.out.println("Contador para adicionar: " + amount);
             waveMultiplier += 0.09 + wave * 0.2; // testar balenceamento apos adicionar armas
-            new Thread(() -> {
-                spawner(listEntity(types, amount));
-            }).start();
+            synchronized (this) {
+                new Thread(() -> {
+                    listAppend = spawner(listEntity(types, amount));
+                }).start();
+            }
         }
     }
 
@@ -69,7 +71,8 @@ public class Waves {
         return lista;
     }
 
-    private void spawner(List<Entity> entidades) {
+    private List<Entity> spawner(List<Entity> entidades) {
+        List<Entity> list = new ArrayList<>();
         while (!entidades.isEmpty()){
             int x = Engine.RAND.nextInt(gameMap.getBounds().width / GameObject.SIZE());
             int y = Engine.RAND.nextInt(gameMap.getBounds().height / GameObject.SIZE());
@@ -78,13 +81,18 @@ public class Waves {
                 Entity e = entidades.getFirst();
                 e.setX(x * GameObject.SIZE());
                 e.setY(y * GameObject.SIZE());
-                gameMap.getEntities().add(e);
+                list.add(e);
                 entidades.remove(e);
             }
         }
+        return list;
     }
 
     public void tick() {
         wavingHandling();
+        if(listAppend != null && !listAppend.isEmpty()) {
+            Game.getMap().getEntities().addAll(listAppend);
+            listAppend.clear();
+        }
     }
 }
