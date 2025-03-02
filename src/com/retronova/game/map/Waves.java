@@ -17,10 +17,10 @@ public class Waves {
     private int counter;
     private int lastCounter;
     private boolean paused;
-    private final GameMap gameMap;
+    private final Arena gameMap;
     volatile List<Entity> listAppend;
 
-    public Waves(GameMap gameMap) {
+    public Waves(Arena gameMap) {
         this.gameMap = gameMap;
     }
 

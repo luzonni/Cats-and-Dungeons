@@ -50,13 +50,16 @@ public class Physical {
         double y = entity.getY();
         boolean[] colliders = colliding(x + vectorX, y + vectorY); //analisando a próxima posição
         this.orientation = new int[] {(int)Math.signum(vectorX), (int)Math.signum(vectorY)};
+        boolean moving = false;
         if(!colliders[0]) {
             entity.setX(x + vectorX);
+            moving = (int)(x+vectorX) != (int)x || (int)(y+vectorY) != (int)y;
         }
         if(!colliders[1]) {
             entity.setY(y + vectorY);
+            moving = (int)(x+vectorX) != (int)x || (int)(y+vectorY) != (int)y;
         }
-        return (int)(x+vectorX) != (int)x || (int)(y+vectorY) != (int)y;
+        return moving;
     }
 
     /**
@@ -114,15 +117,17 @@ public class Physical {
     }
 
     private boolean collidingTile(double nextX, double nextY) {
-        int leftX = (int)(nextX / GameObject.SIZE());
-        int rightX = (int)((nextX + entity.getWidth()) / GameObject.SIZE());
-        int upY = (int)(nextY / GameObject.SIZE());
-        int downY = (int)((nextY + entity.getHeight()) / GameObject.SIZE());
-        Tile leftup = Game.getMap().getTile(leftX, upY);
-        Tile leftdown = Game.getMap().getTile(leftX, downY);
-        Tile rightup = Game.getMap().getTile(rightX, upY);
-        Tile rightdown = Game.getMap().getTile(rightX, downY);
-        return leftup.isSolid() || leftdown.isSolid() || rightdown.isSolid() || rightup.isSolid();
+        //TODO este metodo está mugado pra krl!
+        System.err.println("ERRO NO KARALHO DO SISTEMA DE COLISÃO COM TILES!");
+        int leftX = (int)(nextX) / GameObject.SIZE();
+        int rightX = (int)(nextX + entity.getWidth()) / GameObject.SIZE();
+        int upY = (int)(nextY) / GameObject.SIZE();
+        int downY = (int)(nextY + entity.getHeight()) / GameObject.SIZE();
+        boolean leftup = Game.getMap().getTile(leftX, upY).isSolid();
+        boolean leftdown = Game.getMap().getTile(leftX, downY).isSolid();
+        boolean rightup = Game.getMap().getTile(rightX, upY).isSolid();
+        boolean rightdown = Game.getMap().getTile(rightX, downY).isSolid();
+        return leftup || leftdown || rightdown || rightup;
     }
 
     private void calcFriction() {

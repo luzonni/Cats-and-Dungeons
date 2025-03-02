@@ -1,5 +1,6 @@
 package com.retronova.graphics;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.exceptions.FlipException;
 import com.retronova.exceptions.OutOfPixels;
@@ -8,7 +9,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.Objects;
 
 public class SpriteSheet {
@@ -54,7 +54,7 @@ public class SpriteSheet {
         return sad;
     }
 
-    public BufferedImage subImage(int x, int y, int width, int heigth) {
+    public BufferedImage getSubimage(int x, int y, int width, int heigth) {
         if(loss)
             return SHEET;
         x*=scale;
@@ -67,7 +67,7 @@ public class SpriteSheet {
         return SHEET.getSubimage(x, y, width, heigth);
     }
 
-    public BufferedImage getSprite(int indexX, int indexY) {
+    public BufferedImage getSpriteWithIndex(int indexX, int indexY) {
         if(loss)
             return SHEET;
         int size = 16 * scale;
@@ -77,6 +77,15 @@ public class SpriteSheet {
             throw new OutOfPixels("the subimage is out of image pixels");
         }
         return SHEET.getSubimage(x, y, size, size);
+    }
+
+    public BufferedImage[] getSprites(int prefix) {
+        int length = this.getWidth() / 16;
+        BufferedImage[] sprites = new BufferedImage[length];
+        for(int i = 0; i < length; i++) {
+            sprites[i] = this.getSpriteWithIndex(i, prefix);
+        }
+        return sprites;
     }
 
     public int getWidth() {

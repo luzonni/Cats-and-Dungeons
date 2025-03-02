@@ -33,19 +33,14 @@ public abstract class GameObject {
         int length = sheet.getWidth() / 16;
         BufferedImage[] sprites = new BufferedImage[length];
         for(int i = 0; i < length; i++) {
-            sprites[i] = sheet.getSprite(i, 0);
+            sprites[i] = sheet.getSpriteWithIndex(i, 0);
         }
         return sprites;
     }
 
     public BufferedImage[] getSprite(String spriteName, int prefix) {
         SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
-        int length = sheet.getWidth() / 16;
-        BufferedImage[] sprites = new BufferedImage[length];
-        for(int i = 0; i < length; i++) {
-            sprites[i] = sheet.getSprite(i, prefix);
-        }
-        return sprites;
+        return sheet.getSprites(prefix);
     }
 
     public int getID() {

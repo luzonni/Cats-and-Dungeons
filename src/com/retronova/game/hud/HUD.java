@@ -3,9 +3,7 @@ package com.retronova.game.hud;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.graphics.FontG;
 import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
@@ -14,33 +12,29 @@ import java.awt.image.BufferedImage;
 
 public class HUD implements Activity {
 
-    private final int padding;
-    private final BufferedImage HUD;
-    private final BufferedImage[] busts;
-    private int indexBust;
+    private final BufferedImage frameBust;
+    private final BufferedImage chains;
+    private final BufferedImage bust;
+
     private BufferedImage vignette;
 
-    private Hotbar hotbar;
+    private final Hotbar hotbar;
 
     public HUD(Player player) {
         this.hotbar = new Hotbar(player);
-        this.padding = Configs.MARGIN;
-        SpriteSheet sp = new SpriteSheet("ui","HUD", Configs.HUDSCALE);
-        this.HUD = sp.getSHEET().getSubimage(0, 0, 64 * Configs.HUDSCALE, 16 * Configs.HUDSCALE);
-        this.busts = new BufferedImage[Player.TEMPLATES.length];
-        for(int i = 0; i < busts.length; i++) {
-            this.busts[i] = sp.getSprite(i, 1);
+        SpriteSheet sheetBust = new SpriteSheet("ui","bust", Configs.HUDSCALE);
+        int indexBust = 0;
+        for(int i = 0; i < Player.TEMPLATES.length; i++) {
             if(player.getName().equals(Player.TEMPLATES[i].getName())) {
-                this.indexBust = i;
+                indexBust = i;
             }
         }
+        this.bust = sheetBust.getSpriteWithIndex(indexBust ,1);
+        this.frameBust = sheetBust.getSpriteWithIndex(1,0);
+        this.chains = sheetBust.getSpriteWithIndex(0,0);
+
     }
 
-    /**
-     * Esta função serve para criar uma imagem do tamanho da tela, toda vez que a janela for redimensionada.
-     * Isso serve como otimização, pois desenhar um degrade radial usando canal alfa é pesado, então esta função
-     * cria a imagem para so depois renderiza-la.
-     */
     private void createVignette() {
         if(vignette == null || vignette.getWidth() != Engine.window.getWidth() || vignette.getHeight() != Engine.window.getHeight()) {
             int Size = Engine.window.getWidth();
@@ -73,28 +67,17 @@ public class HUD implements Activity {
     @Override
     public void render(Graphics2D g) {
         vignette(g);
-        drawPlayerLife(padding, padding, g);
+        bust(g);
         hotbar.render(g);
     }
 
-    private void drawPlayerLife(int x, int y,Graphics2D g) {
-        Player player = Game.getPlayer();
-        g.drawImage(HUD, x, y, null);
-        int prefX = x + 15 * Configs.HUDSCALE;
-        int prefY = y + 7 * Configs.HUDSCALE;
-        int width = 47 * Configs.HUDSCALE;
-        int height = 2 * Configs.HUDSCALE;
-        double lifeLength = width * ( 1 - (player.getLife() / player.getLifeSize()));
-        if(lifeLength < 0)
-            lifeLength = 0;
-        g.setColor(Color.black);
-        g.fillRect(prefX + width - (int)lifeLength, prefY, (int)lifeLength, height);
-        g.drawImage(this.busts[indexBust], x, y, null);
-        Font font = FontG.font(Configs.HUDSCALE*4);
-        String value = "" + (int)player.getLife() + "/" + (int)player.getLifeSize();
-        g.setFont(font);
-        g.setColor(Color.white);
-        g.drawString(value, x + 16 * Configs.HUDSCALE, y + 14 * Configs.HUDSCALE);
+    private void bust(Graphics2D g) {
+        int x = Configs.MARGIN;
+        int y = Configs.MARGIN;
+        g.drawImage(this.chains, x, y - (this.frameBust.getHeight() - Configs.SCALE), null);
+        g.drawImage(this.frameBust, x, y, null);
+        g.drawImage(this.bust, x, y, null);
+
     }
 
     private void vignette(Graphics2D g) {

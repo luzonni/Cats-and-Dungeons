@@ -1,7 +1,6 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.Engine;
 import com.retronova.exceptions.NotFound;
 import com.retronova.graphics.SpriteSheet;
 
@@ -33,7 +32,7 @@ public abstract class Item {
         int length = sheet.getWidth()/16;
         this.sprite = new BufferedImage[length];
         for(int i = 0; i < length; i++) {
-            this.sprite[i] = sheet.getSprite(i, 0);
+            this.sprite[i] = sheet.getSpriteWithIndex(i, 0);
         }
     }
 

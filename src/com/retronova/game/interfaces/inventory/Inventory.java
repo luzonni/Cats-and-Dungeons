@@ -33,20 +33,56 @@ public class Inventory implements Activity {
         }
         this.lengthBag = lengthBag;
         this.lengthHotbar = lengthHotbar;
-        this.inventoryPosition = new Point(Configs.MARGIN, Configs.MARGIN);
-        this.inventory = new SpriteSheet("ui", "inventory", Configs.UISCALE).getSHEET();
         this.insurer = new Slot(0, 0);
         this.bag = new Slot[15];
         this.hotbar = new Slot[5];
-        int xh = inventoryPosition.x + Configs.UISCALE*6;
-        int yh = inventoryPosition.y + Configs.UISCALE*70;
-        for(int i = 0; i < hotbar.length; i++) {
-            int w = 16 * Configs.UISCALE;
-            this.hotbar[i] = new Slot(xh + i * w, yh);
-        }
+        this.inventory = new SpriteSheet("ui", "inventory", Configs.UISCALE).getSHEET();
 
-        int xi = inventoryPosition.x + Configs.UISCALE*6;
-        int yi = inventoryPosition.y + Configs.UISCALE*6;
+        refreshPositions();
+
+        //Teste
+        bag[0].put(Item.build(ItemIDs.Gun));
+        hotbar[2].put(Item.build(ItemIDs.Sword));
+    }
+
+    public void refreshPositions() {
+        int xh = Configs.UISCALE * 6;
+        int yh = Configs.UISCALE * 70;
+        int xi = Configs.UISCALE*6;
+        int yi = Configs.UISCALE*6;
+        if(this.inventoryPosition == null) {
+            this.inventoryPosition = new Point(Configs.MARGIN, Configs.MARGIN);
+            xh += inventoryPosition.x;
+            yh += inventoryPosition.y;
+            xi += inventoryPosition.x;
+            yi += inventoryPosition.y;
+            for (int i = 0; i < hotbar.length; i++) {
+                int w = 16 * Configs.UISCALE;
+                this.hotbar[i] = new Slot(xh + i * w, yh);
+            }
+            for(int yy = 0; yy < 3; yy++) {
+                for(int xx = 0; xx < 5; xx++) {
+                    int index = xx + yy * 5;
+                    int w = 16 * Configs.UISCALE;
+                    int h = 16 * Configs.UISCALE;
+                    int xxx = xi + (xx * w);
+                    int yyy = yi + (yy * h);
+                    bag[index] = new Slot(xxx, yyy);
+                }
+            }
+            return;
+        }
+        if(this.inventoryPosition.x == Configs.MARGIN && this.inventoryPosition.y == Configs.MARGIN)
+            return;
+        this.inventoryPosition.setLocation(Configs.MARGIN, Configs.MARGIN);
+        xh += inventoryPosition.x;
+        yh += inventoryPosition.y;
+        xi += inventoryPosition.x;
+        yi += inventoryPosition.y;
+        for (int i = 0; i < hotbar.length; i++) {
+            int w = 16 * Configs.UISCALE;
+            this.hotbar[i].setPosition(xh + i * w, yh);
+        }
         for(int yy = 0; yy < 3; yy++) {
             for(int xx = 0; xx < 5; xx++) {
                 int index = xx + yy * 5;
@@ -54,13 +90,9 @@ public class Inventory implements Activity {
                 int h = 16 * Configs.UISCALE;
                 int xxx = xi + (xx * w);
                 int yyy = yi + (yy * h);
-                bag[index] = new Slot(xxx, yyy);
+                bag[index].setPosition(xxx, yyy);
             }
         }
-
-        //Teste
-        bag[0].put(Item.build(ItemIDs.Gun));
-        hotbar[2].put(Item.build(ItemIDs.Sword));
     }
 
     public void setItemHand(Item item) {
@@ -108,6 +140,7 @@ public class Inventory implements Activity {
         if(KeyBoard.KeyPressed("E")) {
             Engine.pause(null);
         }
+        refreshPositions();
         interation();
     }
 
@@ -118,8 +151,10 @@ public class Inventory implements Activity {
             if(Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
                 if(!slot.isEmpty() && insurer.isEmpty()) {
                     insurer.put(slot.take());
+                    Engine.window.setCursor(insurer.item().getSprite());
                 }else if(slot.isEmpty() && !insurer.isEmpty()) {
                     slot.put(insurer.take());
+                    Engine.window.resetCursor();
                 }else if(!slot.isEmpty() && !insurer.isEmpty()) {
                     Item insureItem = insurer.take();
                     Item slotItem = slot.take();

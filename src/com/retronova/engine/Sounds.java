@@ -8,8 +8,8 @@ public class Sounds {
 
     public static Sound zombieSound;
     public static kuusisto.tinysound.Music menuMusica;
-    private static final double ZOMBIE_SOUND_VOLUME = 0.1;
-    private static final double MENU_MUSIC_VOLUME = 0.3;
+    private static final double ZOMBIE_SOUND_VOLUME = 0.0;
+    private static final double MENU_MUSIC_VOLUME = 0.0;
 
     public static void init() {
         TinySound.init();

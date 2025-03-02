@@ -107,6 +107,8 @@ public class Player extends Entity {
 
     @Override
     public void render(Graphics2D g) {
+        g.setColor(Color.red);
+        g.fillRect(getBounds().x - Game.C.getX(), getBounds().y - Game.C.getY(), getBounds().width, getBounds().height);
         BufferedImage sprite = getSprite();
         if(getPhysical().getOrientation()[0] == -1)
             sprite = SpriteSheet.flip(sprite, 1, -1);

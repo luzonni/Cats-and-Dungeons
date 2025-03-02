@@ -13,7 +13,7 @@ public class Stone extends Tile {
     Stone(int id, int x, int y) {
         super(id, x, y, false);
         if(Stone.sprites == null)
-            Stone.sprites = this.getSprite("stone");
+            Stone.sprites = this.getSprite("stone", 1);
         index = Engine.RAND.nextInt(Stone.sprites.length);
     }
 
