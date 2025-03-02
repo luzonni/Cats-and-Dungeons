@@ -18,6 +18,6 @@ public class Arena extends GameMap {
     
     @Override
     public void tick() {
-        //waves.tick();
+        waves.tick();
     }
 }

@@ -39,7 +39,7 @@ public class Inventory implements Activity {
         this.inventory = new SpriteSheet("ui", "inventory", Configs.UISCALE).getSHEET();
 
         refreshPositions();
-        this.bag[lengthBag-1].put(Item.build(ItemIDs.Sword));
+        this.bag[lengthBag-1].put(Item.build(ItemIDs.Silk));
     }
 
     public void refreshPositions() {

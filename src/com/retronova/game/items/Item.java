@@ -11,6 +11,9 @@ public abstract class Item {
     public static Item build(ItemIDs id) {
         int i = id.ordinal();
         switch (id) {
+            case Silk -> {
+                return new Silk(i);
+            }
             case Sword -> {
                 return new Sword(i);
             }
@@ -37,9 +40,6 @@ public abstract class Item {
         return this.sprite[indexSprite];
     }
 
-    public void tick() {
-
-    }
-
+    public abstract void tick();
 
 }

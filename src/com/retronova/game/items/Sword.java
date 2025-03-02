@@ -6,4 +6,8 @@ public class Sword extends Item {
         super(id, "Espada galactica", "sword");
     }
 
+    @Override
+    public void tick() {
+
+    }
 }
