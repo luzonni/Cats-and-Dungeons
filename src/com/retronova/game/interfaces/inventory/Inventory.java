@@ -6,6 +6,7 @@ import com.retronova.engine.Engine;
 import com.retronova.exceptions.InventoryOutsOfBounds;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
+import com.retronova.graphics.FontG;
 import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
 import com.retronova.inputs.mouse.Mouse;
@@ -203,6 +204,7 @@ public class Inventory implements Activity {
         g.fillRect(0, 0, fw, fh);
         renderInventory(g);
         renderInsurer(g);
+        renderItemTag(g);
     }
 
     private void renderInventory(Graphics2D g) {
@@ -221,6 +223,34 @@ public class Inventory implements Activity {
             int y = Mouse.getY() + 16;
             g.drawImage(insurer.item().getSprite(), x, y, 16 * 2, 16 * 2, null);
         }
+    }
+
+    private void renderItemTag(Graphics2D g) {
+        String value = "";
+        Slot[] slots = merge();
+        for(int i = 0; i < slots.length; i++) {
+            Slot slot = slots[i];
+            if(Mouse.on(slot.getBounds()) && !slot.isEmpty()) {
+                value = slot.item().getName();
+            }
+        }
+        if(value.isBlank()) {
+            return;
+        }
+        int x = Mouse.getX() + 16;
+        int y = Mouse.getY() + 16;
+        Font font = FontG.font(Configs.UISCALE * 8);
+        int wF = FontG.getWidth(value, font);
+        int hF = FontG.getHeight(value, font);
+        int padding = Configs.UISCALE * 3;
+        g.setFont(font);
+        g.setStroke(new BasicStroke(Configs.UISCALE));
+        g.setColor(new Color(190, 49, 68));
+        g.fillRect(x, y, wF + padding*2, hF + padding*2);
+        g.setColor(new Color(135, 35, 65));
+        g.drawRect(x, y, wF + padding*2, hF + padding*2);
+        g.setColor(Color.white);
+        g.drawString(value, x + padding, y + hF + padding);
     }
 
     @Override
