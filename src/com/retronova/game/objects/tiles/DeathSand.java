@@ -6,36 +6,35 @@ import com.retronova.game.objects.entities.Entity;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class Stone extends Tile {
+public class DeathSand extends Tile {
 
     private static BufferedImage[] sprites;
     private int index = 0;
 
-    Stone(int id, int x, int y) {
+    DeathSand(int id, int x, int y) {
         super(id, x, y, false);
-        if(Stone.sprites == null)
-            Stone.sprites = this.getSprite("stone", 1);
-        index = Engine.RAND.nextInt(Stone.sprites.length);
-    }
-
-    @Override
-    public BufferedImage getSprite() {
-        return sprites[0];
+        if(sprites == null)
+            sprites = this.getSprite("deathSand", 0);
+        index = Engine.RAND.nextInt(sprites.length);
     }
 
     @Override
     public void effect(Entity e) {
+        e.getPhysical().setFriction(0.9);
+    }
 
+    @Override
+    public BufferedImage getSprite() {
+        return sprites[index];
     }
 
     @Override
     public void render(Graphics2D g) {
-        renderSprite(sprites[index], g);
+        renderSprite(getSprite(), g);
     }
 
     @Override
     public void dispose() {
-        Stone.sprites = null;
-    }
 
+    }
 }

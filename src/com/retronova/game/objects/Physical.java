@@ -13,6 +13,7 @@ public class Physical {
     private double speed;
     private double angleForce;
     private final double friction; //taxa de fricção do mapa
+    private double momentFriction;
     private boolean isMoving;
     private int[] orientation;
 
@@ -20,6 +21,7 @@ public class Physical {
     public Physical(Entity entity, double friction) {
         this.entity = entity;
         this.friction = friction;
+        this.momentFriction = friction;
         this.orientation = new int[] {0, 0};
     }
 
@@ -69,6 +71,12 @@ public class Physical {
      */
     public int[] getOrientation() {
         return this.orientation;
+    }
+
+
+
+    public void setFriction(double friction) {
+        this.momentFriction = friction;
     }
 
     /**
@@ -129,7 +137,12 @@ public class Physical {
     }
 
     private void calcFriction() {
-        this.speed *= (1 - friction);
+        double f = friction;
+        if(momentFriction != friction) {
+            f = momentFriction;
+            momentFriction = friction;
+        }
+        this.speed *= (1 - f);
     }
 
     public boolean isMoving() {

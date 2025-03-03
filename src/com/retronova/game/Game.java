@@ -65,6 +65,8 @@ public class Game implements Activity {
             entity.setDepth();
             entity.getPhysical().moment();
             entity.tick();
+            Tile tile = map.getTile((int) entity.getX() + entity.getWidth()/2, (int) entity.getY() + entity.getHeight()/2);
+            tile.effect(entity);
         }
         Tile[] map = this.map.getMap();
         for(int i = 0; i < map.length; i++) {

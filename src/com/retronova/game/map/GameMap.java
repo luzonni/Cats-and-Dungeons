@@ -63,10 +63,16 @@ public abstract class GameMap {
     }
 
     public Tile getTile(int x, int y) {
-        if (x < 0 || y < 0 || x >= length || y >= map.length / length) {
-            return null; // Evita erro
+        try {
+            if (x > 0 || y > 0 || x < length || y < map.length / length) {
+                return getMap()[x + y * length];
+            }
+        }catch(IndexOutOfBoundsException e) {
+            x /= GameObject.SIZE();
+            y /= GameObject.SIZE();
+            return getMap()[x + y * length];
         }
-        return getMap()[x + y * length];
+        throw new IndexOutOfBoundsException("Posição fora do mapa");
     }
 
     public List<Entity> getEntities() {
