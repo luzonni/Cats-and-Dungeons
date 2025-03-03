@@ -1,6 +1,7 @@
 package com.retronova.game.objects.tiles;
 
 import com.retronova.engine.Engine;
+import com.retronova.game.objects.entities.Entity;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -13,7 +14,7 @@ public class Bricks extends Tile {
     Bricks(int id, int x, int y) {
         super(id, x, y, true);
         if(Bricks.sprites == null)
-            Bricks.sprites = this.getSprite("brick");
+            Bricks.sprites = this.getSprite("brick", 1);
         index = Engine.RAND.nextInt(Bricks.sprites.length);
     }
 
@@ -23,9 +24,8 @@ public class Bricks extends Tile {
     }
 
     @Override
-    public void tick() {
-        //Logic tile
-        //codes here usually is deprecated to optimization.
+    public void effect(Entity e) {
+
     }
 
     @Override
@@ -37,4 +37,5 @@ public class Bricks extends Tile {
     public void dispose() {
         Bricks.sprites = null;
     }
+
 }

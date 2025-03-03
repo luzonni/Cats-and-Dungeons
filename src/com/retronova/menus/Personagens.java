@@ -4,7 +4,7 @@ import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
-import com.retronova.game.map.GameMap;
+import com.retronova.game.map.Arena;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.graphics.FontG;
 import com.retronova.graphics.SpriteSheet;
@@ -118,7 +118,7 @@ public class Personagens implements Activity {
             Engine.setActivity(new Menu());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
             if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
-                Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new GameMap()));
+                Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new Arena(dificuldadeSelecionada)));
             } else {
                 if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
                     System.out.println("Selecione um personagem e dificuldade antes de jogar!");

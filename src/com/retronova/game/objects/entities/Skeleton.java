@@ -18,7 +18,7 @@ public class Skeleton extends Entity {
     private int indexAnim; //
 
 
-    public Skeleton(int ID, double x, double y) {
+    Skeleton(int ID, double x, double y) {
         super(ID, x, y, 0.5);
         sprite = new BufferedImage[][] {getSprite("mouseskeleton", 0), getSprite("mouseskeleton", 1)};
 
@@ -44,10 +44,8 @@ public class Skeleton extends Entity {
 
     private void moveIA() {
         Player player = Game.getPlayer();
-        if(Math.sqrt(Math.pow((player.getX() - getX()), 2) + Math.pow(player.getY() - getY(), 2)) < GameObject.SIZE()*20) {
-            double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(1, radians);
-        }
+        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        getPhysical().addForce(1, radians);
         this.indexState = getPhysical().isMoving() ? 1 : 0;
     }
 

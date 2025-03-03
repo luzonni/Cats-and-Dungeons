@@ -6,6 +6,7 @@ import com.retronova.engine.Engine;
 import com.retronova.exceptions.InventoryOutsOfBounds;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
+import com.retronova.graphics.FontG;
 import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
 import com.retronova.inputs.mouse.Mouse;
@@ -33,20 +34,53 @@ public class Inventory implements Activity {
         }
         this.lengthBag = lengthBag;
         this.lengthHotbar = lengthHotbar;
-        this.inventoryPosition = new Point(Configs.MARGIN, Configs.MARGIN);
-        this.inventory = new SpriteSheet("ui", "inventory", Configs.UISCALE).getSHEET();
         this.insurer = new Slot(0, 0);
         this.bag = new Slot[15];
         this.hotbar = new Slot[5];
-        int xh = inventoryPosition.x + Configs.UISCALE*6;
-        int yh = inventoryPosition.y + Configs.UISCALE*70;
-        for(int i = 0; i < hotbar.length; i++) {
-            int w = 16 * Configs.UISCALE;
-            this.hotbar[i] = new Slot(xh + i * w, yh);
-        }
+        this.inventory = new SpriteSheet("ui", "inventory", Configs.UISCALE).getSHEET();
 
-        int xi = inventoryPosition.x + Configs.UISCALE*6;
-        int yi = inventoryPosition.y + Configs.UISCALE*6;
+        refreshPositions();
+        this.bag[lengthBag-1].put(Item.build(ItemIDs.Silk));
+    }
+
+    public void refreshPositions() {
+        int xh = Configs.UISCALE * 6;
+        int yh = Configs.UISCALE * 70;
+        int xi = Configs.UISCALE*6;
+        int yi = Configs.UISCALE*6;
+        if(this.inventoryPosition == null) {
+            this.inventoryPosition = new Point(Configs.MARGIN, Configs.MARGIN);
+            xh += inventoryPosition.x;
+            yh += inventoryPosition.y;
+            xi += inventoryPosition.x;
+            yi += inventoryPosition.y;
+            for (int i = 0; i < hotbar.length; i++) {
+                int w = 16 * Configs.UISCALE;
+                this.hotbar[i] = new Slot(xh + i * w, yh);
+            }
+            for(int yy = 0; yy < 3; yy++) {
+                for(int xx = 0; xx < 5; xx++) {
+                    int index = xx + yy * 5;
+                    int w = 16 * Configs.UISCALE;
+                    int h = 16 * Configs.UISCALE;
+                    int xxx = xi + (xx * w);
+                    int yyy = yi + (yy * h);
+                    bag[index] = new Slot(xxx, yyy);
+                }
+            }
+            return;
+        }
+        if(this.inventoryPosition.x == Configs.MARGIN && this.inventoryPosition.y == Configs.MARGIN)
+            return;
+        this.inventoryPosition.setLocation(Configs.MARGIN, Configs.MARGIN);
+        xh += inventoryPosition.x;
+        yh += inventoryPosition.y;
+        xi += inventoryPosition.x;
+        yi += inventoryPosition.y;
+        for (int i = 0; i < hotbar.length; i++) {
+            int w = 16 * Configs.UISCALE;
+            this.hotbar[i].setPosition(xh + i * w, yh);
+        }
         for(int yy = 0; yy < 3; yy++) {
             for(int xx = 0; xx < 5; xx++) {
                 int index = xx + yy * 5;
@@ -54,13 +88,31 @@ public class Inventory implements Activity {
                 int h = 16 * Configs.UISCALE;
                 int xxx = xi + (xx * w);
                 int yyy = yi + (yy * h);
-                bag[index] = new Slot(xxx, yyy);
+                bag[index].setPosition(xxx, yyy);
             }
         }
+    }
 
-        //Teste
-        bag[0].put(Item.build(ItemIDs.Gun));
-        hotbar[2].put(Item.build(ItemIDs.Sword));
+    public boolean give(Item item) {
+        Slot[] slots = merge();
+        for(int i = 0; i < slots.length; i++) {
+            if(slots[i].isEmpty()) {
+                if(slots[i].put(item))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean drop(Item item) {
+        Slot[] slots = merge();
+        for(int i = 0; i < slots.length; i++) {
+            if(!slots[i].isEmpty() && slots[i].item().equals(item)) {
+                slots[i].take();
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setItemHand(Item item) {
@@ -108,6 +160,7 @@ public class Inventory implements Activity {
         if(KeyBoard.KeyPressed("E")) {
             Engine.pause(null);
         }
+        refreshPositions();
         interation();
     }
 
@@ -151,6 +204,7 @@ public class Inventory implements Activity {
         g.fillRect(0, 0, fw, fh);
         renderInventory(g);
         renderInsurer(g);
+        renderItemTag(g);
     }
 
     private void renderInventory(Graphics2D g) {
@@ -171,8 +225,37 @@ public class Inventory implements Activity {
         }
     }
 
+    private void renderItemTag(Graphics2D g) {
+        String value = "";
+        Slot[] slots = merge();
+        for(int i = 0; i < slots.length; i++) {
+            Slot slot = slots[i];
+            if(Mouse.on(slot.getBounds()) && !slot.isEmpty()) {
+                value = slot.item().getName();
+            }
+        }
+        if(value.isBlank()) {
+            return;
+        }
+        int x = Mouse.getX() + 16;
+        int y = Mouse.getY() + 16;
+        Font font = FontG.font(Configs.UISCALE * 8);
+        int wF = FontG.getWidth(value, font);
+        int hF = FontG.getHeight(value, font);
+        int padding = Configs.UISCALE * 3;
+        g.setFont(font);
+        g.setStroke(new BasicStroke(Configs.UISCALE));
+        g.setColor(new Color(190, 49, 68));
+        g.fillRect(x, y, wF + padding*2, hF + padding*2);
+        g.setColor(new Color(135, 35, 65));
+        g.drawRect(x, y, wF + padding*2, hF + padding*2);
+        g.setColor(Color.white);
+        g.drawString(value, x + padding, y + hF + padding);
+    }
+
     @Override
     public void dispose() {
 
     }
+
 }

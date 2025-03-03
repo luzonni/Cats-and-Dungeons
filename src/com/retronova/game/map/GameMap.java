@@ -3,15 +3,16 @@ package com.retronova.game.map;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.game.objects.tiles.TileIDs;
 import com.retronova.game.objects.tiles.Tile;
+import com.retronova.game.objects.tiles.TileIDs;
 import com.retronova.graphics.SpriteSheet;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GameMap {
+public abstract class GameMap {
 
     private int length;
     private Rectangle bounds;
@@ -19,12 +20,9 @@ public class GameMap {
     private List<Entity> entities;
     private final Tile[] map;
 
-    private Waves waves;
-
-    public GameMap() {
-        this.map = loadMap();
+    public GameMap(String mapName) {
+        this.map = loadMap(mapName);
         this.entities = new ArrayList<>();
-        this.waves = new Waves(this);
     }
 
     public Player addPlayer(Player player) {
@@ -34,8 +32,8 @@ public class GameMap {
         return player;
     }
 
-    private Tile[] loadMap() {
-        BufferedImage mapImage = new SpriteSheet("maps", "easy", 1).getSHEET();
+    private Tile[] loadMap(String mapName) {
+        BufferedImage mapImage = new SpriteSheet("maps", mapName, 1).getSHEET();
         int width = mapImage.getWidth();
         int height = mapImage.getHeight();
         this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
@@ -64,17 +62,18 @@ public class GameMap {
         return this.map;
     }
 
-    public Waves getWaves() {
-        return waves;
-    }
-
     public Tile getTile(int x, int y) {
-        if (x < 0 || y < 0 || x >= length || y >= map.length / length) {
-            return null; // Evita erro
+        try {
+            if (x > 0 || y > 0 || x < length || y < map.length / length) {
+                return getMap()[x + y * length];
+            }
+        }catch(IndexOutOfBoundsException e) {
+            x /= GameObject.SIZE();
+            y /= GameObject.SIZE();
+            return getMap()[x + y * length];
         }
-        return getMap()[x + y * length];
+        throw new IndexOutOfBoundsException("Posição fora do mapa");
     }
-
 
     public List<Entity> getEntities() {
         if (entities == null) {
@@ -83,8 +82,10 @@ public class GameMap {
         return entities;
     }
 
+    public abstract void tick();
 
     public Rectangle getBounds() {
         return this.bounds;
     }
+
 }

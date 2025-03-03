@@ -33,19 +33,14 @@ public abstract class GameObject {
         int length = sheet.getWidth() / 16;
         BufferedImage[] sprites = new BufferedImage[length];
         for(int i = 0; i < length; i++) {
-            sprites[i] = sheet.getSprite(i, 0);
+            sprites[i] = sheet.getSpriteWithIndex(i, 0);
         }
         return sprites;
     }
 
     public BufferedImage[] getSprite(String spriteName, int prefix) {
         SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
-        int length = sheet.getWidth() / 16;
-        BufferedImage[] sprites = new BufferedImage[length];
-        for(int i = 0; i < length; i++) {
-            sprites[i] = sheet.getSprite(i, prefix);
-        }
-        return sprites;
+        return sheet.getSprites(prefix);
     }
 
     public int getID() {
@@ -94,6 +89,14 @@ public abstract class GameObject {
 
     public double getDistance(GameObject object) {
         return Math.sqrt(Math.pow((object.getX() - this.getX()), 2) + Math.pow(object.getY() - this.getY(), 2));
+    }
+
+    public double getAngle(GameObject obj) {
+        return Math.atan2(getY() - obj.getY(), getX() - obj.getX());
+    }
+
+    public double getAngle(Point point) {
+        return Math.atan2(point.getY() - getY(), point.getX() - getX());
     }
 
     public static Comparator<GameObject> Depth = Comparator.comparingInt(GameObject::getDepth);

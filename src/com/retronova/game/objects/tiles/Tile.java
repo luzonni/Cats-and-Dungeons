@@ -2,6 +2,7 @@ package com.retronova.game.objects.tiles;
 
 import com.retronova.exceptions.TileNotFound;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.entities.Entity;
 
 public abstract class Tile extends GameObject {
 
@@ -18,6 +19,15 @@ public abstract class Tile extends GameObject {
             case Stone -> {
                 return new Stone(ID, x, y);
             }
+            case Ice -> {
+                return new Ice(ID, x, y);
+            }
+            case Lava -> {
+                return new Lava(ID, x, y);
+            }
+            case DeathSand -> {
+                return new DeathSand(ID, x, y);
+            }
         }
         throw new TileNotFound("Tile not found");
     }
@@ -29,6 +39,13 @@ public abstract class Tile extends GameObject {
         setSolid(solid);
     }
 
+    public abstract void effect(Entity e);
+
+    @Override
+    public void tick() {
+
+    }
+
     private void setSolid(boolean solid) {
         this.solid = solid;
     }
@@ -36,5 +53,6 @@ public abstract class Tile extends GameObject {
     public boolean isSolid() {
         return this.solid;
     }
+
 
 }

@@ -5,6 +5,7 @@ import com.retronova.engine.Engine;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.graphics.SpriteSheet;
+import com.retronova.inputs.keyboard.KeyBoard;
 import com.retronova.inputs.mouse.Mouse;
 
 import java.awt.*;
@@ -23,19 +24,29 @@ class Hotbar {
         int sheetSize = sheet.getWidth()/16;
         this.sprites = new BufferedImage[sheetSize];
         for(int i = 0; i < sheetSize; i++) {
-            this.sprites[i] = sheet.getSprite(i, 0);
+            this.sprites[i] = sheet.getSpriteWithIndex(i, 0);
         }
-        this.bounds = new Rectangle[5];
+        refreshPositions();
+    }
+
+    private void refreshPositions() {
         int hotbarWidth = this.sprites[0].getWidth() * 5;
         int x = Engine.window.getWidth()/2 - hotbarWidth/2;
         int y = Engine.window.getHeight() - this.sprites[0].getHeight() - Configs.MARGIN;
+        if(this.bounds == null) {
+            this.bounds = new Rectangle[5];
+            for(int i = 0; i < 5; i++) {
+                this.bounds[i] = new Rectangle(x + i * sprites[0].getWidth(), y, sprites[0].getWidth(), sprites[0].getHeight());
+            }
+        }
         for(int i = 0; i < 5; i++) {
-            this.bounds[i] = new Rectangle(x + i * sprites[0].getWidth(), y, sprites[0].getWidth(), sprites[0].getHeight());
+            this.bounds[i].setLocation(x + i * sprites[0].getWidth(), y);
         }
     }
 
 
     public void tick() {
+        refreshPositions();
         int length = player.getInventory().getHotbarSize();
         int scroll = Mouse.Scroll();
         if(scroll > 0) {
@@ -51,6 +62,11 @@ class Hotbar {
         }
         Item itemHand = player.getInventory().getHotbar()[index];
         player.getInventory().setItemHand(itemHand);
+        if(KeyBoard.KeyPressed("Q") && itemHand != null) {
+            if(player.getInventory().drop(itemHand)) {
+                player.dropLoot(itemHand);
+            }
+        }
     }
 
     public void render(Graphics2D g) {
@@ -63,7 +79,9 @@ class Hotbar {
             BufferedImage sprite = index == i ? sprites[1] : sprites[0];
             g.drawImage(sprite, bounds[i].x + difX, bounds[i].y, null);
             if(items[i] != null) {
-                g.drawImage(items[i].getSprite(), bounds[i].x + difX, bounds[i].y, null);
+                int x = bounds[i].x + difX + 2 * Configs.HUDSCALE;
+                int y = bounds[i].y + 2 * Configs.HUDSCALE;
+                g.drawImage(items[i].getSprite(), x, y,12 * Configs.HUDSCALE, 12 * Configs.HUDSCALE, null);
             }
         }
     }

@@ -3,6 +3,7 @@ package com.retronova.game.interfaces.inventory;
 import com.retronova.engine.Configs;
 import com.retronova.game.items.Item;
 import com.retronova.graphics.SpriteSheet;
+import com.retronova.inputs.mouse.Mouse;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -13,16 +14,15 @@ class Slot {
     private final Rectangle bounds;
     private Item item;
 
-    Slot(int x, int y, Item item) {
-        this.item = item;
-        this.sprite = new SpriteSheet("ui", "slot", Configs.UISCALE).getSHEET();
-        this.bounds = new Rectangle(x, y, this.sprite.getWidth(), this.sprite.getHeight());
-    }
 
     Slot(int x, int y) {
         this.item = null;
         this.sprite = new SpriteSheet("ui", "slot", Configs.UISCALE).getSHEET();
         this.bounds = new Rectangle(x, y, this.sprite.getWidth(), this.sprite.getHeight());
+    }
+
+    void setPosition(int x, int y) {
+        this.bounds.setLocation(x, y);
     }
 
     Item item() {
@@ -42,9 +42,9 @@ class Slot {
     }
 
     public Item take() {
-        Item taked = this.item;
+        Item caught = this.item;
         this.item = null;
-        return taked;
+        return caught;
     }
 
     boolean isEmpty() {
@@ -54,6 +54,21 @@ class Slot {
     void render(Graphics2D g) {
         g.drawImage(sprite, bounds.x, bounds.y, null);
         if(!isEmpty())
-            g.drawImage(item.getSprite(), bounds.x, bounds.y, sprite.getWidth(), sprite.getHeight(), null);
+            renderItem(g);
+    }
+
+    private void renderItem(Graphics2D g) {
+        int overAnimPref;
+        if(Mouse.on(getBounds())) {
+            overAnimPref = 2;
+        }else {
+            overAnimPref = 0;
+        }
+        int x = bounds.x + overAnimPref;
+        int y = bounds.y + overAnimPref;
+        int width = bounds.width - overAnimPref*2;
+        int height = bounds.height - overAnimPref*2;
+        g.drawImage(item.getSprite(), x, y, width, height, null);
+
     }
 }

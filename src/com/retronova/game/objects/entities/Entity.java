@@ -1,12 +1,14 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.exceptions.EntityNotFound;
 import com.retronova.game.Game;
-import com.retronova.game.map.GameMap;
+import com.retronova.game.items.Item;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Physical;
-import com.retronova.inputs.mouse.Mouse;
+
+import java.awt.*;
 
 public abstract class Entity extends GameObject {
 
@@ -50,7 +52,7 @@ public abstract class Entity extends GameObject {
         throw new EntityNotFound("Entity not found");
     }
 
-    public Entity(int ID, double x, double y, double friction) {
+    Entity(int ID, double x, double y, double friction) {
         super(ID);
         setX(x);
         setY(y);
@@ -94,15 +96,39 @@ public abstract class Entity extends GameObject {
         }
     }
 
-
     public void die() {
         //TODO adicionar particula de morte
         //TODO adicionar som de morte
         Game.getMap().getEntities().remove(this);
     }
 
+    public void dropLoot(Item loot) {
+        Entity drop = new Drop(getX(), getY(), loot);
+        Game.getMap().getEntities().add(drop);
+        drop.getPhysical().addForce(Engine.RAND.nextInt(10), Engine.RAND.nextDouble(Math.PI*2));
+    }
+
     public Physical getPhysical() {
         return this.physical;
+    }
+
+    public void renderLife(Graphics2D g) {
+        if(getLife() == getLifeSize() || this instanceof Player)
+            return;
+        int x = (int)getX() - Game.C.getX();
+        int y = (int)getY() + getHeight() - Game.C.getY() + Configs.SCALE*2;
+        int w = getWidth();
+        int h = Configs.SCALE * 3;
+
+        g.setColor(new Color(135, 35, 65));
+        g.fillRect(x, y, w, h);
+        double lifeSize = w * (getLife() / getLifeSize());
+        g.setColor(new Color(190, 49, 68));
+        g.fillRect(x, y, (int) lifeSize, h);
+
+        g.setStroke(new BasicStroke(Configs.SCALE));
+        g.setColor(new Color(9, 18, 44));
+        g.drawRect(x, y, w, h);
     }
 
 }

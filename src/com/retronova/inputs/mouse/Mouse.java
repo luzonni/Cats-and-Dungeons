@@ -17,14 +17,14 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
     protected static int scroolSide = 0;
     protected static boolean scrollChanged = false;
 
-    public static boolean On_Mouse(Rectangle rec) {
+    public static boolean on(Rectangle rec) {
         if(rec.contains(xMouse, yMouse)) {
             return true;
         }
         return false;
     }
 
-    public static boolean On_Mouse(int x, int y, int width, int height) {
+    public static boolean on(int x, int y, int width, int height) {
         if((Mouse.xMouse >= x && Mouse.xMouse < x + width) &&
                 Mouse.yMouse >= y && Mouse.yMouse < y + height) {
             return true;

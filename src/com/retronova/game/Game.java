@@ -5,6 +5,7 @@ import com.retronova.engine.Engine;
 import com.retronova.exceptions.NotInActivity;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.map.Camera;
+import com.retronova.game.map.Arena;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.map.Waves;
 import com.retronova.game.objects.entities.Entity;
@@ -12,7 +13,6 @@ import com.retronova.game.objects.entities.Player;
 import com.retronova.game.interfaces.Pause;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.inputs.keyboard.KeyBoard;
-import com.retronova.menus.Menu;
 
 import java.awt.*;
 import java.util.List;
@@ -52,12 +52,12 @@ public class Game implements Activity {
         if(KeyBoard.KeyPressed("E")) {
             Engine.pause(player.getInventory());
         }
-        map.getWaves().tick();
+        map.tick();
         //tick logic
         List<Entity> entities = map.getEntities();
         /**
-         * entities.sort(Entity.Depth) ->
-         * Este metodo organizará a lista de objetos de acordo com sua profundidade do eixo Y.
+         entities.sort(Entity.Depth) ->
+         Este metodo organizará a lista de objetos de acordo com sua profundidade do eixo Y.
          */
         entities.sort(Entity.Depth);
         for(int i = 0; i < entities.size(); i++) {
@@ -65,6 +65,8 @@ public class Game implements Activity {
             entity.setDepth();
             entity.getPhysical().moment();
             entity.tick();
+            Tile tile = map.getTile((int) entity.getX() + entity.getWidth()/2, (int) entity.getY() + entity.getHeight());
+            tile.effect(entity);
         }
         Tile[] map = this.map.getMap();
         for(int i = 0; i < map.length; i++) {
@@ -79,7 +81,7 @@ public class Game implements Activity {
 
     public static void reiniciarJogo() {
         Game game = getGame();
-        Engine.setActivity(new Game(game.indexPlayer, game.difficulty, new GameMap()));
+        Engine.setActivity(new Game(game.indexPlayer, game.difficulty, new Arena(0)));
         //TODO tirar saídas de console após finalização da lógica.
         System.out.println("Jogo reiniciado com personagem " + game.indexPlayer + " e dificuldade " + game.difficulty);
     }
@@ -106,10 +108,10 @@ public class Game implements Activity {
     }
 
     public static Waves getWave(){
-        if(Engine.getACTIVITY() instanceof Game game) {
-            return game.map.getWaves();
+        if(getMap() instanceof Arena arena) {
+            return arena.getWaves();
         }
-        throw new NotInActivity("Não é possível retornar a Wave pois a activity atual não é o jogo!");
+        throw new NotInActivity("Não é possível retornar a Wave pois a activity atual não é o jogo ou o jogo não está em uma arena.");
     }
 
     public static HUD getHUD() {
@@ -139,6 +141,7 @@ public class Game implements Activity {
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
             entity.render(g);
+            entity.renderLife(g);
         }
     }
 

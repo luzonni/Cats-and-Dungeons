@@ -37,12 +37,7 @@ public class Player extends Entity {
 
     private Inventory inventory;
 
-    public Player() {
-        super(0, 0, 0, 0);
-        throw new PlayerInstanceException("Não é permitido instancia o player dessa maneira!");
-    }
-
-    private Player(String name, double damage, double speed) {
+    Player(String name, double damage, double speed) {
         super(0, 0, 0, 0.5);
         this.name = name;
         this.damege = damage;
@@ -79,6 +74,13 @@ public class Player extends Entity {
                 indexAnim = 0;
             }
         }
+        tickItemHand();
+    }
+
+    private void tickItemHand() {
+        Item item = getInventory().getItemHand();
+        if(item != null)
+            item.tick();
     }
 
     private void updateMovement(){
@@ -118,10 +120,7 @@ public class Player extends Entity {
         Item item = getInventory().getItemHand();
         if(item == null)
             return;
-        double angle = Math.atan2((getY() - Game.C.getY()) - Mouse.getY(), (getX() - Game.C.getX()) - Mouse.getX());
-        g.rotate(angle, getX() - Game.C.getX(), getY() - Game.C.getY());
-        g.drawImage(item.getSprite(), (int)(getX() - Game.C.getX()), (int)(getY() - Game.C.getY()), null);
-        g.rotate(-angle, getX() - Game.C.getX(), getY() - Game.C.getY());
+        item.render(g);
     }
 
     @Override

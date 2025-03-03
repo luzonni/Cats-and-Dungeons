@@ -13,7 +13,7 @@ public class MouseVampire extends Entity {
     private int indexState;
     private int indexAnim;
 
-    public MouseVampire(int ID, double x, double y) {
+    MouseVampire(int ID, double x, double y) {
         super(ID,x,y,0.3);
         sprite = new BufferedImage[][] {getSprite("mousevampire", 0), getSprite("mousevampire", 1)};
         //adicionar a resistência a algo
@@ -21,7 +21,7 @@ public class MouseVampire extends Entity {
 
     @Override
     public BufferedImage getSprite(){
-        return sprite[indexState][indexState];
+        return sprite[indexState][indexAnim];
     }
 
     public void tick() {
@@ -39,10 +39,10 @@ public class MouseVampire extends Entity {
     }
 
     public void animation() {
-        countAnim++;
+        countAnim ++;
         if(countAnim > 10) {
             countAnim = 0;
-            indexAnim++;
+            indexAnim ++;
             if(indexAnim >= sprite[indexState].length) {
                 indexAnim = 0;
             }

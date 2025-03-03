@@ -13,6 +13,7 @@ public class Physical {
     private double speed;
     private double angleForce;
     private final double friction; //taxa de fricção do mapa
+    private double momentFriction;
     private boolean isMoving;
     private int[] orientation;
 
@@ -20,6 +21,7 @@ public class Physical {
     public Physical(Entity entity, double friction) {
         this.entity = entity;
         this.friction = friction;
+        this.momentFriction = friction;
         this.orientation = new int[] {0, 0};
     }
 
@@ -50,13 +52,16 @@ public class Physical {
         double y = entity.getY();
         boolean[] colliders = colliding(x + vectorX, y + vectorY); //analisando a próxima posição
         this.orientation = new int[] {(int)Math.signum(vectorX), (int)Math.signum(vectorY)};
+        boolean moving = false;
         if(!colliders[0]) {
             entity.setX(x + vectorX);
+            moving = (int)(x+vectorX) != (int)x || (int)(y+vectorY) != (int)y;
         }
         if(!colliders[1]) {
             entity.setY(y + vectorY);
+            moving = (int)(x+vectorX) != (int)x || (int)(y+vectorY) != (int)y;
         }
-        return (int)(x+vectorX) != (int)x || (int)(y+vectorY) != (int)y;
+        return moving;
     }
 
     /**
@@ -66,6 +71,12 @@ public class Physical {
      */
     public int[] getOrientation() {
         return this.orientation;
+    }
+
+
+
+    public void setFriction(double friction) {
+        this.momentFriction = friction;
     }
 
     /**
@@ -114,19 +125,24 @@ public class Physical {
     }
 
     private boolean collidingTile(double nextX, double nextY) {
-        int leftX = (int)(nextX / GameObject.SIZE());
-        int rightX = (int)((nextX + entity.getWidth()) / GameObject.SIZE());
-        int upY = (int)(nextY / GameObject.SIZE());
-        int downY = (int)((nextY + entity.getHeight()) / GameObject.SIZE());
-        Tile leftup = Game.getMap().getTile(leftX, upY);
-        Tile leftdown = Game.getMap().getTile(leftX, downY);
-        Tile rightup = Game.getMap().getTile(rightX, upY);
-        Tile rightdown = Game.getMap().getTile(rightX, downY);
-        return leftup.isSolid() || leftdown.isSolid() || rightdown.isSolid() || rightup.isSolid();
+        int leftX = (int)(nextX) / GameObject.SIZE();
+        int rightX = (int)(nextX + entity.getWidth() - 1) / GameObject.SIZE();
+        int upY = (int)(nextY) / GameObject.SIZE();
+        int downY = (int)(nextY + entity.getHeight() - 1) / GameObject.SIZE();
+        boolean leftup = Game.getMap().getTile(leftX, upY).isSolid();
+        boolean leftdown = Game.getMap().getTile(leftX, downY).isSolid();
+        boolean rightup = Game.getMap().getTile(rightX, upY).isSolid();
+        boolean rightdown = Game.getMap().getTile(rightX, downY).isSolid();
+        return leftup || leftdown || rightdown || rightup;
     }
 
     private void calcFriction() {
-        this.speed *= (1 - friction);
+        double f = friction;
+        if(momentFriction != friction) {
+            f = momentFriction;
+            momentFriction = friction;
+        }
+        this.speed *= (1 - f);
     }
 
     public boolean isMoving() {

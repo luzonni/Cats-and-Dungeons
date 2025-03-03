@@ -5,7 +5,10 @@ public enum TileIDs {
     // 00 -> 0
     // ff -> 255
     Brick("0x000000"),
-    Stone("0xffffff");
+    Stone("0xffffff"),
+    Lava("0xff0000"),
+    Ice("0x00c8ff"),
+    DeathSand("0x35211d");
 
     private final String color;
 

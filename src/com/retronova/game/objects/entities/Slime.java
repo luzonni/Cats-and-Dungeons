@@ -18,7 +18,7 @@ public class Slime extends Entity {
     private int jumpCoolDown; //serve para dar um intervalo entre os saltos
     private boolean isJumping; //verifica se está pulando
 
-    public Slime(int ID, double x, double y) {
+    Slime(int ID, double x, double y) {
         super(ID, x, y, 0.4);
         sprite = getSprite("slime", 0); //carregamento das imagens
         jumpCoolDown = 0;
