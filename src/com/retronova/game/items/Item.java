@@ -17,9 +17,6 @@ public abstract class Item {
             case Silk -> {
                 return new Silk(i);
             }
-            case Sword -> {
-                return new Sword(i);
-            }
         }
         throw new NotFound("Item not found");
     }
@@ -27,7 +24,6 @@ public abstract class Item {
     private String name;
     private BufferedImage[] sprite;
     private int indexSprite;
-    private int amount;
 
     Item(int id, String name, String sprite) {
         this.name = name;
@@ -37,6 +33,10 @@ public abstract class Item {
         for(int i = 0; i < length; i++) {
             this.sprite[i] = sheet.getSpriteWithIndex(i, 0);
         }
+    }
+
+    public String getName() {
+        return name;
     }
 
     public BufferedImage getSprite() {
