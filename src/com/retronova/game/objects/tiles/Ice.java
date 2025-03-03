@@ -21,7 +21,7 @@ public class Ice extends Tile {
 
     @Override
     public void effect(Entity e) {
-        e.getPhysical().setFriction(0);
+        e.getPhysical().setFriction(0.2d);
     }
 
     @Override

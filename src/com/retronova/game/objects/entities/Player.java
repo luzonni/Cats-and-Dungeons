@@ -32,8 +32,20 @@ public class Player extends Entity {
     private int indexAnim;
     private int stateAnim;
 
+
+
+
+
+
     private double damege;
     private final double speed;
+
+
+
+
+
+
+
 
     private Inventory inventory;
 

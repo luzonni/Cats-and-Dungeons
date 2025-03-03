@@ -8,5 +8,5 @@ public class Configs {
     public static int MARGIN = 20; //Margin para interfaces e HUD
     public static boolean ANTIALIAS = true;
     public static int VOLUM = 100; //Volume dos dons
-    public static int MUSIC = 100; // Volume das musicas
+    public static int MUSIC = 0; // Volume das musicas
 }
