@@ -11,6 +11,8 @@ public class Lava extends Tile {
 
     private static BufferedImage[] sprite;
     private int indexSprite;
+    private int count;
+    private int strickCount;
 
     Lava(int ID, int x, int y) {
         super(ID, x, y, false);
@@ -21,8 +23,24 @@ public class Lava extends Tile {
     }
 
     @Override
+    public void tick() {
+        count++;
+        if(count > 20) {
+            count = 0;
+            indexSprite++;
+            if(indexSprite > sprite.length-1) {
+                indexSprite = 0;
+            }
+        }
+    }
+
+    @Override
     public void effect(Entity e) {
-        e.strike(AttackTypes.Fire, 10);
+        strickCount++;
+        if(strickCount > 30) {
+            e.strike(AttackTypes.Fire, 10);
+            strickCount = 0;
+        }
     }
 
     @Override

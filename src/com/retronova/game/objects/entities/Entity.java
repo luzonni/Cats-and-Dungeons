@@ -1,11 +1,14 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.exceptions.EntityNotFound;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Physical;
+
+import java.awt.*;
 
 public abstract class Entity extends GameObject {
 
@@ -93,7 +96,6 @@ public abstract class Entity extends GameObject {
         }
     }
 
-
     public void die() {
         //TODO adicionar particula de morte
         //TODO adicionar som de morte
@@ -108,6 +110,25 @@ public abstract class Entity extends GameObject {
 
     public Physical getPhysical() {
         return this.physical;
+    }
+
+    public void renderLife(Graphics2D g) {
+        if(getLife() == getLifeSize() || this instanceof Player)
+            return;
+        int x = (int)getX() - Game.C.getX();
+        int y = (int)getY() + getHeight() - Game.C.getY() + Configs.SCALE*2;
+        int w = getWidth();
+        int h = Configs.SCALE * 3;
+
+        g.setColor(new Color(135, 35, 65));
+        g.fillRect(x, y, w, h);
+        double lifeSize = w * (getLife() / getLifeSize());
+        g.setColor(new Color(190, 49, 68));
+        g.fillRect(x, y, (int) lifeSize, h);
+
+        g.setStroke(new BasicStroke(Configs.SCALE));
+        g.setColor(new Color(9, 18, 44));
+        g.drawRect(x, y, w, h);
     }
 
 }

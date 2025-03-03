@@ -65,7 +65,7 @@ public class Game implements Activity {
             entity.setDepth();
             entity.getPhysical().moment();
             entity.tick();
-            Tile tile = map.getTile((int) entity.getX() + entity.getWidth()/2, (int) entity.getY() + entity.getHeight()/2);
+            Tile tile = map.getTile((int) entity.getX() + entity.getWidth()/2, (int) entity.getY() + entity.getHeight());
             tile.effect(entity);
         }
         Tile[] map = this.map.getMap();
@@ -141,6 +141,7 @@ public class Game implements Activity {
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
             entity.render(g);
+            entity.renderLife(g);
         }
     }
 

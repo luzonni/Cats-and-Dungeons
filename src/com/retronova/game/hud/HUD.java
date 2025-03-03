@@ -106,6 +106,8 @@ public class HUD implements Activity {
         int yy = y + bottle[indexBottle].getHeight()/2 - h/2;
         g.setStroke(new BasicStroke(Configs.UISCALE * 2));
         g.drawImage(this.chains, xx + w/2 - chains.getWidth()/2, yy - this.chains.getHeight(), null);
+        g.setColor(new Color(135, 35, 65));
+        g.fillRect(xx, yy, w, h);
         g.setColor(new Color(190, 49, 68));
         double lifeWidth = w * (player.getLife() / player.getLifeSize());
         g.fillRect(xx, yy, (int)lifeWidth, h);
