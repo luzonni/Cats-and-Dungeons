@@ -3,7 +3,8 @@ package com.retronova.menus;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.Sounds;
+import com.retronova.engine.sound.Musics;
+import com.retronova.engine.sound.Sound;
 import com.retronova.graphics.FontG;
 import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
@@ -20,10 +21,9 @@ public class Menu implements Activity {
     private int quadradoSeta = -1;
 
     public Menu() {
-        Sounds.init();
         quadrados = new Rectangle[3];
         telacheia();
-        Sounds.playMenuMusic();
+        Sound.play(Musics.Music1, true);
     }
 
 
@@ -112,5 +112,6 @@ public class Menu implements Activity {
 
     @Override
     public void dispose() {
+        Sound.stop(Musics.Music1);
     }
 }

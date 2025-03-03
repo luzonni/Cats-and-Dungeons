@@ -2,7 +2,7 @@ package com.retronova.engine.sound;
 
 public enum Sounds {
 	
-	Click("click"), Poft("poft"), Clear("clear"), Place("place"), Die("die");
+	Zombie("zombie_sound");
 	
 	private final String ResourceName;
 	

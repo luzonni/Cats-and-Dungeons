@@ -28,7 +28,7 @@ public class Sound {
 		sounds = new HashMap<>();
 		Sounds[] names = Sounds.values();
 		for(Sounds name : names) {
-			kuusisto.tinysound.Sound sound = TinySound.loadSound(Engine.resPath + "/audio/" + name.resource() + ".wav");
+			kuusisto.tinysound.Sound sound = TinySound.loadSound(Engine.resPath + "audio/" + name.resource() + ".wav");
 			sounds.put(name.resource(), sound);
 		}
 	}
@@ -37,7 +37,7 @@ public class Sound {
 		musics = new HashMap<>();
 		Musics[] names = Musics.values();
 		for(Musics name : names) {
-			Music music = TinySound.loadMusic(Engine.resPath + "/audio/" + name.resource() + ".wav");
+			Music music = TinySound.loadMusic(Engine.resPath + "audio/" + name.resource() + ".wav");
 			musics.put(name.resource(), music);
 		}
 	}

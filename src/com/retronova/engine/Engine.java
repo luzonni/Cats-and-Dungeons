@@ -2,6 +2,7 @@ package com.retronova.engine;
 
 import com.retronova.engine.sound.Sound;
 import com.retronova.graphics.FontG;
+import com.retronova.menus.Loading;
 import com.retronova.menus.Menu;
 
 import java.awt.*;
@@ -43,14 +44,22 @@ public class Engine implements Runnable {
     }
 
     //Sempre usar essa função para mudar de Activity! Nunca usar a variável direto.
-    public static boolean setActivity(Activity activity) {
+    public static void setActivity(Activity activity) {
         ACTIVITY_RUNNING = true;
-        try {
-            ACTIVITY = activity;
-            return true;
-        }catch (Exception e) {
-            return false;
+        Activity ac = Engine.ACTIVITY;
+        if(ac != null) {
+            ac.dispose();
         }
+        Engine.ACTIVITY = activity;
+    }
+
+    public static void setActivity(Activity activity, ActionBack action) {
+        ACTIVITY_RUNNING = true;
+        Activity ac = Engine.ACTIVITY;
+        if(ac != null) {
+            ac.dispose();
+        }
+        Engine.ACTIVITY = new Loading(activity, action);
     }
 
     /**
@@ -100,6 +109,7 @@ public class Engine implements Runnable {
     }
 
     private synchronized void stop() {
+        Sound.dispose();
         window.getFrame().dispose();
     }
 

@@ -3,7 +3,6 @@ package com.retronova.game.interfaces;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.Sounds;
 import com.retronova.game.Game;
 import com.retronova.graphics.FontG;
 import com.retronova.inputs.keyboard.KeyBoard;
@@ -27,7 +26,6 @@ public class Pause implements Activity {
 
     public Pause() {
         atualizarPosicoes();
-        Sounds.pauseMenuMusic();
     }
 
     private void atualizarPosicoes() {
@@ -51,11 +49,9 @@ public class Pause implements Activity {
         if (KeyBoard.KeyPressed("ESCAPE")) {
             System.out.println("Jogo pausado");
             Engine.pause(null);
-            Sounds.resumeMenuMusic();
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
             System.out.println("Jogo continuado");
             Engine.pause(null);
-            Sounds.resumeMenuMusic();
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Jogo reiniciado");
             Engine.pause(null);

@@ -2,7 +2,7 @@ package com.retronova.engine.sound;
 
 public enum Musics {
 
-    Music1("BackgroundMusic");
+    Music1("menusom");
 
     private final String ResourceName;
 
