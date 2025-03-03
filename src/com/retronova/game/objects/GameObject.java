@@ -91,6 +91,14 @@ public abstract class GameObject {
         return Math.sqrt(Math.pow((object.getX() - this.getX()), 2) + Math.pow(object.getY() - this.getY(), 2));
     }
 
+    public double getAngle(GameObject obj) {
+        return Math.atan2(getY() - obj.getY(), getX() - obj.getX());
+    }
+
+    public double getAngle(Point point) {
+        return Math.atan2(point.getY() - getY(), point.getX() - getX());
+    }
+
     public static Comparator<GameObject> Depth = Comparator.comparingInt(GameObject::getDepth);
 
     public void renderSprite(BufferedImage sprite, Graphics2D g) {

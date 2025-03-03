@@ -120,7 +120,7 @@ public class Player extends Entity {
         Item item = getInventory().getItemHand();
         if(item == null)
             return;
-        g.drawImage(item.getSprite(), (int)(getX() - Game.C.getX()), (int)(getY() - Game.C.getY()), null);
+        item.render(g);
     }
 
     @Override

@@ -2,8 +2,11 @@ package com.retronova.game.items;
 
 import com.retronova.engine.Configs;
 import com.retronova.exceptions.NotFound;
+import com.retronova.game.Game;
+import com.retronova.game.objects.entities.Player;
 import com.retronova.graphics.SpriteSheet;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public abstract class Item {
@@ -41,5 +44,7 @@ public abstract class Item {
     }
 
     public abstract void tick();
+
+    public abstract void render(Graphics2D g);
 
 }

@@ -1,5 +1,6 @@
 package com.retronova.engine;
 
+import com.retronova.engine.sound.Sound;
 import com.retronova.graphics.FontG;
 import com.retronova.menus.Menu;
 
@@ -35,6 +36,7 @@ public class Engine implements Runnable {
 
     public Engine() {
         FontG.addFont("game");
+        Sound.load();
         Engine.window = new Window(GameTag);
         setActivity(new Menu());
         start();
