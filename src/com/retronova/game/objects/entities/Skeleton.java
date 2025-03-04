@@ -23,6 +23,8 @@ public class Skeleton extends Entity {
         sprite = new BufferedImage[][] {getSprite("mouseskeleton", 0), getSprite("mouseskeleton", 1)};
 
         setResistances(AttackTypes.Fire, AttackTypes.Piercing);
+        setSolid();
+        setAlive();
     }
 
     @Override

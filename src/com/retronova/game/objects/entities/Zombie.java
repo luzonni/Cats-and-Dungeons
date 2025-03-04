@@ -20,8 +20,9 @@ public class Zombie extends Entity {
     Zombie(int ID, double x, double y) {
         super(ID, x, y, 0.4);
         sprite = new BufferedImage[][] {getSprite("mousezombie", 0), getSprite("mousezombie", 1)};
+        setSolid();
+        setAlive();
 
-        // Zumbi não deve ter resistencia a nada não eu acho, que eles são lascado já né.
     }
 
     @Override

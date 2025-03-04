@@ -9,12 +9,14 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Physical;
 
 import java.awt.*;
+import java.util.List;
 
 public abstract class Entity extends GameObject {
 
     private final Physical physical;
     private AttackTypes[] resistanceOf;
     private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
+    private boolean alive = false;
 
     public static Entity build(int ID, double x, double y) {
         EntityIDs entityId = EntityIDs.values()[ID];
@@ -77,6 +79,14 @@ public abstract class Entity extends GameObject {
         this.life[1] = life;
     }
 
+    public boolean isAlive() {
+        return alive;
+    }
+
+    public void setAlive() {
+        this.alive = true;
+    }
+
     protected void setResistances(AttackTypes... resistences) {
         this.resistanceOf = resistences;
     }
@@ -94,6 +104,24 @@ public abstract class Entity extends GameObject {
         if (getLife() <= 0) {
             die();
         }
+    }
+
+    public Entity getNearest(){
+        List<Entity> entities = Game.getMap().getEntities();
+        Entity nearest = null;
+        double maxDist = GameObject.SIZE() * 20;
+        for(int i = 0; i < entities.size(); i ++){
+            Entity e = entities.get(i);
+            if(e.equals(this) || !e.isAlive()){
+                continue;
+            }
+            double currDist = e.getDistance(this);
+            if(currDist < maxDist){
+                nearest = e;
+                maxDist = currDist;
+            }
+        }
+        return nearest;
     }
 
     public void die() {

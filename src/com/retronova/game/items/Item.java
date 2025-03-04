@@ -20,6 +20,9 @@ public abstract class Item {
             case Sword -> {
                 return new Sword(i);
             }
+            case Bow -> {
+                return new Bow(i);
+            }
         }
         throw new NotFound("Item not found");
     }

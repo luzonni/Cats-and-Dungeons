@@ -156,7 +156,7 @@ public class Physical {
         for(int i = 0; i < entities.size(); i++) {
             Entity e1 = this.entity;
             Entity e2 = entities.get(i);
-            if(e2 == e1)
+            if(e2 == e1 || !e1.isSolid() || !e2.isSolid())
                 continue;
             double e1_radius = e1.getWidth() / 2d;
             double e2_radius = e2.getWidth() / 2d;
