@@ -44,7 +44,6 @@ public class Game implements Activity {
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
         this.hud = new HUD(player);
-        Sound.play(Musics.Music2, true);
     }
 
     @Override

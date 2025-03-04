@@ -121,6 +121,8 @@ public class Personagens implements Activity {
         } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
             if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
                 Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new Arena(dificuldadeSelecionada)));
+                Sound.stop(Musics.Music1);
+                Sound.play(Musics.Music2, true);
             } else {
                 if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
                     System.out.println("Selecione um personagem e dificuldade antes de jogar!");
@@ -132,8 +134,6 @@ public class Personagens implements Activity {
             }
         }
     }
-
-
 
 
     @Override
@@ -298,6 +298,6 @@ public class Personagens implements Activity {
 
     @Override
     public void dispose() {
-        Sound.stop(Musics.Music1);
+
     }
 }
