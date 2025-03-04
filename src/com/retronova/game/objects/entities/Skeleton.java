@@ -1,18 +1,14 @@
 package com.retronova.game.objects.entities;
 
-import com.retronova.engine.Engine;
 import com.retronova.game.Game;
-import com.retronova.game.objects.GameObject;
 import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Skeleton extends Entity {
 
-    private final BufferedImage[][] sprite;
+    private static BufferedImage[][] sprite;
     private int countAnim;
     private int indexState;
     private int indexAnim; //
@@ -20,7 +16,9 @@ public class Skeleton extends Entity {
 
     Skeleton(int ID, double x, double y) {
         super(ID, x, y, 0.5);
-        sprite = new BufferedImage[][] {getSprite("mouseskeleton", 0), getSprite("mouseskeleton", 1)};
+        if(sprite == null) {
+            sprite = new BufferedImage[][] {loadSprite("mouseskeleton", 0), loadSprite("mouseskeleton", 1)};
+        }
 
         setResistances(AttackTypes.Fire, AttackTypes.Piercing);
         setSolid();
@@ -51,12 +49,6 @@ public class Skeleton extends Entity {
         this.indexState = getPhysical().isMoving() ? 1 : 0;
     }
 
-    public void takeDamage(AttackTypes attackType, double baseDamage) {
-        strike(attackType, baseDamage); // Aplica o dano
-        System.out.println("Skeleton tomou " + baseDamage + " de dano de " + attackType + ". Vida restante: " + getLife());
-        // TODO fazer tanto no skeleton como no zombie, o impacto do item que vai dar dano, e tirar essa bosta que aparece no terminal.
-    }
-
     @Override
     public void render(Graphics2D g) {
         int orientation = getPhysical().getOrientation()[0] * -1;
@@ -69,6 +61,7 @@ public class Skeleton extends Entity {
 
     @Override
     public void dispose() {
+        sprite = null;
     }
 
 }

@@ -15,8 +15,10 @@ public class MouseVampire extends Entity {
 
     MouseVampire(int ID, double x, double y) {
         super(ID,x,y,0.3);
-        sprite = new BufferedImage[][] {getSprite("mousevampire", 0), getSprite("mousevampire", 1)};
+        sprite = new BufferedImage[][] {loadSprite("mousevampire", 0), loadSprite("mousevampire", 1)};
         //adicionar a resistência a algo
+        setSolid();
+        setAlive();
     }
 
     @Override

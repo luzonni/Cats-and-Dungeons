@@ -14,9 +14,10 @@ public class MonarkMouse extends Entity{
 
     MonarkMouse(int ID, double x, double y) {
         super(ID, x, y, 0.6);
-        sprite = new BufferedImage[][] {getSprite("monarkmouse", 0), getSprite("monarkmouse", 1)};
+        sprite = new BufferedImage[][] {loadSprite("monarkmouse", 0), loadSprite("monarkmouse", 1)};
         //adicionar resistência
-
+        setSolid();
+        setAlive();
     }
 
     @Override

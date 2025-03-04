@@ -1,16 +1,16 @@
 package com.retronova.game.items;
 
 import com.retronova.game.Game;
-import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Arrow;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
-import java.util.List;
 
-public class Bow extends Item{
+public class Bow extends Item {
+
     private double angle = 0;
+    private int count;
 
     Bow(int id) {
         super(id, "Bow", "bow");
@@ -19,12 +19,18 @@ public class Bow extends Item{
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        Entity nearest = player.getNearest();
+        Entity nearest = player.getNearest(player.getRange());
         if(nearest != null){
             angle = nearest.getAngle(player);
+            count++;
+            if(count >= player.getAttackSpeed()) {
+                count = 0;
+                double x = player.getX() + player.getWidth() * Math.cos(angle);
+                double y = player.getY() + player.getHeight() * Math.sin(angle);
+                Arrow arrow = new Arrow(x, y, player.getRangeDamage(), angle);
+                Game.getMap().getEntities().add(arrow);
+            }
         }
-        Arrow arrow = new Arrow(player.getX(), player.getY(), 10, angle);
-        Game.getMap().getEntities().add(arrow);
     }
 
     @Override
@@ -32,11 +38,10 @@ public class Bow extends Item{
         Player player = Game.getPlayer();
         int x = (int) player.getX() - Game.C.getX() + player.getWidth() / 2;
         int y = (int) player.getY() - Game.C.getY() + player.getHeight() / 2;
-
-        g.rotate(angle, x, y);
-        g.drawImage(getSprite(), x + player.getWidth() / 2, y - getSprite().getHeight() / 2, null);
-        g.rotate(-angle, x, y);
-
-
+        g.rotate((angle + Math.PI/4), x, y);
+        double xx = x - getSprite().getWidth()/2d;
+        double yy = y - getSprite().getHeight()/2d;
+        g.drawImage(getSprite(), (int)xx, (int)yy, null);
+        g.rotate(-(angle + Math.PI/4), x, y);
     }
 }

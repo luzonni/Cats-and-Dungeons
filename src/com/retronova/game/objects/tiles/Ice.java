@@ -14,7 +14,7 @@ public class Ice extends Tile {
     Ice(int ID, int x, int y) {
         super(ID, x, y, false);
         if(sprite == null) {
-            sprite = getSprite("ice");
+            sprite = loadSprite("ice");
             indexSprite = Engine.RAND.nextInt(sprite.length);
         }
     }

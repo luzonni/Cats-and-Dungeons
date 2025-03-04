@@ -92,10 +92,16 @@ public abstract class Entity extends GameObject {
     }
 
     public void strike(AttackTypes type, double damage) {
+        if(!isAlive()) {
+            return;
+        }
         if (this.resistanceOf != null && type != null) {
             for (AttackTypes resistance : this.resistanceOf) {
                 if (resistance.equals(type)) {
                     setLife(getLife() - damage * (1 - resistance.getResistance()));
+                    if (getLife() <= 0) {
+                        die();
+                    }
                     return;
                 }
             }
@@ -106,10 +112,10 @@ public abstract class Entity extends GameObject {
         }
     }
 
-    public Entity getNearest(){
+    public Entity getNearest(double range){
         List<Entity> entities = Game.getMap().getEntities();
         Entity nearest = null;
-        double maxDist = GameObject.SIZE() * 20;
+        double maxDist = GameObject.SIZE() * range;
         for(int i = 0; i < entities.size(); i ++){
             Entity e = entities.get(i);
             if(e.equals(this) || !e.isAlive()){
@@ -124,9 +130,23 @@ public abstract class Entity extends GameObject {
         return nearest;
     }
 
+    protected boolean colliding(Entity entity) {
+        return this.getBounds().intersects(entity.getBounds());
+    }
+
+    /**
+     * Quando chamado, adiciona partículas no local da morte, aciona um som padrão de morte e remove a entidade do mapa.
+     */
     public void die() {
         //TODO adicionar particula de morte
         //TODO adicionar som de morte
+        this.disappear();
+    }
+
+    /**
+     * Esta função serve apenas para retirar uma entidade do mara, sem nenhum tipo de efeito.
+     */
+    public void disappear() {
         Game.getMap().getEntities().remove(this);
     }
 
@@ -158,5 +178,4 @@ public abstract class Entity extends GameObject {
         g.setColor(new Color(9, 18, 44));
         g.drawRect(x, y, w, h);
     }
-
 }

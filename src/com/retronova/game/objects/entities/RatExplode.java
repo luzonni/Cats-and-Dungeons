@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 
 public class RatExplode extends Entity {
 
-    private final BufferedImage[][] sprite;
+    private static BufferedImage[][] sprite;
     private int countAnim;
     private int indexState;
     private int indexAnim;
@@ -22,12 +22,16 @@ public class RatExplode extends Entity {
     RatExplode(int ID, double x, double y) {
         super(ID,x,y,0.3);
         this.danoExplosao = 5;
-        sprite = new BufferedImage[][]{getSprite("ratexplode", 0), getSprite("ratexplode", 1)};
+        if(sprite == null) {
+            sprite = new BufferedImage[][]{loadSprite("ratexplode", 0), loadSprite("ratexplode", 1)};
+        }
+        setSolid();
+        setAlive();
     }
 
     @Override
     public BufferedImage getSprite() {
-        return sprite [indexState][indexAnim];
+        return sprite[indexState][indexAnim];
     }
 
     public void tick() {
@@ -75,7 +79,9 @@ public class RatExplode extends Entity {
         renderSprite(sprite, d);
     }
 
-    public void dispose() {}
+    public void dispose() {
+        sprite = null;
+    }
 
 
 }

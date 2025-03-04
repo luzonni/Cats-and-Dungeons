@@ -1,9 +1,7 @@
 package com.retronova.game.objects.entities;
 
-import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
-import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -11,7 +9,7 @@ import java.util.Random;
 
 //Criei esse escopo mas não sei se está certo - Por favor não me bata zonzini
 public class Slime extends Entity {
-    private final BufferedImage[] sprite; //armazena os estados da imagem
+    private static BufferedImage[] sprite; //armazena os estados da imagem
     private int countAnim; //tempo da animação
     private int indexAnim; // seleciona a animação baseado no estado
     private Random random; //gerar valores aleatórios para pular no mapa
@@ -20,11 +18,13 @@ public class Slime extends Entity {
 
     Slime(int ID, double x, double y) {
         super(ID, x, y, 0.4);
-        sprite = getSprite("slime", 0); //carregamento das imagens
+        sprite = loadSprite("slime", 0); //carregamento das imagens
         jumpCoolDown = 0;
         isJumping = false;
         random = new Random(); //usei random para encontrar valores aleatórios no mapa
         //setResistances(); //não sei qual vai ser a resistência dos ataques
+        setSolid();
+        setAlive();
     }
 
     @Override
@@ -79,7 +79,7 @@ public class Slime extends Entity {
 
     @Override
     public void dispose() {
-
+        sprite = null;
     }
 
 }

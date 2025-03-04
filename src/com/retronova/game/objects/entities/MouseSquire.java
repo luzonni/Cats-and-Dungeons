@@ -16,8 +16,10 @@ public class MouseSquire extends Entity {
 
     MouseSquire(int ID, double x, double y) {
         super(ID, x, y, 0.4);
-        sprite = new BufferedImage[][] {getSprite("mousesquire", 0), getSprite("mousesquire", 1)};
+        sprite = new BufferedImage[][] {loadSprite("mousesquire", 0), loadSprite("mousesquire", 1)};
         setResistances(AttackTypes.Melee, AttackTypes.Piercing); //resistencias que o personagem tem
+        setSolid();
+        setAlive();
     }
 
     @Override

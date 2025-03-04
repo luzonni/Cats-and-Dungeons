@@ -1,10 +1,8 @@
 package com.retronova.game.objects.entities;
 
-import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.game.objects.GameObject;
 import com.retronova.graphics.SpriteSheet;
 
 import java.awt.*;
@@ -12,7 +10,7 @@ import java.awt.image.BufferedImage;
 
 public class Zombie extends Entity {
 
-    private final BufferedImage[][] sprite;
+    private static BufferedImage[][] sprite;
     private int countAnim;
     private int indexState;
     private int indexAnim;
@@ -21,7 +19,7 @@ public class Zombie extends Entity {
 
     Zombie(int ID, double x, double y) {
         super(ID, x, y, 0.4);
-        sprite = new BufferedImage[][] {getSprite("mousezombie", 0), getSprite("mousezombie", 1)};
+        sprite = new BufferedImage[][] {loadSprite("mousezombie", 0), loadSprite("mousezombie", 1)};
         setSolid();
         setAlive();
 
@@ -72,7 +70,7 @@ public class Zombie extends Entity {
 
     @Override
     public void dispose() {
-
+        sprite = null;
     }
 
 }

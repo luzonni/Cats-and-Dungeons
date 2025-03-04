@@ -17,7 +17,7 @@ public class Lava extends Tile {
     Lava(int ID, int x, int y) {
         super(ID, x, y, false);
         if(sprite == null) {
-            sprite = getSprite("lava");
+            sprite = loadSprite("lava");
             indexSprite = Engine.RAND.nextInt(sprite.length);
         }
     }

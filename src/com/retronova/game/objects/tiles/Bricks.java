@@ -14,7 +14,7 @@ public class Bricks extends Tile {
     Bricks(int id, int x, int y) {
         super(id, x, y, true);
         if(Bricks.sprites == null)
-            Bricks.sprites = this.getSprite("brick", 1);
+            Bricks.sprites = this.loadSprite("brick", 1);
         index = Engine.RAND.nextInt(Bricks.sprites.length);
     }
 

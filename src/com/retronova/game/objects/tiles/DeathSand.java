@@ -14,7 +14,7 @@ public class DeathSand extends Tile {
     DeathSand(int id, int x, int y) {
         super(id, x, y, false);
         if(sprites == null)
-            sprites = this.getSprite("deathSand", 0);
+            sprites = this.loadSprite("deathSand", 0);
         index = Engine.RAND.nextInt(sprites.length);
     }
 

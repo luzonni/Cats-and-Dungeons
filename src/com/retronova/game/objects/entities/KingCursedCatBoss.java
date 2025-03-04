@@ -14,7 +14,7 @@ public class KingCursedCatBoss extends Entity {
 
     KingCursedCatBoss(int ID, double x, double y) {
         super(ID,x,y, 0.3);
-        sprite = new BufferedImage[][] {getSprite("kingcursedcatboss", 0), getSprite("kingcursedcatboss")};
+        sprite = new BufferedImage[][] {loadSprite("kingcursedcatboss", 0), loadSprite("kingcursedcatboss")};
     }
 
 

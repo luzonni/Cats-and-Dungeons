@@ -3,7 +3,6 @@ package com.retronova.game.objects;
 import com.retronova.engine.Configs;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Entity;
-import com.retronova.game.objects.tiles.Tile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,13 +10,13 @@ import java.util.List;
 public class Physical {
 
     private final Entity entity;
-    private double speed;
+    private double force;
     private double angleForce;
     private final double friction; //taxa de fricção do mapa
     private double momentFriction;
     private boolean isMoving;
     private int[] orientation;
-
+    private boolean crashing;
 
     public Physical(Entity entity, double friction) {
         this.entity = entity;
@@ -32,8 +31,8 @@ public class Physical {
      */
     public void moment(){
         calcFriction();
-        double vectorX = Math.cos(angleForce) * speed;
-        double vectorY = Math.sin(angleForce) * speed;
+        double vectorX = Math.cos(angleForce) * force;
+        double vectorY = Math.sin(angleForce) * force;
         this.isMoving = moveSystem(vectorX, vectorY);
         repulsion();
     }
@@ -45,13 +44,14 @@ public class Physical {
      */
     public void addForce(double force, double radians){
         this.angleForce = radians;
-        this.speed = force * Configs.SCALE;
+        this.force = force * Configs.SCALE;
     }
 
     private boolean moveSystem(double vectorX, double vectorY){
         double x = entity.getX();
         double y = entity.getY();
         boolean[] colliders = colliding(x + vectorX, y + vectorY); //analisando a próxima posição
+        this.crashing = colliders[0] || colliders[1];
         this.orientation = new int[] {(int)Math.signum(vectorX), (int)Math.signum(vectorY)};
         boolean moving = false;
         if(!colliders[0]) {
@@ -74,7 +74,9 @@ public class Physical {
         return this.orientation;
     }
 
-
+    public boolean crashing() {
+        return this.crashing;
+    }
 
     public void setFriction(double friction) {
         this.momentFriction = friction;
@@ -143,7 +145,7 @@ public class Physical {
             f = momentFriction;
             momentFriction = friction;
         }
-        this.speed *= (1 - f);
+        this.force *= (1 - f);
     }
 
     public boolean isMoving() {

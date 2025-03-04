@@ -29,7 +29,7 @@ public abstract class GameObject {
         this.bounds = new Rectangle(getWidth(), getHeight());
     }
 
-    public BufferedImage[] getSprite(String spriteName) {
+    public BufferedImage[] loadSprite(String spriteName) {
         SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
         int length = sheet.getWidth() / 16;
         BufferedImage[] sprites = new BufferedImage[length];
@@ -39,7 +39,7 @@ public abstract class GameObject {
         return sprites;
     }
 
-    public BufferedImage[] getSprite(String spriteName, int prefix) {
+    public BufferedImage[] loadSprite(String spriteName, int prefix) {
         SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
         return sheet.getSprites(prefix);
     }

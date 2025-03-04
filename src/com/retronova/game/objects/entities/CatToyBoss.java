@@ -14,7 +14,7 @@ public class CatToyBoss extends Entity {
 
     CatToyBoss(int ID, double x, double y) {
         super(ID, x, y, 0.4);
-        sprite = new BufferedImage[][] {getSprite("cattoyboss", 0), getSprite("cattoyboss", 1)};
+        sprite = new BufferedImage[][] {loadSprite("cattoyboss", 0), loadSprite("cattoyboss", 1)};
         //adicionar resistência
 
     }

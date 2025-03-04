@@ -1,15 +1,11 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
-import com.retronova.exceptions.PlayerInstanceException;
 import com.retronova.game.Game;
 import com.retronova.game.interfaces.inventory.Inventory;
 import com.retronova.game.items.Item;
-import com.retronova.game.items.ItemIDs;
-import com.retronova.game.map.Camera;
 import com.retronova.graphics.SpriteSheet;
 import com.retronova.inputs.keyboard.KeyBoard;
-import com.retronova.inputs.mouse.Mouse;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -17,13 +13,24 @@ import java.awt.image.BufferedImage;
 public class Player extends Entity {
 
     public static final Player[] TEMPLATES = new Player[] {
-            new Player("cinzento", 10, 5),
-            new Player("mago", 15, 4),
-            new Player("sortudo", 15, 6)
+            new Player("cinzento", 10, 5, 0.3, 15, 30, 7.2, 5, 4),
+            new Player("mago", 10, 5, 0.3, 12, 11, 5, 5, 4),
+            new Player("sortudo", 10, 5, 0.3, 12, 11, 5, 5, 4)
     };
 
     public static Player newPlayer(int index) {
-        return new Player(TEMPLATES[index].getName(), TEMPLATES[index].damage, TEMPLATES[index].speed);
+        Player p = TEMPLATES[index];
+        return new Player(
+                p.getName(),
+                p.getDamage(),
+                p.getSpeed(),
+                p.getLuck(),
+                p.getAttackSpeed(),
+                p.getRangeDamage(),
+                p.getRange(),
+                p.getInventory().getBagSize(),
+                p.getInventory().getHotbarSize()
+        );
     }
 
     private String name;
@@ -32,26 +39,29 @@ public class Player extends Entity {
     private int indexAnim;
     private int stateAnim;
 
-    private final double speed;
+    private double speed;
     private double damage;
     private double luck;
-    private double attackspeed;
-    private double rangeddamage;
+    private int attackSpeed;
+    private double rangeDamage;
     private double range;
 
-    private Inventory inventory;
+    private final Inventory inventory;
 
-    Player(String name, double damage, double speed) {
+    Player(String name, double damage, double speed, double luck, int attackSpeed, double rangeDamage, double range, int bagSize, int hotSize) {
         super(0, 0, 0, 0.5);
         this.name = name;
         this.damage = damage;
         this.speed = speed;
+        this.luck = luck;
+        this.attackSpeed = attackSpeed;
+        this.rangeDamage = rangeDamage;
+        this.range = range;
+        this.inventory = new Inventory(bagSize, hotSize);
         this.sprite = new BufferedImage[][] {
-                getSprite("player/"+name, 0),
-                getSprite("player/"+name, 1)
+                loadSprite("player/"+name, 0),
+                loadSprite("player/"+name, 1)
         };
-        //TODO faze cada player ter o tamanho da mochila diferente!
-        this.inventory = new Inventory(4, 3);
         setSolid();
         setAlive();
     }
@@ -82,20 +92,20 @@ public class Player extends Entity {
         }
         tickItemHand();
     }
-    public double getRangeddamage() {
-        return rangeddamage;
+    public double getRangeDamage() {
+        return rangeDamage;
     }
 
-    public void setRangeddamage(double rangeddamage) {
-        this.rangeddamage = rangeddamage;
+    public void setRangeDamage(double rangeDamage) {
+        this.rangeDamage = rangeDamage;
     }
 
-    public double getAttackspeed() {
-        return attackspeed;
+    public int getAttackSpeed() {
+        return attackSpeed;
     }
 
-    public void setAttackspeed(double attackspeed) {
-        this.attackspeed = attackspeed;
+    public void setAttackSpeed(int attackSpeed) {
+        this.attackSpeed = attackSpeed;
     }
 
     public double getLuck() {
