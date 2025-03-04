@@ -42,6 +42,7 @@ public class Bow extends Item {
 
     @Override
     public void render(Graphics2D g) {
+        //TODO tem um bug no sprite do arco, acredito que esse bug visual so aconteça no linux....
         Player player = Game.getPlayer();
         int x = (int) player.getX() + player.getWidth()/2 - Game.C.getX();
         int y = (int) player.getY() + player.getHeight()/2 - Game.C.getY();
