@@ -161,7 +161,7 @@ public abstract class Entity extends GameObject {
     }
 
     public void renderLife(Graphics2D g) {
-        if(getLife() == getLifeSize() || this instanceof Player)
+        if(getLife() == getLifeSize() || this instanceof Player || !this.isAlive())
             return;
         int x = (int)getX() - Game.C.getX();
         int y = (int)getY() + getHeight() - Game.C.getY() + Configs.SCALE*2;

@@ -49,6 +49,13 @@ public abstract class Item {
         return this.sprite[indexSprite];
     }
 
+    protected void plusIndexSprite() {
+        this.indexSprite++;
+        if(indexSprite > sprite.length-1) {
+            indexSprite = 0;
+        }
+    }
+
     public abstract void tick();
 
     public abstract void render(Graphics2D g);

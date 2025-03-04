@@ -33,7 +33,7 @@ public class Player extends Entity {
         );
     }
 
-    private String name;
+    private final String name;
     private BufferedImage[][] sprite;
     private int countAnim;
     private int indexAnim;
