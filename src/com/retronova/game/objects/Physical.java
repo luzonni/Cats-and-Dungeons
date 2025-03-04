@@ -5,6 +5,7 @@ import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.tiles.Tile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Physical {
@@ -151,11 +152,11 @@ public class Physical {
 
     //TODO colocar características nas entidades para filtrar melhor o que colide com o que n colide, por exemplo, dizer o que está vivo do que não esta...
     private void repulsion() {
-        List<Entity> entities = Game.getMap().getEntities();
+        List<Entity> entities = new ArrayList<>(List.copyOf(Game.getMap().getEntities()));
         for(int i = 0; i < entities.size(); i++) {
             Entity e1 = this.entity;
             Entity e2 = entities.get(i);
-            if(e2 == e1)
+            if(e2 == e1 || !e1.isSolid() || !e2.isSolid())
                 continue;
             double e1_radius = e1.getWidth() / 2d;
             double e2_radius = e2.getWidth() / 2d;
@@ -168,6 +169,7 @@ public class Physical {
                     double ry = Math.sin(radians) * inside/2d;
                     e1.getPhysical().moveSystem(rx*-1, ry*-1);
                     e2.getPhysical().moveSystem(rx, ry);
+                    entities.remove(e2);
                 }
             }
         }

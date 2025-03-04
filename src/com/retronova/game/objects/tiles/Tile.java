@@ -6,8 +6,6 @@ import com.retronova.game.objects.entities.Entity;
 
 public abstract class Tile extends GameObject {
 
-    private boolean solid;
-
     public static Tile build(int ID, int x, int y) {
         TileIDs mapping = TileIDs.values()[ID];
         x *= GameObject.SIZE();
@@ -36,7 +34,9 @@ public abstract class Tile extends GameObject {
         super(ID);
         setX(x);
         setY(y);
-        setSolid(solid);
+        if(solid){
+            setSolid();
+        }
     }
 
     public abstract void effect(Entity e);
@@ -44,14 +44,6 @@ public abstract class Tile extends GameObject {
     @Override
     public void tick() {
 
-    }
-
-    private void setSolid(boolean solid) {
-        this.solid = solid;
-    }
-
-    public boolean isSolid() {
-        return this.solid;
     }
 
 

@@ -17,6 +17,12 @@ public abstract class Item {
             case Silk -> {
                 return new Silk(i);
             }
+            case Sword -> {
+                return new Sword(i);
+            }
+            case Bow -> {
+                return new Bow(i);
+            }
         }
         throw new NotFound("Item not found");
     }

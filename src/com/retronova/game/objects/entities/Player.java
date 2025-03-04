@@ -23,7 +23,7 @@ public class Player extends Entity {
     };
 
     public static Player newPlayer(int index) {
-        return new Player(TEMPLATES[index].getName(), TEMPLATES[index].damege, TEMPLATES[index].speed);
+        return new Player(TEMPLATES[index].getName(), TEMPLATES[index].damage, TEMPLATES[index].speed);
     }
 
     private String name;
@@ -32,15 +32,19 @@ public class Player extends Entity {
     private int indexAnim;
     private int stateAnim;
 
-    private double damege;
     private final double speed;
+    private double damage;
+    private double luck;
+    private double attackspeed;
+    private double rangeddamage;
+    private double range;
 
     private Inventory inventory;
 
     Player(String name, double damage, double speed) {
         super(0, 0, 0, 0.5);
         this.name = name;
-        this.damege = damage;
+        this.damage = damage;
         this.speed = speed;
         this.sprite = new BufferedImage[][] {
                 getSprite("player/"+name, 0),
@@ -48,6 +52,8 @@ public class Player extends Entity {
         };
         //TODO faze cada player ter o tamanho da mochila diferente!
         this.inventory = new Inventory(4, 3);
+        setSolid();
+        setAlive();
     }
 
     @Override
@@ -75,6 +81,49 @@ public class Player extends Entity {
             }
         }
         tickItemHand();
+    }
+    public double getRangeddamage() {
+        return rangeddamage;
+    }
+
+    public void setRangeddamage(double rangeddamage) {
+        this.rangeddamage = rangeddamage;
+    }
+
+    public double getAttackspeed() {
+        return attackspeed;
+    }
+
+    public void setAttackspeed(double attackspeed) {
+        this.attackspeed = attackspeed;
+    }
+
+    public double getLuck() {
+        return luck;
+    }
+
+    public void setLuck(double luck) {
+        this.luck = luck;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public double getDamage() {
+        return damage;
+    }
+
+    public void setDamage(double damage) {
+        this.damage = damage;
+    }
+
+    public double getRange() {
+        return range;
+    }
+
+    public void setRange(double range) {
+        this.range = range;
     }
 
     private void tickItemHand() {

@@ -13,6 +13,7 @@ public abstract class GameObject {
     private final Values values;
     protected int depth;
     private Rectangle bounds;
+    private boolean solid = false;
 
     public static int SIZE() {
         return 16 * Configs.SCALE;
@@ -85,6 +86,14 @@ public abstract class GameObject {
 
     public void setDepth() {
         this.depth = (int)getY();
+    }
+
+    protected void setSolid() {
+        this.solid = true;
+    }
+
+    public boolean isSolid() {
+        return this.solid;
     }
 
     public double getDistance(GameObject object) {
