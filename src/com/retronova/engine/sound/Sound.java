@@ -78,8 +78,9 @@ public class Sound {
 		musics.get(music.resource()).stop();
 	}
 
+
 	public static void dispose() {
 		TinySound.shutdown();
 	}
-	
+
 }

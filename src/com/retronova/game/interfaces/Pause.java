@@ -3,12 +3,15 @@ package com.retronova.game.interfaces;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.sound.Musics;
+import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
 import com.retronova.graphics.FontG;
 import com.retronova.inputs.keyboard.KeyBoard;
 import com.retronova.inputs.mouse.Mouse;
 import com.retronova.inputs.mouse.Mouse_Button;
 import com.retronova.menus.Menu;
+import kuusisto.tinysound.TinySound;
 
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
@@ -22,11 +25,14 @@ public class Pause implements Activity {
     private final Color corTexto = Color.WHITE;
     private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Menu", "Quit"};
     private int quadradoSeta = -1;
+    private double volumeOriginal = Configs.MUSIC / 100.0;
 
 
     public Pause() {
         atualizarPosicoes();
+        volumeOriginal = Configs.MUSIC / 100.0;
     }
+
 
     private void atualizarPosicoes() {
         quadrados = new Rectangle[5];
@@ -52,15 +58,18 @@ public class Pause implements Activity {
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
             System.out.println("Jogo continuado");
             Engine.pause(null);
-        } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
+        } else if(Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Jogo reiniciado");
             Engine.pause(null);
             Game.reiniciarJogo();
+            Sound.stop(Musics.Music2);
+            Sound.play(Musics.Music2, true);
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
             System.out.println("Opções abertas");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[3])) {
             System.out.println("Menu aberto");
             Engine.pause(null);
+            Sound.stop(Musics.Music2);
             Engine.setActivity(new Menu());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[4])) {
             System.out.println("Jogo fechado");

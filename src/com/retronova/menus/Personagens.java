@@ -3,6 +3,8 @@ package com.retronova.menus;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.sound.Musics;
+import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
 import com.retronova.game.map.Arena;
 import com.retronova.game.objects.entities.Player;
@@ -296,6 +298,6 @@ public class Personagens implements Activity {
 
     @Override
     public void dispose() {
-
+        Sound.stop(Musics.Music1);
     }
 }

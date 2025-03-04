@@ -112,6 +112,5 @@ public class Menu implements Activity {
 
     @Override
     public void dispose() {
-        Sound.stop(Musics.Music1);
     }
 }

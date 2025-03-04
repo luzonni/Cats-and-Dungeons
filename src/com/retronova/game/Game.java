@@ -2,6 +2,8 @@ package com.retronova.game;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
+import com.retronova.engine.sound.Musics;
+import com.retronova.engine.sound.Sound;
 import com.retronova.exceptions.NotInActivity;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.map.Camera;
@@ -42,6 +44,7 @@ public class Game implements Activity {
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
         this.hud = new HUD(player);
+        Sound.play(Musics.Music2, true);
     }
 
     @Override

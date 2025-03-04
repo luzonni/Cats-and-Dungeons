@@ -7,6 +7,6 @@ public class Configs {
     public static int HUDSCALE = 4; //Escala do Hud do jogo
     public static int MARGIN = 20; //Margin para interfaces e HUD
     public static boolean ANTIALIAS = true;
-    public static int VOLUM = 100; //Volume dos dons
-    public static int MUSIC = 100; // Volume das musicas
+    public static int VOLUM = 10; //Volume dos dons
+    public static int MUSIC = 10; // Volume das musicas
 }

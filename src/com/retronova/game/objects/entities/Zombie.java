@@ -1,6 +1,8 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.graphics.SpriteSheet;
@@ -45,6 +47,7 @@ public class Zombie extends Entity {
         if(player.getBounds().intersects(this.getBounds()) && cooldown > 45) {
             cooldown = 0;
             player.strike(AttackTypes.Melee, 2);
+            Sound.play(Sounds.Zombie);
             player.getPhysical().addForce(4.5d, getPhysical().getAngleForce());
         }
     }
