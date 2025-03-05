@@ -11,6 +11,7 @@ import com.retronova.game.map.Waves;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.interfaces.Pause;
+import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 
@@ -24,6 +25,7 @@ public class Game implements Activity {
     private final int difficulty;
     private final int indexPlayer;
     private final GameMap map;
+    private final Physically physically;
 
     //Este é apenas o menu do pause.
     private Activity inerface;
@@ -35,10 +37,10 @@ public class Game implements Activity {
         this.difficulty = difficulty;
         this.indexPlayer = indexPlayer;
         this.map = map;
+        this.physically = new Physically(map);
         Player player = Player.newPlayer(indexPlayer);
         this.player = player;
         this.map.addPlayer(player);
-
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
         this.hud = new HUD(player);
@@ -52,13 +54,11 @@ public class Game implements Activity {
         if(KeyBoard.KeyPressed("E")) {
             Engine.pause(player.getInventory());
         }
+        if(!physically.isRunning()) {
+            physically.start();
+        }
         map.tick();
-        //tick logic
         List<Entity> entities = map.getEntities();
-        /**
-         entities.sort(Entity.Depth) ->
-         Este metodo organizará a lista de objetos de acordo com sua profundidade do eixo Y.
-         */
         entities.sort(Entity.Depth);
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
@@ -75,8 +75,6 @@ public class Game implements Activity {
             Tile tile = map[i];
             tile.tick();
         }
-
-        //Atualização da camera, sempre no final!
         C.tick();
         hud.tick();
     }
@@ -151,5 +149,6 @@ public class Game implements Activity {
     public void dispose() {
         //limpar memoria
         System.out.println("Dispose Game");
+        physically.dispose();
     }
 }

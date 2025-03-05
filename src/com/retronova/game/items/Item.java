@@ -60,6 +60,10 @@ public abstract class Item {
         }
     }
 
+    protected void resetIndexSprite() {
+        this.indexSprite = 0;
+    }
+
     public abstract void tick();
 
     public abstract void render(Graphics2D g);

@@ -9,5 +9,5 @@ public class Configs {
     public static boolean NeatGraphics = false;
     public static int VOLUM = 10; //Volume dos dons
     public static int MUSIC = 10; // Volume das musicas
-    public static double MaxFrames = 120;
+    public static double MaxFrames = 60;
 }

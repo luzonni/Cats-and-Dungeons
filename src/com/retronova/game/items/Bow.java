@@ -38,6 +38,8 @@ public class Bow extends Item {
                 Arrow arrow = new Arrow(x, y, player.getRangeDamage(), angle);
                 Game.getMap().getEntities().add(arrow);
             }
+        }else {
+            resetIndexSprite();
         }
     }
 

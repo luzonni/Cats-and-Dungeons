@@ -1,7 +1,8 @@
-package com.retronova.game.objects;
+package com.retronova.game.objects.physical;
 
 import com.retronova.engine.Configs;
 import com.retronova.game.Game;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 
 import java.util.ArrayList;
@@ -34,7 +35,6 @@ public class Physical {
         double vectorX = Math.cos(angleForce) * force;
         double vectorY = Math.sin(angleForce) * force;
         this.isMoving = moveSystem(vectorX, vectorY);
-        repulsion();
     }
 
     /**
@@ -153,7 +153,7 @@ public class Physical {
     }
 
     //TODO colocar características nas entidades para filtrar melhor o que colide com o que n colide, por exemplo, dizer o que está vivo do que não esta...
-    private void repulsion() {
+    void repulsion() {
         List<Entity> entities = new ArrayList<>(List.copyOf(Game.getMap().getEntities()));
         for(int i = 0; i < entities.size(); i++) {
             Entity e1 = this.entity;

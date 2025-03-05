@@ -6,7 +6,7 @@ import com.retronova.engine.exceptions.EntityNotFound;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.Physical;
+import com.retronova.game.objects.physical.Physical;
 
 import java.awt.*;
 import java.util.List;
