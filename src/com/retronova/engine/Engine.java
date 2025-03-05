@@ -96,7 +96,6 @@ public class Engine implements Runnable {
         Graphics2D graphics = (Graphics2D) BUFFER.getDrawGraphics();
         graphics.setColor(Color.black);
         graphics.fillRect(0, 0, window.getWidth(), window.getHeight());
-        graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
         if(Configs.ANTIALIAS)
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         return graphics;

@@ -66,7 +66,7 @@ public class Window extends Canvas {
         }catch(Exception ignore) { }
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        createBufferStrategy(3);
+        createBufferStrategy(2);
         Engine.BUFFER = getBufferStrategy();
         System.out.println("OpenGL: " + System.getProperty("sun.java2d.opengl")); // "true" se OpenGL estiver ativado
         System.out.println("DirectX: " + System.getProperty("sun.java2d.d3d"));   // "true" se Direct3D estiver ativado
