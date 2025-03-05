@@ -1,6 +1,7 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Arrow;
 import com.retronova.game.objects.entities.Entity;
@@ -45,15 +46,11 @@ public class Bow extends Item {
 
     @Override
     public void render(Graphics2D g) {
-        //TODO tem um bug no sprite do arco, acredito que esse bug visual so aconteça no linux....
         Player player = Game.getPlayer();
         int x = (int) player.getX() + player.getWidth()/2 - Game.C.getX();
         int y = (int) player.getY() + player.getHeight()/2 - Game.C.getY();
         double xx = x - getSprite().getWidth()/2d;
         double yy = y - getSprite().getHeight()/2d;
-        AffineTransform at = new AffineTransform();
-        at.translate(xx, yy);
-        at.rotate(angle + Math.PI/4, getSprite().getWidth()/2d, getSprite().getHeight()/2d);
-        g.drawImage(getSprite(), at, null);
+        Rotate.draw(getSprite(), (int)xx, (int)yy, angle + Math.PI/4, null, g);
     }
 }

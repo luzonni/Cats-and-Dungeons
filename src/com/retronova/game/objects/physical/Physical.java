@@ -153,7 +153,7 @@ public class Physical {
     }
 
     //TODO colocar características nas entidades para filtrar melhor o que colide com o que n colide, por exemplo, dizer o que está vivo do que não esta...
-    void repulsion() {
+    synchronized void repulsion() {
         List<Entity> entities = new ArrayList<>(List.copyOf(Game.getMap().getEntities()));
         for(int i = 0; i < entities.size(); i++) {
             Entity e1 = this.entity;

@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 
 import java.awt.*;
@@ -49,10 +50,9 @@ public class Arrow extends Entity {
 
     @Override
     public void render(Graphics2D g) {
-        AffineTransform at = new AffineTransform();
-        at.translate(getX() - Game.C.getX(), getY() - Game.C.getY());
-        at.rotate(angle + Math.PI/4, getSprite().getWidth()/2d, getSprite().getHeight()/2d);
-        g.drawImage(getSprite(), at, null);
+        int x = (int)getX() - Game.C.getX();
+        int y = (int)getY() - Game.C.getY();
+        Rotate.draw(getSprite(), x, y, angle + Math.PI/4, null, g);
     }
 
     @Override
