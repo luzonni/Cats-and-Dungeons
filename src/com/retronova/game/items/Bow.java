@@ -7,6 +7,7 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 
 public class Bow extends Item {
 
@@ -48,8 +49,9 @@ public class Bow extends Item {
         int y = (int) player.getY() + player.getHeight()/2 - Game.C.getY();
         double xx = x - getSprite().getWidth()/2d;
         double yy = y - getSprite().getHeight()/2d;
-        g.rotate((angle + Math.PI/4), x, y);
-        g.drawImage(getSprite(), (int)xx, (int)yy, null);
-        g.rotate(-(angle + Math.PI/4), x, y);
+        AffineTransform at = new AffineTransform();
+        at.translate(xx, yy);
+        at.rotate(angle + Math.PI/4, getSprite().getWidth()/2d, getSprite().getHeight()/2d);
+        g.drawImage(getSprite(), at, null);
     }
 }

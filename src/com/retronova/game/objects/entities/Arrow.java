@@ -3,6 +3,7 @@ package com.retronova.game.objects.entities;
 import com.retronova.game.Game;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -48,11 +49,10 @@ public class Arrow extends Entity {
 
     @Override
     public void render(Graphics2D g) {
-        int middleX = (int)getX() + getWidth()/2;
-        int middleY = (int)getY() + getHeight()/2;
-        g.rotate((angle + Math.PI/4), middleX - Game.C.getX(), middleY - Game.C.getY());
-        renderSprite(getSprite(),g );
-        g.rotate(-(angle + Math.PI/4), middleX - Game.C.getX(), middleY - Game.C.getY());
+        AffineTransform at = new AffineTransform();
+        at.translate(getX() - Game.C.getX(), getY() - Game.C.getY());
+        at.rotate(angle + Math.PI/4, getSprite().getWidth()/2d, getSprite().getHeight()/2d);
+        g.drawImage(getSprite(), at, null);
     }
 
     @Override
