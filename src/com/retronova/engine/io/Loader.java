@@ -1,4 +1,4 @@
-package com.retronova.io;
+package com.retronova.engine.io;
 
 import com.retronova.game.objects.entities.Entity;
 import org.json.simple.JSONArray;

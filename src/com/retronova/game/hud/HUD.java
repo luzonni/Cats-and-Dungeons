@@ -5,7 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.geom.Point2D;

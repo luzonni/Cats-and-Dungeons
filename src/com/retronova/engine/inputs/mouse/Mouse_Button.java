@@ -1,4 +1,4 @@
-package com.retronova.inputs.mouse;
+package com.retronova.engine.inputs.mouse;
 
 public enum Mouse_Button {
 

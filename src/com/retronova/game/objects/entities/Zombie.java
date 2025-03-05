@@ -3,7 +3,7 @@ package com.retronova.game.objects.entities;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

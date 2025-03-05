@@ -4,9 +4,9 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.graphics.SpriteSheet;
-import com.retronova.inputs.keyboard.KeyBoard;
-import com.retronova.inputs.mouse.Mouse;
+import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.engine.inputs.mouse.Mouse;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -17,6 +17,7 @@ class Hotbar {
     private Rectangle[] bounds;
     private final Player player;
     private int index;
+    private char[] numbers = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
     public Hotbar(Player player) {
         this.player = player;
@@ -47,6 +48,16 @@ class Hotbar {
 
     public void tick() {
         refreshPositions();
+        Item itemHand = player.getInventory().getHotbar()[getIndexHot()];
+        player.getInventory().setItemHand(itemHand);
+        if(KeyBoard.KeyPressed("Q") && itemHand != null) {
+            if(player.getInventory().drop(itemHand)) {
+                player.dropLoot(itemHand);
+            }
+        }
+    }
+
+    private int getIndexHot() {
         int length = player.getInventory().getHotbarSize();
         int scroll = Mouse.Scroll();
         if(scroll > 0) {
@@ -60,13 +71,13 @@ class Hotbar {
                 index = length-1;
             }
         }
-        Item itemHand = player.getInventory().getHotbar()[index];
-        player.getInventory().setItemHand(itemHand);
-        if(KeyBoard.KeyPressed("Q") && itemHand != null) {
-            if(player.getInventory().drop(itemHand)) {
-                player.dropLoot(itemHand);
-            }
-        }
+        try {
+            char keyChar = KeyBoard.getKeyChar(numbers);
+            int number = Integer.parseInt(String.valueOf(keyChar)) - 1;
+            if(number < length)
+                this.index = number;
+        }catch (Exception e) {}
+        return index;
     }
 
     public void render(Graphics2D g) {

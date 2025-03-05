@@ -1,12 +1,11 @@
 package com.retronova.engine;
 
-import com.retronova.graphics.SpriteSheet;
-import com.retronova.inputs.keyboard.KeyBoard;
-import com.retronova.inputs.mouse.Mouse;
+import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.engine.inputs.mouse.Mouse;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.Serial;
 

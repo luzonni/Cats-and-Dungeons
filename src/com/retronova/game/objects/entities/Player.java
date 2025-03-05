@@ -4,8 +4,8 @@ import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.interfaces.inventory.Inventory;
 import com.retronova.game.items.Item;
-import com.retronova.graphics.SpriteSheet;
-import com.retronova.inputs.keyboard.KeyBoard;
+import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

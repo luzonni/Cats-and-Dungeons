@@ -1,9 +1,8 @@
-package com.retronova.graphics;
+package com.retronova.engine.graphics;
 
-import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.exceptions.FlipException;
-import com.retronova.exceptions.OutOfPixels;
+import com.retronova.engine.exceptions.FlipException;
+import com.retronova.engine.exceptions.OutOfPixels;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

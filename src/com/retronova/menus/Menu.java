@@ -5,9 +5,9 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
-import com.retronova.graphics.FontG;
-import com.retronova.inputs.mouse.Mouse;
-import com.retronova.inputs.mouse.Mouse_Button;
+import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.inputs.mouse.Mouse;
+import com.retronova.engine.inputs.mouse.Mouse_Button;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 

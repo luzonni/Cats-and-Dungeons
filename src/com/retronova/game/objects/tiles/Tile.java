@@ -1,6 +1,6 @@
 package com.retronova.game.objects.tiles;
 
-import com.retronova.exceptions.TileNotFound;
+import com.retronova.engine.exceptions.TileNotFound;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 

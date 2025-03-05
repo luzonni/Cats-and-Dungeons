@@ -1,7 +1,7 @@
 package com.retronova.engine;
 
 import com.retronova.engine.sound.Sound;
-import com.retronova.graphics.FontG;
+import com.retronova.engine.graphics.FontG;
 import com.retronova.menus.Loading;
 import com.retronova.menus.Menu;
 

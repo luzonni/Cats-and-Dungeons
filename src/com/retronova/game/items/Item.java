@@ -1,10 +1,8 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.Configs;
-import com.retronova.exceptions.NotFound;
-import com.retronova.game.Game;
-import com.retronova.game.objects.entities.Player;
-import com.retronova.graphics.SpriteSheet;
+import com.retronova.engine.exceptions.NotFound;
+import com.retronova.engine.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -27,11 +25,13 @@ public abstract class Item {
         throw new NotFound("Item not found");
     }
 
-    private String name;
-    private BufferedImage[] sprite;
+    private final int id;
+    private final String name;
+    private final BufferedImage[] sprite;
     private int indexSprite;
 
     Item(int id, String name, String sprite) {
+        this.id = id;
         this.name = name;
         SpriteSheet sheet = new SpriteSheet("items", sprite, Configs.SCALE);
         int length = sheet.getWidth()/16;
@@ -39,6 +39,10 @@ public abstract class Item {
         for(int i = 0; i < length; i++) {
             this.sprite[i] = sheet.getSpriteWithIndex(i, 0);
         }
+    }
+
+    public int getID() {
+        return this.id;
     }
 
     public String getName() {

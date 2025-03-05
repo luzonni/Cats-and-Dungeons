@@ -2,8 +2,8 @@ package com.retronova.game.objects.entities;
 
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
-import com.retronova.inputs.mouse.Mouse;
-import com.retronova.inputs.mouse.Mouse_Button;
+import com.retronova.engine.inputs.mouse.Mouse;
+import com.retronova.engine.inputs.mouse.Mouse_Button;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

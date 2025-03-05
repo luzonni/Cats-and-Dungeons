@@ -1,4 +1,4 @@
-package com.retronova.exceptions;
+package com.retronova.engine.exceptions;
 
 public class OutOfPixels extends RuntimeException {
 

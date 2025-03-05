@@ -2,9 +2,7 @@ package com.retronova.game;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
-import com.retronova.engine.sound.Musics;
-import com.retronova.engine.sound.Sound;
-import com.retronova.exceptions.NotInActivity;
+import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.map.Camera;
 import com.retronova.game.map.Arena;
@@ -14,7 +12,7 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.interfaces.Pause;
 import com.retronova.game.objects.tiles.Tile;
-import com.retronova.inputs.keyboard.KeyBoard;
+import com.retronova.engine.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
 import java.util.List;

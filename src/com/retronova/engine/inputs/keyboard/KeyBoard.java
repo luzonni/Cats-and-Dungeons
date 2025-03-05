@@ -1,4 +1,4 @@
-package com.retronova.inputs.keyboard;
+package com.retronova.engine.inputs.keyboard;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

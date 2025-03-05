@@ -1,4 +1,4 @@
-package com.retronova.exceptions;
+package com.retronova.engine.exceptions;
 
 public class NotFound extends RuntimeException {
     public NotFound(String message) {

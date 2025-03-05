@@ -6,12 +6,11 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
-import com.retronova.graphics.FontG;
-import com.retronova.inputs.keyboard.KeyBoard;
-import com.retronova.inputs.mouse.Mouse;
-import com.retronova.inputs.mouse.Mouse_Button;
+import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.engine.inputs.mouse.Mouse;
+import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.menus.Menu;
-import kuusisto.tinysound.TinySound;
 
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;

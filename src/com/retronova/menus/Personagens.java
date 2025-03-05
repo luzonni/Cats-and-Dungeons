@@ -8,10 +8,10 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
 import com.retronova.game.map.Arena;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.graphics.FontG;
-import com.retronova.graphics.SpriteSheet;
-import com.retronova.inputs.mouse.Mouse;
-import com.retronova.inputs.mouse.Mouse_Button;
+import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.inputs.mouse.Mouse;
+import com.retronova.engine.inputs.mouse.Mouse_Button;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

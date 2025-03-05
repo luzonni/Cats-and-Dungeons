@@ -5,7 +5,7 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.TileIDs;
-import com.retronova.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

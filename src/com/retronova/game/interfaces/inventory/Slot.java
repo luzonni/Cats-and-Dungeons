@@ -2,8 +2,8 @@ package com.retronova.game.interfaces.inventory;
 
 import com.retronova.engine.Configs;
 import com.retronova.game.items.Item;
-import com.retronova.graphics.SpriteSheet;
-import com.retronova.inputs.mouse.Mouse;
+import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.inputs.mouse.Mouse;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

@@ -2,7 +2,7 @@ package com.retronova.game.objects;
 
 import com.retronova.engine.Configs;
 import com.retronova.game.Game;
-import com.retronova.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

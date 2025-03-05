@@ -4,7 +4,7 @@ import com.retronova.engine.ActionBack;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.graphics.FontG;
+import com.retronova.engine.graphics.FontG;
 
 import java.awt.*;
 
