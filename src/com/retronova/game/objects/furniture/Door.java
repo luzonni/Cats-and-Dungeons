@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 
 public class Door extends Furniture {
 
-    public Door(int ID, double x, double y) {
+    Door(int ID, double x, double y) {
         super(ID, x, y);
     }
 
