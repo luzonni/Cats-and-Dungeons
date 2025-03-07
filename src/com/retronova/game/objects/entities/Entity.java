@@ -65,7 +65,7 @@ public abstract class Entity extends GameObject {
         this.physical = new Physical(this, friction);
         setResistances(null);
         setLife(100d);
-        setXpWeight(7.33);
+        setXpWeight(7.33d);
     }
 
     protected void setXpWeight(double weight) {
