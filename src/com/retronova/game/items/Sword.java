@@ -44,14 +44,14 @@ public class Sword extends Item {
         BufferedImage sprite = getSprite();
         int w = sprite.getWidth();
         int h = sprite.getHeight();
+        Point pointRotate = new Point(3 * Configs.SCALE, 12 * Configs.SCALE);
         double x = player.getX() + player.getWidth()/2d;
         double y = player.getY();
-        Point pointRotate = new Point(3 * Configs.SCALE, 12 * Configs.SCALE);
         double radnear = 0;
         if(this.nearest != null) {
             radnear = nearest.getAngle(player);
             double dist = nearest.getDistance(player);
-            x = player.getX() + player.getWidth()/2d - w/2d + Math.cos(radnear) * (dist - GameObject.SIZE());
+            x = player.getX() + player.getWidth()/2d - pointRotate.x + Math.cos(radnear) * (dist - GameObject.SIZE());
             y = player.getY() + Math.sin(radnear) * (dist - GameObject.SIZE());
         }
         x -= Game.C.getX();
