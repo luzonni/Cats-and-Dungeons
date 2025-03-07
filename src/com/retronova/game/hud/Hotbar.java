@@ -57,6 +57,10 @@ class Hotbar {
         }
     }
 
+    Rectangle[] getBounds() {
+        return this.bounds;
+    }
+
     private int getIndexHot() {
         int length = player.getInventory().getHotbarSize();
         int scroll = Mouse.Scroll();

@@ -25,6 +25,8 @@ public class Slime extends Entity {
         //setResistances(); //não sei qual vai ser a resistência dos ataques
         setSolid();
         setAlive();
+        //valor alto apenas para testar ganho de xp alto
+        setXpWeight(800000.6d);
     }
 
     @Override

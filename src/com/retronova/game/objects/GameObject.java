@@ -1,12 +1,15 @@
 package com.retronova.game.objects;
 
 import com.retronova.engine.Configs;
+import com.retronova.engine.exceptions.SpriteNotFound;
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class GameObject {
 
@@ -124,7 +127,9 @@ public abstract class GameObject {
 
     public abstract void tick();
 
-    public abstract void render(Graphics2D g);
+    public void render(Graphics2D g) {
+        renderSprite(getSprite(), g);
+    }
 
     public abstract void dispose();
 

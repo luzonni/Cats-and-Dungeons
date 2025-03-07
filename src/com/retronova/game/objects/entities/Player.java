@@ -15,7 +15,7 @@ public class Player extends Entity {
     public static final Player[] TEMPLATES = new Player[] {
             new Player("cinzento", 10, 5, 0.3, 15, 30, 7.2, 5, 4),
             new Player("mago", 10, 5, 0.3, 12, 11, 5, 5, 4),
-            new Player("sortudo", 10, 5, 0.3, 1, 50, 15, 5, 4)
+            new Player("sortudo", 10, 7, 0.3, 1, 50, 15, 5, 4)
     };
 
     public static Player newPlayer(int index) {
@@ -34,12 +34,14 @@ public class Player extends Entity {
     }
 
     private final String name;
+    private double XP;
+    private int level;
     private BufferedImage[][] sprite;
     private int countAnim;
     private int indexAnim;
     private int stateAnim;
 
-    private double speed;
+    private final double speed;
     private double damage;
     private double luck;
     private int attackSpeed;
@@ -81,7 +83,6 @@ public class Player extends Entity {
 
     @Override
     public void tick() {
-        updateMovement();
         countAnim++;
         if (countAnim > 10) {
             countAnim = 0;
@@ -90,6 +91,9 @@ public class Player extends Entity {
                 indexAnim = 0;
             }
         }
+        if(!(Engine.getACTIVITY() instanceof Game))
+            return;
+        updateMovement();
         tickItemHand();
     }
     public double getRangeDamage() {
@@ -134,6 +138,37 @@ public class Player extends Entity {
 
     public void setRange(double range) {
         this.range = range;
+    }
+
+    public void plusXp(double weight) {
+        double currentXp = getXp();
+        this.XP += weight;
+        while(getXp() >= getXpLength()) { //caso ganhe um xp com peso muito alto, o nivel vai aumentar até o chegar no nivel considerado
+            this.XP -= getXpLength();
+            this.level++;
+        }
+    }
+
+    public double getXp() {
+        return this.XP;
+    }
+
+    public double getXpLength() {
+        if(getLevel() == 0)
+            return 75;
+        return getLevel() * 23.74 + 100 * getLevel()*1.33;
+    }
+
+    public boolean takeLevel(double levles) {
+        if(this.level <= levles) {
+            this.level -= levles;
+            return true;
+        }
+        return false;
+    }
+
+    public int getLevel() {
+        return this.level;
     }
 
     private void tickItemHand() {

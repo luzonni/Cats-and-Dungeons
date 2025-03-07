@@ -3,6 +3,7 @@ package com.retronova.game.hud;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.graphics.FontG;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.engine.graphics.SpriteSheet;
@@ -84,13 +85,14 @@ public class HUD implements Activity {
         vignette(g);
         bust(g);
         bottleLife(g);
+        renderXpBar(g);
         hotbar.render(g);
     }
 
     private void bust(Graphics2D g) {
         int x = Configs.MARGIN;
         int y = Configs.MARGIN;
-        g.drawImage(this.chains, x, y - (this.frameBust.getHeight() - Configs.SCALE), null);
+        g.drawImage(this.chains, x, y - (this.frameBust.getHeight() - Configs.HUDSCALE), null);
         g.drawImage(this.frameBust, x, y, null);
         g.drawImage(this.bust, x, y, null);
     }
@@ -100,11 +102,11 @@ public class HUD implements Activity {
         int x = Configs.MARGIN + this.frameBust.getWidth();
         int y = Configs.MARGIN;
         g.drawImage(bottle[indexBottle], x, y, Engine.window);
-        int w = Configs.UISCALE * 36;
-        int h = Configs.UISCALE * 6;
+        int w = Configs.HUDSCALE * 36;
+        int h = Configs.HUDSCALE * 4;
         int xx = x + bottle[indexBottle].getWidth();
-        int yy = y + bottle[indexBottle].getHeight()/2 - h/2;
-        g.setStroke(new BasicStroke(Configs.UISCALE * 2));
+        int yy = y + bottle[indexBottle].getHeight()/2;
+        g.setStroke(new BasicStroke(Configs.HUDSCALE));
         g.drawImage(this.chains, xx + w/2 - chains.getWidth()/2, yy - this.chains.getHeight(), null);
         g.setColor(new Color(135, 35, 65));
         g.fillRect(xx, yy, w, h);
@@ -113,6 +115,31 @@ public class HUD implements Activity {
         g.fillRect(xx, yy, (int)lifeWidth, h);
         g.setColor(new Color(9, 18, 44));
         g.drawRect(xx, yy, w, h);
+    }
+
+    private void renderXpBar(Graphics2D g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Player player = Game.getPlayer();
+        int size = Configs.HUDSCALE * 15;
+        int x = Engine.window.getWidth() - size - Configs.MARGIN;
+        int y = Configs.MARGIN;
+        Font font = FontG.font(Configs.HUDSCALE * 8);
+        String value = "" + player.getLevel();
+        int wf = FontG.getWidth(value, font);
+        int hf = FontG.getHeight(value, font);
+        g2.setStroke(new BasicStroke(Configs.HUDSCALE));
+        g2.setFont(font);
+        g2.setColor(new Color(20, 64, 96));
+        g2.fillOval(x - Configs.HUDSCALE, y - Configs.HUDSCALE, size + Configs.HUDSCALE*2, size + Configs.HUDSCALE*2);
+        g2.setColor(new Color(160, 200, 120));
+        int percent = (int)((double)360 * (player.getXp() / player.getXpLength()));
+        g2.fillArc(x - Configs.HUDSCALE, y - Configs.HUDSCALE, size + Configs.HUDSCALE*2, size + Configs.HUDSCALE*2, 90, percent);
+        g2.setColor(new Color(9, 18, 44));
+        g2.fillOval(x, y, size, size);
+        g2.setColor(Color.white);
+        g2.drawString(value, x + size/2 - wf/2, y + size/2 + hf/2);
+        g2.dispose();
     }
 
     private void vignette(Graphics2D g) {

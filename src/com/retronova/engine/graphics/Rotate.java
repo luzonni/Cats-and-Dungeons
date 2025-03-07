@@ -17,6 +17,7 @@ public class Rotate {
             pointImageRotate = new Point(sprite.getWidth()/2, sprite.getHeight()/2);
         at.rotate(angle, pointImageRotate.x, pointImageRotate.y);
         g2.drawImage(sprite, at, Engine.window);
+        g2.dispose();
     }
 
 }

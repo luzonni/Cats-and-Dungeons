@@ -17,12 +17,16 @@ public abstract class Entity extends GameObject {
     private AttackTypes[] resistanceOf;
     private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
     private boolean alive = false;
+    private double xpWeight;
 
     public static Entity build(int ID, double x, double y) {
         EntityIDs entityId = EntityIDs.values()[ID];
         x *= GameObject.SIZE();
         y *= GameObject.SIZE();
         switch (entityId) {
+            case Xp -> {
+                return new Xp(ID, x, y);
+            }
             case Zombie -> {
                 return new Zombie(ID, x, y);
             }
@@ -61,6 +65,15 @@ public abstract class Entity extends GameObject {
         this.physical = new Physical(this, friction);
         setResistances(null);
         setLife(100d);
+        setXpWeight(7.33);
+    }
+
+    protected void setXpWeight(double weight) {
+        this.xpWeight = weight;
+    }
+
+    protected double getXpWeight() {
+        return this.xpWeight;
     }
 
     public double getLife() {
@@ -141,6 +154,17 @@ public abstract class Entity extends GameObject {
         //TODO adicionar particula de morte
         //TODO adicionar som de morte
         this.disappear();
+        this.dropXp();
+    }
+
+    private void dropXp() {
+        double luck = Game.getPlayer().getLuck();
+        Xp e = (Xp)build(EntityIDs.Xp.ordinal(), 0, 0);
+        e.setX(getX());
+        e.setY(getY());
+        e.setWeight(getXpWeight() * (1d + Engine.RAND.nextDouble(luck)));
+        Game.getMap().getEntities().add(e);
+        e.getPhysical().addForce(7, Math.PI*2);
     }
 
     /**
