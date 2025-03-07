@@ -2,6 +2,8 @@ package com.retronova.game.items;
 
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Arrow;
 import com.retronova.game.objects.entities.Entity;
@@ -38,6 +40,7 @@ public class Bow extends Item {
                 double y = player.getY() + player.getHeight() * Math.sin(angle);
                 Arrow arrow = new Arrow(x, y, player.getRangeDamage(), angle);
                 Game.getMap().getEntities().add(arrow);
+                Sound.play(Sounds.Bow);
             }
         }else {
             resetIndexSprite();

@@ -8,7 +8,8 @@ public enum Sounds {
 	Skeleton("bones"),
 	MouseVampire("vampire_sound"),
 	RatExplode("lit_sound"),
-	Slime("slime_sound");
+	Slime("slime_sound"),
+	Bow("bowshoot");
 	
 	private final String ResourceName;
 	

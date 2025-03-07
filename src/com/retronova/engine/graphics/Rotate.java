@@ -1,6 +1,7 @@
 package com.retronova.engine.graphics;
 
 import com.retronova.engine.Engine;
+import com.retronova.game.Game;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

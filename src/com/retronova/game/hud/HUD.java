@@ -137,6 +137,8 @@ public class HUD implements Activity {
         g2.fillArc(x - Configs.HUDSCALE, y - Configs.HUDSCALE, size + Configs.HUDSCALE*2, size + Configs.HUDSCALE*2, 90, percent);
         g2.setColor(new Color(9, 18, 44));
         g2.fillOval(x, y, size, size);
+        g2.setColor(Color.black);
+        g2.drawString(value, x + size/2 - wf/2 + Configs.HUDSCALE, y + size/2 + hf/2 + Configs.HUDSCALE);
         g2.setColor(Color.white);
         g2.drawString(value, x + size/2 - wf/2, y + size/2 + hf/2);
         g2.dispose();

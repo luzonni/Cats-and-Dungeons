@@ -15,7 +15,7 @@ public class Player extends Entity {
     public static final Player[] TEMPLATES = new Player[] {
             new Player("cinzento", 10, 5, 0.3, 15, 30, 7.2, 5, 4),
             new Player("mago", 10, 5, 0.3, 12, 11, 5, 5, 4),
-            new Player("sortudo", 10, 7, 0.3, 1, 50, 15, 5, 4)
+            new Player("sortudo", 50, 7, 0.3, 1, 50, 15, 5, 4)
     };
 
     public static Player newPlayer(int index) {
