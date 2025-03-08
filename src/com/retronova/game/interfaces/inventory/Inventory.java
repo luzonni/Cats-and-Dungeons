@@ -42,6 +42,7 @@ public class Inventory implements Activity {
         refreshPositions();
         this.bag[lengthBag-1].put(Item.build(ItemIDs.Sword));
         this.bag[lengthBag-2].put(Item.build(ItemIDs.Bow));
+        this.hotbar[0].put(Item.build(ItemIDs.Bomb));
 
     }
 
