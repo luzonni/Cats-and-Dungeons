@@ -35,6 +35,8 @@ public class Sword extends Item {
                 if(Math.abs(rad) > Math.PI) {
                     rad = 0;
                     this.nearest.strike(AttackTypes.Melee, player.getDamage());
+                    //TODO esse efeito eh apenas para testes
+                    this.nearest.addEffect("slowness", e -> e.getPhysical().setFriction(0.9), 5);
                 }
             }
         }else {

@@ -1,5 +1,7 @@
 package com.retronova.game.objects.entities;
 
+import java.beans.ConstructorProperties;
+
 public class Effect {
 
     private final String name;
@@ -13,6 +15,17 @@ public class Effect {
         this.entity = entity;
         this.applicator = applicator;
         this.seconds = seconds * 60;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(o == null) {
+            return false;
+        }
+        if(!(o instanceof Effect)) {
+            return false;
+        }
+        return this.name.equals(((Effect) o).getName());
     }
 
     public String getName() {

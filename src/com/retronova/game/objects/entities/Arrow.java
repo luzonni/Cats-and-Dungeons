@@ -34,7 +34,7 @@ public class Arrow extends Entity {
             if(this.colliding(entity) && entity.isAlive()) {
                 entity.strike(AttackTypes.Piercing, damage);
                 entity.getPhysical().addForce(2.2, this.angle);
-                entity.addEffect((Entity e) -> {
+                entity.addEffect("Poison", (Entity e) -> {
                     //Quando a flecha colide com uma entidade, ela fica com efeito de dano de veneno APENAS TESTE!
                     e.strike(AttackTypes.Poison, 0.1d);
                 }, 3);

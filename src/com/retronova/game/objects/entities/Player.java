@@ -74,7 +74,7 @@ public class Player extends Entity {
             return;
         if(KeyBoard.KeyPressed("F")) {
             //Teste de aplicação de efeito na entidade player
-            this.addEffect((Entity e) -> {
+            this.addEffect("TesteAddLife", (Entity e) -> {
                 if(e.getLife() < e.getLifeSize())
                     e.setLife(e.getLife()+0.1d);
                 if(Engine.RAND.nextInt(100) < 10)
