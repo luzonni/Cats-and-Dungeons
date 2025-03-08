@@ -33,7 +33,7 @@ public class Bomb extends Entity{
             List<Entity> entities = Game.getMap().getEntities();
             for(int i = 0; i < entities.size(); i++) {
                 Entity e = entities.get(i);
-                if(e.getDistance(this) < GameObject.SIZE() * 50.0){
+                if(e.getDistance(this) < GameObject.SIZE() * 50.0) {
                     e.strike(AttackTypes.Melee, this.damage);
                 }
             }
