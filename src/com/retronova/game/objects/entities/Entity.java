@@ -17,7 +17,6 @@ import java.util.Map;
 public abstract class Entity extends GameObject {
 
     private final Physical physical;
-    private AttackTypes[] resistanceOf;
 
     private final Map<Modifiers, Double> modifiers;
     private final List<Effect> effects;
@@ -27,6 +26,7 @@ public abstract class Entity extends GameObject {
     private double speed;
     private double damage;
     private double attackSpeed;
+    private AttackTypes[] resistanceOf;
 
     private boolean alive = false;
     private double xpWeight;
@@ -90,7 +90,6 @@ public abstract class Entity extends GameObject {
     public void addEffect(String name, EffectApplicator applicator, int seconds) {
         Effect effect = new Effect(name, this, applicator, seconds);
         if(!this.effects.contains(effect)) {
-            System.out.println("Add: " + name);
             this.effects.add(new Effect(name, this, applicator, seconds));
         }
     }
@@ -124,9 +123,7 @@ public abstract class Entity extends GameObject {
         return this.life[0];
     }
 
-    public void setLifeSize(double lifeSize){ this.life[0] = lifeSize; }
-
-    public void setLife(double life) {
+    protected void setLife(double life) {
         if(this.life == null) {
             this.life = new double[] {life, life};
             return;
@@ -182,12 +179,12 @@ public abstract class Entity extends GameObject {
         return alive;
     }
 
-    public void setAlive() {
+    protected void setAlive() {
         this.alive = true;
     }
 
-    protected void setResistances(AttackTypes... resistences) {
-        this.resistanceOf = resistences;
+    protected void setResistances(AttackTypes... resistances) {
+        this.resistanceOf = resistances;
     }
 
     public void strike(AttackTypes type, double damage) {
