@@ -7,22 +7,15 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class MonarkMouse extends Entity{
-    private final BufferedImage[][] sprite;
+
     private int countAnim;
-    private int indexState;
-    private int indexAnim;
 
     MonarkMouse(int ID, double x, double y) {
         super(ID, x, y, 0.6);
-        sprite = new BufferedImage[][] {loadSprite("monarkmouse", 0), loadSprite("monarkmouse", 1)};
+        loadSprites("monarkmouse");
         //adicionar resistência
         setSolid();
         setAlive();
-    }
-
-    @Override
-    public BufferedImage getSprite() {
-        return sprite[indexState][indexState];
     }
 
     public void tick() {
@@ -40,10 +33,7 @@ public class MonarkMouse extends Entity{
         countAnim++;
         if(countAnim > 10) {
             countAnim = 0;
-            indexAnim++;
-            if(indexAnim >= sprite[indexState].length) {
-                indexAnim = 0;
-            }
+            getSheet().plusIndex();
         }
 
     }

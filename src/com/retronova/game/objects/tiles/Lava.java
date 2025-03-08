@@ -16,10 +16,7 @@ public class Lava extends Tile {
 
     Lava(int ID, int x, int y) {
         super(ID, x, y, false);
-        if(sprite == null) {
-            sprite = loadSprite("lava");
-            indexSprite = Engine.RAND.nextInt(sprite.length);
-        }
+        loadSprites("lava");
     }
 
     @Override
@@ -27,10 +24,7 @@ public class Lava extends Tile {
         count++;
         if(count > 20) {
             count = 0;
-            indexSprite++;
-            if(indexSprite > sprite.length-1) {
-                indexSprite = 0;
-            }
+            getSheet().plusIndex();
         }
     }
 
@@ -43,18 +37,4 @@ public class Lava extends Tile {
         }
     }
 
-    @Override
-    public BufferedImage getSprite() {
-        return sprite[indexSprite];
-    }
-
-    @Override
-    public void render(Graphics2D g) {
-        renderSprite(getSprite(), g);
-    }
-
-    @Override
-    public void dispose() {
-        sprite = null;
-    }
 }

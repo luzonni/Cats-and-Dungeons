@@ -8,15 +8,9 @@ import java.awt.image.BufferedImage;
 
 public class Ice extends Tile {
 
-    private static BufferedImage[] sprite;
-    private int indexSprite;
-
     Ice(int ID, int x, int y) {
         super(ID, x, y, false);
-        if(sprite == null) {
-            sprite = loadSprite("ice");
-            indexSprite = Engine.RAND.nextInt(sprite.length);
-        }
+        loadSprites("ice");
     }
 
     @Override
@@ -24,18 +18,4 @@ public class Ice extends Tile {
         e.getPhysical().setFriction(0.2d);
     }
 
-    @Override
-    public BufferedImage getSprite() {
-        return sprite[indexSprite];
-    }
-
-    @Override
-    public void render(Graphics2D g) {
-        renderSprite(getSprite(), g);
-    }
-
-    @Override
-    public void dispose() {
-        sprite = null;
-    }
 }

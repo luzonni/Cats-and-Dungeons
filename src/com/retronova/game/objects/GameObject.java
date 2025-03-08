@@ -1,9 +1,7 @@
 package com.retronova.game.objects;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.exceptions.SpriteNotFound;
 import com.retronova.game.Game;
-import com.retronova.engine.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -14,8 +12,10 @@ import java.util.Map;
 public abstract class GameObject {
 
     private final Values values;
-    protected int depth;
-    private Rectangle bounds;
+    protected Sheet sheet;
+
+    private int depth;
+    private final Rectangle bounds;
     private boolean solid = false;
 
     public static int SIZE() {
@@ -32,19 +32,8 @@ public abstract class GameObject {
         this.bounds = new Rectangle(getWidth(), getHeight());
     }
 
-    public BufferedImage[] loadSprite(String spriteName) {
-        SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
-        int length = sheet.getWidth() / 16;
-        BufferedImage[] sprites = new BufferedImage[length];
-        for(int i = 0; i < length; i++) {
-            sprites[i] = sheet.getSpriteWithIndex(i, 0);
-        }
-        return sprites;
-    }
-
-    public BufferedImage[] loadSprite(String spriteName, int prefix) {
-        SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
-        return sheet.getSprites(prefix);
+    public void loadSprites(String... sprites) {
+        this.sheet = new Sheet(sprites);
     }
 
     public int getID() {
@@ -75,7 +64,13 @@ public abstract class GameObject {
         return this.depth;
     }
 
-    public abstract BufferedImage getSprite();
+    protected Sheet getSheet() {
+        return this.sheet;
+    }
+
+    public BufferedImage getSprite() {
+        return this.sheet.getSprite();
+    }
 
     public void setX(double newX) {
         this.values.setDouble("x", newX);
@@ -131,6 +126,8 @@ public abstract class GameObject {
         renderSprite(getSprite(), g);
     }
 
-    public abstract void dispose();
+    public void dispose() {
+        sheet.dispose();
+    }
 
 }

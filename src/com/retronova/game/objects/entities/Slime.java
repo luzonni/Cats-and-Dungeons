@@ -9,16 +9,15 @@ import java.util.Random;
 
 //Criei esse escopo mas não sei se está certo - Por favor não me bata zonzini
 public class Slime extends Entity {
-    private static BufferedImage[] sprite; //armazena os estados da imagem
+
     private int countAnim; //tempo da animação
-    private int indexAnim; // seleciona a animação baseado no estado
     private Random random; //gerar valores aleatórios para pular no mapa
     private int jumpCoolDown; //serve para dar um intervalo entre os saltos
     private boolean isJumping; //verifica se está pulando
 
     Slime(int ID, double x, double y) {
         super(ID, x, y, 0.4);
-        sprite = loadSprite("slime", 0); //carregamento das imagens
+        loadSprites("slime");
         jumpCoolDown = 0;
         isJumping = false;
         random = new Random(); //usei random para encontrar valores aleatórios no mapa
@@ -29,20 +28,12 @@ public class Slime extends Entity {
         setXpWeight(800000.6d);
     }
 
-    @Override
-    public BufferedImage getSprite(){ //retorna o estado da imagem baseado no estado e na animação
-        return sprite[indexAnim];
-    }
-
     public void tick() {
         moveIA();
         countAnim++;
         if(countAnim > 10) {
             countAnim = 0;
-            indexAnim++;
-            if(indexAnim >= sprite.length) {
-                indexAnim = 0;
-            }
+            getSheet().plusIndex();
         }
     }
 
@@ -72,16 +63,6 @@ public class Slime extends Entity {
         }
 
         jumpCoolDown = 30 + random.nextInt(20); //calculo do tempo de espera pra pular
-    }
-
-    @Override
-    public void render(Graphics2D g) {
-        renderSprite(getSprite(), g);
-    }
-
-    @Override
-    public void dispose() {
-        sprite = null;
     }
 
 }

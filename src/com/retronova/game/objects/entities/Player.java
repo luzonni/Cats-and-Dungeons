@@ -36,10 +36,7 @@ public class Player extends Entity {
     private final String name;
     private double XP;
     private int level;
-    private BufferedImage[][] sprite;
     private int countAnim;
-    private int indexAnim;
-    private int stateAnim;
 
     private final double speed;
     private double damage;
@@ -59,18 +56,10 @@ public class Player extends Entity {
         this.attackSpeed = attackSpeed;
         this.rangeDamage = rangeDamage;
         this.range = range;
+        loadSprites("player_"+name+"_idle", "player_"+name+"_walking");
         this.inventory = new Inventory(bagSize, hotSize);
-        this.sprite = new BufferedImage[][] {
-                loadSprite("player/"+name, 0),
-                loadSprite("player/"+name, 1)
-        };
         setSolid();
         setAlive();
-    }
-
-    @Override
-    public BufferedImage getSprite() {
-        return sprite[stateAnim][indexAnim];
     }
 
     public String getName() {
@@ -86,10 +75,7 @@ public class Player extends Entity {
         countAnim++;
         if (countAnim > 10) {
             countAnim = 0;
-            indexAnim++;
-            if (indexAnim >= sprite[stateAnim].length) {
-                indexAnim = 0;
-            }
+            getSheet().plusIndex();
         }
         if(!(Engine.getACTIVITY() instanceof Game))
             return;
@@ -181,7 +167,7 @@ public class Player extends Entity {
     private void updateMovement(){
         if(!(Engine.getACTIVITY() instanceof Game))
             return;
-        stateAnim = getPhysical().isMoving() ? 1 : 0;
+        getSheet().setType(getPhysical().isMoving() ? 1 : 0);
         int vertical = 0;
         int horizontal = 0;
         if(KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")){
@@ -216,11 +202,6 @@ public class Player extends Entity {
         if(item == null)
             return;
         item.render(g);
-    }
-
-    @Override
-    public void dispose() {
-        this.sprite = null;
     }
 
 }

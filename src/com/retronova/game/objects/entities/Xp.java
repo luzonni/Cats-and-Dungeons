@@ -7,21 +7,13 @@ import java.awt.image.BufferedImage;
 
 public class Xp extends Entity {
 
-    private static BufferedImage[] sprites;
     private int count;
-    private int indexSprite;
     private double weight;
     private double speed;
 
     Xp(int ID, double x, double y) {
         super(ID, x, y, 0.5d);
-        if(sprites == null)
-            sprites = loadSprite("xp");
-    }
-
-    @Override
-    public BufferedImage getSprite() {
-        return sprites[indexSprite];
+        loadSprites("xp");
     }
 
     public void setWeight(double weight) {
@@ -37,10 +29,7 @@ public class Xp extends Entity {
         count++;
         if(count > 15) {
             count = 0;
-            indexSprite++;
-            if(indexSprite > sprites.length-1) {
-                indexSprite = 0;
-            }
+            getSheet().plusIndex();
         }
         Player player = Game.getPlayer();
         if(player.getDistance(this) < GameObject.SIZE()/3d) {
@@ -55,8 +44,4 @@ public class Xp extends Entity {
         }
     }
 
-    @Override
-    public void dispose() {
-        sprites = null;
-    }
 }

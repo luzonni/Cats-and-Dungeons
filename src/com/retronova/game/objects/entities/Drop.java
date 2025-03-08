@@ -29,14 +29,4 @@ public class Drop extends Entity {
                 die();
         }
     }
-
-    @Override
-    public void render(Graphics2D g) {
-        renderSprite(getSprite(), g);
-    }
-
-    @Override
-    public void dispose() {
-
-    }
 }

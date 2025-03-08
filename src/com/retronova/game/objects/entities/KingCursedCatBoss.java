@@ -7,20 +7,12 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class KingCursedCatBoss extends Entity {
-    private final BufferedImage[][] sprite;
+
     private int countAnim;
-    private int indexState;
-    private int indexAnim;
 
     KingCursedCatBoss(int ID, double x, double y) {
         super(ID,x,y, 0.3);
-        sprite = new BufferedImage[][] {loadSprite("kingcursedcatboss", 0), loadSprite("kingcursedcatboss")};
-    }
-
-
-    @Override
-    public BufferedImage getSprite() {
-        return sprite [indexState][indexState];
+        loadSprites("kingcursedcatboss");
     }
 
     @Override
@@ -40,10 +32,7 @@ public class KingCursedCatBoss extends Entity {
         countAnim++;
         if(countAnim > 10) {
             countAnim = 0;
-            indexAnim++;
-            if(indexAnim >= sprite[indexState].length) {
-                indexAnim = 0;
-            }
+            getSheet().plusIndex();
         }
     }
 
@@ -57,8 +46,4 @@ public class KingCursedCatBoss extends Entity {
         renderSprite(sprite, k);
     }
 
-    @Override
-    public void dispose() {
-
-    }
 }

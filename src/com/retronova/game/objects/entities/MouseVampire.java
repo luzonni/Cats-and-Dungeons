@@ -8,22 +8,14 @@ import java.awt.image.BufferedImage;
 
 public class MouseVampire extends Entity {
 
-    private final BufferedImage[][] sprite;
     private int countAnim;
-    private int indexState;
-    private int indexAnim;
 
     MouseVampire(int ID, double x, double y) {
         super(ID,x,y,0.3);
-        sprite = new BufferedImage[][] {loadSprite("mousevampire", 0), loadSprite("mousevampire", 1)};
+        loadSprites("mousevampire");
         //adicionar a resistência a algo
         setSolid();
         setAlive();
-    }
-
-    @Override
-    public BufferedImage getSprite(){
-        return sprite[indexState][indexAnim];
     }
 
     public void tick() {
@@ -44,10 +36,7 @@ public class MouseVampire extends Entity {
         countAnim ++;
         if(countAnim > 10) {
             countAnim = 0;
-            indexAnim ++;
-            if(indexAnim >= sprite[indexState].length) {
-                indexAnim = 0;
-            }
+            getSheet().plusIndex();
         }
 
     }
@@ -61,6 +50,4 @@ public class MouseVampire extends Entity {
         renderSprite(sprite, d);
     }
 
-    @Override
-    public void dispose() {}
 }

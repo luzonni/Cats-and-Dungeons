@@ -10,24 +10,14 @@ import java.awt.image.BufferedImage;
 
 public class Zombie extends Entity {
 
-    private static BufferedImage[][] sprite;
     private int countAnim;
-    private int indexState;
-    private int indexAnim;
-
     private int cooldown;
 
     Zombie(int ID, double x, double y) {
         super(ID, x, y, 0.4);
-        sprite = new BufferedImage[][] {loadSprite("mousezombie", 0), loadSprite("mousezombie", 1)};
+        loadSprites("mousezombie");
         setSolid();
         setAlive();
-
-    }
-
-    @Override
-    public BufferedImage getSprite() {
-        return sprite[indexState][indexAnim];
     }
 
     public void tick() {
@@ -35,10 +25,7 @@ public class Zombie extends Entity {
         countAnim++;
         if(countAnim > 10) {
             countAnim = 0;
-            indexAnim++;
-            if(indexAnim >= sprite[indexState].length) {
-                indexAnim = 0;
-            }
+            getSheet().plusIndex();
         }
         Player player = Game.getPlayer();
         //Função de dar dano ao jogador.
@@ -55,8 +42,6 @@ public class Zombie extends Entity {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
         getPhysical().addForce(0.86d, radians);
-
-        this.indexState = getPhysical().isMoving() ? 1 : 0;
     }
 
     @Override
@@ -66,11 +51,6 @@ public class Zombie extends Entity {
             orientation = -1;
         BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
         renderSprite(sprite, g);
-    }
-
-    @Override
-    public void dispose() {
-        sprite = null;
     }
 
 }

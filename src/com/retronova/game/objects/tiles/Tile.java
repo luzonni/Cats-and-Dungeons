@@ -4,6 +4,8 @@ import com.retronova.engine.exceptions.TileNotFound;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 
+import java.awt.*;
+
 public abstract class Tile extends GameObject {
 
     public static Tile build(int ID, int x, int y) {

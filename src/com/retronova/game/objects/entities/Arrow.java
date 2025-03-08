@@ -4,8 +4,6 @@ import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class Arrow extends Entity {
@@ -13,20 +11,11 @@ public class Arrow extends Entity {
     private final double damage;
     private final double angle;
 
-    private static BufferedImage[] sprite;
-
     public Arrow(double x, double y, double damage, double angle) {
         super(-1, x, y, 0);
         this.damage = damage;
         this.angle = angle;
-        if(sprite == null) {
-            sprite = loadSprite("arrow");
-        }
-    }
-
-    @Override
-    public BufferedImage getSprite() {
-        return sprite[0];
+        loadSprites("arrow");
     }
 
     @Override
@@ -55,8 +44,4 @@ public class Arrow extends Entity {
         Rotate.draw(getSprite(), x, y, angle + Math.PI/4, null, g);
     }
 
-    @Override
-    public void dispose() {
-        sprite = null;
-    }
 }

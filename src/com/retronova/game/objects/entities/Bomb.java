@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 public class Bomb extends Entity{
-    private static BufferedImage[] sprite;
+
     private final double damage;
     private int count;
 
@@ -15,15 +15,8 @@ public class Bomb extends Entity{
     public Bomb(double x, double y, double damage) {
         super(-1, x, y, 0.2);
         this.damage = damage;
-        if(sprite == null) {
-            sprite = loadSprite("bomb");
-        }
         setSolid();
-    }
-
-    @Override
-    public BufferedImage getSprite() {
-        return sprite[0];
+        loadSprites("bomb");
     }
 
     @Override
@@ -41,8 +34,4 @@ public class Bomb extends Entity{
         }
     }
 
-    @Override
-    public void dispose() {
-        sprite = null;
-    }
 }

@@ -8,26 +8,15 @@ import java.awt.image.BufferedImage;
 
 public class Skeleton extends Entity {
 
-    private static BufferedImage[][] sprite;
     private int countAnim;
-    private int indexState;
-    private int indexAnim; //
-
 
     Skeleton(int ID, double x, double y) {
         super(ID, x, y, 0.5);
-        if(sprite == null) {
-            sprite = new BufferedImage[][] {loadSprite("mouseskeleton", 0), loadSprite("mouseskeleton", 1)};
-        }
+        loadSprites("mouseskeleton");
 
         setResistances(AttackTypes.Fire, AttackTypes.Piercing);
         setSolid();
         setAlive();
-    }
-
-    @Override
-    public BufferedImage getSprite() {
-        return sprite[indexState][indexAnim];
     }
 
     public void tick() {
@@ -35,10 +24,7 @@ public class Skeleton extends Entity {
         countAnim++;
         if(countAnim > 10) {
             countAnim = 0;
-            indexAnim++;
-            if(indexAnim >= sprite[indexState].length) {
-                indexAnim = 0;
-            }
+            getSheet().plusIndex();
         }
     }
 
@@ -46,7 +32,6 @@ public class Skeleton extends Entity {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
         getPhysical().addForce(1, radians);
-        this.indexState = getPhysical().isMoving() ? 1 : 0;
     }
 
     @Override
@@ -57,11 +42,6 @@ public class Skeleton extends Entity {
         }
         BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
         renderSprite(sprite, g);
-    }
-
-    @Override
-    public void dispose() {
-        sprite = null;
     }
 
 }
