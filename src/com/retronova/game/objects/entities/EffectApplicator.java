@@ -1,6 +1,6 @@
 package com.retronova.game.objects.entities;
 
-interface EffectApplicator {
+public interface EffectApplicator {
 
     void effect(Entity e);
 

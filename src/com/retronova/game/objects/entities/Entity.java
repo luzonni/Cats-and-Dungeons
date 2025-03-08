@@ -82,13 +82,13 @@ public abstract class Entity extends GameObject {
         setXpWeight(7.33d);
     }
 
-    public void addModifier(Modifiers effect, double value) {
-        if(!this.modifiers.containsKey(effect))
-            this.modifiers.put(effect, value);
+    public void addModifier(Modifiers modifier, double value) {
+        if(!this.modifiers.containsKey(modifier))
+            this.modifiers.put(modifier, value);
     }
 
-    public void addEffect(EffectApplicator applicator, int time) {
-        this.effects.add(new Effect(this, applicator, time));
+    public void addEffect(EffectApplicator applicator, int seconds) {
+        this.effects.add(new Effect(this, applicator, seconds));
     }
 
     void removeEffect(Effect effect) {
