@@ -13,9 +13,9 @@ import java.awt.image.BufferedImage;
 public class Player extends Entity {
 
     public static final Player[] TEMPLATES = new Player[] {
-            new Player("cinzento", 10, 5, 0.3, 15, 30, 7.2, 5, 4),
-            new Player("mago", 10, 5, 0.3, 12, 11, 5, 5, 4),
-            new Player("sortudo", 200, 7, 0.3, 1, 50, 15, 5, 4)
+            new Player("cinzento", 10, 5, 0.3, 15, 30, 5, 4),
+            new Player("mago", 10, 5, 0.3, 12, 11, 5, 4),
+            new Player("sortudo", 200, 7, 0.3, 1, 50, 5, 4)
     };
 
     public static Player newPlayer(int index) {
@@ -26,7 +26,6 @@ public class Player extends Entity {
                 p.getSpeed(),
                 p.getLuck(),
                 p.getAttackSpeed(),
-                p.getRangeDamage(),
                 p.getRange(),
                 p.getInventory().getBagSize(),
                 p.getInventory().getHotbarSize()
@@ -38,26 +37,20 @@ public class Player extends Entity {
     private int level;
     private int countAnim;
 
-    private final double speed;
-    private double damage;
     private double luck;
-    private int attackSpeed;
-    private double rangeDamage;
-    private double range;
 
     private final Inventory inventory;
 
-    Player(String name, double damage, double speed, double luck, int attackSpeed, double rangeDamage, double range, int bagSize, int hotSize) {
+    Player(String name, double damage, double speed, double luck, double attackSpeed, double range, int bagSize, int hotSize) {
         super(0, 0, 0, 0.5);
         this.name = name;
-        this.damage = damage;
-        this.speed = speed;
         this.luck = luck;
-        this.attackSpeed = attackSpeed;
-        this.rangeDamage = rangeDamage;
-        this.range = range;
-        loadSprites("player_"+name+"_idle", "player_"+name+"_walking");
         this.inventory = new Inventory(bagSize, hotSize);
+        loadSprites("player_"+name+"_idle", "player_"+name+"_walking");
+        setDamage(damage);
+        setSpeed(speed);
+        setAttackSpeed(attackSpeed);
+        setRange(range);
         setSolid();
         setAlive();
     }
@@ -79,23 +72,17 @@ public class Player extends Entity {
         }
         if(!(Engine.getACTIVITY() instanceof Game))
             return;
+        if(KeyBoard.KeyPressed("F")) {
+            //Teste de aplicação de efeito na entidade player
+            this.addEffect((Entity e) -> {
+                if(e.getLife() < e.getLifeSize())
+                    e.setLife(e.getLife()+0.1d);
+                if(Engine.RAND.nextInt(100) < 10)
+                    e.getPhysical().addForce(Engine.RAND.nextInt(20), Engine.RAND.nextDouble(Math.PI*2));
+            }, 2);
+        }
         updateMovement();
         tickItemHand();
-    }
-    public double getRangeDamage() {
-        return rangeDamage;
-    }
-
-    public void setRangeDamage(double rangeDamage) {
-        this.rangeDamage = rangeDamage;
-    }
-
-    public int getAttackSpeed() {
-        return attackSpeed;
-    }
-
-    public void setAttackSpeed(int attackSpeed) {
-        this.attackSpeed = attackSpeed;
     }
 
     public double getLuck() {
@@ -104,27 +91,6 @@ public class Player extends Entity {
 
     public void setLuck(double luck) {
         this.luck = luck;
-    }
-
-    public double getSpeed() {
-        return speed;
-    }
-
-    public double getDamage() {
-        return damage;
-    }
-
-    public void setDamage(double damage) {
-        this.damage = damage;
-    }
-
-    public double getRange() {
-        return range;
-    }
-
-
-    public void setRange(double range) {
-        this.range = range;
     }
 
     public void plusXp(double weight) {
@@ -184,7 +150,7 @@ public class Player extends Entity {
         }
         double radians = Math.atan2(vertical, horizontal);
         if(vertical != 0 || horizontal != 0){
-            getPhysical().addForce(this.speed, radians);
+            getPhysical().addForce(getSpeed(), radians);
         }
     }
 

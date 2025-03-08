@@ -38,7 +38,7 @@ public class Bow extends Item {
                 lastCount = 0;
                 double x = player.getX() + player.getWidth() * Math.cos(angle);
                 double y = player.getY() + player.getHeight() * Math.sin(angle);
-                Arrow arrow = new Arrow(x, y, player.getRangeDamage(), angle);
+                Arrow arrow = new Arrow(x, y, player.getDamage(), angle, player);
                 Game.getMap().getEntities().add(arrow);
                 Sound.play(Sounds.Bow);
             }

@@ -14,10 +14,6 @@ public class Feed extends Passive{
     public void apply() {
         Player player = Game.getPlayer();
         double currentLifeSize = player.getLifeSize();
-        player.setLifeSize(currentLifeSize + 5);
-        player.setDamage(player.getDamage() + 5);
-        player.setRangeDamage(player.getRangeDamage() + 5);
-        player.setLuck(player.getLuck() - 5.0d);
 
     }
 }

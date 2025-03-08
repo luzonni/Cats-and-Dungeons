@@ -9,13 +9,25 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.physical.Physical;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class Entity extends GameObject {
 
     private final Physical physical;
     private AttackTypes[] resistanceOf;
+
+    private final Map<Modifiers, Double> modifiers;
+    private final List<Effect> effects;
+
     private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
+    private double range;
+    private double speed;
+    private double damage;
+    private double attackSpeed;
+
     private boolean alive = false;
     private double xpWeight;
 
@@ -64,8 +76,29 @@ public abstract class Entity extends GameObject {
         setY(y);
         this.physical = new Physical(this, friction);
         setResistances(null);
+        this.modifiers = new HashMap<>();
+        this.effects = new ArrayList<>();
         setLife(100d);
         setXpWeight(7.33d);
+    }
+
+    public void addModifier(Modifiers effect, double value) {
+        if(!this.modifiers.containsKey(effect))
+            this.modifiers.put(effect, value);
+    }
+
+    public void addEffect(EffectApplicator applicator, int time) {
+        this.effects.add(new Effect(this, applicator, time));
+    }
+
+    void removeEffect(Effect effect) {
+        this.effects.remove(effect);
+    }
+
+    public void tickEffect() {
+        for(int i = 0; i < effects.size(); i++) {
+            effects.get(i).tick();
+        }
     }
 
     protected void setXpWeight(double weight) {
@@ -81,6 +114,9 @@ public abstract class Entity extends GameObject {
     }
 
     public double getLifeSize() {
+        if(this.modifiers.containsKey(Modifiers.Life)) {
+            return this.life[0] + this.modifiers.get(Modifiers.Life);
+        }
         return this.life[0];
     }
 
@@ -92,6 +128,50 @@ public abstract class Entity extends GameObject {
             return;
         }
         this.life[1] = life;
+    }
+
+    public double getDamage() {
+        if(modifiers.containsKey(Modifiers.Damege)) {
+            return this.damage + modifiers.get(Modifiers.Damege);
+        }
+        return this.damage;
+    }
+
+    protected void setDamage(double damage) {
+        this.damage = damage;
+    }
+
+    public double getSpeed() {
+        if(modifiers.containsKey(Modifiers.Speed)) {
+            return this.speed + modifiers.get(Modifiers.Speed);
+        }
+        return this.speed;
+    }
+
+    protected void setSpeed(double speed) {
+        this.speed = speed;
+    }
+
+    public double getRange() {
+        if(modifiers.containsKey(Modifiers.Range)) {
+            return this.range + modifiers.get(Modifiers.Range);
+        }
+        return this.range;
+    }
+
+    protected void setRange(double range) {
+        this.range = range;
+    }
+
+    public double getAttackSpeed() {
+        if(modifiers.containsKey(Modifiers.AttackSpeed)) {
+            return this.attackSpeed + modifiers.get(Modifiers.AttackSpeed);
+        }
+        return this.attackSpeed;
+    }
+
+    protected void setAttackSpeed(double attackSpeed) {
+        this.attackSpeed = attackSpeed;
     }
 
     public boolean isAlive() {

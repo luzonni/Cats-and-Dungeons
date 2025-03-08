@@ -10,11 +10,13 @@ public class Arrow extends Entity {
 
     private final double damage;
     private final double angle;
+    private final Entity shooter;
 
-    public Arrow(double x, double y, double damage, double angle) {
+    public Arrow(double x, double y, double damage, double angle, Entity shooter) {
         super(-1, x, y, 0);
         this.damage = damage;
         this.angle = angle;
+        this.shooter = shooter;
         loadSprites("arrow");
     }
 
@@ -27,11 +29,15 @@ public class Arrow extends Entity {
         List<Entity> entities = Game.getMap().getEntities();
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
-            if(entity instanceof Player)
+            if(entity.equals(shooter))
                 continue;
             if(this.colliding(entity) && entity.isAlive()) {
                 entity.strike(AttackTypes.Piercing, damage);
                 entity.getPhysical().addForce(2.2, this.angle);
+                entity.addEffect((Entity e) -> {
+                    //Quando a flecha colide com uma entidade, ela fica com efeito de dano de veneno APENAS TESTE!
+                    e.strike(AttackTypes.Poison, 0.1d);
+                }, 3);
                 this.disappear();
             }
         }
