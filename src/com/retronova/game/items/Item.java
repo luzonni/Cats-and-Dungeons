@@ -8,7 +8,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public abstract class Item {
-
     public static Item build(ItemIDs id) {
         int i = id.ordinal();
         switch (id) {
@@ -24,6 +23,9 @@ public abstract class Item {
             case Bomb -> {
                 return new ItemBomb(i);
             }
+            case Feed -> {
+                return new Feed(i);
+            }
 
         }
         throw new NotFound("Item not found");
@@ -34,7 +36,7 @@ public abstract class Item {
     private final BufferedImage[] sprite;
     private int indexSprite;
 
-    Item(int id, String name, String sprite) {
+     Item(int id, String name, String sprite) {
         this.id = id;
         this.name = name;
         SpriteSheet sheet = new SpriteSheet("items", sprite, Configs.SCALE);
