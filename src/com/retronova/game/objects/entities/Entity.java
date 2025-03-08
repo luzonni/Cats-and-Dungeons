@@ -20,7 +20,7 @@ public abstract class Entity extends GameObject {
     private AttackTypes[] resistanceOf;
 
     private final Map<Modifiers, Double> modifiers;
-    private final List<Effect> effects;
+    private final Map<String, Effect> effects;
 
     private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
     private double range;
@@ -77,7 +77,7 @@ public abstract class Entity extends GameObject {
         this.physical = new Physical(this, friction);
         setResistances(null);
         this.modifiers = new HashMap<>();
-        this.effects = new ArrayList<>();
+        this.effects = new HashMap<>();
         setLife(100d);
         setXpWeight(7.33d);
     }
@@ -87,8 +87,9 @@ public abstract class Entity extends GameObject {
             this.modifiers.put(modifier, value);
     }
 
-    public void addEffect(EffectApplicator applicator, int seconds) {
-        this.effects.add(new Effect(this, applicator, seconds));
+    public void addEffect(String name, EffectApplicator applicator, int seconds) {
+        if(!this.effects.containsKey("name"))
+            this.effects.put(name, new Effect(name,this, applicator, seconds));
     }
 
     void removeEffect(Effect effect) {
