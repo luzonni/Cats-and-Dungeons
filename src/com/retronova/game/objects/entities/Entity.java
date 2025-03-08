@@ -84,7 +84,9 @@ public abstract class Entity extends GameObject {
         return this.life[0];
     }
 
-    protected void setLife(double life) {
+    public void setLifeSize(double lifeSize){ this.life[0] = lifeSize; }
+
+    public void setLife(double life) {
         if(this.life == null) {
             this.life = new double[] {life, life};
             return;

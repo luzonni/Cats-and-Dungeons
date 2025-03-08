@@ -136,6 +136,7 @@ public class Player extends Entity {
         return range;
     }
 
+
     public void setRange(double range) {
         this.range = range;
     }
