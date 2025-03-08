@@ -15,40 +15,39 @@ public class Sheet {
         SHEETS = new HashMap<>();
     }
 
-    private final BufferedImage[][] sheets;
+    private final BufferedImage[][] sheet;
     private int type;
     private int index;
 
     Sheet(String... sprites) {
-        this.sheets = new BufferedImage[sprites.length][];
+        this.sheet = new BufferedImage[sprites.length][];
         for(int i = 0; i < sprites.length; i++) {
             if(SHEETS.containsKey(sprites[i])) {
-                this.sheets[i] = SHEETS.get(sprites[i]);
+                this.sheet[i] = SHEETS.get(sprites[i]);
             }else {
-                this.sheets[i] = loadSprite(sprites[i]);
-                SHEETS.put(sprites[i], this.sheets[i]);
+                this.sheet[i] = loadSprite(sprites[i]);
+                SHEETS.put(sprites[i], this.sheet[i]);
             }
         }
     }
 
     BufferedImage getSprite() {
-        return this.sheets[type][index];
+        return this.sheet[type][index];
     }
 
     public void setType(int type) {
         this.type = type;
-        if(this.type > this.sheets.length-1) {
+        if(this.type > this.sheet.length-1) {
             this.type = 0;
         }
     }
 
     public void plusIndex() {
         this.index++;
-        if(this.index > this.sheets[type].length-1) {
+        if(this.index > this.sheet[type].length-1) {
             this.index = 0;
         }
     }
-
 
     private BufferedImage[] loadSprite(String spriteName) {
         SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
