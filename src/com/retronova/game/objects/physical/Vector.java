@@ -1,13 +1,17 @@
 package com.retronova.game.objects.physical;
 
+import com.retronova.engine.Configs;
+
 public class Vector {
 
-    private final double angle;
-    private final double vecX;
-    private final double vecY;
+    private final String id;
+    private double vecX;
+    private double vecY;
+    private double angle;
     private double force;
 
-    Vector(double force, double angle) {
+    Vector(String id, double force, double angle) {
+        this.id = id;
         this.vecX = Math.cos(angle);
         this.vecY = Math.sin(angle);
         this.angle = angle;
@@ -20,6 +24,12 @@ public class Vector {
 
     double getVecX() {
         return this.vecX * force;
+    }
+
+    void setAngle(double angle) {
+        this.angle = angle;
+        this.vecX = Math.cos(angle);
+        this.vecY = Math.sin(angle);
     }
 
     double getVecY() {
@@ -36,10 +46,10 @@ public class Vector {
 
     @Override
     public boolean equals(Object o) {
-        if(o == null | !(o instanceof Vector)) {
-            return false;
+        if(o instanceof Vector vec) {
+            return this.id.equals(vec.id);
         }
-        return this.angle == ((Vector) o).angle;
+        return false;
     }
 
 }

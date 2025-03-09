@@ -22,7 +22,7 @@ public class Arrow extends Entity {
 
     @Override
     public void tick() {
-        getPhysical().addForce(4, this.angle);
+        getPhysical().addForce("flying", 4, this.angle);
         if(getPhysical().crashing()) {
             this.disappear();
         }
@@ -33,7 +33,7 @@ public class Arrow extends Entity {
                 continue;
             if(this.colliding(entity) && entity.isAlive()) {
                 entity.strike(AttackTypes.Piercing, damage);
-                entity.getPhysical().addForce(2.2, this.angle);
+                entity.getPhysical().addForce("knockback", 2.2, this.angle);
                 entity.addEffect("poison", (Entity e) -> {
                     //Quando a flecha colide com uma entidade, ela fica com efeito de dano de veneno. APENAS TESTE!
                     e.strike(AttackTypes.Poison, 0.1d);

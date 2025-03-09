@@ -25,7 +25,7 @@ public class KingCursedCatBoss extends Entity {
     public void moveIA() {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        getPhysical().addForce(0.50, radians);
+        getPhysical().addForce("move", 0.50, radians);
     }
 
     public void animation() {

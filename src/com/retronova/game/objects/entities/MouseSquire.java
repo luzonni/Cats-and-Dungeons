@@ -31,7 +31,7 @@ public class MouseSquire extends Entity {
         if(player.getBounds().intersects(this.getBounds()) && cooldown > 40) { // getBounds acho que é a posição ao redor do jogador
             cooldown = 0;
             player.strike(AttackTypes.Melee, 6);
-            player.getPhysical().addForce(3.0d, getPhysical().getAngleForce());
+            player.getPhysical().addForce("knockback", 3.0d, getPhysical().getAngleForce());
         }
     }
 
@@ -39,7 +39,7 @@ public class MouseSquire extends Entity {
         Player player = Game.getPlayer();
         if(this.getDistance(player) < GameObject.SIZE() * 6) {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(0.75d, radians);
+            getPhysical().addForce("move", 0.75d, radians);
         }
     }
 

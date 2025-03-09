@@ -40,7 +40,7 @@ public class Xp extends Entity {
             if(speed < 15d) {
                 speed += 0.15d;
             }
-            getPhysical().addForce(speed, player.getAngle(this));
+            getPhysical().addForce("follow", speed, player.getAngle(this));
         }
     }
 

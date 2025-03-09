@@ -103,6 +103,8 @@ public abstract class Entity extends GameObject {
     }
 
     public void tickEntityEffects() {
+        setDepth();
+        getPhysical().moment();
         for(int i = 0; i < effects.size(); i++) {
             effects.get(i).tick();
         }
@@ -271,7 +273,7 @@ public abstract class Entity extends GameObject {
         e.setY(getY());
         e.setWeight(getXpWeight() * (1d + Engine.RAND.nextDouble(luck)));
         Game.getMap().getEntities().add(e);
-        e.getPhysical().addForce(7, Math.PI*2);
+        e.getPhysical().addForce("move", 7, Math.PI*2);
     }
 
     /**
@@ -284,7 +286,7 @@ public abstract class Entity extends GameObject {
     public void dropLoot(Item loot) {
         Entity drop = new Drop(getX(), getY(), loot);
         Game.getMap().getEntities().add(drop);
-        drop.getPhysical().addForce(Engine.RAND.nextInt(10), Engine.RAND.nextDouble(Math.PI*2));
+        drop.getPhysical().addForce("drop", Engine.RAND.nextInt(10), Engine.RAND.nextDouble(Math.PI*2));
     }
 
     public Physical getPhysical() {

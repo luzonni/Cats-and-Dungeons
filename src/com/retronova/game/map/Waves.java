@@ -52,6 +52,7 @@ public class Waves {
             lastCounter = counter;
             //TODO criar sistemas para excolher os inimigos que aparecerão em cada wave!
             EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie, EntityIDs.Slime, EntityIDs.MouseVampire, EntityIDs.RatExplode};
+
             int amount = (int) (4 * waveMultiplier);
             System.out.println("Contador para adicionar: " + amount);
             waveMultiplier += 0.09 + wave * 0.2; // testar balenceamento apos adicionar armas

@@ -146,17 +146,23 @@ public class Player extends Entity {
         if(!(Engine.getACTIVITY() instanceof Game))
             return;
         getSheet().setType(getPhysical().isMoving() ? 1 : 0);
+        int vertical = 0;
+        int horizontal = 0;
         if(KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")){
-            getPhysical().addForce(getSpeed(), -Math.PI/2);
+            vertical = -1;
         }
         if(KeyBoard.KeyPressing("S") || KeyBoard.KeyPressing("Down")){
-            getPhysical().addForce(getSpeed(), Math.PI/2);
+            vertical = 1;
         }
         if(KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")){
-            getPhysical().addForce(getSpeed(), Math.PI);
+            horizontal = -1;
         }
         if(KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")){
-            getPhysical().addForce(getSpeed(), 0);
+            horizontal = 1;
+        }
+        double radians = Math.atan2(vertical, horizontal);
+        if(vertical != 0 || horizontal != 0){
+            getPhysical().addForce("move", getSpeed(), radians);
         }
     }
 

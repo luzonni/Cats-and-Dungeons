@@ -23,7 +23,7 @@ public class MouseExplode extends Entity {
         setSolid();
         setAlive();
         setSpeed(1.3d);
-        setLife(20);
+        setLife(200);
         setXpWeight(12.4d);
     }
 
@@ -37,10 +37,9 @@ public class MouseExplode extends Entity {
 
         if(this.getDistance(player) < GameObject.SIZE()) {
             explodir(player);
-            getPhysical().addForce(0,0);
         }else {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(getSpeed(), radians);
+            getPhysical().addForce("move", getSpeed(), radians);
         }
 
     }

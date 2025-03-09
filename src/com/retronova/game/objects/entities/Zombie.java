@@ -34,14 +34,14 @@ public class Zombie extends Entity {
             cooldown = 0;
             player.strike(AttackTypes.Melee, 2);
             Sound.play(Sounds.Zombie);
-            player.getPhysical().addForce(getSpeed(), getPhysical().getAngleForce());
+            player.getPhysical().addForce("knockback_zombie", 0.82d, getPhysical().getAngleForce());
         }
     }
 
     private void moveIA() {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        getPhysical().addForce(0.86d, radians);
+        getPhysical().addForce("move", getSpeed(), radians);
     }
 
     @Override

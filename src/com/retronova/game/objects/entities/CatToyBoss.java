@@ -27,7 +27,7 @@ public class CatToyBoss extends Entity {
     public void moveIA() {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        getPhysical().addForce(0.30, radians);
+        getPhysical().addForce("move", 0.30, radians);
 
     }
 

@@ -77,14 +77,8 @@ public class Physically implements Runnable {
     public void run() {
         while (running) {
             try {
-                long startTime = System.nanoTime();
-
                 cycle();
-
-                long estimatedTime = System.nanoTime() - startTime;
-                System.out.printf("Draw runtime: %.4f ms%n", estimatedTime / 1000000d);
-
-                Thread.sleep(1);
+                Thread.sleep(5);
             }catch (Exception e) {
                 String err = "Bem... esse erro não vai afetar em NADA o jogo, mas é um erro ;( " +
                         "\nO que fazer? Acho que chorar, porque resolver isso é desnecessário e chato, então chore, faz bem!";

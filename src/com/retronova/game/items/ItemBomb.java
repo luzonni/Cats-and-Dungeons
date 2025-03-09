@@ -24,7 +24,7 @@ public class ItemBomb extends Item{
             Entity nearest = player.getNearest(3);
             if(nearest != null) {
                 Bomb bomb = new Bomb(player.getX(), player.getY(), player.getDamage(), player);
-                bomb.getPhysical().addForce(20, nearest.getAngle(player));
+                bomb.getPhysical().addForce("throw", 20, nearest.getAngle(player));
                 Game.getMap().getEntities().add(bomb);
             }
         }
