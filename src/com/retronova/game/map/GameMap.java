@@ -26,7 +26,7 @@ public abstract class GameMap {
     }
 
     public Player addPlayer(Player player) {
-        getEntities().add(player);
+        put(player);
         player.setX(getBounds().getWidth()/2);
         player.setY(getBounds().getHeight()/2);
         return player;
@@ -75,14 +75,32 @@ public abstract class GameMap {
         throw new IndexOutOfBoundsException("Posição fora do mapa");
     }
 
+    public void depth() {
+        entities.sort(Entity.Depth);
+    }
+
+    /**
+     *
+     * @return retorna uma lista imutável!
+     */
     public List<Entity> getEntities() {
         if (entities == null) {
             entities = new ArrayList<>(); // evita erro de ponteiro
         }
-        return entities;
+        return List.copyOf(entities);
     }
 
+    public boolean put(Entity e) {
+        return entities.add(e);
+    }
 
+    public boolean putAll(List<Entity> e) {
+        return this.entities.addAll(e);
+    }
+
+    public void remove(Entity e) {
+        this.entities.remove(e);
+    }
 
     public abstract void tick();
 

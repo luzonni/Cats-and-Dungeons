@@ -272,7 +272,7 @@ public abstract class Entity extends GameObject {
         e.setX(getX());
         e.setY(getY());
         e.setWeight(getXpWeight() * (1d + Engine.RAND.nextDouble(luck)));
-        Game.getMap().getEntities().add(e);
+        Game.getMap().put(e);
         e.getPhysical().addForce("move", 7, Math.PI*2);
     }
 
@@ -280,7 +280,7 @@ public abstract class Entity extends GameObject {
      * Esta função serve apenas para retirar uma entidade do mara, sem nenhum tipo de efeito.
      */
     public void disappear() {
-        Game.getMap().getEntities().remove(this);
+        Game.getMap().remove(this);
     }
 
     public void dropLoot(Item loot) {

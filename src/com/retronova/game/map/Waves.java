@@ -97,7 +97,7 @@ public class Waves {
     public void tick() {
         wavingHandling();
         if(listAppend != null && !listAppend.isEmpty()) {
-            Game.getMap().getEntities().addAll(listAppend);
+            Game.getMap().putAll(listAppend);
             listAppend.clear();
         }
     }

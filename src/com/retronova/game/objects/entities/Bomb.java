@@ -11,6 +11,7 @@ public class Bomb extends Entity{
     private final double damage;
     private final Entity shooter;
     private int count;
+    private int countEx;
 
 
     public Bomb(double x, double y, double damage, Entity shooter) {
@@ -24,16 +25,25 @@ public class Bomb extends Entity{
     @Override
     public void tick() {
         count++;
-        if(count > 60*3) {
-            List<Entity> entities = Game.getMap().getEntities();
-            for(int i = 0; i < entities.size(); i++) {
-                Entity e = entities.get(i);
-                if(e.getDistance(this) < GameObject.SIZE() * 5 && e != shooter) {
-                    e.strike(AttackTypes.Melee, this.damage);
-                }
-            }
-            this.disappear();
+        if(count > 12) {
+            count = 0;
+            countEx++;
+            getSheet().plusIndex();
         }
+        if(countEx == 10) {
+            explosion();
+        }
+    }
+
+    private void explosion() {
+        List<Entity> entities = Game.getMap().getEntities();
+        for(int i = 0; i < entities.size(); i++) {
+            Entity e = entities.get(i);
+            if(e.getDistance(this) < GameObject.SIZE() * 5 && e != shooter) {
+                e.strike(AttackTypes.Melee, this.damage);
+            }
+        }
+        this.disappear();
     }
 
 }

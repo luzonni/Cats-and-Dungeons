@@ -15,14 +15,13 @@ import java.util.List;
 
 public class Sword extends Item {
 
-    private BufferedImage sword_attack;
     private int side;
     private double rad;
     private int count;
-    private Entity nearest;
 
-    private double damage;
-    private Rectangle boundsAttack;
+    private final BufferedImage sword_attack;
+    private final double damage;
+    private final Rectangle boundsAttack;
 
 
     Sword(int id) {
@@ -38,7 +37,7 @@ public class Sword extends Item {
     public void tick() {
         Player player = Game.getPlayer();
         this.boundsAttack.setLocation((int)player.getX() - player.getWidth()/2 + this.boundsAttack.width/2 * side, (int)player.getY() - (this.boundsAttack.height - player.getHeight())/2);
-        this.nearest = player.getNearest(3);
+        Entity nearest = player.getNearest(3);
         if(nearest != null) {
             count++;
             if(count > player.getAttackSpeed()*0.1) {

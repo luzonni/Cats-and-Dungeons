@@ -7,34 +7,31 @@ import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 
-public class ItemBomb extends Item{
+public class ItemBomb extends Item {
+
     private int count;
 
     ItemBomb(int id) {
         super(id, "Bomb", "bomb");
-        addSpecifications("EXPLODE", "you need to run!");
+        addSpecifications("EXPLODE", "you need to run!", "3x player damage", "only one per throw");
     }
 
     @Override
     public void tick() {
+        Player player = Game.getPlayer();
         count++;
-        if(count > 60*2) {
+        if(count > player.getAttackSpeed()*1.5) {
             count = 0;
-            Player player = Game.getPlayer();
-            Entity nearest = player.getNearest(3);
+            Entity nearest = player.getNearest(10);
             if(nearest != null) {
-                Bomb bomb = new Bomb(player.getX(), player.getY(), player.getDamage(), player);
-                bomb.getPhysical().addForce("throw", 20, nearest.getAngle(player));
-                Game.getMap().getEntities().add(bomb);
+                Bomb bomb = new Bomb(player.getX(), player.getY(), player.getDamage() * 3, player);
+                bomb.getPhysical().addForce("throw", 10, nearest.getAngle(player));
+                Game.getMap().put(bomb);
             }
         }
     }
 
     @Override
     public void render(Graphics2D g) {
-        Player player = Game.getPlayer();
-        int x = (int) player.getX() - Game.C.getX();
-        int y = (int) player.getY() - Game.C.getY();
-        g.drawImage(getSprite(), x, y, null);
     }
 }

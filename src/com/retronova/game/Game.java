@@ -58,8 +58,8 @@ public class Game implements Activity {
             physically.start();
         }
         map.tick();
+        map.depth();
         List<Entity> entities = map.getEntities();
-        entities.sort(Entity.Depth);
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
             entity.tick();
