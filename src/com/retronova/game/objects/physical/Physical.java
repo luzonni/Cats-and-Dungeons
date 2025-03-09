@@ -73,7 +73,7 @@ public class Physical {
         }
     }
 
-    private boolean moveSystem(double vectorX, double vectorY){
+    boolean moveSystem(double vectorX, double vectorY){
         double x = entity.getX();
         double y = entity.getY();
         boolean[] colliders = colliding(x + vectorX, y + vectorY); //analisando a próxima posição
@@ -194,30 +194,6 @@ public class Physical {
         return this.isMoving;
     }
 
-    //TODO colocar características nas entidades para filtrar melhor o que colide com o que n colide, por exemplo, dizer o que está vivo do que não esta...
-    synchronized void repulsion() {
-        List<Entity> entities = new ArrayList<>(List.copyOf(Game.getMap().getEntities()));
-        for(int i = 0; i < entities.size(); i++) {
-            Entity e1 = this.entity;
-            Entity e2 = entities.get(i);
-            if(e2 == e1 || !e1.isSolid() || !e2.isSolid())
-                continue;
-            double e1_radius = e1.getWidth() / 2d;
-            double e2_radius = e2.getWidth() / 2d;
-            if(e1.getBounds().intersects(e2.getBounds())) {
-                double radians = Math.atan2((e2.getY() - e1.getY()), (e2.getX() - e1.getX()));
-                double distance = e1.getDistance(e2);
-                if((e1_radius + e2_radius) > distance) {
-                    double inside = (e1_radius + e2_radius) - distance;
-                    double rx = Math.cos(radians) * inside/2d;
-                    double ry = Math.sin(radians) * inside/2d;
-                    e1.getPhysical().moveSystem(rx*-1, ry*-1);
-                    e2.getPhysical().moveSystem(rx, ry);
-                    entities.remove(e2);
-                }
-            }
-        }
-    }
 
     /*
         Aqui, precisará existir um sistema de movimentação que funcionará para todas as entidades, então todas
