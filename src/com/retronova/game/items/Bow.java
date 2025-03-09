@@ -1,5 +1,6 @@
 package com.retronova.game.items;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.sound.Sound;
@@ -11,16 +12,19 @@ import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 
 public class Bow extends Item {
 
     private double angle = 0;
     private int count;
-    private int lastCount;
+    private int countShot;
+    private final BufferedImage arrowSprite;
 
     Bow(int id) {
         super(id, "Bow", "bow");
-        addSpecifications("Arrow add poisson", "player damage");
+        addSpecifications("Arrow add poisson", "player damage", "shot slowed");
+        this.arrowSprite = new Arrow(0,0,0,0, null).getSprite();
     }
 
     @Override
@@ -30,22 +34,27 @@ public class Bow extends Item {
         if(nearest != null){
             angle = nearest.getAngle(player);
             count++;
-            if(count > lastCount + player.getAttackSpeed()/5) {
-                lastCount = count;
+            if(count > (player.getAttackSpeed()*3.25d)/5) {
+                count = 0;
+                countShot++;
                 this.plusIndexSprite();
             }
-            if(count >= player.getAttackSpeed()) {
-                count = 0;
-                lastCount = 0;
-                double x = player.getX() + player.getWidth() * Math.cos(angle);
-                double y = player.getY() + player.getHeight() * Math.sin(angle);
-                Arrow arrow = new Arrow(x, y, player.getDamage(), angle, player);
-                Game.getMap().getEntities().add(arrow);
-                Sound.play(Sounds.Bow);
+            if(countShot >= 5) {
+                countShot = 0;
+                shot(player);
             }
         }else {
             resetIndexSprite();
         }
+    }
+
+    private void shot(Player shooter) {
+        double x = shooter.getX();
+        double y = shooter.getY();
+        Arrow arrow = new Arrow(x, y, shooter.getDamage(), angle, shooter);
+        arrow.getPhysical().addForce("show", shooter.getDamage(), angle);
+        Game.getMap().getEntities().add(arrow);
+        Sound.play(Sounds.Bow);
     }
 
     @Override
@@ -56,5 +65,16 @@ public class Bow extends Item {
         double xx = x - getSprite().getWidth()/2d;
         double yy = y - getSprite().getHeight()/2d;
         Rotate.draw(getSprite(), (int)xx, (int)yy, angle + Math.PI/4, null, g);
+        renderArrow(player, g);
     }
+
+    private void renderArrow(Player player, Graphics2D g) {
+        if(countShot < 1) {
+            return;
+        }
+        double x = player.getX() + Math.cos(angle+Math.PI) * (countShot-3) * Configs.SCALE;
+        double y = player.getY() + Math.sin(angle+Math.PI) * (countShot-3) * Configs.SCALE;
+        Rotate.draw(arrowSprite, (int)x - Game.C.getX(), (int)y - Game.C.getY(), angle + Math.PI/4, null, g);
+    }
+
 }

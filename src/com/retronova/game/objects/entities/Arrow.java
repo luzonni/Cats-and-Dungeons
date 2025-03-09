@@ -9,7 +9,7 @@ import java.util.List;
 public class Arrow extends Entity {
 
     private final double damage;
-    private final double angle;
+    private double angle;
     private final Entity shooter;
 
     public Arrow(double x, double y, double damage, double angle, Entity shooter) {
@@ -22,7 +22,7 @@ public class Arrow extends Entity {
 
     @Override
     public void tick() {
-        getPhysical().addForce("flying", 4, this.angle);
+        //getPhysical().addForce("flying", 4, this.angle);
         if(getPhysical().crashing()) {
             this.disappear();
         }

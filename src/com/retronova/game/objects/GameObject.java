@@ -82,8 +82,8 @@ public abstract class GameObject {
         this.bounds.setLocation(this.bounds.x, (int)newY);
     }
 
-    public void setDepth() {
-        this.depth = (int)getY();
+    protected void setDepth() {
+        this.depth = (int)getY() + getHeight();
     }
 
     protected void setSolid() {

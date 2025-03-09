@@ -82,6 +82,8 @@ public abstract class GameMap {
         return entities;
     }
 
+
+
     public abstract void tick();
 
     public Rectangle getBounds() {
