@@ -33,39 +33,28 @@ public class Physically implements Runnable {
     }
 
     private void cycle() {
-        Entity currentEntity = getEntity();
-        if(currentEntity == null) {
-            checked.clear();
-            return;
-        }
-        List<Entity> nears = getNears(currentEntity);
-        for(int i = 0; i < nears.size(); i++) {
-            repulsion(currentEntity, nears.get(i));
+        List<Entity> entities = new ArrayList<>(List.copyOf(map.getEntities()));
+        for(int i = 0; i < entities.size(); i++) {
+            Entity e1 = entities.get(i);
+            if(e1.isSolid()) {
+                List<Entity> nears = getNears(e1, entities);
+                for (int j = 0; j < nears.size(); j++) {
+                    Entity e2 = nears.get(j);
+                    repulsion(e1, e2);
+                }
+            }
         }
     }
 
-    private List<Entity> getNears(Entity entity) {
-        List<Entity> entities = map.getEntities();
+    private List<Entity> getNears(Entity entity, List<Entity> list) {
         List<Entity> nears = new ArrayList<>();
-        for(int i = 0; i < entities.size(); i++) {
-            Entity e = entities.get(i);
+        for(int i = 0; i < list.size(); i++) {
+            Entity e = list.get(i);
             if(e.colliding(entity) && e != entity && e.isSolid()) {
                 nears.add(e);
             }
         }
         return nears;
-    }
-
-    private Entity getEntity() {
-        List<Entity> entities = map.getEntities();
-        for(int i = 0; i < entities.size(); i++) {
-            Entity entity = entities.get(i);
-            if(!checked.contains(entity)) {
-                checked.add(entity);
-                return entity;
-            }
-        }
-        return null;
     }
 
     void repulsion(Entity e1, Entity e2) {

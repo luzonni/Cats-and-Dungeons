@@ -194,7 +194,6 @@ public class Physical {
         return this.isMoving;
     }
 
-
     /*
         Aqui, precisará existir um sistema de movimentação que funcionará para todas as entidades, então todas
         as funções precisam lidar com a variável "entity"* que está nessa classe.
