@@ -77,19 +77,12 @@ public class Player extends Entity {
             return;
         if(KeyBoard.KeyPressed("F")) {//Only teste
             //Teste de aplicação de efeito na entidade player
-//            this.addEffect(
-//                    "nomeDoEfeito",
-//                    e -> {
-//                            e.strike(AttackTypes.Fire, 1);
-//                        },
-//            1);
-            List<Entity> entities = Game.getMap().getEntities();
-            for(int i = 0; i < entities.size(); i++) {
-                Entity e = entities.get(i);
-                if(e != this) {
-                    e.disappear();
-                }
-            }
+            this.addEffect(
+                    "teste",
+                    e -> {
+                            e.setLife(e.getLifeSize());
+                        },
+            1);
         }
         updateMovement();
         tickItemHand();

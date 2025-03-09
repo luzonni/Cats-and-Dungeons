@@ -88,8 +88,12 @@ public class Physically implements Runnable {
     public void run() {
         while (running) {
             try {
+                long startTime = System.nanoTime();
 
                 cycle();
+
+                long estimatedTime = System.nanoTime() - startTime;
+                System.out.printf("Draw runtime: %.4f ms%n", estimatedTime / 1000000d);
 
                 Thread.sleep(1);
             }catch (Exception e) {
