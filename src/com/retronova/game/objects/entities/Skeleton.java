@@ -14,7 +14,9 @@ public class Skeleton extends Entity {
         super(ID, x, y, 0.5);
         loadSprites("mouseskeleton");
 
-        setResistances(AttackTypes.Fire, AttackTypes.Piercing);
+        addResistances(AttackTypes.Fire, 0.5);
+        addResistances(AttackTypes.Poison, 0.8);
+        addResistances(AttackTypes.Piercing, 1);
         setSolid();
         setAlive();
     }

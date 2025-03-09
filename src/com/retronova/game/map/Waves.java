@@ -84,6 +84,11 @@ public class Waves {
                 list.add(e);
                 entidades.remove(e);
             }
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
         return list;
     }

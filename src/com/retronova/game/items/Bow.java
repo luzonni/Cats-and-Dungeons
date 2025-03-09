@@ -20,6 +20,7 @@ public class Bow extends Item {
 
     Bow(int id) {
         super(id, "Bow", "bow");
+        addSpecifications("Arrow add poisson", "player damage");
     }
 
     @Override

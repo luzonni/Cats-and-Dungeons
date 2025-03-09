@@ -15,7 +15,6 @@ public class MouseSquire extends Entity {
     MouseSquire(int ID, double x, double y) {
         super(ID, x, y, 0.4);
         loadSprites("mousesquire");
-        setResistances(AttackTypes.Melee, AttackTypes.Piercing); //resistencias que o personagem tem
         setSolid();
         setAlive();
     }

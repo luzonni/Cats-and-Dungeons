@@ -20,7 +20,7 @@ public class Engine implements Runnable {
     public static int FRAMES;
     public static int HERTZ;
 
-    private static Activity UI;
+    private static Activity OverView;
     private static Activity ACTIVITY;
     private static boolean ACTIVITY_RUNNING;
 
@@ -71,10 +71,10 @@ public class Engine implements Runnable {
     public static void pause(Activity ui) { //quando essa função é chamada, o jogo é pausado.
         if(ui != null) {
             ACTIVITY_RUNNING = false;
-            Engine.UI = ui;
+            Engine.OverView = ui;
         }else {
             ACTIVITY_RUNNING = true;
-            Engine.UI = null;
+            Engine.OverView = null;
         }
     }
 
@@ -158,8 +158,8 @@ public class Engine implements Runnable {
                     if(ACTIVITY_RUNNING && ACTIVITY != null) {
                         ACTIVITY.tick();
                     }
-                    if(UI != null) {
-                        UI.tick();
+                    if(OverView != null) {
+                        OverView.tick();
                     }
                     Hz++;
                     delta_HZ--;
@@ -173,8 +173,8 @@ public class Engine implements Runnable {
                     if(ACTIVITY != null) {
                         ACTIVITY.render(g);
                     }
-                    if(UI != null) {
-                        UI.render(g);
+                    if(OverView != null) {
+                        OverView.render(g);
                     }
                     render(g);
                     frames++;

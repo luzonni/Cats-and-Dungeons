@@ -1,9 +1,10 @@
 package com.retronova.game.items;
 
 import com.retronova.game.Game;
+import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
 
-public class Feed extends Passive{
+public class Feed extends Passive {
 
 
     Feed(int id) {
@@ -13,7 +14,7 @@ public class Feed extends Passive{
     @Override
     public void apply() {
         Player player = Game.getPlayer();
-        double currentLifeSize = player.getLifeSize();
-
+        player.addModifier(Modifiers.Life, 10);
+        player.addModifier(Modifiers.Luck, -0.1);
     }
 }

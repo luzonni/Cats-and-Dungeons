@@ -12,6 +12,7 @@ public class ItemBomb extends Item{
 
     ItemBomb(int id) {
         super(id, "Bomb", "bomb");
+        addSpecifications("EXPLODE", "you need to run!");
     }
 
     @Override
@@ -22,12 +23,10 @@ public class ItemBomb extends Item{
             Player player = Game.getPlayer();
             Entity nearest = player.getNearest(3);
             if(nearest != null) {
-                Bomb bomb = new Bomb(player.getX(), player.getY(), player.getDamage());
+                Bomb bomb = new Bomb(player.getX(), player.getY(), player.getDamage(), player);
                 bomb.getPhysical().addForce(20, nearest.getAngle(player));
                 Game.getMap().getEntities().add(bomb);
             }
-
-
         }
     }
 

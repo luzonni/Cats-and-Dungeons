@@ -3,12 +3,14 @@ package com.retronova.game.objects.entities;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.EntityNotFound;
+import com.retronova.engine.graphics.DrawSprite;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.physical.Physical;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,18 +20,21 @@ public abstract class Entity extends GameObject {
 
     private final Physical physical;
 
-    private final Map<Modifiers, Double> modifiers;
+    protected final Map<Modifiers, Double> modifiers;
     private final List<Effect> effects;
+    private Map<AttackTypes, Double> resistances;
 
     private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
     private double range;
     private double speed;
     private double damage;
     private double attackSpeed;
-    private AttackTypes[] resistanceOf;
 
     private boolean alive = false;
     private double xpWeight;
+
+    private boolean takedDamege;
+    private int countTakedDamege;
 
     public static Entity build(int ID, double x, double y) {
         EntityIDs entityId = EntityIDs.values()[ID];
@@ -75,10 +80,11 @@ public abstract class Entity extends GameObject {
         setX(x);
         setY(y);
         this.physical = new Physical(this, friction);
-        setResistances(null);
         this.modifiers = new HashMap<>();
         this.effects = new ArrayList<>();
+        this.resistances = new HashMap<>();
         setLife(100d);
+        addResistances(AttackTypes.Flat, 0);
         setXpWeight(7.33d);
     }
 
@@ -98,10 +104,28 @@ public abstract class Entity extends GameObject {
         this.effects.remove(effect);
     }
 
-    public void tickEffect() {
+    public void tickEntityEffects() {
         for(int i = 0; i < effects.size(); i++) {
             effects.get(i).tick();
         }
+        if(takedDamege) {
+            countTakedDamege++;
+            if(countTakedDamege > 50) {
+                countTakedDamege = 0;
+                takedDamege = false;
+            }
+        }
+        if (getLife() <= 0) {
+            die();
+        }
+    }
+
+    public BufferedImage getSprite() {
+        BufferedImage currentSprite = super.getSprite();
+        if(takedDamege && !(this instanceof Player)) {
+            currentSprite = DrawSprite.draw(currentSprite, new Color(122, 19, 17));
+        }
+        return currentSprite;
     }
 
     protected void setXpWeight(double weight) {
@@ -132,8 +156,8 @@ public abstract class Entity extends GameObject {
     }
 
     public double getDamage() {
-        if(modifiers.containsKey(Modifiers.Damege)) {
-            return this.damage + modifiers.get(Modifiers.Damege);
+        if(modifiers.containsKey(Modifiers.Damage)) {
+            return this.damage + modifiers.get(Modifiers.Damage);
         }
         return this.damage;
     }
@@ -183,29 +207,21 @@ public abstract class Entity extends GameObject {
         this.alive = true;
     }
 
-    protected void setResistances(AttackTypes... resistances) {
-        this.resistanceOf = resistances;
+    protected void addResistances(AttackTypes attack, double resistance) {
+        this.resistances.put(attack, resistance);
     }
 
     public void strike(AttackTypes type, double damage) {
         if(!isAlive()) {
             return;
         }
-        if (this.resistanceOf != null && type != null) {
-            for (AttackTypes resistance : this.resistanceOf) {
-                if (resistance.equals(type)) {
-                    setLife(getLife() - damage * (1 - resistance.getResistance()));
-                    if (getLife() <= 0) {
-                        die();
-                    }
-                    return;
-                }
-            }
+        if(resistances.containsKey(type)) {
+            double r = resistances.get(type);
+            setLife(getLife() - (damage * (1 - r))); // Dano total
+            return;
         }
-        setLife(getLife() - damage); // Dano total
-        if (getLife() <= 0) {
-            die();
-        }
+        setLife(getLife() - damage);
+        this.takedDamege = true;
     }
 
     public Entity getNearest(double range){
@@ -226,8 +242,12 @@ public abstract class Entity extends GameObject {
         return nearest;
     }
 
-    protected boolean colliding(Entity entity) {
+    public boolean colliding(Entity entity) {
         return this.getBounds().intersects(entity.getBounds());
+    }
+
+    public boolean colliding(Rectangle rec) {
+        return this.getBounds().intersects(rec);
     }
 
     /**

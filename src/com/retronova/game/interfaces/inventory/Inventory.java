@@ -229,31 +229,25 @@ public class Inventory implements Activity {
     }
 
     private void renderItemTag(Graphics2D g) {
-        String value = "";
+        InfoBox info = null;
         Slot[] slots = merge();
         for(int i = 0; i < slots.length; i++) {
             Slot slot = slots[i];
             if(Mouse.on(slot.getBounds()) && !slot.isEmpty()) {
-                value = slot.item().getName();
+                String[] values = new String[slot.item().getSpecifications().length + 1];
+                values[0] = slot.item().getName();
+                for(int j = 1; j < values.length; j++) {
+                    values[j] = "- "+slot.item().getSpecifications()[j-1];
+                }
+                info = new InfoBox(values);
             }
         }
-        if(value.isBlank()) {
+        if(info == null) {
             return;
         }
         int x = Mouse.getX() + 16;
         int y = Mouse.getY() + 16;
-        Font font = FontG.font(Configs.UISCALE * 8);
-        int wF = FontG.getWidth(value, font);
-        int hF = FontG.getHeight(value, font);
-        int padding = Configs.UISCALE * 3;
-        g.setFont(font);
-        g.setStroke(new BasicStroke(Configs.UISCALE));
-        g.setColor(new Color(190, 49, 68));
-        g.fillRect(x, y, wF + padding*2, hF + padding*2);
-        g.setColor(new Color(135, 35, 65));
-        g.drawRect(x, y, wF + padding*2, hF + padding*2);
-        g.setColor(Color.white);
-        g.drawString(value, x + padding, y + hF + padding);
+        info.render(x, y, g);
     }
 
     @Override

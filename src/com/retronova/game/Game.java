@@ -65,7 +65,7 @@ public class Game implements Activity {
             entity.setDepth();
             entity.getPhysical().moment();
             entity.tick();
-            entity.tickEffect();
+            entity.tickEntityEffects();
             if(entity.isAlive()) {
                 Tile tile = map.getTile((int) entity.getX() + entity.getWidth() / 2, (int) entity.getY() + entity.getHeight());
                 tile.effect(entity);
@@ -80,7 +80,7 @@ public class Game implements Activity {
         hud.tick();
     }
 
-    public static void reiniciarJogo() {
+    public static void restart() {
         Game game = getGame();
         Engine.setActivity(new Game(game.indexPlayer, game.difficulty, new Arena(0)));
         //TODO tirar saídas de console após finalização da lógica.

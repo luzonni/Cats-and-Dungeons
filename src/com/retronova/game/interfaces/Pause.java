@@ -60,7 +60,7 @@ public class Pause implements Activity {
         } else if(Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Jogo reiniciado");
             Engine.pause(null);
-            Game.reiniciarJogo();
+            Game.restart();
             Sound.stop(Musics.Music2);
             Sound.play(Musics.Music2, true);
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {

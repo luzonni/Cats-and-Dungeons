@@ -26,7 +26,7 @@ public class Drop extends Entity {
     public void tick() {
         if(Mouse.clickOnMap(Mouse_Button.LEFT, getBounds(), Game.C)) {
             if(Game.getPlayer().getInventory().give(this.item))
-                die();
+                disappear();
         }
     }
 }

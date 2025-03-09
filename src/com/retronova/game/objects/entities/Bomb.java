@@ -9,12 +9,14 @@ import java.util.List;
 public class Bomb extends Entity{
 
     private final double damage;
+    private final Entity shooter;
     private int count;
 
 
-    public Bomb(double x, double y, double damage) {
+    public Bomb(double x, double y, double damage, Entity shooter) {
         super(-1, x, y, 0.2);
         this.damage = damage;
+        this.shooter = shooter;
         setSolid();
         loadSprites("bomb");
     }
@@ -26,7 +28,7 @@ public class Bomb extends Entity{
             List<Entity> entities = Game.getMap().getEntities();
             for(int i = 0; i < entities.size(); i++) {
                 Entity e = entities.get(i);
-                if(e.getDistance(this) < GameObject.SIZE() * 50.0) {
+                if(e.getDistance(this) < GameObject.SIZE() * 5 && e != shooter) {
                     e.strike(AttackTypes.Melee, this.damage);
                 }
             }

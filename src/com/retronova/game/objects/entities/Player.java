@@ -9,6 +9,7 @@ import com.retronova.engine.inputs.keyboard.KeyBoard;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class Player extends Entity {
 
@@ -72,24 +73,40 @@ public class Player extends Entity {
         }
         if(!(Engine.getACTIVITY() instanceof Game))
             return;
-        if(KeyBoard.KeyPressed("F")) {
+        if(KeyBoard.KeyPressed("F")) {//Only teste
             //Teste de aplicação de efeito na entidade player
-            this.addEffect("TesteAddLife", (Entity e) -> {
-                if(e.getLife() < e.getLifeSize())
-                    e.setLife(e.getLife()+0.1d);
-                if(Engine.RAND.nextInt(100) < 10)
-                    e.getPhysical().addForce(Engine.RAND.nextInt(20), Engine.RAND.nextDouble(Math.PI*2));
-            }, 2);
+//            this.addEffect(
+//                    "nomeDoEfeito",
+//                    e -> {
+//                            e.strike(AttackTypes.Fire, 1);
+//                        },
+//            1);
+            List<Entity> entities = Game.getMap().getEntities();
+            for(int i = 0; i < entities.size(); i++) {
+                Entity e = entities.get(i);
+                if(e != this) {
+                    e.disappear();
+                }
+            }
         }
         updateMovement();
         tickItemHand();
     }
 
+    @Override
+    public void die() {
+        super.die();
+        Game.restart();
+    }
+
     public double getLuck() {
+        if(this.modifiers.containsKey(Modifiers.Luck)) {
+            return this.luck + this.modifiers.get(Modifiers.Luck);
+        }
         return luck;
     }
 
-    public void setLuck(double luck) {
+    private void setLuck(double luck) {
         this.luck = luck;
     }
 

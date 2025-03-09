@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public abstract class Item {
+
     public static Item build(ItemIDs id) {
         int i = id.ordinal();
         switch (id) {
@@ -36,6 +37,8 @@ public abstract class Item {
     private final BufferedImage[] sprite;
     private int indexSprite;
 
+    private String[] specifications;
+
      Item(int id, String name, String sprite) {
         this.id = id;
         this.name = name;
@@ -45,6 +48,15 @@ public abstract class Item {
         for(int i = 0; i < length; i++) {
             this.sprite[i] = sheet.getSpriteWithIndex(i, 0);
         }
+        addSpecifications("Teste1", "Teste2", "Teste3", "Teste4", "Teste5");
+    }
+
+    protected void addSpecifications(String... specifications) {
+         this.specifications = specifications;
+    }
+
+    public String[] getSpecifications() {
+         return this.specifications;
     }
 
     public int getID() {
