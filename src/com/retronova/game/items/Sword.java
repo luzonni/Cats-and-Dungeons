@@ -53,7 +53,7 @@ public class Sword extends Item {
                         if(e.colliding(this.boundsAttack) && e != player && e.isAlive()) {
                             e.strike(AttackTypes.Melee, player.getDamage() + this.damage);
                             double r = e.getAngle(player);
-                            e.getPhysical().addForce(12, r);
+                            e.getPhysical().addForce(16, r);
                         }
                     }
                 }

@@ -7,7 +7,7 @@ import com.retronova.engine.graphics.SpriteSheet;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class RatExplode extends Entity {
+public class MouseExplode extends Entity {
 
     private int countAnim;
 
@@ -16,8 +16,8 @@ public class RatExplode extends Entity {
     private final double danoExplosao;
 
     // TODO: Entender pq a sprite ta nervosa virando de um lado pro outro sem motivo
-    RatExplode(int ID, double x, double y) {
-        super(ID,x,y,0.3);
+    MouseExplode(int ID, double x, double y) {
+        super(ID,x,y,0.5);
         this.danoExplosao = 5;
         loadSprites("ratexplode");
         setSolid();
@@ -37,14 +37,15 @@ public class RatExplode extends Entity {
             getPhysical().addForce(0,0);
         }else {
             double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce(0.86d, radians);
+            getPhysical().addForce(getSpeed(), radians);
         }
 
     }
 
     private void explodir(Player player) {
         System.out.println("Mouse explodiu causando " + danoExplosao + " de dano");
-
+        player.strike(AttackTypes.Explosion, danoExplosao);
+        disappear();
     }
 
     private void animar() {

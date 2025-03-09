@@ -1,7 +1,5 @@
 package com.retronova.engine.sound;
 
-import com.retronova.game.objects.entities.RatExplode;
-
 public enum Sounds {
 	
 	Zombie("zombie_sound"),

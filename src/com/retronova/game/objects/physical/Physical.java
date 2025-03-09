@@ -11,8 +11,7 @@ import java.util.List;
 public class Physical {
 
     private final Entity entity;
-    private double force;
-    private double angleForce;
+    private List<Vector> vectors;
     private final double friction; //taxa de fricção do mapa
     private double momentFriction;
     private boolean isMoving;
@@ -23,6 +22,7 @@ public class Physical {
         this.entity = entity;
         this.friction = friction;
         this.momentFriction = friction;
+        this.vectors = new ArrayList<>();
         this.orientation = new int[] {0, 0};
     }
 
@@ -32,9 +32,30 @@ public class Physical {
      */
     public void moment(){
         calcFriction();
-        double vectorX = Math.cos(angleForce) * force;
-        double vectorY = Math.sin(angleForce) * force;
+        Vector vector = calcResultant();
+        if(vector == null) {
+            isMoving = false;
+            return;
+        }
+        double vectorX = vector.getVecX();
+        double vectorY = vector.getVecY();
         this.isMoving = moveSystem(vectorX, vectorY);
+    }
+
+    private Vector calcResultant() {
+        if(vectors.isEmpty()) {
+            return null;
+        }
+        double vecX = 0;
+        double vecY = 0;
+        for(int i = 0; i < vectors.size(); i++) {
+            Vector vec = vectors.get(i);
+            vecX += vec.getVecX();
+            vecY += vec.getVecY();
+        }
+        double newAngle = Math.atan2(vecY, vecX);
+        double newForce = Math.sqrt(Math.pow(vecX, 2) + Math.pow(vecY, 2));
+        return new Vector(newForce, newAngle);
     }
 
     /**
@@ -43,8 +64,13 @@ public class Physical {
      * @param radians é a direção que essa força será aplicada
      */
     public void addForce(double force, double radians){
-        this.angleForce = radians;
-        this.force = force * Configs.SCALE;
+        Vector vec = new Vector(force * Configs.SCALE, radians);
+        if(!vectors.contains(vec)) {
+            this.vectors.add(vec);
+        }else {
+            int i = vectors.indexOf(vec);
+            vectors.get(i).setForce(vec.getForce());
+        }
     }
 
     private boolean moveSystem(double vectorX, double vectorY){
@@ -87,7 +113,10 @@ public class Physical {
      * @return retorna o ângulo que a entidade está se movendo.
      */
     public double getAngleForce() {
-        return this.angleForce;
+        Vector vec = calcResultant();
+        if(vec == null)
+            return 0;
+        return vec.getAngle();
     }
 
     private boolean[] colliding(double nextX, double nextY){
@@ -140,12 +169,25 @@ public class Physical {
     }
 
     private void calcFriction() {
+        if(vectors.isEmpty()) {
+            return;
+        }
         double f = friction;
         if(momentFriction != friction) {
             f = momentFriction;
             momentFriction = friction;
         }
-        this.force *= (1 - f);
+        for(int i = 0; i < vectors.size(); i++) {
+            Vector v = vectors.get(i);
+            double vForce = v.getForce();
+            v.setForce(vForce * (1 - f));
+        }
+        for(int i = 0; i < vectors.size(); i++) {
+            Vector v = vectors.get(i);
+            if(v.getForce() <= 0.1d) {
+                vectors.remove(v);
+            }
+        }
     }
 
     public boolean isMoving() {

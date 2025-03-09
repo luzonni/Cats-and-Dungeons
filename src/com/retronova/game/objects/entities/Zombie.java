@@ -14,7 +14,7 @@ public class Zombie extends Entity {
     private int cooldown;
 
     Zombie(int ID, double x, double y) {
-        super(ID, x, y, 0.4);
+        super(ID, x, y, 0.5);
         loadSprites("mousezombie");
         setSolid();
         setAlive();
@@ -34,7 +34,7 @@ public class Zombie extends Entity {
             cooldown = 0;
             player.strike(AttackTypes.Melee, 2);
             Sound.play(Sounds.Zombie);
-            player.getPhysical().addForce(4.5d, getPhysical().getAngleForce());
+            player.getPhysical().addForce(getSpeed(), getPhysical().getAngleForce());
         }
     }
 

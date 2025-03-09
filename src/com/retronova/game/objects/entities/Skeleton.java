@@ -33,7 +33,7 @@ public class Skeleton extends Entity {
     private void moveIA() {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        getPhysical().addForce(1, radians);
+        getPhysical().addForce(getSpeed(), radians);
     }
 
     @Override

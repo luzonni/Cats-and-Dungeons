@@ -54,7 +54,7 @@ public abstract class Entity extends GameObject {
                 return new Slime(ID, x, y);
             }
             case RatExplode -> {
-                return new RatExplode(ID, x , y);
+                return new MouseExplode(ID, x , y);
             }
             case MouseSquire -> {
                 return new MouseSquire(ID, x, y);
@@ -84,6 +84,7 @@ public abstract class Entity extends GameObject {
         this.effects = new ArrayList<>();
         this.resistances = new HashMap<>();
         setLife(100d);
+        setSpeed(1d);
         addResistances(AttackTypes.Flat, 0);
         setXpWeight(7.33d);
     }
@@ -122,7 +123,7 @@ public abstract class Entity extends GameObject {
 
     public BufferedImage getSprite() {
         BufferedImage currentSprite = super.getSprite();
-        if(takedDamege && !(this instanceof Player)) {
+        if(takedDamege && !(this instanceof Player) && isAlive()) {
             currentSprite = DrawSprite.draw(currentSprite, new Color(122, 19, 17));
         }
         return currentSprite;
