@@ -181,11 +181,9 @@ public class Physical {
             Vector v = vectors.get(i);
             double vForce = v.getForce();
             v.setForce(vForce * (1 - f));
-        }
-        for(int i = 0; i < vectors.size(); i++) {
-            Vector v = vectors.get(i);
             if(v.getForce() <= 0.1d) {
                 vectors.remove(v);
+                i--;
             }
         }
     }
