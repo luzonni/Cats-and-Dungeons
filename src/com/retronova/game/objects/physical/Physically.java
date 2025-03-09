@@ -35,6 +35,7 @@ public class Physically implements Runnable {
     private void cycle() {
         Entity currentEntity = getEntity();
         if(currentEntity == null) {
+            checked.clear();
             return;
         }
         List<Entity> nears = getNears(currentEntity);
@@ -44,14 +45,15 @@ public class Physically implements Runnable {
     }
 
     private List<Entity> getNears(Entity entity) {
-        List<Entity> entities = map.getEntities().;
+        List<Entity> entities = map.getEntities();
+        List<Entity> nears = new ArrayList<>();
         for(int i = 0; i < entities.size(); i++) {
             Entity e = entities.get(i);
-            if(entity.colliding(e)) {
-                entities.add(e);
+            if(e.colliding(entity) && e != entity && e.isSolid()) {
+                nears.add(e);
             }
         }
-        return entities;
+        return nears;
     }
 
     private Entity getEntity() {
@@ -63,12 +65,10 @@ public class Physically implements Runnable {
                 return entity;
             }
         }
-        checked.clear();
         return null;
     }
 
-
-    synchronized void repulsion(Entity e1, Entity e2) {
+    void repulsion(Entity e1, Entity e2) {
         double e1_radius = e1.getWidth() / 2d;
         double e2_radius = e2.getWidth() / 2d;
         if(e1.getBounds().intersects(e2.getBounds())) {
@@ -80,7 +80,6 @@ public class Physically implements Runnable {
                 double ry = Math.sin(radians) * inside/2d;
                 e1.getPhysical().moveSystem(rx*-1, ry*-1);
                 e2.getPhysical().moveSystem(rx, ry);
-                checked.add(e2);
             }
         }
     }
@@ -89,16 +88,14 @@ public class Physically implements Runnable {
     public void run() {
         while (running) {
             try {
-               cycle();
+
+                cycle();
+
+                Thread.sleep(1);
             }catch (Exception e) {
                 String err = "Bem... esse erro não vai afetar em NADA o jogo, mas é um erro ;( " +
                         "\nO que fazer? Acho que chorar, porque resolver isso é desnecessário e chato, então chore, faz bem!";
                 System.err.println(err);
-            }
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
             }
         }
     }
