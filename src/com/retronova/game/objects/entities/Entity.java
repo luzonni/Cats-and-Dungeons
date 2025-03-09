@@ -83,10 +83,7 @@ public abstract class Entity extends GameObject {
         this.modifiers = new HashMap<>();
         this.effects = new ArrayList<>();
         this.resistances = new HashMap<>();
-        setLife(100d);
-        setSpeed(1d);
         addResistances(AttackTypes.Flat, 0);
-        setXpWeight(7.33d);
     }
 
     public void addModifier(Modifiers modifier, double value) {
@@ -138,10 +135,16 @@ public abstract class Entity extends GameObject {
     }
 
     public double getLife() {
+        if(this.life == null) {
+            return 1;
+        }
         return this.life[1];
     }
 
     public double getLifeSize() {
+        if(this.life == null) {
+            return 1;
+        }
         if(this.modifiers.containsKey(Modifiers.Life)) {
             return this.life[0] + this.modifiers.get(Modifiers.Life);
         }

@@ -11,7 +11,7 @@ import java.util.List;
 public class Physical {
 
     private final Entity entity;
-    private List<Vector> vectors;
+    private final List<Vector> vectors;
     private final double friction; //taxa de fricção do mapa
     private double momentFriction;
     private boolean isMoving;

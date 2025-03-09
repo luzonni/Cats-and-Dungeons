@@ -14,15 +14,16 @@ import java.util.List;
 public class Player extends Entity {
 
     public static final Player[] TEMPLATES = new Player[] {
-            new Player("cinzento", 10, 5, 0.3, 15, 30, 5, 4),
-            new Player("mago", 10, 5, 0.3, 12, 11, 5, 4),
-            new Player("sortudo", 200, 7, 0.3, 1, 50, 5, 4)
+            new Player("cinzento", 100,10, 5, 0.3, 15, 30, 5, 4),
+            new Player("mago", 80,10, 5, 0.3, 12, 11, 5, 4),
+            new Player("sortudo", 1000,200, 7, 0.3, 1, 50, 5, 4)
     };
 
     public static Player newPlayer(int index) {
         Player p = TEMPLATES[index];
         return new Player(
                 p.getName(),
+                p.getLife(),
                 p.getDamage(),
                 p.getSpeed(),
                 p.getLuck(),
@@ -42,12 +43,13 @@ public class Player extends Entity {
 
     private final Inventory inventory;
 
-    Player(String name, double damage, double speed, double luck, double attackSpeed, double range, int bagSize, int hotSize) {
+    Player(String name, double life, double damage, double speed, double luck, double attackSpeed, double range, int bagSize, int hotSize) {
         super(0, 0, 0, 0.5);
         this.name = name;
         this.luck = luck;
         this.inventory = new Inventory(bagSize, hotSize);
         loadSprites("player_"+name+"_idle", "player_"+name+"_walking");
+        setLife(life);
         setDamage(damage);
         setSpeed(speed);
         setAttackSpeed(attackSpeed);

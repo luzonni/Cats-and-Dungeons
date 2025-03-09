@@ -22,6 +22,9 @@ public class MouseExplode extends Entity {
         loadSprites("ratexplode");
         setSolid();
         setAlive();
+        setSpeed(1.3d);
+        setLife(20);
+        setXpWeight(12.4d);
     }
 
     public void tick() {

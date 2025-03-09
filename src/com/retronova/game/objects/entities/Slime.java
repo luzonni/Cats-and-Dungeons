@@ -16,7 +16,7 @@ public class Slime extends Entity {
     private boolean isJumping; //verifica se está pulando
 
     Slime(int ID, double x, double y) {
-        super(ID, x, y, 0.4);
+        super(ID, x, y, 0.2);
         loadSprites("slime");
         jumpCoolDown = 0;
         isJumping = false;
@@ -25,6 +25,8 @@ public class Slime extends Entity {
         setSolid();
         setAlive();
         //valor alto apenas para testar ganho de xp alto
+        setSpeed(6);
+        setLife(10);
         setXpWeight(800000.6d);
     }
 
@@ -56,10 +58,10 @@ public class Slime extends Entity {
         //caso o jogador esteja perto o bastante ele vai calcular a direção do pulo
         if(distance < GameObject.SIZE() * 6) {
              radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-             getPhysical().addForce(6, radians);
+             getPhysical().addForce(getSpeed(), radians);
         }else{
              radians = random.nextDouble() * (2 * Math.PI);
-             getPhysical().addForce(8, radians);
+             getPhysical().addForce(getSpeed(), radians);
         }
 
         jumpCoolDown = 30 + random.nextInt(20); //calculo do tempo de espera pra pular
