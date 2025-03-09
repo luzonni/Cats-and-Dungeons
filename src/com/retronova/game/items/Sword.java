@@ -50,8 +50,10 @@ public class Sword extends Item {
                     List<Entity> entities = Game.getMap().getEntities();
                     for(int i = 0; i < entities.size(); i++) {
                         Entity e = entities.get(i);
-                        if(e.colliding(this.boundsAttack) && e != player) {
+                        if(e.colliding(this.boundsAttack) && e != player && e.isAlive()) {
                             e.strike(AttackTypes.Melee, player.getDamage() + this.damage);
+                            double r = e.getAngle(player);
+                            e.getPhysical().addForce(12, r);
                         }
                     }
                 }
@@ -78,7 +80,8 @@ public class Sword extends Item {
         y -= pointRotate.y;
         x+= (int) (Math.cos(rad) * Configs.SCALE*6 * side);
         y+= (int) (Math.sin(rad) * Configs.SCALE*4 * side);
-        Rotate.draw(sprite, x, y, rad - Math.PI/4, pointRotate, g);
+        double rotate = (rad - Math.PI/4) + Math.PI/8*side;
+        Rotate.draw(sprite, x, y, rotate, pointRotate, g);
     }
 
     private void drawAttackEffect(Graphics2D g) {
