@@ -14,8 +14,8 @@ public class Lava extends Tile {
     private int count;
     private int strickCount;
 
-    Lava(int ID, int x, int y) {
-        super(ID, x, y, false);
+    Lava(int id, int x, int y, boolean solid) {
+        super(id, x, y, solid);
         loadSprites("lava");
     }
 

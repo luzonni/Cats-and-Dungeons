@@ -8,8 +8,8 @@ import java.awt.image.BufferedImage;
 
 public class Ice extends Tile {
 
-    Ice(int ID, int x, int y) {
-        super(ID, x, y, false);
+    Ice(int id, int x, int y, boolean solid) {
+        super(id, x, y, solid);
         loadSprites("ice");
     }
 

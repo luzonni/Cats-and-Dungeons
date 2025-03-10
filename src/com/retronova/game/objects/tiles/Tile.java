@@ -12,24 +12,33 @@ public abstract class Tile extends GameObject {
         TileIDs mapping = TileIDs.values()[ID];
         x *= GameObject.SIZE();
         y *= GameObject.SIZE();
+        boolean solid = mapping.getSolid();
         switch (mapping) {
             case Brick -> {
-                return new Bricks(ID, x, y);
+                return new Bricks(ID, x, y, solid);
             }
             case Stone -> {
-                return new Stone(ID, x, y);
+                return new Stone(ID, x, y, solid);
             }
             case Ice -> {
-                return new Ice(ID, x, y);
+                return new Ice(ID, x, y, solid);
             }
             case Lava -> {
-                return new Lava(ID, x, y);
+                return new Lava(ID, x, y, solid);
             }
             case DeathSand -> {
-                return new DeathSand(ID, x, y);
+                return new DeathSand(ID, x, y, solid);
+            }
+            case DarkBricks -> {
+                return new DarkBriks(ID, x, y, solid);
+            }
+            case Ceramics -> {
+                return new Ceramics(ID, x, y, solid);
+            }
+            default -> {
+                return new Void(-1, x, y, solid);
             }
         }
-        throw new TileNotFound("Tile not found");
     }
 
     Tile(int ID, int x, int y, boolean solid) {

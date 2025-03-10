@@ -4,8 +4,8 @@ import com.retronova.game.objects.entities.Entity;
 
 public class DeathSand extends Tile {
 
-    DeathSand(int id, int x, int y) {
-        super(id, x, y, false);
+    DeathSand(int id, int x, int y, boolean solid) {
+        super(id, x, y, solid);
         loadSprites("deathSand");
     }
 

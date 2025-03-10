@@ -49,7 +49,7 @@ public abstract class GameMap {
             for (int x = 0; x < width; x++) {
                 int index = x + y * width;
                 for (TileIDs value : values) {
-                    if (Color.decode(value.getColor()).getRGB() == rgb[index]) {
+                    if (value.getColor() == rgb[index]) {
                         map[index] = Tile.build(value.ordinal(), x, y);
                     }
                 }

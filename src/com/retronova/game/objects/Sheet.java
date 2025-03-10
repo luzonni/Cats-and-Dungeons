@@ -35,6 +35,10 @@ public class Sheet {
         return this.sheet[type][index];
     }
 
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
     public void setType(int type) {
         this.type = type;
         if(this.type > this.sheet.length-1) {
@@ -62,4 +66,5 @@ public class Sheet {
     public void dispose() {
         SHEETS.clear();
     }
+
 }

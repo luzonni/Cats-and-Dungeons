@@ -8,8 +8,8 @@ import java.awt.*;
 public class Camera {
 
     private GameObject followed;
-    private Rectangle bounds;
-    private double speed;
+    private final Rectangle bounds;
+    private final double speed;
 
     private double x, y;
 
@@ -53,14 +53,22 @@ public class Camera {
         setX(xx);
         setY(yy);
         //caso a nova posição seja menor ou maior que o mapa, a posição é atualizada para o limite.
-        if(xx < bounds.x)
-            setX(bounds.x);
-        if(xx + width > bounds.width)
-            setX(bounds.width - width);
-        if(yy < bounds.y)
-            setY(bounds.y);
-        if(yy + height > bounds.height)
-            setY(bounds.height - height);
+        if(width  > bounds.width ) {
+            setX((bounds.width-width)/2);
+        }else {
+            if(xx < bounds.x)
+                setX(bounds.x);
+            if(xx + width > bounds.width)
+                setX(bounds.width - width);
+        }
+        if (height > bounds.height) {
+            setY((bounds.height-height)/2);
+        }else {
+            if(yy < bounds.y)
+                setY(bounds.y);
+            if(yy + height > bounds.height)
+                setY(bounds.height - height);
+        }
     }
 
 }

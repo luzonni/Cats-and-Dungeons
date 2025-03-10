@@ -2,16 +2,15 @@ package com.retronova.game.objects.tiles;
 
 import com.retronova.game.objects.entities.Entity;
 
-public class Bricks extends Tile {
+public class Ceramics extends Tile {
 
-    Bricks(int id, int x, int y, boolean solid) {
-        super(id, x, y, solid);
-        loadSprites("brick");
+    Ceramics(int ID, int x, int y, boolean solid) {
+        super(ID, x, y, solid);
+        loadSprites("ceramics");
     }
 
     @Override
     public void effect(Entity e) {
 
     }
-
 }

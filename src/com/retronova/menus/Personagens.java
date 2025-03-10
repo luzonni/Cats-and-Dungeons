@@ -7,6 +7,7 @@ import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
 import com.retronova.game.map.Arena;
+import com.retronova.game.map.Room;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.graphics.SpriteSheet;
@@ -120,7 +121,7 @@ public class Personagens implements Activity {
             Engine.setActivity(new Menu());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
             if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
-                Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new Arena(dificuldadeSelecionada)));
+                Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new Room("beginning")));
                 Sound.stop(Musics.Music1);
                 Sound.play(Musics.Music2, true);
             } else {
