@@ -130,7 +130,7 @@ public class Personagens implements Activity {
                         System.out.println("Loadign");
                     }
                 });
-                Engine.setActivity(loading);
+                //Engine.setActivity(loading);
                 Sound.stop(Musics.Music1);
                 Sound.play(Musics.Music2, true);
             } else {
