@@ -6,6 +6,7 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
+import java.util.List;
 
 public class ItemBomb extends Item {
 
@@ -22,6 +23,9 @@ public class ItemBomb extends Item {
         count++;
         if(count > player.getAttackSpeed()*1.5) {
             count = 0;
+            if(canThrow()){
+                return;
+            }
             Entity nearest = player.getNearest(10);
             if(nearest != null) {
                 Bomb bomb = new Bomb(player.getX(), player.getY(), player.getDamage() * 3, player);
@@ -29,6 +33,16 @@ public class ItemBomb extends Item {
                 Game.getMap().put(bomb);
             }
         }
+    }
+
+    public boolean canThrow() {
+        List<Entity> entities = Game.getMap().getEntities();
+        for(int i = 0; i < entities.size(); i++) {
+            if(entities.get(i) instanceof Bomb) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
