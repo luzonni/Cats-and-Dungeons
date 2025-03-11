@@ -13,12 +13,14 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class GameMap {
 
@@ -51,14 +53,19 @@ public abstract class GameMap {
     }
 
     private Tile[] loadMap(String mapName) {
-        BufferedImage mapImage = new SpriteSheet("maps", mapName, 1).getSHEET();
+        BufferedImage mapImage = null;
+        try {
+            mapImage = ImageIO.read(new File("maps/"+mapName+".png"));
+        }catch (Exception e) {
+
+        }
         int width = mapImage.getWidth();
         int height = mapImage.getHeight();
         this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
         int[] rgb = mapImage.getRGB(0, 0, width, height, null, 0, width);
         this.length = width;
-        File file = getFileFromResources(Engine.resPath+"maps/"+mapName+".json");
-        if(file != null && file.exists()) {
+        File file = new File("maps/"+mapName+".json");
+        if(file.exists()) {
             System.out.println("Load entities");
             List<Entity> list = new ArrayList<>();
             try {
