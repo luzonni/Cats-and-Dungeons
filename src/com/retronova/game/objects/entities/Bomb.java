@@ -1,11 +1,13 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.ParticleIDs;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -16,6 +18,17 @@ public class Bomb extends Entity{
     private int count;
     private int countEx;
 
+    private final Point[] positions_spark = {
+            new Point(12, 5),
+            new Point(12, 4),
+            new Point(12, 3),
+            new Point(11, 2),
+            new Point(10, 2),
+            new Point(9, 2),
+            new Point(8, 3),
+            new Point(8, 4),
+            new Point(8, 4)
+    };
 
     public Bomb(double x, double y, double damage, Entity shooter) {
         super(-1, x, y, 0.2);
@@ -36,6 +49,12 @@ public class Bomb extends Entity{
         if(countEx == 10) {
             explosion();
         }
+        if(countEx < positions_spark.length) {
+            int x = (int)getX() + positions_spark[countEx].x * Configs.SCALE;
+            int y = (int)getY() + positions_spark[countEx].y * Configs.SCALE;
+            Particle p = Particle.build(ParticleIDs.Spark, x, y, 0.3d);
+            Game.getMap().put(p);
+        }
     }
 
     private void explosion() {
@@ -49,7 +68,7 @@ public class Bomb extends Entity{
         }
         for(int i = 0; i < 120; i++) {
             double angle = Engine.RAND.nextDouble(Math.toRadians(360));
-            double fator = 0.8d; // Quanto menor, mais pontos próximos ao centro
+            double fator = 0.8d;
             double raio = range * Math.pow(Engine.RAND.nextDouble(), fator);
             double x = getX() + Math.cos(angle) * raio;
             double y = getY() + Math.sin(angle) * raio;

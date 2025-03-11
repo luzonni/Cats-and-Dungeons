@@ -8,8 +8,8 @@ import java.awt.*;
 public abstract class Particle extends GameObject {
 
     public static Particle build(ParticleIDs id, double... values) {
-        if(values.length < 2) {
-            throw new RuntimeException("Valores incompativeis");
+        if(id.getArgs() != values.length) {
+            throw new IllegalArgumentException("Particle: " + id.name() + " needs " + id.getArgs() + " arguments to work.");
         }
         int i = id.ordinal();
         double x = values[0];
@@ -19,6 +19,9 @@ public abstract class Particle extends GameObject {
             case Smoke -> {
                 double dir = values[3];
                 return new Smoke(i, x, y, secs, dir);
+            }
+            case Spark -> {
+                return new Spark(i, x, y, secs);
             }
         }
         throw new EntityNotFound("Particle not found.");

@@ -20,7 +20,7 @@ import java.util.List;
 
 public class Game implements Activity {
 
-    private Galaxy galaxy;
+    private final Galaxy galaxy;
 
     private final int difficulty;
     private final int indexPlayer;
@@ -46,7 +46,6 @@ public class Game implements Activity {
     }
 
     public void changeMap(GameMap newMap) {
-        //TODO melhorar essa lógica!
         this.map = newMap;
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
