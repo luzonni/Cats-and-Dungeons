@@ -1,17 +1,25 @@
 package com.retronova.game.map;
 
+import com.retronova.engine.Engine;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.furniture.Furniture;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.TileIDs;
 import com.retronova.engine.graphics.SpriteSheet;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class GameMap {
 
@@ -23,9 +31,9 @@ public abstract class GameMap {
     private final Tile[] map;
 
     public GameMap(String mapName) {
-        this.map = loadMap(mapName);
         this.entities = new ArrayList<>();
         this.particles = new ArrayList<>();
+        this.map = loadMap(mapName);
     }
 
     public Player addPlayer(Player player) {
@@ -35,6 +43,16 @@ public abstract class GameMap {
         return player;
     }
 
+    public static File getFileFromResources(String fileName) {
+        URL resource = GameMap.class.getResource(fileName);
+        if (resource == null) {
+            System.err.println("Arquivo não encontrado: " + fileName);
+            return null;
+        }
+
+        return new File(resource.getFile());
+    }
+
     private Tile[] loadMap(String mapName) {
         BufferedImage mapImage = new SpriteSheet("maps", mapName, 1).getSHEET();
         int width = mapImage.getWidth();
@@ -42,6 +60,39 @@ public abstract class GameMap {
         this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
         int[] rgb = mapImage.getRGB(0, 0, width, height, null, 0, width);
         this.length = width;
+        File file = getFileFromResources(Engine.resPath+"maps/"+mapName+".json");
+        if(file != null && file.exists()) {
+            System.out.println("Load entities");
+            List<Entity> list = new ArrayList<>();
+            try {
+                InputStream stream = new FileInputStream(file);
+                Reader isr = new InputStreamReader(stream);
+                JSONParser parse = new JSONParser();
+                parse.reset();
+                JSONObject json = (JSONObject) parse.parse(isr);
+                JSONArray arrEntity = (JSONArray) json.get("entities");
+                for(int i = 0; i < arrEntity.size(); i++) {
+                    JSONArray arr = (JSONArray) arrEntity.get(i);
+                    int id = ((Number)arr.get(0)).intValue();
+                    int x = ((Number)arr.get(1)).intValue();
+                    int y = ((Number)arr.get(2)).intValue();
+                    Entity e = Entity.build(id, x, y);
+                    list.add(e);
+                }
+                JSONArray arrFurniture = (JSONArray) json.get("furniture");
+                for(int i = 0; i < arrFurniture.size(); i++) {
+                    JSONArray arr = (JSONArray) arrFurniture.get(i);
+                    int id = ((Number)arr.get(0)).intValue();
+                    int x = ((Number)arr.get(1)).intValue();
+                    int y = ((Number)arr.get(2)).intValue();
+                    Entity e = Furniture.build(id, x, y);
+                    list.add(e);
+                }
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+            putAll(list);
+        }
         return convertMap(rgb, width, height);
     }
 
@@ -80,6 +131,7 @@ public abstract class GameMap {
 
     public void depth() {
         entities.sort(Entity.Depth);
+        particles.sort(Particle.Depth);
     }
 
     /**
