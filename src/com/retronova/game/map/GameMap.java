@@ -48,36 +48,32 @@ public abstract class GameMap {
         this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
         int[] rgb = mapImage.getRGB(0, 0, width, height, null, 0, width);
         this.length = width;
-        File file = Resources.getFileFromResources(Engine.resPath+"maps/"+mapName+".json");
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = Resources.getJsonFile("maps", mapName);
+        } catch (IOException ignore) {
+            System.err.println("Arquivo: " + mapName);
+        }
         //TODO isso está tendo problema de incimpatibilidade com WIndows!
-        if(file != null && file.exists()) {
+        if(jsonObject != null && !jsonObject.isEmpty()) {
             List<Entity> list = new ArrayList<>();
-            try {
-                InputStream stream = new FileInputStream(file);
-                Reader isr = new InputStreamReader(stream);
-                JSONParser parse = new JSONParser();
-                parse.reset();
-                JSONObject json = (JSONObject) parse.parse(isr);
-                JSONArray arrEntity = (JSONArray) json.get("entities");
-                for(int i = 0; i < arrEntity.size(); i++) {
-                    JSONArray arr = (JSONArray) arrEntity.get(i);
-                    int id = ((Number)arr.get(0)).intValue();
-                    int x = ((Number)arr.get(1)).intValue();
-                    int y = ((Number)arr.get(2)).intValue();
-                    Entity e = Entity.build(id, x, y);
-                    list.add(e);
-                }
-                JSONArray arrFurniture = (JSONArray) json.get("furniture");
-                for(int i = 0; i < arrFurniture.size(); i++) {
-                    JSONArray arr = (JSONArray) arrFurniture.get(i);
-                    int id = ((Number)arr.get(0)).intValue();
-                    int x = ((Number)arr.get(1)).intValue();
-                    int y = ((Number)arr.get(2)).intValue();
-                    Entity e = Furniture.build(id, x, y);
-                    list.add(e);
-                }
-            }catch (Exception e) {
-                e.printStackTrace();
+            JSONArray arrEntity = (JSONArray) jsonObject.get("entities");
+            for(int i = 0; i < arrEntity.size(); i++) {
+                JSONArray arr = (JSONArray) arrEntity.get(i);
+                int id = ((Number)arr.get(0)).intValue();
+                int x = ((Number)arr.get(1)).intValue();
+                int y = ((Number)arr.get(2)).intValue();
+                Entity e = Entity.build(id, x, y);
+                list.add(e);
+            }
+            JSONArray arrFurniture = (JSONArray) jsonObject.get("furniture");
+            for(int i = 0; i < arrFurniture.size(); i++) {
+                JSONArray arr = (JSONArray) arrFurniture.get(i);
+                int id = ((Number)arr.get(0)).intValue();
+                int x = ((Number)arr.get(1)).intValue();
+                int y = ((Number)arr.get(2)).intValue();
+                Entity e = Furniture.build(id, x, y);
+                list.add(e);
             }
             putAll(list);
         }
