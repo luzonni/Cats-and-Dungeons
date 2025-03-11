@@ -48,7 +48,6 @@ public class MouseExplode extends Entity {
     }
 
     private void explodir(Player player) {
-        System.out.println("Mouse explodiu causando " + danoExplosao + " de dano");
         player.strike(AttackTypes.Explosion, danoExplosao);
         double range = GameObject.SIZE()*1.5d;
         for(int i = 0; i < 60; i++) {
