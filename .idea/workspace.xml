@@ -5,49 +5,57 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b0828926-9a75-4938-b84b-a7606e968c30" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/TinySound.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/json.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Libraries.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/libs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/TrapDoor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Roguelike.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Roguelike.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/retronova/menus/Loading.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/menus/Loading.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/retronova/menus/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/menus/Menu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/com/retronova/menus/Personagens.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/menus/Personagens.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/res/com/retronova/res/maps/beginning.json" beforeDir="false" afterPath="$PROJECT_DIR$/res/com/retronova/res/maps/beginning.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/game/map/Arena.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/map/Arena.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/Door.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/Door.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/Furniture.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/Furniture.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/FurnitureIDs.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/FurnitureIDs.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/game/objects/physical/Physical.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/physical/Physical.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/game/objects/physical/Physically.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/physical/Physically.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="2uB0NMiwGUfWVsF3MLBVtHaakJn" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.Main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "alpha",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/zonni/Documents/Projects/Java/Roguelike/res/com/retronova/res/source/TinySound.jar",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;alpha&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/zonni/Documents/Projects/Java/Roguelike/res/com/retronova/res/source/TinySound.jar&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.retronova.engine.Main" />

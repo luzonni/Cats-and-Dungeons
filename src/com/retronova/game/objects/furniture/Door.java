@@ -25,11 +25,6 @@ public class Door extends Furniture {
 
     @Override
     public void tick() {
-        //TODO apenas para passar o cenário, isso não será assim!
-        if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
-            Arena arena = new Arena(1);
-            arena.put(Game.getPlayer());
-            Game.getGame().changeMap(arena);
-        }
+
     }
 }

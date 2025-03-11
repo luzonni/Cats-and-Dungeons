@@ -17,6 +17,9 @@ public abstract class Furniture extends Entity {
             case Door -> {
                 return new Door(id, x, y);
             }
+            case TrapDoor -> {
+                return new TrapDoor(id, x, y);
+            }
         }
         throw new EntityNotFound("Furniture entity not found");
     }

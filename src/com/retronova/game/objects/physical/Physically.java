@@ -5,6 +5,7 @@ import com.retronova.game.Game;
 import com.retronova.game.interfaces.Pause;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.furniture.Furniture;
 import com.retronova.menus.Menu;
 
 import java.util.ArrayList;
@@ -65,9 +66,9 @@ public class Physically implements Runnable {
             double distance = e1.getDistance(e2);
             if((e1_radius + e2_radius) > distance) {
                 double inside = (e1_radius + e2_radius) - distance;
-                double rx = Math.cos(radians) * inside/2d;
-                double ry = Math.sin(radians) * inside/2d;
-                e1.getPhysical().moveSystem(rx*-1, ry*-1);
+                double rx = Math.cos(radians) * inside / 2d;
+                double ry = Math.sin(radians) * inside / 2d;
+                e1.getPhysical().moveSystem(rx * -1, ry * -1);
                 e2.getPhysical().moveSystem(rx, ry);
             }
         }

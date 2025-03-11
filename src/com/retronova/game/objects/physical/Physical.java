@@ -4,6 +4,7 @@ import com.retronova.engine.Configs;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.furniture.Furniture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +85,8 @@ public class Physical {
      * @param radians é a direção que essa força será aplicada
      */
     public void addForce(String name, double force, double radians){
+        if(entity instanceof Furniture)
+            return;
         force *= Configs.SCALE;
         Vector vec = new Vector(name, force, radians);
         if(vectors.contains(vec)) {
@@ -100,6 +103,8 @@ public class Physical {
     }
 
     boolean moveSystem(double vectorX, double vectorY){
+        if(entity instanceof Furniture)
+            return false;
         double x = entity.getX();
         double y = entity.getY();
         boolean[] colliders = colliding(x + vectorX, y + vectorY); //analisando a próxima posição
