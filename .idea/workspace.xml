@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="Roguelike:jar" />
+    </artifacts-to-build>
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b0828926-9a75-4938-b84b-a7606e968c30" name="Changes" comment="">
+<<<<<<< HEAD
       <change afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/TrapDoor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/res/com/retronova/res/maps/beginning.json" beforeDir="false" afterPath="$PROJECT_DIR$/res/com/retronova/res/maps/beginning.json" afterDir="false" />
@@ -14,6 +20,16 @@
       <change beforePath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/FurnitureIDs.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/furniture/FurnitureIDs.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/retronova/game/objects/physical/Physical.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/physical/Physical.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/com/retronova/game/objects/physical/Physically.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/objects/physical/Physically.java" afterDir="false" />
+=======
+      <change afterPath="$PROJECT_DIR$/.idea/artifacts/Roguelike_jar.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/json_simple_1_1_1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/res/META-INF/MANIFEST.MF" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Roguelike.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Roguelike.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/engine/io/Resources.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/engine/io/Resources.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/game/map/GameMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/game/map/GameMap.java" afterDir="false" />
+>>>>>>> e7a62069c6fc7f0d67db88614f1c1c9f5432f6b5
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,6 +58,7 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+<<<<<<< HEAD
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;Application.Main.executor&quot;: &quot;Run&quot;,
@@ -56,6 +73,28 @@
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;
   }
 }</component>
+=======
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "alpha",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Lukke/Documents/Projects/Roguelike/out/artifacts/Roguelike_jar",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15527344",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "Errors"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Lukke\Documents\Projects\Roguelike\out\artifacts\Roguelike_jar" />
+    </key>
+  </component>
+>>>>>>> e7a62069c6fc7f0d67db88614f1c1c9f5432f6b5
   <component name="RunManager">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.retronova.engine.Main" />
