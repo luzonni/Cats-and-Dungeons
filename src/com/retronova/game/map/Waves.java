@@ -10,10 +10,13 @@ import com.retronova.game.objects.tiles.Tile;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Waves {
+public class Waves implements Runnable {
+
+    private Thread thread;
 
     private int wave = 1;
     private double waveMultiplier = 1;
+    private int amount;
     private int counter;
     private int lastCounter;
     private boolean paused;
@@ -50,17 +53,13 @@ public class Waves {
             System.out.println("Fim");
         }else if(counter > lastCounter + 3.5 * 60){
             lastCounter = counter;
-            //TODO criar sistemas para excolher os inimigos que aparecerão em cada wave!
-            EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie, EntityIDs.Slime, EntityIDs.MouseVampire, EntityIDs.RatExplode};
+            //TODO criar sistemas para escolher os inimigos que aparecerão em cada wave!
 
-            int amount = (int) (4 * waveMultiplier);
-            System.out.println("Contador para adicionar: " + amount);
-            waveMultiplier += 0.09 + wave * 0.2; // testar balenceamento apos adicionar armas
-            synchronized (this) {
-                new Thread(() -> {
-                    listAppend = spawner(listEntity(types, amount));
-                }).start();
-            }
+            amount = (int) (4 * waveMultiplier);
+            waveMultiplier += 0.09 + wave * 0.2; // testar balanceamento apos adicionar armas
+
+            thread = new Thread(this);
+            thread.start();
         }
     }
 
@@ -72,7 +71,7 @@ public class Waves {
         return lista;
     }
 
-    private List<Entity> spawner(List<Entity> entidades) {
+    private synchronized List<Entity> spawner(List<Entity> entidades) {
         List<Entity> list = new ArrayList<>();
         while (!entidades.isEmpty()){
             int x = Engine.RAND.nextInt(gameMap.getBounds().width / GameObject.SIZE());
@@ -99,6 +98,17 @@ public class Waves {
         if(listAppend != null && !listAppend.isEmpty()) {
             Game.getMap().putAll(listAppend);
             listAppend.clear();
+        }
+    }
+
+    @Override
+    public void run() {
+        try {
+            System.out.println("Contador para adicionar: " + amount);
+            EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie, EntityIDs.Slime, EntityIDs.MouseVampire, EntityIDs.RatExplode};
+            listAppend = spawner(listEntity(types, amount));
+        }catch (Exception e) {
+            System.err.println("Erro em waves...");
         }
     }
 }
