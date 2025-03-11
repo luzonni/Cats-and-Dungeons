@@ -19,7 +19,6 @@ import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class GameMap {
 
@@ -36,11 +35,10 @@ public abstract class GameMap {
         this.map = loadMap(mapName);
     }
 
-    public Player addPlayer(Player player) {
+    public void addPlayer(Player player) {
         put(player);
         player.setX(getBounds().getWidth()/2);
         player.setY(getBounds().getHeight()/2);
-        return player;
     }
 
     public static File getFileFromResources(String fileName) {
@@ -49,7 +47,6 @@ public abstract class GameMap {
             System.err.println("Arquivo não encontrado: " + fileName);
             return null;
         }
-
         return new File(resource.getFile());
     }
 
