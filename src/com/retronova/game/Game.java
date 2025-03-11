@@ -80,6 +80,7 @@ public class Game implements Activity {
         for(int i = 0; i < particles.size(); i++) {
             Particle p = particles.get(i);
             p.tick();
+            p.setDepth();
         }
         Tile[] map = this.map.getMap();
         for(int i = 0; i < map.length; i++) {

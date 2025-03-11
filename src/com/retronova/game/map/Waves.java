@@ -53,7 +53,6 @@ public class Waves implements Runnable {
             System.out.println("Fim");
         }else if(counter > lastCounter + 3.5 * 60){
             lastCounter = counter;
-            //TODO criar sistemas para escolher os inimigos que aparecerão em cada wave!
 
             amount = (int) (4 * waveMultiplier);
             waveMultiplier += 0.09 + wave * 0.2; // testar balanceamento apos adicionar armas
@@ -105,6 +104,7 @@ public class Waves implements Runnable {
     public void run() {
         try {
             System.out.println("Contador para adicionar: " + amount);
+            //TODO criar sistemas para escolher os inimigos que aparecerão em cada wave!
             EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie, EntityIDs.Slime, EntityIDs.MouseVampire, EntityIDs.RatExplode};
             listAppend = spawner(listEntity(types, amount));
         }catch (Exception e) {
