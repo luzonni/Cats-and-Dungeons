@@ -52,7 +52,6 @@ public class Bow extends Item {
         double x = shooter.getX();
         double y = shooter.getY();
         Arrow arrow = new Arrow(x, y, shooter.getDamage(), angle, shooter);
-        arrow.getPhysical().addForce("show", shooter.getDamage(), angle);
         Game.getMap().put(arrow);
         Sound.play(Sounds.Bow);
     }

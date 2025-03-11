@@ -18,6 +18,8 @@ public class Arrow extends Entity {
         this.angle = angle;
         this.shooter = shooter;
         loadSprites("arrow");
+        setSpeed(7d);
+        this.getPhysical().addForce("show", getSpeed(), angle);
     }
 
     @Override

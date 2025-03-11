@@ -1,6 +1,7 @@
 package com.retronova.engine;
 
 public class Configs {
+
     public static boolean vignette = true;
     public static int SCALE = 3; //Escala do jogo
     public static int UISCALE = 3; //Escala dos menus
@@ -10,4 +11,5 @@ public class Configs {
     public static int VOLUM = 80; //Volume dos dons
     public static int MUSIC = 0; // Volume das musicas
     public static double MaxFrames = 60;
+
 }

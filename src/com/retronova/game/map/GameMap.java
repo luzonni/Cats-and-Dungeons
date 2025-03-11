@@ -3,6 +3,7 @@ package com.retronova.game.map;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.TileIDs;
 import com.retronova.engine.graphics.SpriteSheet;
@@ -18,11 +19,13 @@ public abstract class GameMap {
     private Rectangle bounds;
 
     private List<Entity> entities;
+    private List<Particle> particles;
     private final Tile[] map;
 
     public GameMap(String mapName) {
         this.map = loadMap(mapName);
         this.entities = new ArrayList<>();
+        this.particles = new ArrayList<>();
     }
 
     public Player addPlayer(Player player) {
@@ -84,10 +87,17 @@ public abstract class GameMap {
      * @return retorna uma lista imutável!
      */
     public List<Entity> getEntities() {
-        if (entities == null) {
-            entities = new ArrayList<>(); // evita erro de ponteiro
+        if (this.entities == null) {
+            this.entities = new ArrayList<>(); // evita erro de ponteiro
         }
-        return List.copyOf(entities);
+        return List.copyOf(this.entities);
+    }
+
+    public List<Particle> getParticles() {
+        if (particles == null) {
+            this.particles = new ArrayList<>(); // evita erro de ponteiro
+        }
+        return List.copyOf(this.particles);
     }
 
     public boolean put(Entity e) {
@@ -98,8 +108,16 @@ public abstract class GameMap {
         return this.entities.addAll(e);
     }
 
+    public boolean put(Particle p) {
+        return this.particles.add(p);
+    }
+
     public void remove(Entity e) {
         this.entities.remove(e);
+    }
+
+    public void remove(Particle p) {
+        this.particles.remove(p);
     }
 
     public abstract void tick();

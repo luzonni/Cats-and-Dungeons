@@ -75,7 +75,7 @@ public abstract class Entity extends GameObject {
         throw new EntityNotFound("Entity not found");
     }
 
-    Entity(int ID, double x, double y, double friction) {
+    protected Entity(int ID, double x, double y, double friction) {
         super(ID);
         setX(x);
         setY(y);
@@ -285,7 +285,7 @@ public abstract class Entity extends GameObject {
 
     public void dropLoot(Item loot) {
         Entity drop = new Drop(getX(), getY(), loot);
-        Game.getMap().getEntities().add(drop);
+        Game.getMap().put(drop);
         drop.getPhysical().addForce("drop", Engine.RAND.nextInt(10), Engine.RAND.nextDouble(Math.PI*2));
     }
 

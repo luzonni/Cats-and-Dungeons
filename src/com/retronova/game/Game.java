@@ -3,14 +3,14 @@ package com.retronova.game;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.NotInActivity;
+import com.retronova.engine.exceptions.NotInMap;
+import com.retronova.engine.graphics.Galaxy;
 import com.retronova.game.hud.HUD;
-import com.retronova.game.map.Camera;
-import com.retronova.game.map.Arena;
-import com.retronova.game.map.GameMap;
-import com.retronova.game.map.Waves;
+import com.retronova.game.map.*;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.interfaces.Pause;
+import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
@@ -20,34 +20,42 @@ import java.util.List;
 
 public class Game implements Activity {
 
-    private Player player;
-    public static Camera C;
+    private Galaxy galaxy;
+
     private final int difficulty;
     private final int indexPlayer;
-    private final GameMap map;
-    private final Physically physically;
 
-    //Este é apenas o menu do pause.
-    private Activity inerface;
-    //Aqui estara toda a parte de interface do jogo, como barras de vida, slots dos items, etc...
-    private HUD hud;
+    private final Player player;
+    public static Camera C;
+
+    private GameMap map;
+    private Physically physically;
+
+    private final HUD hud;
 
     //Teste
     public Game(int indexPlayer, int difficulty, GameMap map) {
         this.difficulty = difficulty;
         this.indexPlayer = indexPlayer;
-        this.map = map;
-        this.physically = new Physically(map);
         Player player = Player.newPlayer(indexPlayer);
         this.player = player;
+        this.changeMap(map);
         this.map.addPlayer(player);
+        this.hud = new HUD(player);
+        galaxy = new Galaxy();
+    }
+
+    public void changeMap(GameMap newMap) {
+        //TODO melhorar essa lógica!
+        this.map = newMap;
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
-        this.hud = new HUD(player);
+        this.physically = new Physically(map);
     }
 
     @Override
     public void tick() {
+        galaxy.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause());
         }
@@ -69,6 +77,11 @@ public class Game implements Activity {
                 tile.effect(entity);
             }
         }
+        List<Particle> particles = map.getParticles();
+        for(int i = 0; i < particles.size(); i++) {
+            Particle p = particles.get(i);
+            p.tick();
+        }
         Tile[] map = this.map.getMap();
         for(int i = 0; i < map.length; i++) {
             Tile tile = map[i];
@@ -76,6 +89,47 @@ public class Game implements Activity {
         }
         C.tick();
         hud.tick();
+    }
+
+    @Override
+    public void render(Graphics2D g) {
+        galaxy.render(g);
+        //Render logic
+        renderMap(g);
+        renderEntities(g);
+        renderParticles(g);
+        hud.render(g);
+    }
+
+    private void renderMap(Graphics2D g) {
+        Tile[] map = this.map.getMap();
+        for(int i = 0; i < map.length; i++) {
+            map[i].render(g);
+        }
+    }
+
+    private void renderEntities(Graphics2D g) {
+        List<Entity> entities = map.getEntities();
+        for(int i = 0; i < entities.size(); i++) {
+            Entity entity = entities.get(i);
+            entity.render(g);
+            entity.renderLife(g);
+        }
+    }
+
+    private void renderParticles(Graphics2D g) {
+        List<Particle> particles = map.getParticles();
+        for(int i = 0; i < particles.size(); i++) {
+            Particle p = particles.get(i);
+            p.render(g);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        //limpar memoria
+        System.out.println("Dispose Game");
+        physically.dispose();
     }
 
     public static void restart() {
@@ -110,7 +164,14 @@ public class Game implements Activity {
         if(getMap() instanceof Arena arena) {
             return arena.getWaves();
         }
-        throw new NotInActivity("Não é possível retornar a Wave pois a activity atual não é o jogo ou o jogo não está em uma arena.");
+        throw new NotInMap("O mapa atual não é uma Arena!");
+    }
+
+    public static Room getRoom() {
+        if(getMap() instanceof Room room) {
+            return room;
+        }
+        throw new NotInMap("O mapa atual não é uma room!");
     }
 
     public static HUD getHUD() {
@@ -120,34 +181,4 @@ public class Game implements Activity {
         throw new NotInActivity("Não é possível retornar a UI pois a activity atual não é um jogo");
     }
 
-    @Override
-    public void render(Graphics2D g) {
-        //Render logic
-        renderMap(g);
-        renderEntities(g);
-        hud.render(g);
-    }
-
-    private void renderMap(Graphics2D g) {
-        Tile[] map = this.map.getMap();
-        for(int i = 0; i < map.length; i++) {
-            map[i].render(g);
-        }
-    }
-
-    private void renderEntities(Graphics2D g) {
-        List<Entity> entities = map.getEntities();
-        for(int i = 0; i < entities.size(); i++) {
-            Entity entity = entities.get(i);
-            entity.render(g);
-            entity.renderLife(g);
-        }
-    }
-
-    @Override
-    public void dispose() {
-        //limpar memoria
-        System.out.println("Dispose Game");
-        physically.dispose();
-    }
 }

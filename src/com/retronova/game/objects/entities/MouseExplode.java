@@ -1,8 +1,11 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.particles.Particle;
+import com.retronova.game.objects.particles.ParticleIDs;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -47,6 +50,14 @@ public class MouseExplode extends Entity {
     private void explodir(Player player) {
         System.out.println("Mouse explodiu causando " + danoExplosao + " de dano");
         player.strike(AttackTypes.Explosion, danoExplosao);
+        double range = GameObject.SIZE()*1.5d;
+        for(int i = 0; i < 60; i++) {
+            double angle = Engine.RAND.nextDouble(Math.toRadians(360));
+            double x = getX() + Math.cos(angle) * Engine.RAND.nextDouble(range);
+            double y = getY() + Math.sin(angle) * Engine.RAND.nextDouble(range);
+            Particle smoke = Particle.build(ParticleIDs.Smoke, x, y, 1.2, Engine.RAND.nextDouble(Math.PI*2));
+            Game.getMap().put(smoke);
+        }
         disappear();
     }
 
