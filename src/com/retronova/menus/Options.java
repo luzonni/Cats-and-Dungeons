@@ -1,35 +1,29 @@
-package com.retronova.game.interfaces;
+package com.retronova.menus;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.sound.Musics;
-import com.retronova.engine.sound.Sound;
-import com.retronova.game.Game;
 import com.retronova.engine.graphics.FontG;
-import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
-import com.retronova.menus.Menu;
 
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
-public class Pause implements Activity {
+public class Options implements Activity {
 
     private Rectangle[] quadrados;
-    private final Font fonteTitulo = FontG.font(15 * Configs.UISCALE);
-    private final Color corFundo = new Color(50, 50, 50, 150);
+    //private final Color[] corBotao = {new Color(0x00A878), new Color(0x4169E1), new Color(0x708090), new Color(0x808080), new Color(0xA9A9A9)};
     private final Color corBotao = Color.GRAY;
     private final Color corTexto = Color.WHITE;
-    private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Menu", "Quit"};
+    private final String[] quadradosNomes = {"Resolution", "Full Screan", "Save", "Botão 4", "Back"};
+    private final Font fonteQuadrados = FontG.font(8 * Configs.UISCALE);
+    private FontMetrics fmQuadrados;
     private int quadradoSeta = -1;
 
-
-    public Pause() {
+    public Options() {
         telacheia();
     }
-
 
     private void telacheia() {
         quadrados = new Rectangle[5];
@@ -49,28 +43,16 @@ public class Pause implements Activity {
     @Override
     public void tick() {
         atualizarSeta();
-        if (KeyBoard.KeyPressed("ESCAPE")) {
-            System.out.println("Jogo pausado");
-            Engine.pause(null);
-        } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
-            System.out.println("Jogo continuado");
-            Engine.pause(null);
-        } else if(Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
-            System.out.println("Jogo reiniciado");
-            Engine.pause(null);
-            Game.restart();
-            Sound.stop(Musics.Music2);
-            Sound.play(Musics.Music2, true);
+
+        if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
+        } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
+            System.out.println("Opções");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
-            System.out.println("Opções abertas");
-        } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[3])) {
-            System.out.println("Menu aberto");
-            Engine.pause(null);
-            Sound.stop(Musics.Music2);
-            Engine.setActivity(new Menu());
-        } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[4])) {
             System.out.println("Jogo fechado");
-            Engine.CLOSE();
+        } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[3])) {
+            System.out.println("Botão 4");
+        } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[4])) {
+            System.out.println("Botão 5");
         }
     }
 
@@ -87,24 +69,8 @@ public class Pause implements Activity {
     @Override
     public void render(Graphics2D g) {
         telacheia();
-        desenharFundo(g);
-        desenharTitulo(g);
         desenharBotoes(g);
         desenharSeta(g);
-    }
-
-    private void desenharFundo(Graphics2D g) {
-        g.setColor(corFundo);
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
-    }
-
-    private void desenharTitulo(Graphics2D g) {
-        g.setFont(fonteTitulo);
-        g.setColor(corTexto);
-        FontMetrics fmPause = g.getFontMetrics();
-        int x = (Engine.window.getWidth() - fmPause.stringWidth("Game Paused")) / 2;
-        int y = 50;
-        g.drawString("Game Paused", x, y + fmPause.getAscent());
     }
 
     private void desenharBotoes(Graphics2D g) {

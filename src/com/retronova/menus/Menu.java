@@ -48,6 +48,7 @@ public class Menu implements Activity {
             Engine.setActivity(new Personagens());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Opções");
+            Engine.setActivity(new Options());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
             Engine.CLOSE();
             System.out.println("Jogo fechado");
