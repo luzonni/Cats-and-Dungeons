@@ -46,6 +46,8 @@ public class Game implements Activity {
     }
 
     public void changeMap(GameMap newMap) {
+        if(this.physically != null)
+            this.physically.dispose();
         this.map = newMap;
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);

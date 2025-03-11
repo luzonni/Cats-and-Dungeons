@@ -30,6 +30,7 @@ public class Waves implements Runnable {
     public boolean getPause(){
         return paused;
     }
+
     public void setPause(boolean paused){
         this.paused = paused;
     }
@@ -57,7 +58,7 @@ public class Waves implements Runnable {
             amount = (int) (4 * waveMultiplier);
             waveMultiplier += 0.09 + wave * 0.2; // testar balanceamento apos adicionar armas
 
-            thread = new Thread(this);
+            thread = new Thread(this, "Waves-Thread");
             thread.start();
         }
     }

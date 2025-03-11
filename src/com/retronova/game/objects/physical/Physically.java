@@ -1,12 +1,7 @@
 package com.retronova.game.objects.physical;
 
-import com.retronova.engine.Engine;
-import com.retronova.game.Game;
-import com.retronova.game.interfaces.Pause;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
-import com.retronova.game.objects.furniture.Furniture;
-import com.retronova.menus.Menu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +16,7 @@ public class Physically implements Runnable {
     public Physically(GameMap map) {
         this.map = map;
         checked = new ArrayList<>();
-        thread = new Thread(this);
+        thread = new Thread(this, "Physically-Thread");
     }
 
     public void start() {
