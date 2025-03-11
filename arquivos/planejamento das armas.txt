@@ -6,6 +6,7 @@ Armas:
 3. Bomba;
 4. Laser;
 5. Garra(tipo luva) que da dano e empurra o jogador;
+6. Bolã de lã.
 
 Passíveis:
 1. Peixe;
