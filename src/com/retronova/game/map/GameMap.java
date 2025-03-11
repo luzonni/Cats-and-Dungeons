@@ -1,6 +1,7 @@
 package com.retronova.game.map;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.io.Resources;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
@@ -16,7 +17,6 @@ import org.json.simple.parser.JSONParser;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,15 +41,6 @@ public abstract class GameMap {
         player.setY(getBounds().getHeight()/2);
     }
 
-    public static File getFileFromResources(String fileName) {
-        URL resource = GameMap.class.getResource(fileName);
-        if (resource == null) {
-            System.err.println("Arquivo não encontrado: " + fileName);
-            return null;
-        }
-        return new File(resource.getFile());
-    }
-
     private Tile[] loadMap(String mapName) {
         BufferedImage mapImage = new SpriteSheet("maps", mapName, 1).getSHEET();
         int width = mapImage.getWidth();
@@ -57,9 +48,9 @@ public abstract class GameMap {
         this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
         int[] rgb = mapImage.getRGB(0, 0, width, height, null, 0, width);
         this.length = width;
-        File file = getFileFromResources(Engine.resPath+"maps/"+mapName+".json");
+        File file = Resources.getFileFromResources(Engine.resPath+"maps/"+mapName+".json");
+        //TODO isso está tendo problema de incimpatibilidade com WIndows!
         if(file != null && file.exists()) {
-            System.out.println("Load entities");
             List<Entity> list = new ArrayList<>();
             try {
                 InputStream stream = new FileInputStream(file);
