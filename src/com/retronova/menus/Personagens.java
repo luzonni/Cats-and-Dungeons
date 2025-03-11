@@ -121,7 +121,16 @@ public class Personagens implements Activity {
             Engine.setActivity(new Menu());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
             if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
-                Engine.setActivity(new Game(personagemSelecionado, dificuldadeSelecionada, new Room("beginning")));
+                Activity newGame = new Game(personagemSelecionado, dificuldadeSelecionada, new Room("beginning"));
+                Activity loading = new Loading(newGame, () -> {
+                    try {
+                        Thread.sleep(1000);
+                    }catch (Exception ignore) {}
+                    while(true) {
+                        System.out.println("Loadign");
+                    }
+                });
+                Engine.setActivity(loading);
                 Sound.stop(Musics.Music1);
                 Sound.play(Musics.Music2, true);
             } else {

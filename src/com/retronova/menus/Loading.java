@@ -8,25 +8,24 @@ import com.retronova.engine.graphics.FontG;
 
 import java.awt.*;
 
-public class Loading implements Activity {
+public class Loading implements Activity, Runnable {
+
+    private final Thread thread;
 
     private final Activity activity;
     private final ActionBack action;
     private boolean finish;
 
     public Loading(Activity activity, ActionBack action) {
+        this.thread = new Thread(this);
         this.activity = activity;
         this.action = action;
+        this.finish = false;
     }
 
     @Override
     public void tick() {
-        synchronized (this) {
-            new Thread(() -> {
-                action.action();
-                finish = true;
-            }).start();
-        }
+        this.thread.start();
         if(finish)
             Engine.setActivity(activity);
     }
@@ -44,5 +43,11 @@ public class Loading implements Activity {
     @Override
     public void dispose() {
 
+    }
+
+    @Override
+    public void run() {
+        action.action();
+        finish = true;
     }
 }
