@@ -45,9 +45,7 @@ public class Menu implements Activity {
 
         if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
             System.out.println("Seleção de personagens aberta");
-            Engine.setActivity(new Loading(new Personagens(), () -> {
-                while(true) {}
-            }));
+            Engine.setActivity(new Personagens());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
             System.out.println("Opções");
             Engine.setActivity(new Options());

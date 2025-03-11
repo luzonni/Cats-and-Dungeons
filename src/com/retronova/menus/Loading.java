@@ -14,18 +14,23 @@ public class Loading implements Activity, Runnable {
 
     private final Activity activity;
     private final ActionBack action;
-    private boolean finish;
+    private volatile boolean finish;
+    private boolean start;
 
     public Loading(Activity activity, ActionBack action) {
         this.thread = new Thread(this);
         this.activity = activity;
         this.action = action;
-        this.finish = false;
+        finish = false;
+        this.start = false;
     }
 
     @Override
-    public void tick() {
-        this.thread.start();
+    public synchronized void tick() {
+        if(!start) {
+            start = true;
+            this.thread.start();
+        }
         if(finish)
             Engine.setActivity(activity);
     }

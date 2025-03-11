@@ -124,13 +124,10 @@ public class Personagens implements Activity {
                 Activity newGame = new Game(personagemSelecionado, dificuldadeSelecionada, new Room("beginning"));
                 Activity loading = new Loading(newGame, () -> {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(60);
                     }catch (Exception ignore) {}
-                    while(true) {
-                        System.out.println("Loadign");
-                    }
                 });
-                //Engine.setActivity(loading);
+                Engine.setActivity(loading);
                 Sound.stop(Musics.Music1);
                 Sound.play(Musics.Music2, true);
             } else {

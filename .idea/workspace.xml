@@ -4,112 +4,79 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="60743987-87d8-4b1b-a67b-b235d42ac247" name="Changes" comment="">
+    <list default="true" id="b0828926-9a75-4938-b84b-a7606e968c30" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/TinySound.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/json.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Libraries.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/libs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Roguelike.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Roguelike.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/menus/Loading.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/menus/Loading.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/menus/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/menus/Menu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/com/retronova/menus/Personagens.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/com/retronova/menus/Personagens.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Interface" />
-        <option value="Enum" />
-        <option value="Exception" />
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="zonni" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 7
-}</component>
-  <component name="ProjectId" id="2slHCXlJheIeTrP76lXdUT5lJon" />
-  <component name="ProjectLevelVcsManager">
-    <ConfirmationsSetting value="2" id="Add" />
-  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="2uB0NMiwGUfWVsF3MLBVtHaakJn" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.BuildEntitiesMap.executor": "Run",
-    "Application.Roguelike.executor": "Run",
+    "Application.Main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "deletionFromPopupRequiresConfirmation": "false",
     "git-widget-placeholder": "alpha",
     "kotlin-language-version-configured": "true",
-    "last_directory_selection": "/home/zonni/Documents/Projects/Java/Roguelike/src/com/retronova",
     "last_opened_file_path": "/home/zonni/Documents/Projects/Java/Roguelike/res/com/retronova/res/source/TinySound.jar",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "configurable.group.editor"
+    "project.structure.side.proportion": "0.2"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="CreateClassDialog.RecentsKey">
-      <recent name="com.retronova.exceptions" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/res/com/retronova/res/audio" />
-      <recent name="$PROJECT_DIR$/res/com/retronova/res/items" />
-      <recent name="$PROJECT_DIR$/src/com/retronova/engine/sound" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/res/com/retronova/res/objects" />
-      <recent name="$PROJECT_DIR$/res/com/retronova/res/audio" />
-      <recent name="$PROJECT_DIR$/res/com/retronova/res/objects/player" />
-    </key>
-    <key name="MoveMembersDialog.RECENTS_KEY">
-      <recent name="com.retronova.engine.Configs" />
-      <recent name="com.retronova.game.objects.entities.Player" />
-    </key>
-    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
-      <recent name="com.retronova.game.objects.physical" />
-      <recent name="com.retronova.engine" />
-      <recent name="com.retronova.engine.io" />
-      <recent name="com.retronova.game.map" />
-      <recent name="com.retronova.game.hud" />
-    </key>
-    <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="com.retronova.game.items" />
-    </key>
-  </component>
   <component name="RunManager">
-    <configuration name="Roguelike" type="Application" factoryName="Application">
+    <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.retronova.engine.Main" />
       <module name="Roguelike" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.retronova.engine.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Main" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="60743987-87d8-4b1b-a67b-b235d42ac247" name="Changes" comment="" />
-      <created>1739023113524</created>
+      <changelist id="b0828926-9a75-4938-b84b-a7606e968c30" name="Changes" comment="" />
+      <created>1741706620724</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1739023113524</updated>
+      <updated>1741706620724</updated>
     </task>
     <servers />
-  </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Roguelike$Roguelike.ic" NAME="Roguelike Coverage Results" MODIFIED="1741202812701" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true" />
   </component>
 </project>
