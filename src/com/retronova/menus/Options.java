@@ -13,13 +13,13 @@ import java.awt.geom.RoundRectangle2D;
 public class Options implements Activity {
 
     private Rectangle[][] quadrados;
-    private final Color corBotao = Color.GRAY;
+    private final Color corBotao = new Color(0xc17564);
     private final Color corTexto = Color.WHITE;
-    private final String titulo = "Opções";
+    private final String titulo = "Options";
     private final String[][] textosBotoes = {
-            {"Resolução", "Full Screen", "Save"},
-            {"Tamanho do Texto", "Tamanho da Câmera", "Pensando"},
-            {"Volume Geral", "Volume da Música", "Volume dos Mobs"},
+            {"Resolution", "Pensando", "Save"},
+            {"Text Size", "Camera Size", "Full Screen"},
+            {"Volume", "Music", "Mobs"},
             {null, "Back", null}
     };
     private int botaoSelecionadoLinha = -1;
@@ -33,8 +33,8 @@ public class Options implements Activity {
         quadrados = new Rectangle[4][3];
 
         int larguraBotao = 200;
-        int alturaBotao = 80;
-        int espacamento = 20;
+        int alturaBotao = 50;
+        int espacamento = 70;
 
         int larguraTotal = 3 * larguraBotao + 2 * espacamento;
         int alturaTotal = 4 * alturaBotao + 3 * espacamento;
@@ -63,35 +63,12 @@ public class Options implements Activity {
                 if (quadrados[linha][coluna] != null && Mouse.clickOn(Mouse_Button.LEFT, quadrados[linha][coluna])) {
                     String textoBotao = textosBotoes[linha][coluna];
                     switch (textoBotao) {
-                        case "Resolução":
+                        case "Resolution":
                             System.out.println("Clicou em Resolução");
-                            break;
-                        case "Full Screen":
-                            System.out.println("Clicou em Full Screen");
-                            break;
-                        case "Save":
-                            System.out.println("Clicou em Save");
-                            break;
-                        case "Tamanho do Texto":
-                            System.out.println("Clicou em Tamanho do Texto");
-                            break;
-                        case "Tamanho da Câmera":
-                            System.out.println("Clicou em Tamanho da Câmera");
-                            break;
-                        case "Pensando":
-                            System.out.println("Clicou em Pensando");
-                            break;
-                        case "Volume Geral":
-                            System.out.println("Clicou em Volume Geral");
-                            break;
-                        case "Volume da Música":
-                            System.out.println("Clicou em Volume da Música");
-                            break;
-                        case "Volume dos Mobs":
-                            System.out.println("Clicou em Volume dos Mobs");
                             break;
                         case "Back":
                             System.out.println("Clicou em Back");
+                            Engine.setActivity(new Menu());
                             break;
                         default:
                             System.out.println("Botão desconhecido: " + textoBotao);
@@ -119,6 +96,7 @@ public class Options implements Activity {
     @Override
     public void render(Graphics2D g) {
         desenharTitulo(g);
+        desenharTextosTeste(g); // Adicionado o método para desenhar os textos "teste"
         desenharBotoes(g);
         desenharSeta(g);
     }
@@ -133,6 +111,22 @@ public class Options implements Activity {
         g.drawString(titulo, x, y);
     }
 
+    private void desenharTextosTeste(Graphics2D g) {
+        g.setColor(corTexto);
+        g.setFont(FontG.font(16 * Configs.UISCALE));
+        FontMetrics fmTeste = g.getFontMetrics();
+
+        int xInicio = Engine.window.getWidth() / 2 - (3 * 200 + 2 * 30) / 2;
+        int yTeste = quadrados[0][0].y - 30;
+
+        String[] titulosTeste = {"Teste 1", "Teste 2", "Teste 3"};
+
+        for (int coluna = 0; coluna < 3; coluna++) {
+            int x = xInicio + coluna * (200 + 30) + 100 - fmTeste.stringWidth(titulosTeste[coluna]) / 2;
+            g.drawString(titulosTeste[coluna], x, yTeste);
+        }
+    }
+
     private void desenharBotoes(Graphics2D g) {
         Stroke defaultStroke = g.getStroke();
 
@@ -141,7 +135,7 @@ public class Options implements Activity {
                 if (quadrados[linha][coluna] != null) {
                     Rectangle quadrado = quadrados[linha][coluna];
 
-                    int tamanhoFonte = 12 * Configs.UISCALE;
+                    int tamanhoFonte = 8 * Configs.UISCALE;
                     Font fonteAtual = FontG.font(tamanhoFonte);
                     FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 
@@ -196,3 +190,4 @@ public class Options implements Activity {
     public void dispose() {
     }
 }
+
