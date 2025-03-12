@@ -6,12 +6,17 @@ Armas:
 3. Bomba;
 4. Laser;
 5. Garra(tipo luva) que da dano e empurra o jogador;
+6. Bolã de lã.
+7. Vara de gato: dano à distância
 
 Passíveis:
 1. Peixe;
 2. Ração de aumentar energia;
 3. Ração de restaurar vida;
-4. CatNip(Maconha de gato).
+4. CatNip(Maconha de gato);
+5. Coleira de ouro - Agora você tem um dono :3
+6. Dodge - chapeu de melancia(Concede esquiva)
+
 
 
 
