@@ -5,8 +5,11 @@ import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.Rotate;
+import com.retronova.engine.graphics.SpriteSheet;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class Loading implements Activity, Runnable {
 
@@ -17,12 +20,16 @@ public class Loading implements Activity, Runnable {
     private volatile boolean finish;
     private boolean start;
 
+    private BufferedImage spriteLoad;
+    private double rotating;
+
     public Loading(Activity activity, ActionBack action) {
         this.thread = new Thread(this);
         this.activity = activity;
         this.action = action;
         finish = false;
         this.start = false;
+        this.spriteLoad = new SpriteSheet("icons", "loading", Configs.UISCALE*2).getSHEET();
     }
 
     @Override
@@ -33,16 +40,23 @@ public class Loading implements Activity, Runnable {
         }
         if(finish)
             Engine.setActivity(activity);
+        rotating += Math.toRadians(2);
     }
 
     @Override
     public void render(Graphics2D g) {
+
+        int x = Engine.window.getWidth()/2 - spriteLoad.getWidth()/2;
+        int y = Engine.window.getHeight()/2 - spriteLoad.getHeight()/2;
+        Rotate.draw(spriteLoad, x, y, rotating, null, g);
+
+        int padding = Configs.MARGIN;
         Font font = FontG.font(Configs.UISCALE * 12);
         String value = "Loading...";
         g.setColor(Color.white);
         g.setFont(font);
         int wF = FontG.getWidth(value, font);
-        g.drawString(value, Engine.window.getWidth() - wF, Engine.window.getHeight());
+        g.drawString(value, Engine.window.getWidth() - wF - padding, Engine.window.getHeight() - padding);
     }
 
     @Override

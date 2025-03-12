@@ -12,6 +12,7 @@ public enum EntityIDs {
     MouseVampire,
     CatToyBoss,
     KingCursedCatBoss,
-    MonarkMouse;
+    MonarkMouse,
+    Coin;
     
 }

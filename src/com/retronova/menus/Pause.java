@@ -1,4 +1,4 @@
-package com.retronova.game.interfaces;
+package com.retronova.menus;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
@@ -10,7 +10,6 @@ import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
-import com.retronova.menus.Menu;
 
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;

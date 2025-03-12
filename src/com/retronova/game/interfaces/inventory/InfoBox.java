@@ -5,13 +5,13 @@ import com.retronova.engine.graphics.FontG;
 
 import java.awt.*;
 
-public class InfoBox {
+class InfoBox {
 
-    private String[] values;
-    private Rectangle bounds;
-    private int padding;
+    private final String[] values;
+    private final Rectangle bounds;
+    private final int padding;
 
-    private Font fontTitle, fontSpecs;
+    private final Font fontTitle, fontSpecs;
 
     InfoBox(String[] values) {
         this.values = values;
@@ -30,7 +30,7 @@ public class InfoBox {
         this.bounds = new Rectangle(lastWidth, height);
     }
 
-    public void render(int x, int y, Graphics2D g) {
+    void render(int x, int y, Graphics2D g) {
         g.setColor(new Color(190, 49, 68));
         g.fillRect(x, y, this.bounds.width, this.bounds.height);
         g.setColor(new Color(135, 35, 65));

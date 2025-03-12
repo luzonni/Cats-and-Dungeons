@@ -22,17 +22,25 @@ import java.util.List;
 
 public abstract class GameMap {
 
+    private String name;
     private int length;
     private Rectangle bounds;
 
     private List<Entity> entities;
     private List<Particle> particles;
-    private final Tile[] map;
+    private Tile[] map;
 
     public GameMap(String mapName) {
+        this.name = mapName;
         this.entities = new ArrayList<>();
         this.particles = new ArrayList<>();
         this.map = loadMap(mapName);
+    }
+
+    public void restart() {
+        this.entities = new ArrayList<>();
+        this.particles = new ArrayList<>();
+        this.map = loadMap(name);
     }
 
     public void addPlayer(Player player) {

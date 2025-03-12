@@ -1,4 +1,4 @@
-package com.retronova.game.interfaces.inventory;
+package com.retronova.game.interfaces;
 
 import com.retronova.engine.Configs;
 import com.retronova.game.items.Item;
@@ -8,32 +8,31 @@ import com.retronova.engine.inputs.mouse.Mouse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-class Slot {
+public class Slot {
 
     private final BufferedImage sprite;
     private final Rectangle bounds;
     private Item item;
 
-
-    Slot(int x, int y) {
+    public Slot(int x, int y) {
         this.item = null;
         this.sprite = new SpriteSheet("ui", "slot", Configs.UISCALE).getSHEET();
         this.bounds = new Rectangle(x, y, this.sprite.getWidth(), this.sprite.getHeight());
     }
 
-    void setPosition(int x, int y) {
+    public void setPosition(int x, int y) {
         this.bounds.setLocation(x, y);
     }
 
-    Item item() {
+    public Item item() {
         return this.item;
     }
 
-    Rectangle getBounds() {
+    public Rectangle getBounds() {
         return this.bounds;
     }
 
-    boolean put(Item item) {
+    public boolean put(Item item) {
         if(isEmpty()) {
             this.item = item;
             return true;
@@ -47,11 +46,11 @@ class Slot {
         return caught;
     }
 
-    boolean isEmpty() {
+    public boolean isEmpty() {
         return this.item == null;
     }
 
-    void render(Graphics2D g) {
+    public void render(Graphics2D g) {
         g.drawImage(sprite, bounds.x, bounds.y, null);
         if(!isEmpty())
             renderItem(g);
