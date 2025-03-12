@@ -36,6 +36,7 @@ public class Player extends Entity {
 
     private final String name;
     private double XP;
+    private int money;
     private int level;
     private int countAnim;
 
@@ -56,6 +57,7 @@ public class Player extends Entity {
         setRange(range);
         setSolid();
         setAlive();
+        setMoney(100);
     }
 
     public String getName() {
@@ -124,6 +126,14 @@ public class Player extends Entity {
         return getLevel() * 23.74 + 100 * getLevel()*1.33;
     }
 
+    public int getMoney() {
+        return money;
+    }
+
+    public void setMoney(int money) {
+        this.money = money;
+    }
+
     public boolean takeLevel(double levles) {
         if(this.level <= levles) {
             this.level -= levles;
@@ -181,5 +191,4 @@ public class Player extends Entity {
             return;
         item.render(g);
     }
-
 }
