@@ -111,32 +111,44 @@ public class Personagens implements Activity {
         }
 
         for (int i = 0; i < players.length; i++) {
-            // O personagem só será atualizado se ele estiver visível
             if (personagemSelecionado == i && !quadradoClicadoDireito[i]) {
                 players[i].tick();
             }
         }
 
-        if (Mouse.clickOn(Mouse_Button.LEFT, botoes[0])) {
-            Engine.setActivity(new Menu());
-        } else if (Mouse.clickOn(Mouse_Button.LEFT, botoes[1])) {
-            if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
-                Activity newGame = new Game(personagemSelecionado, dificuldadeSelecionada, new Room("beginning"));
-                Activity loading = new Loading(newGame, () -> {
-                    try {
-                        Thread.sleep(60);
-                    }catch (Exception ignore) {}
-                });
-                Engine.setActivity(loading);
-                Sound.stop(Musics.Music1);
-                Sound.play(Musics.Music2, true);
-            } else {
-                if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
-                    System.out.println("Selecione um personagem e dificuldade antes de jogar!");
-                } else if (personagemSelecionado == -1) {
-                    System.out.println("Selecione um personagem antes de jogar!");
-                } else if (dificuldadeSelecionada == -1) {
-                    System.out.println("Selecione a dificuldade antes de jogar!");
+        for (int i = 0; i < botoes.length; i++) {
+            if (Mouse.clickOn(Mouse_Button.LEFT, botoes[i])) {
+                switch (i) {
+                    case 0:
+                        System.out.println("Clicou em Voltar");
+                        Engine.setActivity(new Menu());
+                        break;
+                    case 1:
+                        System.out.println("Clicou em Jogar");
+                        if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
+                            Activity newGame = new Game(personagemSelecionado, dificuldadeSelecionada, new Room("beginning"));
+                            Activity loading = new Loading(newGame, () -> {
+                                try {
+                                    Thread.sleep(60);
+                                } catch (Exception ignore) {
+                                }
+                            });
+                            Engine.setActivity(loading);
+                            Sound.stop(Musics.Music1);
+                            Sound.play(Musics.Music2, true);
+                        } else {
+                            if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
+                                System.out.println("Selecione um personagem e dificuldade antes de jogar!");
+                            } else if (personagemSelecionado == -1) {
+                                System.out.println("Selecione um personagem antes de jogar!");
+                            } else if (dificuldadeSelecionada == -1) {
+                                System.out.println("Selecione a dificuldade antes de jogar!");
+                            }
+                        }
+                        break;
+                    default:
+                        System.out.println("Botão desconhecido");
+                        break;
                 }
             }
         }
