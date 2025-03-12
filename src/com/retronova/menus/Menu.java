@@ -43,15 +43,26 @@ public class Menu implements Activity {
         telacheia();
         atualizarSeta();
 
-        if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[0])) {
-            System.out.println("Seleção de personagens aberta");
-            Engine.setActivity(new Personagens());
-        } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[1])) {
-            System.out.println("Opções");
-            Engine.setActivity(new Options());
-        } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
-            Engine.CLOSE();
-            System.out.println("Jogo fechado");
+        for (int i = 0; i < quadrados.length; i++) {
+            if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[i])) {
+                switch (i) {
+                    case 0:
+                        System.out.println("Clicou em Play");
+                        Engine.setActivity(new Personagens());
+                        break;
+                    case 1:
+                        System.out.println("Clicou em Options");
+                        Engine.setActivity(new Options());
+                        break;
+                    case 2:
+                        System.out.println("Clicou em Quit");
+                        Engine.CLOSE();
+                        break;
+                    default:
+                        System.out.println("Botão desconhecido");
+                        break;
+                }
+            }
         }
     }
 
