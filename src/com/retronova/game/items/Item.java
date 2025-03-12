@@ -13,7 +13,7 @@ public abstract class Item {
         int i = id.ordinal();
         switch (id) {
             case Silk -> {
-                return new Silk(i);
+                return new ItemSilk(i);
             }
             case Sword -> {
                 return new Sword(i);

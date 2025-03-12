@@ -236,7 +236,25 @@ public abstract class Entity extends GameObject {
         double maxDist = GameObject.SIZE() * range;
         for(int i = 0; i < entities.size(); i ++){
             Entity e = entities.get(i);
-            if(e.equals(this) || !e.isAlive()){
+            if(e == this || !e.isAlive()){
+                continue;
+            }
+            double currDist = e.getDistance(this);
+            if(currDist < maxDist){
+                nearest = e;
+                maxDist = currDist;
+            }
+        }
+        return nearest;
+    }
+
+    public Entity getNearest(double range, Entity ignore){
+        List<Entity> entities = Game.getMap().getEntities();
+        Entity nearest = null;
+        double maxDist = GameObject.SIZE() * range;
+        for(int i = 0; i < entities.size(); i ++){
+            Entity e = entities.get(i);
+            if(e == this || !e.isAlive() || e == ignore){
                 continue;
             }
             double currDist = e.getDistance(this);

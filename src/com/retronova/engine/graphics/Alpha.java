@@ -14,4 +14,13 @@ public class Alpha {
         g2d.dispose();
     }
 
+    public static BufferedImage getImage(BufferedImage sprite, float alpha) {
+        BufferedImage newImage = new BufferedImage(sprite.getWidth(), sprite.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = (Graphics2D) newImage.getGraphics();
+        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+        g2d.drawImage(sprite, 0, 0, Engine.window);
+        g2d.dispose();
+        return newImage;
+    }
+
 }
