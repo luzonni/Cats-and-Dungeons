@@ -34,13 +34,13 @@ public class Options implements Activity {
 
         int larguraBotao = 200;
         int alturaBotao = 50;
-        int espacamento = 70;
+        int espacamento = 80;
 
         int larguraTotal = 3 * larguraBotao + 2 * espacamento;
         int alturaTotal = 4 * alturaBotao + 3 * espacamento;
 
         int xInicio = Engine.window.getWidth() / 2 - larguraTotal / 2;
-        int yInicio = Engine.window.getHeight() / 2 - alturaTotal / 2 + 100;
+        int yInicio = Engine.window.getHeight() / 2 - alturaTotal / 2 + 50;
 
         for (int linha = 0; linha < 4; linha++) {
             for (int coluna = 0; coluna < 3; coluna++) {
@@ -96,34 +96,38 @@ public class Options implements Activity {
     @Override
     public void render(Graphics2D g) {
         desenharTitulo(g);
-        desenharTextosTeste(g); // Adicionado o método para desenhar os textos "teste"
+        desenharTextosTeste(g);
         desenharBotoes(g);
         desenharSeta(g);
     }
 
     private void desenharTitulo(Graphics2D g) {
         g.setColor(corTexto);
-        g.setFont(FontG.font(24 * Configs.UISCALE));
+        g.setFont(FontG.font(15 * Configs.UISCALE));
         FontMetrics fmTitulo = g.getFontMetrics();
 
         int x = Engine.window.getWidth() / 2 - fmTitulo.stringWidth(titulo) / 2;
-        int y = 100;
+        int y = 80;
         g.drawString(titulo, x, y);
     }
 
     private void desenharTextosTeste(Graphics2D g) {
         g.setColor(corTexto);
-        g.setFont(FontG.font(16 * Configs.UISCALE));
+        g.setFont(FontG.font(11 * Configs.UISCALE));
         FontMetrics fmTeste = g.getFontMetrics();
 
-        int xInicio = Engine.window.getWidth() / 2 - (3 * 200 + 2 * 30) / 2;
-        int yTeste = quadrados[0][0].y - 30;
+        String[] titulosTeste = {"General", "Screen", "Sounds"};
+        int[] colunasTeste = {1, 1, 1};
+        int[] linhasTeste = {0, 1, 2};
 
-        String[] titulosTeste = {"Teste 1", "Teste 2", "Teste 3"};
-
-        for (int coluna = 0; coluna < 3; coluna++) {
-            int x = xInicio + coluna * (200 + 30) + 100 - fmTeste.stringWidth(titulosTeste[coluna]) / 2;
-            g.drawString(titulosTeste[coluna], x, yTeste);
+        for (int i = 0; i < titulosTeste.length; i++) {
+            int coluna = colunasTeste[i];
+            int linha = linhasTeste[i];
+            if (quadrados[linha][coluna] != null) {
+                int x = quadrados[linha][coluna].x + quadrados[linha][coluna].width / 2 - fmTeste.stringWidth(titulosTeste[i]) / 2;
+                int y = quadrados[linha][coluna].y - 20;
+                g.drawString(titulosTeste[i], x, y);
+            }
         }
     }
 
@@ -190,4 +194,3 @@ public class Options implements Activity {
     public void dispose() {
     }
 }
-
