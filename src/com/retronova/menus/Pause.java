@@ -19,7 +19,7 @@ public class Pause implements Activity {
     private Rectangle[] quadrados;
     private final Font fonteTitulo = FontG.font(15 * Configs.UISCALE);
     private final Color corFundo = new Color(50, 50, 50, 150);
-    private final Color corBotao = Color.GRAY;
+    private final Color corBotao = new Color(0xc17564);
     private final Color corTexto = Color.WHITE;
     private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Menu", "Quit"};
     private int quadradoSeta = -1;
@@ -127,7 +127,7 @@ public class Pause implements Activity {
             g.setPaint(gradient);
             g.fill(arredondar);
 
-            g.setColor(corBotao.brighter().darker());
+            g.setColor(new Color(0x872341));
             g.setStroke(new BasicStroke(1.0f));
             g.draw(arredondar);
 

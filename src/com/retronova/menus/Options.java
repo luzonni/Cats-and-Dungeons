@@ -13,13 +13,13 @@ import java.awt.geom.RoundRectangle2D;
 public class Options implements Activity {
 
     private Rectangle[][] quadrados;
-    private final Color corBotao = Color.GRAY;
+    private final Color corBotao = new Color(0xc17564);
     private final Color corTexto = Color.WHITE;
-    private final String titulo = "Opções";
+    private final String titulo = "Options";
     private final String[][] textosBotoes = {
-            {"Resolução", "Full Screen", "Save"},
-            {"Tamanho do Texto", "Tamanho da Câmera", "Pensando"},
-            {"Volume Geral", "Volume da Música", "Volume dos Mobs"},
+            {"Resolution", "Pensando", "Save"},
+            {"Text Size", "Camera Size", "Full Screen"},
+            {"Volume", "Music", "Mobs"},
             {null, "Back", null}
     };
     private int botaoSelecionadoLinha = -1;
@@ -33,14 +33,14 @@ public class Options implements Activity {
         quadrados = new Rectangle[4][3];
 
         int larguraBotao = 200;
-        int alturaBotao = 80;
-        int espacamento = 20;
+        int alturaBotao = 50;
+        int espacamento = 80;
 
         int larguraTotal = 3 * larguraBotao + 2 * espacamento;
         int alturaTotal = 4 * alturaBotao + 3 * espacamento;
 
         int xInicio = Engine.window.getWidth() / 2 - larguraTotal / 2;
-        int yInicio = Engine.window.getHeight() / 2 - alturaTotal / 2 + 100;
+        int yInicio = Engine.window.getHeight() / 2 - alturaTotal / 2 + 50;
 
         for (int linha = 0; linha < 4; linha++) {
             for (int coluna = 0; coluna < 3; coluna++) {
@@ -63,35 +63,12 @@ public class Options implements Activity {
                 if (quadrados[linha][coluna] != null && Mouse.clickOn(Mouse_Button.LEFT, quadrados[linha][coluna])) {
                     String textoBotao = textosBotoes[linha][coluna];
                     switch (textoBotao) {
-                        case "Resolução":
+                        case "Resolution":
                             System.out.println("Clicou em Resolução");
-                            break;
-                        case "Full Screen":
-                            System.out.println("Clicou em Full Screen");
-                            break;
-                        case "Save":
-                            System.out.println("Clicou em Save");
-                            break;
-                        case "Tamanho do Texto":
-                            System.out.println("Clicou em Tamanho do Texto");
-                            break;
-                        case "Tamanho da Câmera":
-                            System.out.println("Clicou em Tamanho da Câmera");
-                            break;
-                        case "Pensando":
-                            System.out.println("Clicou em Pensando");
-                            break;
-                        case "Volume Geral":
-                            System.out.println("Clicou em Volume Geral");
-                            break;
-                        case "Volume da Música":
-                            System.out.println("Clicou em Volume da Música");
-                            break;
-                        case "Volume dos Mobs":
-                            System.out.println("Clicou em Volume dos Mobs");
                             break;
                         case "Back":
                             System.out.println("Clicou em Back");
+                            Engine.setActivity(new Menu());
                             break;
                         default:
                             System.out.println("Botão desconhecido: " + textoBotao);
@@ -119,18 +96,39 @@ public class Options implements Activity {
     @Override
     public void render(Graphics2D g) {
         desenharTitulo(g);
+        desenharTextosTeste(g);
         desenharBotoes(g);
         desenharSeta(g);
     }
 
     private void desenharTitulo(Graphics2D g) {
         g.setColor(corTexto);
-        g.setFont(FontG.font(24 * Configs.UISCALE));
+        g.setFont(FontG.font(15 * Configs.UISCALE));
         FontMetrics fmTitulo = g.getFontMetrics();
 
         int x = Engine.window.getWidth() / 2 - fmTitulo.stringWidth(titulo) / 2;
-        int y = 100;
+        int y = 80;
         g.drawString(titulo, x, y);
+    }
+
+    private void desenharTextosTeste(Graphics2D g) {
+        g.setColor(corTexto);
+        g.setFont(FontG.font(11 * Configs.UISCALE));
+        FontMetrics fmTeste = g.getFontMetrics();
+
+        String[] titulosTeste = {"General", "Screen", "Sounds"};
+        int[] colunasTeste = {1, 1, 1};
+        int[] linhasTeste = {0, 1, 2};
+
+        for (int i = 0; i < titulosTeste.length; i++) {
+            int coluna = colunasTeste[i];
+            int linha = linhasTeste[i];
+            if (quadrados[linha][coluna] != null) {
+                int x = quadrados[linha][coluna].x + quadrados[linha][coluna].width / 2 - fmTeste.stringWidth(titulosTeste[i]) / 2;
+                int y = quadrados[linha][coluna].y - 20;
+                g.drawString(titulosTeste[i], x, y);
+            }
+        }
     }
 
     private void desenharBotoes(Graphics2D g) {
@@ -141,7 +139,7 @@ public class Options implements Activity {
                 if (quadrados[linha][coluna] != null) {
                     Rectangle quadrado = quadrados[linha][coluna];
 
-                    int tamanhoFonte = 12 * Configs.UISCALE;
+                    int tamanhoFonte = 8 * Configs.UISCALE;
                     Font fonteAtual = FontG.font(tamanhoFonte);
                     FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 
