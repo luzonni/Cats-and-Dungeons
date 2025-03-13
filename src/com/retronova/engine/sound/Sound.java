@@ -45,25 +45,25 @@ public class Sound {
 	public static void play(Sounds sound) {
 		if(!sounds.containsKey(sound.resource()))
 			throw new RuntimeException("sound not exists");
-		sounds.get(sound.resource()).play((double) Configs.getVOLUM() / 100d);
+		sounds.get(sound.resource()).play((double) Configs.Volum() / 100d);
 	}
 
 	public static void play(Sounds sound, double pan) {
 		if(!sounds.containsKey(sound.resource()))
 			throw new RuntimeException("sound not exists");
-		sounds.get(sound.resource()).play((double) Configs.getVOLUM() / 100d, pan);
+		sounds.get(sound.resource()).play((double) Configs.Volum() / 100d, pan);
 	}
 	
 	public static void play(Musics music, boolean loop) {
 		if(!musics.containsKey(music.resource()))
 			throw new RuntimeException("sound not exists");
-		musics.get(music.resource()).play(loop, (double) Configs.getMUSIC() / 100d);
+		musics.get(music.resource()).play(loop, (double) Configs.Music() / 100d);
 	}
 
 	public static void play(Musics music, boolean loop, double pan) {
 		if(!musics.containsKey(music.resource()))
 			throw new RuntimeException("sound not exists");
-		musics.get(music.resource()).play(loop, (double) Configs.getMUSIC() / 100d, pan);
+		musics.get(music.resource()).play(loop, (double) Configs.Music() / 100d, pan);
 	}
 
 	public static void stop(Sounds sound) {

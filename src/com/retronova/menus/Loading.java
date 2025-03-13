@@ -29,7 +29,7 @@ public class Loading implements Activity, Runnable {
         this.action = action;
         finish = false;
         this.start = false;
-        this.spriteLoad = new SpriteSheet("icons", "loading", Configs.getUISCALE() *2).getSHEET();
+        this.spriteLoad = new SpriteSheet("icons", "loading", Configs.UiScale() *2).getSHEET();
     }
 
     @Override
@@ -50,8 +50,8 @@ public class Loading implements Activity, Runnable {
         int y = Engine.window.getHeight()/2 - spriteLoad.getHeight()/2;
         Rotate.draw(spriteLoad, x, y, rotating, null, g);
 
-        int padding = Configs.getMARGIN();
-        Font font = FontG.font(Configs.getUISCALE() * 12);
+        int padding = Configs.Margin();
+        Font font = FontG.font(Configs.UiScale() * 12);
         String value = "Loading...";
         g.setColor(Color.white);
         g.setFont(font);

@@ -70,8 +70,8 @@ public class Bow extends Item {
         if(countShot < 1) {
             return;
         }
-        double x = player.getX() + Math.cos(angle+Math.PI) * (countShot-3) * Configs.getSCALE();
-        double y = player.getY() + Math.sin(angle+Math.PI) * (countShot-3) * Configs.getSCALE();
+        double x = player.getX() + Math.cos(angle+Math.PI) * (countShot-3) * Configs.GameScale();
+        double y = player.getY() + Math.sin(angle+Math.PI) * (countShot-3) * Configs.GameScale();
         Rotate.draw(arrowSprite, (int)x - Game.C.getX(), (int)y - Game.C.getY(), angle + Math.PI/4, null, g);
     }
 

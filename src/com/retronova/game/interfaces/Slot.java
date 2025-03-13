@@ -16,7 +16,7 @@ public class Slot {
 
     public Slot(int x, int y) {
         this.item = null;
-        this.sprite = new SpriteSheet("ui", "slot", Configs.getHUDSCALE()).getSHEET();
+        this.sprite = new SpriteSheet("ui", "slot", Configs.HudScale()).getSHEET();
         this.bounds = new Rectangle(x, y, this.sprite.getWidth(), this.sprite.getHeight());
     }
 

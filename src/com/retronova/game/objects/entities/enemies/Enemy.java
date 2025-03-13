@@ -97,9 +97,9 @@ public abstract class Enemy extends Entity {
         if(getLife() == getLifeSize())
             return;
         int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() + getHeight() - Game.C.getY() + Configs.getSCALE() *2;
+        int y = (int)getY() + getHeight() - Game.C.getY() + Configs.GameScale() *2;
         int w = getWidth();
-        int h = Configs.getSCALE() * 3;
+        int h = Configs.GameScale() * 3;
 
         g.setColor(new Color(135, 35, 65));
         g.fillRect(x, y, w, h);
@@ -107,7 +107,7 @@ public abstract class Enemy extends Entity {
         g.setColor(new Color(190, 49, 68));
         g.fillRect(x, y, (int) lifeSize, h);
 
-        g.setStroke(new BasicStroke(Configs.getSCALE()));
+        g.setStroke(new BasicStroke(Configs.GameScale()));
         g.setColor(new Color(9, 18, 44));
         g.drawRect(x, y, w, h);
     }

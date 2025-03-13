@@ -65,6 +65,7 @@ public class Game implements Activity {
 
     @Override
     public void tick() {
+        hud.tick();
         galaxy.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause(this));
@@ -97,7 +98,6 @@ public class Game implements Activity {
             tile.tick();
         }
         C.tick();
-        hud.tick();
     }
 
     @Override

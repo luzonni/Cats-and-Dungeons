@@ -52,8 +52,8 @@ public class Bomb extends Utility {
             explosion();
         }
         if(countEx < positions_spark.length) {
-            int x = (int)getX() + positions_spark[countEx].x * Configs.getSCALE();
-            int y = (int)getY() + positions_spark[countEx].y * Configs.getSCALE();
+            int x = (int)getX() + positions_spark[countEx].x * Configs.GameScale();
+            int y = (int)getY() + positions_spark[countEx].y * Configs.GameScale();
             Particle p = new Spark(x, y, 0.3d);
             Game.getMap().put(p);
         }

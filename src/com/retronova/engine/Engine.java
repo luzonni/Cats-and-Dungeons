@@ -143,7 +143,7 @@ public class Engine implements Runnable {
         double delta_HZ = 0;
 
         long lastTimeFPS = System.nanoTime();
-        double amountOfFPS = Configs.getMaxFrames();
+        double amountOfFPS = Configs.MaxFrames();
         double ns_FPS = Engine.T / amountOfFPS;
         double delta_FPS = 0;
 
@@ -159,7 +159,7 @@ public class Engine implements Runnable {
                 lastTimeHZ = nowHZ;
                 if(delta_HZ >= 1) {
                     if(KeyBoard.KeyPressed("F11") && window != null) {
-                        Configs.setFullscreen(!Configs.isFullscreen());
+                        Configs.setFullscreen(!Configs.Fullscreen());
                         Thread.sleep(10);
                         window.setResolution();
                     }

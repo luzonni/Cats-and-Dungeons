@@ -87,7 +87,7 @@ public class Physical {
     public void addForce(String name, double force, double radians){
         if(entity instanceof Furniture)
             return;
-        force *= Configs.getSCALE();
+        force *= Configs.GameScale();
         Vector vec = new Vector(name, force, radians);
         if(vectors.contains(vec)) {
             int index = vectors.indexOf(vec);

@@ -17,7 +17,7 @@ public abstract class GameObject {
     private boolean solid = false;
 
     public static int SIZE() {
-        return 16 * Configs.getSCALE();
+        return 16 * Configs.GameScale();
     }
 
     public GameObject(int ID) {

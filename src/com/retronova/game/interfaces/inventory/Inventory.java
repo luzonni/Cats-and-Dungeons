@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 
 public class Inventory implements Activity {
 
+    private char[] numbers = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
     private final Slot insurer;
     private final Slot[] hotbar;
     private int lengthHotbar;
@@ -37,36 +38,30 @@ public class Inventory implements Activity {
         this.insurer = new Slot(0, 0);
         this.bag = new Slot[15];
         this.hotbar = new Slot[5];
-        this.inventory = new SpriteSheet("ui", "inventory", Configs.getHUDSCALE()).getSHEET();
-
+        this.inventory = new SpriteSheet("ui", "inventory", Configs.HudScale()).getSHEET();
         refreshPositions();
-        this.bag[lengthBag-1].put(Item.build(ItemIDs.Sword));
-        this.bag[lengthBag-2].put(Item.build(ItemIDs.Bow));
-        this.hotbar[2].put(Item.build(ItemIDs.Bomb));
-        this.hotbar[1].put(Item.build(ItemIDs.Silk));
-
     }
 
     public void refreshPositions() {
-        int xh = Configs.getHUDSCALE() * 6;
-        int yh = Configs.getHUDSCALE() * 70;
-        int xi = Configs.getHUDSCALE() *6;
-        int yi = Configs.getHUDSCALE() *6;
+        int xh = Configs.HudScale() * 6;
+        int yh = Configs.HudScale() * 70;
+        int xi = Configs.HudScale() *6;
+        int yi = Configs.HudScale() *6;
         if(this.inventoryPosition == null) {
-            this.inventoryPosition = new Point(Configs.getMARGIN(), Configs.getMARGIN());
+            this.inventoryPosition = new Point(Configs.Margin(), Configs.Margin());
             xh += inventoryPosition.x;
             yh += inventoryPosition.y;
             xi += inventoryPosition.x;
             yi += inventoryPosition.y;
             for (int i = 0; i < hotbar.length; i++) {
-                int w = 16 * Configs.getHUDSCALE();
+                int w = 16 * Configs.HudScale();
                 this.hotbar[i] = new Slot(xh + i * w, yh);
             }
             for(int yy = 0; yy < 3; yy++) {
                 for(int xx = 0; xx < 5; xx++) {
                     int index = xx + yy * 5;
-                    int w = 16 * Configs.getHUDSCALE();
-                    int h = 16 * Configs.getHUDSCALE();
+                    int w = 16 * Configs.HudScale();
+                    int h = 16 * Configs.HudScale();
                     int xxx = xi + (xx * w);
                     int yyy = yi + (yy * h);
                     bag[index] = new Slot(xxx, yyy);
@@ -74,22 +69,22 @@ public class Inventory implements Activity {
             }
             return;
         }
-        if(this.inventoryPosition.x == Configs.getMARGIN() && this.inventoryPosition.y == Configs.getMARGIN())
+        if(this.inventoryPosition.x == Configs.Margin() && this.inventoryPosition.y == Configs.Margin())
             return;
-        this.inventoryPosition.setLocation(Configs.getMARGIN(), Configs.getMARGIN());
+        this.inventoryPosition.setLocation(Configs.Margin(), Configs.Margin());
         xh += inventoryPosition.x;
         yh += inventoryPosition.y;
         xi += inventoryPosition.x;
         yi += inventoryPosition.y;
         for (int i = 0; i < hotbar.length; i++) {
-            int w = 16 * Configs.getHUDSCALE();
+            int w = 16 * Configs.HudScale();
             this.hotbar[i].setPosition(xh + i * w, yh);
         }
         for(int yy = 0; yy < 3; yy++) {
             for(int xx = 0; xx < 5; xx++) {
                 int index = xx + yy * 5;
-                int w = 16 * Configs.getHUDSCALE();
-                int h = 16 * Configs.getHUDSCALE();
+                int w = 16 * Configs.HudScale();
+                int h = 16 * Configs.HudScale();
                 int xxx = xi + (xx * w);
                 int yyy = yi + (yy * h);
                 bag[index].setPosition(xxx, yyy);
@@ -169,22 +164,67 @@ public class Inventory implements Activity {
     }
 
     private void interation() {
+        for(int i = 0; i < lengthBag; i++) {
+            Slot slot = bag[i];
+            if(Mouse.on(slot.getBounds())) {
+                try {
+                    char keyChar = KeyBoard.getKeyChar(numbers);
+                    int index = Integer.parseInt(String.valueOf(keyChar)) - 1;
+                    if (index < lengthHotbar)
+                        nomeKrai(slot, hotbar[index]);
+                }catch (Exception ignore) {}
+            }
+            if(KeyBoard.KeyPressing("SHIFT") && Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
+                Slot toChange = null;
+                for(int j = 0; j < lengthHotbar; j++) {
+                    Slot slot2 = hotbar[j];
+                    if(slot2.isEmpty()) {
+                        toChange = slot2;
+                        break;
+                    }
+                }
+                if(toChange != null) {
+                    nomeKrai(slot, toChange);
+                    return;
+                }
+            }
+        }
+        for(int i = 0; i < lengthHotbar; i++) {
+            Slot slot = hotbar[i];
+            if(KeyBoard.KeyPressing("SHIFT") && Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
+                Slot toChange = null;
+                for(int j = 0; j < lengthBag; j++) {
+                    Slot slot2 = bag[j];
+                    if(slot2.isEmpty()) {
+                        toChange = slot2;
+                        break;
+                    }
+                }
+                if(toChange != null) {
+                    nomeKrai(slot, toChange);
+                    return;
+                }
+            }
+        }
         Slot[] currentSlots = merge();
         for(int i = 0; i < currentSlots.length; i++) {
             Slot slot = currentSlots[i];
             if(Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
-                if(!slot.isEmpty() && insurer.isEmpty()) {
-                    insurer.put(slot.take());
-                }else if(slot.isEmpty() && !insurer.isEmpty()) {
-                    slot.put(insurer.take());
-                }else if(!slot.isEmpty() && !insurer.isEmpty()) {
-                    Item insureItem = insurer.take();
-                    Item slotItem = slot.take();
-                    insurer.put(slotItem);
-                    slot.put(insureItem);
-                    //TODO continuar a logica e extrair metodos
-                }
+               nomeKrai(slot, this.insurer);
             }
+        }
+    }
+
+    private void nomeKrai(Slot slot1, Slot slot2) {
+        if(!slot1.isEmpty() && slot2.isEmpty()) {
+            slot2.put(slot1.take());
+        }else if(slot1.isEmpty() && !slot2.isEmpty()) {
+            slot1.put(slot2.take());
+        }else if(!slot1.isEmpty() && !slot2.isEmpty()) {
+            Item insureItem = slot2.take();
+            Item slotItem = slot1.take();
+            slot2.put(slotItem);
+            slot1.put(insureItem);
         }
     }
 

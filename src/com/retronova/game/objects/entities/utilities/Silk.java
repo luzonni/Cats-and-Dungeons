@@ -35,7 +35,7 @@ public class Silk extends Utility {
             return;
         }
         Enemy nearest = getNearest(Game.getPlayer().getRange(), Enemy.class, visited.getLast());
-        if(nearest != null && !visited.contains(nearest)) {
+        if(nearest != null && !visited.contains(nearest) && !getPhysical().crashing()) {
             r+=0.24d;
             double rf = nearest.getAngle(this);
             getPhysical().addForce("follow_silk", getSpeed(), rf);
@@ -64,7 +64,7 @@ public class Silk extends Utility {
     }
 
     private void renderLine(Graphics2D g) {
-        g.setStroke(new BasicStroke(Configs.getSCALE()));
+        g.setStroke(new BasicStroke(Configs.GameScale()));
         g.setColor(new Color(243, 113, 153));
         int x = (int)getX() + getWidth()/2 - Game.C.getX();
         int y = (int)getY() + getHeight()/2 - Game.C.getY();

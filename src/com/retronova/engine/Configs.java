@@ -68,11 +68,15 @@ public class Configs {
         } catch (IOException ignore) { }
     }
 
-    public static boolean isVignette() {
+    public static boolean Vignette() {
         return (boolean) VALUES.get("vignette");
     }
 
-    public static boolean isFullscreen() {
+    public static void setVignette(boolean vignette) {
+        VALUES.replace("vignette", vignette);
+    }
+
+    public static boolean Fullscreen() {
         return (boolean) VALUES.get("fullscreen");
     }
 
@@ -80,36 +84,69 @@ public class Configs {
         VALUES.replace("fullscreen", fullscreen);
     }
 
-    public static int getSCALE() {
+    public static int GameScale() {
         return ((Number)VALUES.get("SCALE")).intValue();
     }
 
-    public static int getUISCALE() {
+    public static void setGameScale(int scale) {
+        VALUES.replace("SCALE", scale);
+    }
+
+
+    public static int UiScale() {
         return ((Number)VALUES.get("UISCALE")).intValue();
     }
 
-    public static int getHUDSCALE() {
+    public static void setUiScale(int uiScale) {
+        VALUES.replace("UISCALE", uiScale);
+    }
+
+    public static int HudScale() {
         return ((Number)VALUES.get("HUDSCALE")).intValue();
     }
 
-    public static int getMARGIN() {
+    public static void setHudScale(int HUDSCALE) {
+        VALUES.replace("HUDSCALE", HUDSCALE);
+    }
+
+    public static int Margin() {
         return ((Number)VALUES.get("MARGIN")).intValue();
+    }
+
+    public static void setMargin(int MARGIN) {
+        VALUES.replace("MARGIN", MARGIN);
     }
 
     public static boolean isNeatGraphics() {
         return (boolean) VALUES.get("NeatGraphics");
     }
 
-    public static int getVOLUM() {
+    public static void setNeatGraphics(boolean NeatGraphics) {
+        VALUES.replace("NeatGraphics", NeatGraphics);
+    }
+
+    public static int Volum() {
         return ((Number)VALUES.get("VOLUM")).intValue();
     }
 
-    public static int getMUSIC() {
+    public static void setVolum(int VOLUM) {
+        VALUES.replace("VOLUM", VOLUM);
+    }
+
+    public static int Music() {
         return ((Number)VALUES.get("MUSIC")).intValue();
     }
 
-    public static int getMaxFrames() {
+    public static void setMusic(int MUSIC) {
+        VALUES.replace("MUSIC", MUSIC);
+    }
+
+    public static int MaxFrames() {
         return ((Number)VALUES.get("MaxFrames")).intValue();
+    }
+
+    public static void setMaxFrames(int MaxFrames) {
+        VALUES.replace("MaxFrames", MaxFrames);
     }
 
 }

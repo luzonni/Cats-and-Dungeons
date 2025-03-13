@@ -15,7 +15,7 @@ import java.util.List;
 public class Player extends Entity {
 
     public static final Player[] TEMPLATES = new Player[] {
-            new Player("cinzento", 100,10, 5, 0.3, 15, 30, 5, 4),
+            new Player("cinzento", 100,10, 5, 0.3, 15, 30, 5, 3),
             new Player("mago", 80,10, 5, 0.3, 12, 11, 5, 4),
             new Player("sortudo", 1000,200, 7, 0.3, 1, 50, 5, 4)
     };

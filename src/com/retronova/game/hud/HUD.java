@@ -28,8 +28,8 @@ public class HUD implements Activity {
 
     public HUD(Player player) {
         this.hotbar = new Hotbar(player);
-        SpriteSheet sheetBust = new SpriteSheet("ui","bust", Configs.getHUDSCALE());
-        SpriteSheet sheetBottle = new SpriteSheet("ui","lifebottle", Configs.getHUDSCALE());
+        SpriteSheet sheetBust = new SpriteSheet("ui","bust", Configs.HudScale());
+        SpriteSheet sheetBottle = new SpriteSheet("ui","lifebottle", Configs.HudScale());
         int indexBust = 0;
         for(int i = 0; i < Player.TEMPLATES.length; i++) {
             if(player.getName().equals(Player.TEMPLATES[i].getName())) {
@@ -90,23 +90,23 @@ public class HUD implements Activity {
     }
 
     private void bust(Graphics2D g) {
-        int x = Configs.getMARGIN();
-        int y = Configs.getMARGIN();
-        g.drawImage(this.chains, x, y - (this.frameBust.getHeight() - Configs.getHUDSCALE()), null);
+        int x = Configs.Margin();
+        int y = Configs.Margin();
+        g.drawImage(this.chains, x, y - (this.frameBust.getHeight() - Configs.HudScale()), null);
         g.drawImage(this.frameBust, x, y, null);
         g.drawImage(this.bust, x, y, null);
     }
 
     private void bottleLife(Graphics2D g) {
         Player player = Game.getPlayer();
-        int x = Configs.getMARGIN() + this.frameBust.getWidth();
-        int y = Configs.getMARGIN();
+        int x = Configs.Margin() + this.frameBust.getWidth();
+        int y = Configs.Margin();
         g.drawImage(bottle[indexBottle], x, y, Engine.window);
-        int w = Configs.getHUDSCALE() * 36;
-        int h = Configs.getHUDSCALE() * 4;
+        int w = Configs.HudScale() * 36;
+        int h = Configs.HudScale() * 4;
         int xx = x + bottle[indexBottle].getWidth();
         int yy = y + bottle[indexBottle].getHeight()/2;
-        g.setStroke(new BasicStroke(Configs.getHUDSCALE()));
+        g.setStroke(new BasicStroke(Configs.HudScale()));
         g.drawImage(this.chains, xx + w/2 - chains.getWidth()/2, yy - this.chains.getHeight(), null);
         g.setColor(new Color(135, 35, 65));
         g.fillRect(xx, yy, w, h);
@@ -121,31 +121,31 @@ public class HUD implements Activity {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Player player = Game.getPlayer();
-        int size = Configs.getHUDSCALE() * 15;
-        int x = Engine.window.getWidth() - size - Configs.getMARGIN();
-        int y = Configs.getMARGIN();
-        Font font = FontG.font(Configs.getHUDSCALE() * 8);
+        int size = Configs.HudScale() * 15;
+        int x = Engine.window.getWidth() - size - Configs.Margin();
+        int y = Configs.Margin();
+        Font font = FontG.font(Configs.HudScale() * 8);
         String value = "" + player.getLevel();
         int wf = FontG.getWidth(value, font);
         int hf = FontG.getHeight(value, font);
-        g2.setStroke(new BasicStroke(Configs.getHUDSCALE()));
+        g2.setStroke(new BasicStroke(Configs.HudScale()));
         g2.setFont(font);
         g2.setColor(new Color(20, 64, 96));
-        g2.fillOval(x - Configs.getHUDSCALE(), y - Configs.getHUDSCALE(), size + Configs.getHUDSCALE() *2, size + Configs.getHUDSCALE() *2);
+        g2.fillOval(x - Configs.HudScale(), y - Configs.HudScale(), size + Configs.HudScale() *2, size + Configs.HudScale() *2);
         g2.setColor(new Color(160, 200, 120));
         int percent = (int)((double)360 * (player.getXp() / player.getXpLength()));
-        g2.fillArc(x - Configs.getHUDSCALE(), y - Configs.getHUDSCALE(), size + Configs.getHUDSCALE() *2, size + Configs.getHUDSCALE() *2, 90, percent);
+        g2.fillArc(x - Configs.HudScale(), y - Configs.HudScale(), size + Configs.HudScale() *2, size + Configs.HudScale() *2, 90, percent);
         g2.setColor(new Color(9, 18, 44));
         g2.fillOval(x, y, size, size);
         g2.setColor(Color.black);
-        g2.drawString(value, x + size/2 - wf/2 + Configs.getHUDSCALE(), y + size/2 + hf/2 + Configs.getHUDSCALE());
+        g2.drawString(value, x + size/2 - wf/2 + Configs.HudScale(), y + size/2 + hf/2 + Configs.HudScale());
         g2.setColor(Color.white);
         g2.drawString(value, x + size/2 - wf/2, y + size/2 + hf/2);
         g2.dispose();
     }
 
     private void vignette(Graphics2D g) {
-        if(Configs.isVignette())
+        if(Configs.Vignette())
             g.drawImage(vignette, 0, 0, null);
     }
 

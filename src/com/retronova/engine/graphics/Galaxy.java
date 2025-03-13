@@ -16,8 +16,8 @@ public class Galaxy {
 
     public Galaxy() {
         this.stars = new ArrayList<>();
-        int w = Engine.window.getWidth() / Configs.getSCALE();
-        int h = Engine.window.getHeight() / Configs.getSCALE();
+        int w = Engine.window.getWidth() / Configs.GameScale();
+        int h = Engine.window.getHeight() / Configs.GameScale();
         this.space = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
     }
 
