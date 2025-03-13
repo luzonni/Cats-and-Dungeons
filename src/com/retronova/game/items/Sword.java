@@ -47,10 +47,7 @@ public class Sword extends Item {
                     count = 0;
                     rad = 0;
                     side *= -1;
-                    long startTime = System.nanoTime();
                     attack(player);
-                    long estimatedTime = System.nanoTime() - startTime;
-                    System.out.printf("Draw runtime: %.4f ms%n", estimatedTime / 1000000d);
                 }
             }
         }else {

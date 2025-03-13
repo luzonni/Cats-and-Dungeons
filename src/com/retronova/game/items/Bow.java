@@ -29,7 +29,7 @@ public class Bow extends Item {
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        Enemy nearest = player.getNearest(player.getRange(), Enemy.class);
+        Entity nearest = player.getNearest(player.getRange(), Enemy.class);
         if(nearest != null){
             angle = nearest.getAngle(player);
             count++;

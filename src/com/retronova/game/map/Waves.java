@@ -51,7 +51,7 @@ public class Waves implements Runnable {
             counter = 0;
             wave++;
             paused = true;
-            System.out.println("Fim");
+            System.out.println("Fim da wave");
         }else if(counter > lastCounter + 3.5 * 60){
             lastCounter = counter;
 
@@ -104,9 +104,8 @@ public class Waves implements Runnable {
     @Override
     public void run() {
         try {
-            System.out.println("Contador para adicionar: " + amount);
-            //TODO criar sistemas para escolher os inimigos que aparecerão em cada wave!
-            EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie, EntityIDs.Slime, EntityIDs.MouseVampire, EntityIDs.RatExplode};
+//            EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie, EntityIDs.Slime, EntityIDs.MouseVampire, EntityIDs.RatExplode};
+            EntityIDs[] types = {EntityIDs.Skeleton};
             listAppend = spawner(listEntity(types, amount));
         }catch (Exception e) {
             System.err.println("Erro em waves...");

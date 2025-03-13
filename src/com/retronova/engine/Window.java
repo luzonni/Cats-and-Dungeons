@@ -55,8 +55,15 @@ public class Window extends Canvas {
         frame.setResizable(true);
         frame.setAlwaysOnTop(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setPreferredSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
-        frame.setMinimumSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
+        if(Configs.fullscreen) {
+            GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+            if (gd.isFullScreenSupported()) {
+                gd.setFullScreenWindow(frame);
+            }
+        }else {
+            setPreferredSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
+            frame.setMinimumSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
+        }
         frame.pack();
         try {
             SpriteSheet icon = new SpriteSheet("ui","icon", 3);
@@ -71,6 +78,18 @@ public class Window extends Canvas {
         createOpenGl(true);
         System.out.println("OpenGL: " + System.getProperty("sun.java2d.opengl")); // "true" se OpenGL estiver ativado
         System.out.println("DirectX: " + System.getProperty("sun.java2d.d3d"));   // "true" se Direct3D estiver ativado
+    }
+
+    private void closeFrame() {
+        frame.setVisible(false);
+        frame.dispose();
+        frame = null;
+    }
+
+    public void setResolution() {
+        closeFrame();
+        initFrame();
+        requestFocus();
     }
 
     public synchronized void setCursor(BufferedImage cursor) {
@@ -88,20 +107,10 @@ public class Window extends Canvas {
         frame.setCursor(c);
     }
 
-    private void closeFrame() {
-        frame.setVisible(false);
-        frame.dispose();
-    }
-
     //Getter's and Setter's
 
     public JFrame getFrame() {
         return this.frame;
-    }
-
-    public void setResolution() {
-        closeFrame();
-        initFrame();
     }
 
     public int getWidth() {

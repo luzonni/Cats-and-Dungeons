@@ -3,6 +3,7 @@ package com.retronova.engine;
 public class Configs {
 
     public static boolean vignette = true;
+    public static boolean fullscreen = false;
     public static int SCALE = 3; //Escala do jogo
     public static int UISCALE = 3; //Escala dos menus
     public static int HUDSCALE = 4; //Escala do Hud do jogo

@@ -190,6 +190,24 @@ public abstract class Entity extends GameObject {
 
     public abstract void strike(AttackTypes type, double damage);
 
+    public Entity getNearest(double range){
+        List<Entity> entities = Game.getMap().getEntities();
+        Entity nearest = null;
+        double maxDist = GameObject.SIZE() * range;
+        for(int i = 0; i < entities.size(); i ++){
+            Entity e = entities.get(i);
+            if(e == this){
+                continue;
+            }
+            double currDist = e.getDistance(this);
+            if(currDist < maxDist){
+                nearest = e;
+                maxDist = currDist;
+            }
+        }
+        return nearest;
+    }
+
     public <T extends Entity> T getNearest(double range, Class<T> type){
         List<T> entities = Game.getMap().getEntities(type);
         T nearest = null;

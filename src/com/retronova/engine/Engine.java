@@ -1,5 +1,6 @@
 package com.retronova.engine;
 
+import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.menus.Loading;
@@ -155,6 +156,11 @@ public class Engine implements Runnable {
                 delta_HZ += (nowHZ - lastTimeHZ) / ns_HZ;
                 lastTimeHZ = nowHZ;
                 if(delta_HZ >= 1) {
+                    if(KeyBoard.KeyPressed("F11") && window != null) {
+                        Configs.fullscreen = !Configs.fullscreen;
+                        Thread.sleep(10);
+                        window.setResolution();
+                    }
                     if(ACTIVITY_RUNNING && ACTIVITY != null) {
                         ACTIVITY.tick();
                     }
