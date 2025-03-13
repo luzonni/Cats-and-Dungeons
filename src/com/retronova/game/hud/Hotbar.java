@@ -21,7 +21,7 @@ class Hotbar {
 
     public Hotbar(Player player) {
         this.player = player;
-        SpriteSheet sheet = new SpriteSheet("ui", "hotbar", Configs.HUDSCALE);
+        SpriteSheet sheet = new SpriteSheet("ui", "hotbar", Configs.getHUDSCALE());
         int sheetSize = sheet.getWidth()/16;
         this.sprites = new BufferedImage[sheetSize];
         for(int i = 0; i < sheetSize; i++) {
@@ -32,7 +32,7 @@ class Hotbar {
     private void refreshPositions() {
         int hotbarWidth = this.sprites[0].getWidth() * 5;
         int x = Engine.window.getWidth()/2 - hotbarWidth/2;
-        int y = Engine.window.getHeight() - this.sprites[0].getHeight() - Configs.MARGIN;
+        int y = Engine.window.getHeight() - this.sprites[0].getHeight() - Configs.getMARGIN();
         if(this.bounds == null) {
             this.bounds = new Rectangle[5];
             for(int i = 0; i < 5; i++) {
@@ -94,9 +94,9 @@ class Hotbar {
             BufferedImage sprite = index == i ? sprites[1] : sprites[0];
             g.drawImage(sprite, bounds[i].x + difX, bounds[i].y, null);
             if(items[i] != null) {
-                int x = bounds[i].x + difX + 2 * Configs.HUDSCALE;
-                int y = bounds[i].y + 2 * Configs.HUDSCALE;
-                g.drawImage(items[i].getSprite(), x, y,12 * Configs.HUDSCALE, 12 * Configs.HUDSCALE, null);
+                int x = bounds[i].x + difX + 2 * Configs.getHUDSCALE();
+                int y = bounds[i].y + 2 * Configs.getHUDSCALE();
+                g.drawImage(items[i].getSprite(), x, y,12 * Configs.getHUDSCALE(), 12 * Configs.getHUDSCALE(), null);
             }
         }
     }

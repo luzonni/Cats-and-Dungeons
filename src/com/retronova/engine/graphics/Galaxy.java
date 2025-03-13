@@ -2,9 +2,6 @@ package com.retronova.engine.graphics;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.game.Game;
-import com.retronova.game.map.Camera;
-import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -19,8 +16,8 @@ public class Galaxy {
 
     public Galaxy() {
         this.stars = new ArrayList<>();
-        int w = Engine.window.getWidth() / Configs.SCALE;
-        int h = Engine.window.getHeight() / Configs.SCALE;
+        int w = Engine.window.getWidth() / Configs.getSCALE();
+        int h = Engine.window.getHeight() / Configs.getSCALE();
         this.space = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
     }
 

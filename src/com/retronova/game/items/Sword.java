@@ -30,7 +30,7 @@ public class Sword extends Item {
         this.damage = 35;
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));
-        sword_attack = new SpriteSheet("items", "sword_attack", Configs.SCALE).getSHEET();
+        sword_attack = new SpriteSheet("items", "sword_attack", Configs.getSCALE()).getSHEET();
         addSpecifications("Melee Attack", "Player damage + "+this.damage, "very fast");
     }
 
@@ -79,11 +79,11 @@ public class Sword extends Item {
 
     private void renderSword(int x, int y, Graphics2D g) {
         BufferedImage sprite = getSprite();
-        Point pointRotate = new Point(3 * Configs.SCALE, 12 * Configs.SCALE);
+        Point pointRotate = new Point(3 * Configs.getSCALE(), 12 * Configs.getSCALE());
         x -= pointRotate.x;
         y -= pointRotate.y;
-        x+= (int) (Math.cos(rad) * Configs.SCALE*6 * side);
-        y+= (int) (Math.sin(rad) * Configs.SCALE*4 * side);
+        x+= (int) (Math.cos(rad) * Configs.getSCALE() *6 * side);
+        y+= (int) (Math.sin(rad) * Configs.getSCALE() *4 * side);
         double rotate = (rad - Math.PI/4) + Math.PI/8*side;
         Rotate.draw(sprite, x, y, rotate, pointRotate, g);
     }

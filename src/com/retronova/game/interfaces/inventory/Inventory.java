@@ -37,7 +37,7 @@ public class Inventory implements Activity {
         this.insurer = new Slot(0, 0);
         this.bag = new Slot[15];
         this.hotbar = new Slot[5];
-        this.inventory = new SpriteSheet("ui", "inventory", Configs.UISCALE).getSHEET();
+        this.inventory = new SpriteSheet("ui", "inventory", Configs.getHUDSCALE()).getSHEET();
 
         refreshPositions();
         this.bag[lengthBag-1].put(Item.build(ItemIDs.Sword));
@@ -48,25 +48,25 @@ public class Inventory implements Activity {
     }
 
     public void refreshPositions() {
-        int xh = Configs.UISCALE * 6;
-        int yh = Configs.UISCALE * 70;
-        int xi = Configs.UISCALE*6;
-        int yi = Configs.UISCALE*6;
+        int xh = Configs.getHUDSCALE() * 6;
+        int yh = Configs.getHUDSCALE() * 70;
+        int xi = Configs.getHUDSCALE() *6;
+        int yi = Configs.getHUDSCALE() *6;
         if(this.inventoryPosition == null) {
-            this.inventoryPosition = new Point(Configs.MARGIN, Configs.MARGIN);
+            this.inventoryPosition = new Point(Configs.getMARGIN(), Configs.getMARGIN());
             xh += inventoryPosition.x;
             yh += inventoryPosition.y;
             xi += inventoryPosition.x;
             yi += inventoryPosition.y;
             for (int i = 0; i < hotbar.length; i++) {
-                int w = 16 * Configs.UISCALE;
+                int w = 16 * Configs.getHUDSCALE();
                 this.hotbar[i] = new Slot(xh + i * w, yh);
             }
             for(int yy = 0; yy < 3; yy++) {
                 for(int xx = 0; xx < 5; xx++) {
                     int index = xx + yy * 5;
-                    int w = 16 * Configs.UISCALE;
-                    int h = 16 * Configs.UISCALE;
+                    int w = 16 * Configs.getHUDSCALE();
+                    int h = 16 * Configs.getHUDSCALE();
                     int xxx = xi + (xx * w);
                     int yyy = yi + (yy * h);
                     bag[index] = new Slot(xxx, yyy);
@@ -74,22 +74,22 @@ public class Inventory implements Activity {
             }
             return;
         }
-        if(this.inventoryPosition.x == Configs.MARGIN && this.inventoryPosition.y == Configs.MARGIN)
+        if(this.inventoryPosition.x == Configs.getMARGIN() && this.inventoryPosition.y == Configs.getMARGIN())
             return;
-        this.inventoryPosition.setLocation(Configs.MARGIN, Configs.MARGIN);
+        this.inventoryPosition.setLocation(Configs.getMARGIN(), Configs.getMARGIN());
         xh += inventoryPosition.x;
         yh += inventoryPosition.y;
         xi += inventoryPosition.x;
         yi += inventoryPosition.y;
         for (int i = 0; i < hotbar.length; i++) {
-            int w = 16 * Configs.UISCALE;
+            int w = 16 * Configs.getHUDSCALE();
             this.hotbar[i].setPosition(xh + i * w, yh);
         }
         for(int yy = 0; yy < 3; yy++) {
             for(int xx = 0; xx < 5; xx++) {
                 int index = xx + yy * 5;
-                int w = 16 * Configs.UISCALE;
-                int h = 16 * Configs.UISCALE;
+                int w = 16 * Configs.getHUDSCALE();
+                int h = 16 * Configs.getHUDSCALE();
                 int xxx = xi + (xx * w);
                 int yyy = yi + (yy * h);
                 bag[index].setPosition(xxx, yyy);

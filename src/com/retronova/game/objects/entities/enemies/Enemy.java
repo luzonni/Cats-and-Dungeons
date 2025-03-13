@@ -7,7 +7,6 @@ import com.retronova.game.Game;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
-import com.retronova.game.objects.entities.utilities.Utility;
 import com.retronova.game.objects.entities.utilities.Xp;
 import com.retronova.game.objects.particles.DamageMobs;
 
@@ -98,9 +97,9 @@ public abstract class Enemy extends Entity {
         if(getLife() == getLifeSize())
             return;
         int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() + getHeight() - Game.C.getY() + Configs.SCALE*2;
+        int y = (int)getY() + getHeight() - Game.C.getY() + Configs.getSCALE() *2;
         int w = getWidth();
-        int h = Configs.SCALE * 3;
+        int h = Configs.getSCALE() * 3;
 
         g.setColor(new Color(135, 35, 65));
         g.fillRect(x, y, w, h);
@@ -108,7 +107,7 @@ public abstract class Enemy extends Entity {
         g.setColor(new Color(190, 49, 68));
         g.fillRect(x, y, (int) lifeSize, h);
 
-        g.setStroke(new BasicStroke(Configs.SCALE));
+        g.setStroke(new BasicStroke(Configs.getSCALE()));
         g.setColor(new Color(9, 18, 44));
         g.drawRect(x, y, w, h);
     }

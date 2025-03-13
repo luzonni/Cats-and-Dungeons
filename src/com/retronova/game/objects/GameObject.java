@@ -6,8 +6,6 @@ import com.retronova.game.Game;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class GameObject {
 
@@ -19,7 +17,7 @@ public abstract class GameObject {
     private boolean solid = false;
 
     public static int SIZE() {
-        return 16 * Configs.SCALE;
+        return 16 * Configs.getSCALE();
     }
 
     public GameObject(int ID) {

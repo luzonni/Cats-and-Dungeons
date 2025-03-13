@@ -64,7 +64,7 @@ public class Silk extends Utility {
     }
 
     private void renderLine(Graphics2D g) {
-        g.setStroke(new BasicStroke(Configs.SCALE));
+        g.setStroke(new BasicStroke(Configs.getSCALE()));
         g.setColor(new Color(243, 113, 153));
         int x = (int)getX() + getWidth()/2 - Game.C.getX();
         int y = (int)getY() + getHeight()/2 - Game.C.getY();

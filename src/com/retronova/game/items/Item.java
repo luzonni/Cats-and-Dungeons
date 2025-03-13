@@ -42,7 +42,7 @@ public abstract class Item {
      Item(int id, String name, String sprite) {
         this.id = id;
         this.name = name;
-        SpriteSheet sheet = new SpriteSheet("items", sprite, Configs.SCALE);
+        SpriteSheet sheet = new SpriteSheet("items", sprite, Configs.getSCALE());
         int length = sheet.getWidth()/16;
         this.sprite = new BufferedImage[length];
         for(int i = 0; i < length; i++) {

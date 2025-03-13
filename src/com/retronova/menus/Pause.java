@@ -10,7 +10,6 @@ import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
-import com.retronova.game.map.Room;
 import com.retronova.menus.Menu;
 
 import java.awt.*;
@@ -19,7 +18,7 @@ import java.awt.geom.RoundRectangle2D;
 public class Pause implements Activity {
 
     private Rectangle[] quadrados;
-    private final Font fonteTitulo = FontG.font(15 * Configs.UISCALE);
+    private final Font fonteTitulo = FontG.font(15 * Configs.getUISCALE());
     private final Color corFundo = new Color(50, 50, 50, 150);
     private final Color corBotao = new Color(0xc17564);
     private final Color corTexto = Color.WHITE;
@@ -137,7 +136,7 @@ public class Pause implements Activity {
         Stroke defaultStroke = g.getStroke();
 
         for (int i = 0; i < quadrados.length; i++) {
-            int tamanhoFonte = 8 * Configs.UISCALE;
+            int tamanhoFonte = 8 * Configs.getUISCALE();
             Font fonteAtual = FontG.font(tamanhoFonte);
             FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 

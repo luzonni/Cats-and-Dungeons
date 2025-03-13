@@ -55,7 +55,7 @@ public class Window extends Canvas {
         frame.setResizable(true);
         frame.setAlwaysOnTop(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        if(Configs.fullscreen) {
+        if(Configs.isFullscreen()) {
             GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
             if (gd.isFullScreenSupported()) {
                 gd.setFullScreenWindow(frame);

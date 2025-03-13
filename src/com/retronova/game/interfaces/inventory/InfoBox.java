@@ -15,9 +15,9 @@ class InfoBox {
 
     InfoBox(String[] values) {
         this.values = values;
-        this.padding = Configs.UISCALE * 5;
-        this.fontTitle = FontG.font(Configs.UISCALE * 8);
-        this.fontSpecs = FontG.font(Configs.UISCALE * 6);
+        this.padding = Configs.getUISCALE() * 5;
+        this.fontTitle = FontG.font(Configs.getUISCALE() * 8);
+        this.fontSpecs = FontG.font(Configs.getUISCALE() * 6);
         int height = padding*2 + FontG.getHeight(values[0], fontTitle);
         int lastWidth = padding*2 + FontG.getWidth(values[0], fontTitle);
         for(int i = 1; i < values.length; i++) {
@@ -34,11 +34,11 @@ class InfoBox {
         g.setColor(new Color(190, 49, 68));
         g.fillRect(x, y, this.bounds.width, this.bounds.height);
         g.setColor(new Color(135, 35, 65));
-        g.setStroke(new BasicStroke(Configs.UISCALE*2));
+        g.setStroke(new BasicStroke(Configs.getUISCALE() *2));
         g.drawRect(x, y, this.bounds.width, this.bounds.height);
         g.setFont(fontTitle);
         g.setColor(Color.black);
-        g.drawString(values[0], x + padding + Configs.UISCALE, y + FontG.getHeight(values[0], fontTitle)  + padding + Configs.UISCALE);
+        g.drawString(values[0], x + padding + Configs.getUISCALE(), y + FontG.getHeight(values[0], fontTitle)  + padding + Configs.getUISCALE());
         g.setColor(Color.white);
         g.drawString(values[0], x + padding, y + FontG.getHeight(values[0], fontTitle)  + padding);
         g.setFont(fontSpecs);
@@ -46,7 +46,7 @@ class InfoBox {
         for(int i = 1; i < values.length; i++) {
             lastY += FontG.getHeight(values[i-1], fontSpecs) + padding;
             g.setColor(Color.black);
-            g.drawString(values[i], x + padding + Configs.UISCALE, lastY + Configs.UISCALE);
+            g.drawString(values[i], x + padding + Configs.getUISCALE(), lastY + Configs.getUISCALE());
             g.setColor(Color.white);
             g.drawString(values[i], x + padding, lastY);
         }

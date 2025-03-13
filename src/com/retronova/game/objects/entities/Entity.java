@@ -209,17 +209,17 @@ public abstract class Entity extends GameObject {
     }
 
     public <T extends Entity> T getNearest(double range, Class<T> type){
-        List<T> entities = Game.getMap().getEntities(type);
+        List<Entity> entities = Game.getMap().getEntities();
         T nearest = null;
         double maxDist = GameObject.SIZE() * range;
         for(int i = 0; i < entities.size(); i ++){
-            T e = entities.get(i);
-            if(e == this){
+            Entity e = entities.get(i);
+            if(e == this || !type.isInstance(e)){
                 continue;
             }
             double currDist = e.getDistance(this);
             if(currDist < maxDist){
-                nearest = e;
+                nearest = (T) e;
                 maxDist = currDist;
             }
         }
@@ -227,17 +227,17 @@ public abstract class Entity extends GameObject {
     }
 
     public <T extends Entity> T getNearest(double range, Class<T> type, Entity ignore){
-        List<T> entities = Game.getMap().getEntities(type);
+        List<Entity> entities = Game.getMap().getEntities();
         T nearest = null;
         double maxDist = GameObject.SIZE() * range;
         for(int i = 0; i < entities.size(); i ++){
-            T e = entities.get(i);
-            if(e == this || e == ignore){
+            Entity e = entities.get(i);
+            if(e == this || e == ignore || !type.isInstance(e)){
                 continue;
             }
             double currDist = e.getDistance(this);
             if(currDist < maxDist){
-                nearest = e;
+                nearest = (T) e;
                 maxDist = currDist;
             }
         }

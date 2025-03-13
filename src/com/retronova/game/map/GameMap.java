@@ -3,8 +3,11 @@ package com.retronova.game.map;
 import com.retronova.engine.io.Resources;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.NPCs.NPC;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.game.objects.entities.furniture.Furniture;
+import com.retronova.game.objects.entities.utilities.Utility;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.TileIDs;
@@ -15,7 +18,7 @@ import org.json.simple.JSONObject;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 public abstract class GameMap {
@@ -25,6 +28,7 @@ public abstract class GameMap {
     private Rectangle bounds;
 
     private List<Entity> entities;
+
     private List<Particle> particles;
     private Tile[] map;
 
@@ -60,7 +64,7 @@ public abstract class GameMap {
         } catch (IOException ignore) {
             System.err.println("Arquivo: " + mapName);
         }
-        //TODO isso está tendo problema de incimpatibilidade com WIndows!
+        //TODO isso está tendo problema de incimpatibilidade com Windows!
         if(jsonObject != null && !jsonObject.isEmpty()) {
             List<Entity> list = new ArrayList<>();
             JSONArray arrEntity = (JSONArray) jsonObject.get("entities");
@@ -115,24 +119,19 @@ public abstract class GameMap {
         particles.sort(Particle.Depth);
     }
 
-    /**
-     *
-     * @return retorna uma lista imutável!
-     */
     public List<Entity> getEntities() {
         return List.copyOf(this.entities);
     }
 
-    @SuppressWarnings("unchecked")
     public <T extends Entity> List<T> getEntities(Class<T> type) {
         List<T> list = new ArrayList<>();
         for(int i = 0; i < entities.size(); i++) {
-            Entity entity = entities.get(i);
-            if(type.isInstance(entity)) {
-                list.add((T)entity);
+            Entity e = entities.get(i);
+            if(type.isInstance(e)) {
+                list.add((T) e);
             }
         }
-        return List.copyOf(list);
+        return list;
     }
 
     public List<Particle> getParticles() {
@@ -142,11 +141,12 @@ public abstract class GameMap {
         return List.copyOf(this.particles);
     }
 
-    public boolean put(Entity e) {
-        return entities.add(e);
+    public void put(Entity e) {
+        entities.add(e);
     }
 
     public boolean putAll(List<Entity> e) {
+        //TODO mudar isso
         return this.entities.addAll(e);
     }
 

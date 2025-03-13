@@ -36,6 +36,8 @@ public class Engine implements Runnable {
     public static Random RAND = new Random();
 
     public Engine() {
+        Configs.init();
+        Configs.load();
         FontG.addFont("game");
         Sound.load();
         Engine.window = new Window(GameTag);
@@ -96,7 +98,7 @@ public class Engine implements Runnable {
         Graphics2D graphics = (Graphics2D) BUFFER.getDrawGraphics();
         graphics.setColor(Color.black);
         graphics.fillRect(0, 0, window.getWidth(), window.getHeight());
-        if(Configs.NeatGraphics) {
+        if(Configs.isNeatGraphics()) {
             graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             graphics.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
@@ -141,7 +143,7 @@ public class Engine implements Runnable {
         double delta_HZ = 0;
 
         long lastTimeFPS = System.nanoTime();
-        double amountOfFPS = Configs.MaxFrames;
+        double amountOfFPS = Configs.getMaxFrames();
         double ns_FPS = Engine.T / amountOfFPS;
         double delta_FPS = 0;
 
@@ -157,7 +159,7 @@ public class Engine implements Runnable {
                 lastTimeHZ = nowHZ;
                 if(delta_HZ >= 1) {
                     if(KeyBoard.KeyPressed("F11") && window != null) {
-                        Configs.fullscreen = !Configs.fullscreen;
+                        Configs.setFullscreen(!Configs.isFullscreen());
                         Thread.sleep(10);
                         window.setResolution();
                     }

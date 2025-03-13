@@ -39,10 +39,10 @@ public class Store implements Activity {
             throw new StoreException("A quantidade de items não bate com a quantidade de preços");
         }
         this.prices = prices;
-        this.store = new SpriteSheet("ui", "store", Configs.UISCALE).getSHEET();
+        this.store = new SpriteSheet("ui", "store", Configs.getUISCALE()).getSHEET();
         this.slots = new Slot[3];
         this.positionStore = new Point();
-        this.buttonBuy = new Rectangle(20 * Configs.UISCALE, 10 * Configs.UISCALE);
+        this.buttonBuy = new Rectangle(20 * Configs.getUISCALE(), 10 * Configs.getUISCALE());
         for(int i = 0; i < slots.length; i++) {
             this.slots[i] = new Slot(0, 0);
             this.slots[i].put(items[i]);
@@ -55,13 +55,13 @@ public class Store implements Activity {
         int w = Engine.window.getWidth();
         int h = Engine.window.getHeight();
         this.positionStore.setLocation(w/2 - store.getWidth()/2, h/2 - store.getHeight()/2);
-        this.buttonBuy.setLocation(positionStore.x + 97 * Configs.UISCALE, positionStore.y + 76 * Configs.UISCALE);
+        this.buttonBuy.setLocation(positionStore.x + 97 * Configs.getUISCALE(), positionStore.y + 76 * Configs.getUISCALE());
         for(int i = 0; i < slots.length; i++) {
-            int x = positionStore.x + slotsPositions[i].x * Configs.UISCALE;
-            int y = positionStore.y + slotsPositions[i].y * Configs.UISCALE;
+            int x = positionStore.x + slotsPositions[i].x * Configs.getUISCALE();
+            int y = positionStore.y + slotsPositions[i].y * Configs.getUISCALE();
             this.slots[i].setPosition(x, y);
         }
-        this.selected.setPosition(positionStore.x + 32 * Configs.UISCALE, positionStore.y + 37 * Configs.UISCALE);
+        this.selected.setPosition(positionStore.x + 32 * Configs.getUISCALE(), positionStore.y + 37 * Configs.getUISCALE());
     }
 
     @Override
@@ -113,19 +113,19 @@ public class Store implements Activity {
     private void renderPriceSelected(Graphics2D g) {
         if(indexSelected == -1)
             return;
-        int x = positionStore.x + 62 * Configs.UISCALE;
-        int y = positionStore.y + 48 * Configs.UISCALE;
-        Font font = FontG.font(Configs.UISCALE * 8);
+        int x = positionStore.x + 62 * Configs.getUISCALE();
+        int y = positionStore.y + 48 * Configs.getUISCALE();
+        Font font = FontG.font(Configs.getUISCALE() * 8);
         g.setFont(font);
         g.setColor(Color.white);
         g.drawString("" + prices[indexSelected], x, y);
     }
 
     private void renderMoney(Graphics2D g) {
-        int x = positionStore.x + 25 * Configs.UISCALE;
-        int y = positionStore.y + 83 * Configs.UISCALE;
+        int x = positionStore.x + 25 * Configs.getUISCALE();
+        int y = positionStore.y + 83 * Configs.getUISCALE();
         Player player = Game.getPlayer();
-        Font font = FontG.font(Configs.UISCALE * 8);
+        Font font = FontG.font(Configs.getUISCALE() * 8);
         g.setFont(font);
         g.setColor(Color.white);
         g.drawString("" + player.getMoney(), x, y);
@@ -135,7 +135,7 @@ public class Store implements Activity {
         if(!Mouse.on(buttonBuy))
             return;
         g.setColor(Color.white);
-        g.setStroke(new BasicStroke(Configs.UISCALE));
+        g.setStroke(new BasicStroke(Configs.getUISCALE()));
         g.drawRect(buttonBuy.x, buttonBuy.y, buttonBuy.width, buttonBuy.height);
     }
 
