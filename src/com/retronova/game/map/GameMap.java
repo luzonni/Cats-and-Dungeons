@@ -120,10 +120,14 @@ public abstract class GameMap {
      * @return retorna uma lista imutável!
      */
     public List<Entity> getEntities() {
-        if (this.entities == null) {
-            this.entities = new ArrayList<>(); // evita erro de ponteiro
-        }
         return List.copyOf(this.entities);
+    }
+
+    public <T extends Entity> List<T> getEntities(Class<T> type) {
+        if(this.entities.isEmpty())
+            return new ArrayList<>();
+        List<T> list = (List<T>)this.entities.stream().filter(type::isInstance).toList();
+        return List.copyOf(list);
     }
 
     public List<Particle> getParticles() {

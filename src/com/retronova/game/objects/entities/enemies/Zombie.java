@@ -20,7 +20,6 @@ public class Zombie extends Enemy {
         super(ID, x, y, 0.5);
         loadSprites("mousezombie");
         setSolid();
-        setAlive();
     }
 
     public void tick() {

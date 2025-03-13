@@ -1,6 +1,7 @@
 package com.retronova.game.items;
 
 import com.retronova.game.Game;
+import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.game.objects.entities.utilities.Bomb;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
@@ -26,7 +27,7 @@ public class ItemBomb extends Item {
             if(canThrow()){
                 return;
             }
-            Entity nearest = player.getNearest(10);
+            Enemy nearest = player.getNearest(10, Enemy.class);
             if(nearest != null) {
                 Bomb bomb = new Bomb(player.getX(), player.getY(), player.getDamage() * 3, player);
                 bomb.getPhysical().addForce("throw", 10, nearest.getAngle(player));

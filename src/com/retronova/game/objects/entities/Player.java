@@ -56,7 +56,6 @@ public class Player extends Entity {
         setAttackSpeed(attackSpeed);
         setRange(range);
         setSolid();
-        setAlive();
         setMoney(100);
     }
 

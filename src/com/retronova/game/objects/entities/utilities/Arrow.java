@@ -4,6 +4,7 @@ import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.*;
 import java.util.List;
@@ -35,7 +36,7 @@ public class Arrow extends Utility {
             Entity entity = entities.get(i);
             if(entity.equals(shooter))
                 continue;
-            if(this.colliding(entity) && entity.isAlive()) {
+            if(this.colliding(entity)) {
                 entity.strike(AttackTypes.Piercing, damage);
                 entity.getPhysical().addForce("knockback", 2.2, this.angle);
                 entity.addEffect("poison", (Entity e) -> {

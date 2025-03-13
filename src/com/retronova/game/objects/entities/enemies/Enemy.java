@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities.enemies;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.DrawSprite;
 import com.retronova.game.Game;
@@ -45,9 +46,6 @@ public abstract class Enemy extends Entity {
 
     @Override
     public void strike(AttackTypes type, double damage) {
-        if(!isAlive()) {
-            return;
-        }
         if(resistances.containsKey(type)) {
             double r = resistances.get(type);
             setLife(getLife() - (damage * (1 - r))); // Dano total
@@ -59,7 +57,7 @@ public abstract class Enemy extends Entity {
 
     public BufferedImage getSprite() {
         BufferedImage currentSprite = super.getSprite();
-        if(tookDamage && isAlive()) {
+        if(tookDamage) {
             currentSprite = DrawSprite.draw(currentSprite, new Color(122, 19, 17));
         }
         return currentSprite;
@@ -86,4 +84,24 @@ public abstract class Enemy extends Entity {
         Game.getMap().put(e);
         e.getPhysical().addForce("move", 7, Math.PI*2);
     }
+
+    public void renderLife(Graphics2D g) {
+        if(getLife() == getLifeSize())
+            return;
+        int x = (int)getX() - Game.C.getX();
+        int y = (int)getY() + getHeight() - Game.C.getY() + Configs.SCALE*2;
+        int w = getWidth();
+        int h = Configs.SCALE * 3;
+
+        g.setColor(new Color(135, 35, 65));
+        g.fillRect(x, y, w, h);
+        double lifeSize = w * (getLife() / getLifeSize());
+        g.setColor(new Color(190, 49, 68));
+        g.fillRect(x, y, (int) lifeSize, h);
+
+        g.setStroke(new BasicStroke(Configs.SCALE));
+        g.setColor(new Color(9, 18, 44));
+        g.drawRect(x, y, w, h);
+    }
+
 }

@@ -29,7 +29,6 @@ public class MouseExplode extends Enemy {
         this.danoExplosao = 5;
         loadSprites("ratexplode");
         setSolid();
-        setAlive();
         setSpeed(1.3d);
         setLife(200);
         setXpWeight(12.4d);

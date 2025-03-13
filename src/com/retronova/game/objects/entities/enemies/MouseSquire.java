@@ -19,7 +19,6 @@ public class MouseSquire extends Enemy {
         super(ID, x, y, 0.4);
         loadSprites("mousesquire");
         setSolid();
-        setAlive();
     }
 
     public void tick() {

@@ -3,6 +3,7 @@ package com.retronova.game.items;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.game.objects.entities.utilities.Silk;
 
 import java.awt.*;
@@ -19,7 +20,7 @@ public class ItemSilk extends Item {
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        Entity nearest = player.getNearest(player.getRange());
+        Enemy nearest = player.getNearest(player.getRange(), Enemy.class);
         if(nearest != null)
             count++;
         if(count > player.getAttackSpeed()*3) {

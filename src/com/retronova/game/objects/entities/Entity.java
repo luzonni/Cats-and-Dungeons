@@ -32,8 +32,6 @@ public abstract class Entity extends GameObject {
     private double damage;
     private double attackSpeed;
 
-    private boolean alive = false;
-
     public static Entity build(int ID, double x, double y) {
         EntityIDs entityId = EntityIDs.values()[ID];
         x *= GameObject.SIZE();
@@ -184,23 +182,15 @@ public abstract class Entity extends GameObject {
         this.attackSpeed = attackSpeed;
     }
 
-    public boolean isAlive() {
-        return alive;
-    }
-
-    protected void setAlive() {
-        this.alive = true;
-    }
-
     public abstract void strike(AttackTypes type, double damage);
 
-    public Entity getNearest(double range){
-        List<Entity> entities = Game.getMap().getEntities();
-        Entity nearest = null;
+    public <T extends Entity> T getNearest(double range, Class<T> type){
+        List<T> entities = Game.getMap().getEntities(type);
+        T nearest = null;
         double maxDist = GameObject.SIZE() * range;
         for(int i = 0; i < entities.size(); i ++){
-            Entity e = entities.get(i);
-            if(e == this || !e.isAlive()){
+            T e = entities.get(i);
+            if(e == this){
                 continue;
             }
             double currDist = e.getDistance(this);
@@ -212,13 +202,13 @@ public abstract class Entity extends GameObject {
         return nearest;
     }
 
-    public Entity getNearest(double range, Entity ignore){
-        List<Entity> entities = Game.getMap().getEntities();
-        Entity nearest = null;
+    public <T extends Entity> T getNearest(double range, Class<T> type, Entity ignore){
+        List<T> entities = Game.getMap().getEntities(type);
+        T nearest = null;
         double maxDist = GameObject.SIZE() * range;
         for(int i = 0; i < entities.size(); i ++){
-            Entity e = entities.get(i);
-            if(e == this || !e.isAlive() || e == ignore){
+            T e = entities.get(i);
+            if(e == this || e == ignore){
                 continue;
             }
             double currDist = e.getDistance(this);
@@ -258,24 +248,5 @@ public abstract class Entity extends GameObject {
 
     public Physical getPhysical() {
         return this.physical;
-    }
-
-    public void renderLife(Graphics2D g) {
-        if(getLife() == getLifeSize() || this instanceof Player || !this.isAlive())
-            return;
-        int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() + getHeight() - Game.C.getY() + Configs.SCALE*2;
-        int w = getWidth();
-        int h = Configs.SCALE * 3;
-
-        g.setColor(new Color(135, 35, 65));
-        g.fillRect(x, y, w, h);
-        double lifeSize = w * (getLife() / getLifeSize());
-        g.setColor(new Color(190, 49, 68));
-        g.fillRect(x, y, (int) lifeSize, h);
-
-        g.setStroke(new BasicStroke(Configs.SCALE));
-        g.setColor(new Color(9, 18, 44));
-        g.drawRect(x, y, w, h);
     }
 }

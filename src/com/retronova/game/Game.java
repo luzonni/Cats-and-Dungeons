@@ -9,6 +9,7 @@ import com.retronova.game.hud.HUD;
 import com.retronova.game.map.*;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.menus.Pause;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.physical.Physically;
@@ -73,10 +74,8 @@ public class Game implements Activity {
             Entity entity = entities.get(i);
             entity.tick();
             entity.tickEntityEffects();
-            if(entity.isAlive()) {
-                Tile tile = map.getTile((int) entity.getX() + entity.getWidth() / 2, (int) entity.getY() + entity.getHeight());
-                tile.effect(entity);
-            }
+            Tile tile = map.getTile((int) entity.getX() + entity.getWidth() / 2, (int) entity.getY() + entity.getHeight());
+            tile.effect(entity);
         }
         List<Particle> particles = map.getParticles();
         for(int i = 0; i < particles.size(); i++) {
@@ -115,7 +114,9 @@ public class Game implements Activity {
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
             entity.render(g);
-            entity.renderLife(g);
+            if(entity instanceof Enemy enemy) {
+                enemy.renderLife(g);
+            }
         }
     }
 

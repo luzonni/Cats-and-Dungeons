@@ -22,7 +22,6 @@ public class MouseVampire extends Enemy {
         super(ID, x, y, 0.3);
         loadSprites("mousevampire");
         setSolid();
-        setAlive();
         setLife(60);
         setXpWeight(500000.0d);
     }

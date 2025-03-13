@@ -23,7 +23,6 @@ public class Slime extends Enemy {
         isJumping = false;
         random = new Random();
         setSolid();
-        setAlive();
         setSpeed(6);
         setLife(10);
         setXpWeight(800000.6d);

@@ -19,8 +19,8 @@ public class TrapDoor extends Furniture {
 
     @Override
     public void tick() {
-        Entity nearest = getNearest(2);
-        if(nearest instanceof Player) {
+        Entity nearest = getNearest(2, Player.class);
+        if(nearest != null) {
             count++;
             if(count > 7 && indexSprite < 11) {
                 indexSprite++;

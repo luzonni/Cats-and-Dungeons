@@ -27,7 +27,6 @@ public class Skeleton extends Enemy {
         addResistances(AttackTypes.Poison, 0.8);
         addResistances(AttackTypes.Piercing, 1);
         setSolid();
-        setAlive();
     }
 
     public void tick() {

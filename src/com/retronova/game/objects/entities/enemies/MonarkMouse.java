@@ -17,7 +17,6 @@ public class MonarkMouse extends Enemy {
         loadSprites("monarkmouse");
         //adicionar resistência
         setSolid();
-        setAlive();
     }
 
     public void tick() {

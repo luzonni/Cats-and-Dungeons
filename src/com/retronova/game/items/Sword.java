@@ -8,6 +8,7 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -37,7 +38,7 @@ public class Sword extends Item {
     public void tick() {
         Player player = Game.getPlayer();
         this.boundsAttack.setLocation((int)player.getX() - player.getWidth()/2 + this.boundsAttack.width/2 * side, (int)player.getY() - (this.boundsAttack.height - player.getHeight())/2);
-        Entity nearest = player.getNearest(3);
+        Entity nearest = player.getNearest(3, Enemy.class);
         if(nearest != null) {
             count++;
             if(count > player.getAttackSpeed()*0.1) {
@@ -49,7 +50,7 @@ public class Sword extends Item {
                     List<Entity> entities = Game.getMap().getEntities();
                     for(int i = 0; i < entities.size(); i++) {
                         Entity e = entities.get(i);
-                        if(e.colliding(this.boundsAttack) && e != player && e.isAlive()) {
+                        if(e.colliding(this.boundsAttack) && e != player) {
                             e.strike(AttackTypes.Melee, player.getDamage() + this.damage);
                             double r = e.getAngle(player);
                             e.getPhysical().addForce("knockback", 16, r);

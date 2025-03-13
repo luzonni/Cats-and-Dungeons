@@ -6,6 +6,7 @@ import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -33,7 +34,7 @@ public class Silk extends Utility {
             this.disappear();
             return;
         }
-        Entity nearest = getNearest(Game.getPlayer().getRange(), visited.getLast());
+        Enemy nearest = getNearest(Game.getPlayer().getRange(), Enemy.class, visited.getLast());
         if(nearest != null && !visited.contains(nearest)) {
             r+=0.24d;
             double rf = nearest.getAngle(this);
