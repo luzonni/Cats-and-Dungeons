@@ -47,19 +47,26 @@ public class Sword extends Item {
                     count = 0;
                     rad = 0;
                     side *= -1;
-                    List<Entity> entities = Game.getMap().getEntities();
-                    for(int i = 0; i < entities.size(); i++) {
-                        Entity e = entities.get(i);
-                        if(e.colliding(this.boundsAttack) && e != player) {
-                            e.strike(AttackTypes.Melee, player.getDamage() + this.damage);
-                            double r = e.getAngle(player);
-                            e.getPhysical().addForce("knockback", 16, r);
-                        }
-                    }
+                    long startTime = System.nanoTime();
+                    attack(player);
+                    long estimatedTime = System.nanoTime() - startTime;
+                    System.out.printf("Draw runtime: %.4f ms%n", estimatedTime / 1000000d);
                 }
             }
         }else {
             rad = 0;
+        }
+    }
+
+    private void attack(Player player) {
+        List<Enemy> enemies = Game.getMap().getEntities(Enemy.class);
+        for(int i = 0; i < enemies.size(); i++) {
+            Enemy e = enemies.get(i);
+            if(e.colliding(this.boundsAttack)) {
+                e.strike(AttackTypes.Melee, player.getDamage() + this.damage);
+                double r = e.getAngle(player);
+                e.getPhysical().addForce("knockback", 16, r);
+            }
         }
     }
 
