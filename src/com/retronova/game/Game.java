@@ -46,9 +46,17 @@ public class Game implements Activity {
     }
 
     public void changeMap(GameMap newMap) {
-        if(this.physically != null)
+        if (this.physically != null) {
             this.physically.dispose();
-        this.map = newMap;
+        }
+
+        if (newMap == null) {
+            this.map = new Room("beginning");
+            this.map.addPlayer(player);
+        } else {
+            this.map = newMap;
+        }
+
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
         this.physically = new Physically(map);
@@ -58,7 +66,7 @@ public class Game implements Activity {
     public void tick() {
         galaxy.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
-            Engine.pause(new Pause());
+            Engine.pause(new Pause(this));
         }
         if(KeyBoard.KeyPressed("E")) {
             Engine.pause(player.getInventory());

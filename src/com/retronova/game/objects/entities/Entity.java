@@ -7,6 +7,8 @@ import com.retronova.engine.graphics.DrawSprite;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.particles.Particle;
+import com.retronova.game.objects.particles.ParticleIDs;
 import com.retronova.game.objects.physical.Physical;
 
 import java.awt.*;
@@ -218,16 +220,18 @@ public abstract class Entity extends GameObject {
     }
 
     public void strike(AttackTypes type, double damage) {
-        if(!isAlive()) {
+        if (!isAlive()) {
             return;
         }
-        if(resistances.containsKey(type)) {
+        if (resistances.containsKey(type)) {
             double r = resistances.get(type);
-            setLife(getLife() - (damage * (1 - r))); // Dano total
-            return;
+            setLife(getLife() - (damage * (1 - r)));
+        } else {
+            setLife(getLife() - damage);
         }
-        setLife(getLife() - damage);
         this.takedDamege = true;
+        Particle damageMobs = Particle.build(ParticleIDs.DamageMobs, getX(), getY(), 30.0 / 60.0, Engine.RAND.nextDouble(Math.PI * 2));
+        Game.getMap().put(damageMobs);
     }
 
     public Entity getNearest(double range){

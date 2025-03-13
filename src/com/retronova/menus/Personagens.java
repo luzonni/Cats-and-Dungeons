@@ -120,11 +120,11 @@ public class Personagens implements Activity {
             if (Mouse.clickOn(Mouse_Button.LEFT, botoes[i])) {
                 switch (i) {
                     case 0:
-                        System.out.println("Clicou em Voltar");
+                        System.out.println("Clicou em Back");
                         Engine.setActivity(new Menu());
                         break;
                     case 1:
-                        System.out.println("Clicou em Jogar");
+                        System.out.println("Clicou em Play");
                         if (personagemSelecionado != -1 && dificuldadeSelecionada != -1) {
                             Activity newGame = new Game(personagemSelecionado, dificuldadeSelecionada, new Room("beginning"));
                             Activity loading = new Loading(newGame, () -> {
@@ -240,7 +240,7 @@ public class Personagens implements Activity {
 
             if (personagemSelecionado == i) {
                 g.setColor(coresPersonagensSelecionados[i]);
-                g.setStroke(new BasicStroke(2.0f));
+                g.setStroke(new BasicStroke(3.0f));
                 g.draw(arredondar);
                 g.setStroke(new BasicStroke(1.0f));
             }
@@ -277,7 +277,7 @@ public class Personagens implements Activity {
 
             if (dificuldadeSelecionada == i) {
                 g.setColor(coresDificuldadeSelecionada[i]);
-                g.setStroke(new BasicStroke(2.0f));
+                g.setStroke(new BasicStroke(3.0f));
                 g.draw(arredondar);
                 g.setStroke(new BasicStroke(1.0f));
             }
