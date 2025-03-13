@@ -1,5 +1,7 @@
 package com.retronova.game.map;
 
+import com.retronova.engine.sound.Musics;
+import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
 
@@ -16,6 +18,8 @@ public class Arena extends GameMap {
         Player player = Game.getPlayer();
         player.setX(getBounds().width/2d);
         player.setY(getBounds().height/2d);
+        Sound.stop(Musics.Music2);
+        Sound.play(Musics.Music3, true);
     }
 
     public Waves getWaves() {

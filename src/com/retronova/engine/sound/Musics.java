@@ -3,7 +3,8 @@ package com.retronova.engine.sound;
 public enum Musics {
 
     Music1("menusom"),
-    Music2("fight");
+    Music2("room"),
+    Music3("fight");
 
     private final String ResourceName;
 

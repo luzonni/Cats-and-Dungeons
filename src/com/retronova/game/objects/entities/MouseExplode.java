@@ -1,6 +1,8 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.engine.graphics.SpriteSheet;
@@ -57,6 +59,7 @@ public class MouseExplode extends Entity {
             Particle smoke = Particle.build(ParticleIDs.Smoke, x, y, 1.2, Engine.RAND.nextDouble(Math.PI*2));
             Game.getMap().put(smoke);
         }
+        Sound.play(Sounds.MouseExplode);
         disappear();
     }
 

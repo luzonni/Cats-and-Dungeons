@@ -5,8 +5,8 @@ public enum Sounds {
 	Zombie("zombie_sound"),
 	Skeleton("bones"),
 	MouseVampire("vampire_sound"),
-	RatExplode("lit_sound"),
-	Slime("slime_sound"),
+	MouseExplode("explosion"),
+	Slime("slime1"),
 	Bow("bowshoot");
 	
 	private final String ResourceName;

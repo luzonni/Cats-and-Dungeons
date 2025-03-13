@@ -1,5 +1,7 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
 
@@ -9,6 +11,9 @@ import java.awt.image.BufferedImage;
 public class Skeleton extends Entity {
 
     private int countAnim;
+    private int cooldown;
+    private boolean soundPlaying = false;
+    private int soundStopDelay = 0;
 
     Skeleton(int ID, double x, double y) {
         super(ID, x, y, 0.5);
@@ -25,9 +30,28 @@ public class Skeleton extends Entity {
     public void tick() {
         moveIA();
         countAnim++;
-        if(countAnim > 10) {
+        if (countAnim > 10) {
             countAnim = 0;
             getSheet().plusIndex();
+        }
+        Player player = Game.getPlayer();
+        cooldown++;
+        if (player.getBounds().intersects(this.getBounds()) && cooldown > 45) {
+            cooldown = 0;
+            player.strike(AttackTypes.Melee, 2);
+            Sound.play(Sounds.Skeleton);
+            soundPlaying = true;
+            soundStopDelay = 30;
+            player.getPhysical().addForce("knockback_skeleton", 0.82d, getPhysical().getAngleForce());
+        } else {
+            if (soundPlaying) {
+                if (soundStopDelay > 0) {
+                    soundStopDelay--;
+                } else {
+                    Sound.stop(Sounds.Skeleton);
+                    soundPlaying = false;
+                }
+            }
         }
     }
 
@@ -40,11 +64,9 @@ public class Skeleton extends Entity {
     @Override
     public void render(Graphics2D g) {
         int orientation = getPhysical().getOrientation()[0] * -1;
-        if(orientation == 0) {
+        if (orientation == 0)
             orientation = -1;
-        }
         BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
         renderSprite(sprite, g);
     }
-
 }

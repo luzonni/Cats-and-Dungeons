@@ -8,8 +8,8 @@ public class Configs {
     public static int HUDSCALE = 4; //Escala do Hud do jogo
     public static int MARGIN = 30; //Margin para interfaces e HUD
     public static boolean NeatGraphics = false;
-    public static int VOLUM = 80; //Volume dos dons
-    public static int MUSIC = 0; // Volume das musicas
+    public static int VOLUM = 10; //Volume dos sons
+    public static int MUSIC = 5; // Volume das musicas
     public static double MaxFrames = 60;
 
 }

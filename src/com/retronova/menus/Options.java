@@ -17,8 +17,8 @@ public class Options implements Activity {
     private final Color corTexto = Color.WHITE;
     private final String titulo = "Options";
     private final String[][] textosBotoes = {
-            {"Resolution", "Pensando", "Save"},
-            {"Text Size", "Camera Size", "Full Screen"},
+            {"Resolution", "FPS", "Save"},
+            {"Text Size", "Margin", "Full Screen"},
             {"Volume", "Music", "Mobs"},
             {null, "Back", null}
     };

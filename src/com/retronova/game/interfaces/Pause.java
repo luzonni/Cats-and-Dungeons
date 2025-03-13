@@ -59,14 +59,14 @@ public class Pause implements Activity {
             System.out.println("Jogo reiniciado");
             Engine.pause(null);
             Game.restart();
-            Sound.stop(Musics.Music2);
-            Sound.play(Musics.Music2, true);
+            Sound.stop(Musics.Music3);
+            Sound.play(Musics.Music3, true);
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[2])) {
             System.out.println("Opções abertas");
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[3])) {
             System.out.println("Menu aberto");
             Engine.pause(null);
-            Sound.stop(Musics.Music2);
+            Sound.stop(Musics.Music3);
             Engine.setActivity(new Menu());
         } else if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[4])) {
             System.out.println("Jogo fechado");

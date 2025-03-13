@@ -135,7 +135,6 @@ public class Personagens implements Activity {
                             });
                             Engine.setActivity(loading);
                             Sound.stop(Musics.Music1);
-                            Sound.play(Musics.Music2, true);
                         } else {
                             if (personagemSelecionado == -1 && dificuldadeSelecionada == -1) {
                                 System.out.println("Selecione um personagem e dificuldade antes de jogar!");
