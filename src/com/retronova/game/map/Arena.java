@@ -4,6 +4,7 @@ import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.particles.Portal;
 
 public class Arena extends GameMap {
 
@@ -20,12 +21,15 @@ public class Arena extends GameMap {
         player.setY(getBounds().height/2d);
         Sound.stop(Musics.Music2);
         Sound.play(Musics.Music3, true);
+
+        Portal portal = new Portal(System.identityHashCode(new Object()), player.getX(), player.getY(), 5, player);
+        put(portal);
     }
 
     public Waves getWaves() {
         return waves;
     }
-    
+
     @Override
     public void tick() {
         waves.tick();

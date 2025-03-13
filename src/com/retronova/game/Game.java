@@ -6,11 +6,11 @@ import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.engine.graphics.Galaxy;
 import com.retronova.game.hud.HUD;
+import com.retronova.game.interfaces.Pause;
 import com.retronova.game.map.*;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
-import com.retronova.menus.Pause;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
@@ -47,9 +47,17 @@ public class Game implements Activity {
     }
 
     public void changeMap(GameMap newMap) {
-        if(this.physically != null)
+        if (this.physically != null) {
             this.physically.dispose();
-        this.map = newMap;
+        }
+
+        if (newMap == null) {
+            this.map = new Room("beginning");
+            this.map.addPlayer(player);
+        } else {
+            this.map = newMap;
+        }
+
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
         this.physically = new Physically(map);
@@ -59,7 +67,7 @@ public class Game implements Activity {
     public void tick() {
         galaxy.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
-            Engine.pause(new Pause());
+            Engine.pause(new Pause(this));
         }
         if(KeyBoard.KeyPressed("E")) {
             Engine.pause(player.getInventory());
