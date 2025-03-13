@@ -12,8 +12,8 @@ public class DamageMobs extends Particle {
     private double r;
     private int count;
 
-    DamageMobs(int ID, double x, double y, double seconds, double dir) {
-        super(ID, x, y, seconds);
+    public DamageMobs(double x, double y, double seconds, double dir) {
+        super(x, y, seconds);
         loadSprites("damagemobs");
         this.dir = dir;
         if (Engine.RAND.nextBoolean())

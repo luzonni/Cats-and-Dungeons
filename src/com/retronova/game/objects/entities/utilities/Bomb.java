@@ -7,7 +7,8 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.particles.Particle;
-import com.retronova.game.objects.particles.ParticleIDs;
+import com.retronova.game.objects.particles.Smoke;
+import com.retronova.game.objects.particles.Spark;
 
 import java.awt.*;
 import java.util.List;
@@ -53,7 +54,7 @@ public class Bomb extends Utility {
         if(countEx < positions_spark.length) {
             int x = (int)getX() + positions_spark[countEx].x * Configs.SCALE;
             int y = (int)getY() + positions_spark[countEx].y * Configs.SCALE;
-            Particle p = Particle.build(ParticleIDs.Spark, x, y, 0.3d);
+            Particle p = new Spark(x, y, 0.3d);
             Game.getMap().put(p);
         }
     }
@@ -73,7 +74,7 @@ public class Bomb extends Utility {
             double raio = range * Math.pow(Engine.RAND.nextDouble(), fator);
             double x = getX() + Math.cos(angle) * raio;
             double y = getY() + Math.sin(angle) * raio;
-            Particle smoke = Particle.build(ParticleIDs.Smoke, x, y, 1.2, Engine.RAND.nextDouble(Math.PI*2));
+            Particle smoke = new Smoke(x, y, 1.2, Engine.RAND.nextDouble(Math.PI*2));
             Game.getMap().put(smoke);
         }
         this.disappear();

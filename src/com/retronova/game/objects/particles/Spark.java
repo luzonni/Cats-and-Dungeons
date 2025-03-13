@@ -11,8 +11,8 @@ public class Spark extends Particle {
     private int count;
     private double r;
 
-    public Spark(int ID, double x, double y, double seconds) {
-        super(ID, x, y, seconds);
+    public Spark(double x, double y, double seconds) {
+        super(x, y, seconds);
     }
 
     @Override

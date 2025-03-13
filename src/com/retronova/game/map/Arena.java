@@ -22,7 +22,7 @@ public class Arena extends GameMap {
         Sound.stop(Musics.Music2);
         Sound.play(Musics.Music3, true);
 
-        Portal portal = new Portal(System.identityHashCode(new Object()), player.getX(), player.getY(), 5, player);
+        Portal portal = new Portal(player.getX(), player.getY(), 5, player);
         put(portal);
     }
 

@@ -14,8 +14,8 @@ public class Portal extends Particle {
     private final int animationSpeed = 14;
     private final int yOffset = 10;
 
-    public Portal(int ID, double x, double y, double seconds, Player player) {
-        super(ID, x, y, seconds);
+    public Portal(double x, double y, double seconds, Player player) {
+        super(x, y, seconds);
         loadSprites("firetest");
         this.player = player;
     }

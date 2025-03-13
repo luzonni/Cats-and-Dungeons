@@ -9,6 +9,7 @@ import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.utilities.Utility;
 import com.retronova.game.objects.entities.utilities.Xp;
+import com.retronova.game.objects.particles.DamageMobs;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -53,6 +54,7 @@ public abstract class Enemy extends Entity {
 
     @Override
     public void strike(AttackTypes type, double damage) {
+        Game.getMap().put(new DamageMobs(getX(), getY(), 0.6, Engine.RAND.nextDouble()*Math.PI*2));
         if(resistances.containsKey(type)) {
             double r = resistances.get(type);
             setLife(getLife() - (damage * (1 - r))); // Dano total
