@@ -6,6 +6,7 @@ import com.retronova.game.interfaces.inventory.Inventory;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.game.objects.Sheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -57,6 +58,11 @@ public class Player extends Entity {
         setRange(range);
         setSolid();
         setMoney(100);
+    }
+
+    @Override
+    public void loadSprites(String... sprites) {
+        setSheet(new Sheet<>(Player.class, sprites));
     }
 
     public String getName() {

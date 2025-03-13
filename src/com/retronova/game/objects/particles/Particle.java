@@ -2,6 +2,7 @@ package com.retronova.game.objects.particles;
 
 import com.retronova.engine.exceptions.EntityNotFound;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.Sheet;
 
 import java.awt.*;
 
@@ -28,6 +29,11 @@ public abstract class Particle extends GameObject {
     }
 
     private final double seconds;
+
+    @Override
+    public void loadSprites(String... sprites) {
+        setSheet(new Sheet<>(Particle.class, sprites));
+    }
 
     public Particle(int ID, double x, double y, double seconds) {
         super(ID);

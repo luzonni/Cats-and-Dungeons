@@ -12,7 +12,7 @@ import java.util.Map;
 public abstract class GameObject {
 
     private final Values values;
-    protected Sheet sheet;
+    protected Sheet<? extends GameObject> sheet;
 
     private int depth;
     private final Rectangle bounds;
@@ -32,8 +32,10 @@ public abstract class GameObject {
         this.bounds = new Rectangle(getWidth(), getHeight());
     }
 
-    public void loadSprites(String... sprites) {
-        this.sheet = new Sheet(sprites);
+    public abstract void loadSprites(String... sprites);
+
+    protected <T extends GameObject> void setSheet(Sheet<T> sheet) {
+        this.sheet = sheet;
     }
 
     public int getID() {

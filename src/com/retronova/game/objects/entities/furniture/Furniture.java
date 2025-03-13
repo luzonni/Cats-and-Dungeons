@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities.furniture;
 
+import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 
@@ -8,6 +9,11 @@ public abstract class Furniture extends Entity {
     Furniture(int ID, double x, double y) {
         super(ID, x, y, 1);
         setSolid();
+    }
+
+    @Override
+    public void loadSprites(String... sprites) {
+        setSheet(new Sheet<>(Furniture.class, sprites));
     }
 
     @Override

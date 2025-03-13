@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Sheet {
+public class Sheet<T extends GameObject> {
 
     public static Map<String, BufferedImage[]> SHEETS;
 
@@ -19,7 +19,10 @@ public class Sheet {
     private int type;
     private int index;
 
-    Sheet(String... sprites) {
+    private final Class<T> gameObject;
+
+    public Sheet(Class<T> type, String... sprites) {
+        gameObject = type;
         this.sheet = new BufferedImage[sprites.length][];
         for(int i = 0; i < sprites.length; i++) {
             if(SHEETS.containsKey(sprites[i])) {
@@ -54,7 +57,9 @@ public class Sheet {
     }
 
     private BufferedImage[] loadSprite(String spriteName) {
-        SpriteSheet sheet = new SpriteSheet("objects", spriteName, Configs.SCALE);
+        String modulo = "objects/" + gameObject.getSimpleName().toLowerCase();
+        System.out.println(modulo);
+        SpriteSheet sheet = new SpriteSheet(modulo, spriteName, Configs.SCALE);
         int length = sheet.getWidth() / 16;
         BufferedImage[] sprites = new BufferedImage[length];
         for(int i = 0; i < length; i++) {

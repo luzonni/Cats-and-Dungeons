@@ -2,7 +2,9 @@ package com.retronova.game.objects.tiles;
 
 import com.retronova.engine.exceptions.TileNotFound;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.utilities.Utility;
 
 import java.awt.*;
 
@@ -48,6 +50,11 @@ public abstract class Tile extends GameObject {
         if(solid){
             setSolid();
         }
+    }
+
+    @Override
+    public void loadSprites(String... sprites) {
+        setSheet(new Sheet<>(Tile.class, sprites));
     }
 
     public abstract void effect(Entity e);

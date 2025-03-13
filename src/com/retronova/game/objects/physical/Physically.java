@@ -74,7 +74,7 @@ public class Physically implements Runnable {
         while (running) {
             try {
                 cycle();
-                Thread.sleep(5);
+                Thread.sleep(1);
             }catch (Exception e) {
                 String err = "Bem... esse erro não vai afetar em NADA o jogo, mas é um erro ;( " +
                         "\nO que fazer? Acho que chorar, porque resolver isso é desnecessário e chato, então chore, faz bem!";

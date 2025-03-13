@@ -4,8 +4,10 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.DrawSprite;
 import com.retronova.game.Game;
+import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.utilities.Utility;
 import com.retronova.game.objects.entities.utilities.Xp;
 
 import java.awt.*;
@@ -26,6 +28,11 @@ public abstract class Enemy extends Entity {
         super(ID, x, y, friction);
         this.resistances = new HashMap<>();
         addResistances(AttackTypes.Flat, 0);
+    }
+
+    @Override
+    public void loadSprites(String... sprites) {
+        setSheet(new Sheet<>(Enemy.class, sprites));
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.retronova.engine.exceptions.EntityNotFound;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.NPCs.Seller;
 import com.retronova.game.objects.entities.enemies.*;
 import com.retronova.game.objects.entities.furniture.Door;
@@ -84,6 +85,11 @@ public abstract class Entity extends GameObject {
         this.physical = new Physical(this, friction);
         this.modifiers = new HashMap<>();
         this.effects = new ArrayList<>();
+    }
+
+    @Override
+    public void loadSprites(String... sprites) {
+        setSheet(new Sheet<>(Entity.class, sprites));
     }
 
     public void addModifier(Modifiers modifier, double value) {
