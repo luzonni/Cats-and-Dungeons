@@ -9,7 +9,7 @@ import com.retronova.game.hud.HUD;
 import com.retronova.game.map.*;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.game.interfaces.Pause;
+import com.retronova.menus.Pause;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
@@ -136,7 +136,9 @@ public class Game implements Activity {
 
     public static void restart() {
         Game game = getGame();
-        Engine.setActivity(new Game(game.indexPlayer, game.difficulty, new Arena(0)));
+        GameMap map = getMap();
+        map.restart();
+        Engine.setActivity(new Game(game.indexPlayer, game.difficulty, map));
         //TODO tirar saídas de console após finalização da lógica.
         System.out.println("Jogo reiniciado com personagem " + game.indexPlayer + " e dificuldade " + game.difficulty);
     }

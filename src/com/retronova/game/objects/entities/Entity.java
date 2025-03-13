@@ -71,6 +71,12 @@ public abstract class Entity extends GameObject {
             case MonarkMouse -> {
                 return new MonarkMouse(ID, x, y);
             }
+            case Coin -> {
+                return new Coin(ID, x, y);
+            }
+            case Seller -> {
+                return new Seller(ID, x, y);
+            }
         }
         throw new EntityNotFound("Entity not found");
     }
