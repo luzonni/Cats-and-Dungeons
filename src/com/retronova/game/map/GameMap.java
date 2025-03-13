@@ -123,10 +123,15 @@ public abstract class GameMap {
         return List.copyOf(this.entities);
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends Entity> List<T> getEntities(Class<T> type) {
-        if(this.entities.isEmpty())
-            return new ArrayList<>();
-        List<T> list = (List<T>)this.entities.stream().filter(type::isInstance).toList();
+        List<T> list = new ArrayList<>();
+        for(int i = 0; i < entities.size(); i++) {
+            Entity entity = entities.get(i);
+            if(type.isInstance(entity)) {
+                list.add((T)entity);
+            }
+        }
         return List.copyOf(list);
     }
 

@@ -50,7 +50,7 @@ public class Bow extends Item {
     private void shot(Player shooter) {
         double x = shooter.getX();
         double y = shooter.getY();
-        Arrow arrow = new Arrow(x, y, shooter.getDamage(), angle, shooter);
+        Arrow<Enemy> arrow = new Arrow<>(x, y, shooter.getDamage(), angle, Enemy.class);
         Game.getMap().put(arrow);
         Sound.play(Sounds.Bow);
     }

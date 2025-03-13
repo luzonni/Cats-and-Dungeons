@@ -10,6 +10,6 @@ public class Configs {
     public static boolean NeatGraphics = false;
     public static int VOLUM = 0; //Volume dos sons
     public static int MUSIC = 0; // Volume das musicas
-    public static double MaxFrames = 300;
+    public static double MaxFrames = 60;
 
 }
