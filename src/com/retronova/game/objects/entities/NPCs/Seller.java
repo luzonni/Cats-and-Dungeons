@@ -1,4 +1,4 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.NPCs;
 
 import com.retronova.engine.Engine;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -8,8 +8,10 @@ import com.retronova.game.interfaces.store.Store;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 
-public class Seller extends Entity {
+public class Seller extends NPC {
 
     private Store store;
     private Item[][] stock = {
@@ -22,7 +24,7 @@ public class Seller extends Entity {
     };
 
 
-    Seller(int ID, double x, double y) {
+    public Seller(int ID, double x, double y) {
         super(ID, x, y, 0.5);
         int index = 0;
         this.store = new Store(stock[index], prices[index]);

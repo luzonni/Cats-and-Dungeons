@@ -1,18 +1,16 @@
 package com.retronova.game.map;
 
-import com.retronova.engine.Engine;
 import com.retronova.engine.io.Resources;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.game.objects.furniture.Furniture;
+import com.retronova.game.objects.entities.furniture.Furniture;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.TileIDs;
 import com.retronova.engine.graphics.SpriteSheet;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -72,15 +70,6 @@ public abstract class GameMap {
                 int x = ((Number)arr.get(1)).intValue();
                 int y = ((Number)arr.get(2)).intValue();
                 Entity e = Entity.build(id, x, y);
-                list.add(e);
-            }
-            JSONArray arrFurniture = (JSONArray) jsonObject.get("furniture");
-            for(int i = 0; i < arrFurniture.size(); i++) {
-                JSONArray arr = (JSONArray) arrFurniture.get(i);
-                int id = ((Number)arr.get(0)).intValue();
-                int x = ((Number)arr.get(1)).intValue();
-                int y = ((Number)arr.get(2)).intValue();
-                Entity e = Furniture.build(id, x, y);
                 list.add(e);
             }
             putAll(list);

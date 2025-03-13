@@ -3,14 +3,17 @@ package com.retronova.game.objects.entities;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.EntityNotFound;
-import com.retronova.engine.graphics.DrawSprite;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.entities.NPCs.Seller;
+import com.retronova.game.objects.entities.enemies.*;
+import com.retronova.game.objects.entities.furniture.Door;
+import com.retronova.game.objects.entities.furniture.TrapDoor;
+import com.retronova.game.objects.entities.utilities.Drop;
 import com.retronova.game.objects.physical.Physical;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +25,6 @@ public abstract class Entity extends GameObject {
 
     protected final Map<Modifiers, Double> modifiers;
     private final List<Effect> effects;
-    private Map<AttackTypes, Double> resistances;
 
     private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
     private double range;
@@ -31,19 +33,12 @@ public abstract class Entity extends GameObject {
     private double attackSpeed;
 
     private boolean alive = false;
-    private double xpWeight;
-
-    private boolean takedDamege;
-    private int countTakedDamege;
 
     public static Entity build(int ID, double x, double y) {
         EntityIDs entityId = EntityIDs.values()[ID];
         x *= GameObject.SIZE();
         y *= GameObject.SIZE();
         switch (entityId) {
-            case Xp -> {
-                return new Xp(ID, x, y);
-            }
             case Zombie -> {
                 return new Zombie(ID, x, y);
             }
@@ -71,11 +66,14 @@ public abstract class Entity extends GameObject {
             case MonarkMouse -> {
                 return new MonarkMouse(ID, x, y);
             }
-            case Coin -> {
-                return new Coin(ID, x, y);
-            }
             case Seller -> {
                 return new Seller(ID, x, y);
+            }
+            case Door -> {
+                return new Door(ID, x, y);
+            }
+            case TrapDoor -> {
+                return new TrapDoor(ID, x, y);
             }
         }
         throw new EntityNotFound("Entity not found");
@@ -88,8 +86,6 @@ public abstract class Entity extends GameObject {
         this.physical = new Physical(this, friction);
         this.modifiers = new HashMap<>();
         this.effects = new ArrayList<>();
-        this.resistances = new HashMap<>();
-        addResistances(AttackTypes.Flat, 0);
     }
 
     public void addModifier(Modifiers modifier, double value) {
@@ -114,32 +110,9 @@ public abstract class Entity extends GameObject {
         for(int i = 0; i < effects.size(); i++) {
             effects.get(i).tick();
         }
-        if(takedDamege) {
-            countTakedDamege++;
-            if(countTakedDamege > 50) {
-                countTakedDamege = 0;
-                takedDamege = false;
-            }
-        }
         if (getLife() <= 0) {
             die();
         }
-    }
-
-    public BufferedImage getSprite() {
-        BufferedImage currentSprite = super.getSprite();
-        if(takedDamege && !(this instanceof Player) && isAlive()) {
-            currentSprite = DrawSprite.draw(currentSprite, new Color(122, 19, 17));
-        }
-        return currentSprite;
-    }
-
-    protected void setXpWeight(double weight) {
-        this.xpWeight = weight;
-    }
-
-    protected double getXpWeight() {
-        return this.xpWeight;
     }
 
     public double getLife() {
@@ -219,22 +192,7 @@ public abstract class Entity extends GameObject {
         this.alive = true;
     }
 
-    protected void addResistances(AttackTypes attack, double resistance) {
-        this.resistances.put(attack, resistance);
-    }
-
-    public void strike(AttackTypes type, double damage) {
-        if(!isAlive()) {
-            return;
-        }
-        if(resistances.containsKey(type)) {
-            double r = resistances.get(type);
-            setLife(getLife() - (damage * (1 - r))); // Dano total
-            return;
-        }
-        setLife(getLife() - damage);
-        this.takedDamege = true;
-    }
+    public abstract void strike(AttackTypes type, double damage);
 
     public Entity getNearest(double range){
         List<Entity> entities = Game.getMap().getEntities();
@@ -283,22 +241,7 @@ public abstract class Entity extends GameObject {
     /**
      * Quando chamado, adiciona partículas no local da morte, aciona um som padrão de morte e remove a entidade do mapa.
      */
-    public void die() {
-        //TODO adicionar particula de morte
-        //TODO adicionar som de morte
-        this.disappear();
-        this.dropXp();
-    }
-
-    private void dropXp() {
-        double luck = Game.getPlayer().getLuck();
-        Xp e = (Xp)build(EntityIDs.Xp.ordinal(), 0, 0);
-        e.setX(getX());
-        e.setY(getY());
-        e.setWeight(getXpWeight() * (1d + Engine.RAND.nextDouble(luck)));
-        Game.getMap().put(e);
-        e.getPhysical().addForce("move", 7, Math.PI*2);
-    }
+    public abstract void die();
 
     /**
      * Esta função serve apenas para retirar uma entidade do mara, sem nenhum tipo de efeito.

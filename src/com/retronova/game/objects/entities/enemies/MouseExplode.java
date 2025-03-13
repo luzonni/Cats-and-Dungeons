@@ -1,4 +1,4 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Sound;
@@ -6,13 +6,16 @@ import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.entities.AttackTypes;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.ParticleIDs;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class MouseExplode extends Entity {
+public class MouseExplode extends Enemy {
 
     private int countAnim;
 
@@ -21,7 +24,7 @@ public class MouseExplode extends Entity {
     private final double danoExplosao;
 
     // TODO: Entender pq a sprite ta nervosa virando de um lado pro outro sem motivo
-    MouseExplode(int ID, double x, double y) {
+    public MouseExplode(int ID, double x, double y) {
         super(ID,x,y,0.5);
         this.danoExplosao = 5;
         loadSprites("ratexplode");

@@ -1,18 +1,18 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 
-import java.awt.image.BufferedImage;
-
-public class Xp extends Entity {
+public class Xp extends Utility {
 
     private int count;
     private double weight;
     private double speed;
 
-    Xp(int ID, double x, double y) {
-        super(ID, x, y, 0.5d);
+    public Xp(double x, double y) {
+        super(-1, x, y, 0.5d);
         loadSprites("xp");
     }
 

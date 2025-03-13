@@ -1,4 +1,4 @@
-package com.retronova.game.objects.furniture;
+package com.retronova.game.objects.entities.furniture;
 
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -12,7 +12,7 @@ public class TrapDoor extends Furniture {
     private int indexSprite;
     private int count;
 
-    TrapDoor(int ID, double x, double y) {
+    public TrapDoor(int ID, double x, double y) {
         super(ID, x, y);
         loadSprites("trapdoor");
     }

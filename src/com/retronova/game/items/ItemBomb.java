@@ -1,7 +1,7 @@
 package com.retronova.game.items;
 
 import com.retronova.game.Game;
-import com.retronova.game.objects.entities.Bomb;
+import com.retronova.game.objects.entities.utilities.Bomb;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 

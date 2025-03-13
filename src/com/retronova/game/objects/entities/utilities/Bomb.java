@@ -1,17 +1,18 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.entities.AttackTypes;
+import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.ParticleIDs;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
-public class Bomb extends Entity{
+public class Bomb extends Utility {
 
     private final double damage;
     private final Entity shooter;

@@ -3,7 +3,7 @@ package com.retronova.game.items;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.game.objects.entities.Silk;
+import com.retronova.game.objects.entities.utilities.Silk;
 
 import java.awt.*;
 

@@ -1,19 +1,22 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.entities.AttackTypes;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class Zombie extends Entity {
+public class Zombie extends Enemy {
 
     private int countAnim;
     private int cooldown;
 
-    Zombie(int ID, double x, double y) {
+    public Zombie(int ID, double x, double y) {
         super(ID, x, y, 0.5);
         loadSprites("mousezombie");
         setSolid();

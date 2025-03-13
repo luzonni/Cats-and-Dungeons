@@ -91,8 +91,12 @@ public class Player extends Entity {
     }
 
     @Override
+    public void strike(AttackTypes type, double damage) {
+        //TODO eh necessario fazer uma implementação no player direfente, com base em suas passivas...
+    }
+
+    @Override
     public void die() {
-        super.die();
         Game.restart();
     }
 
@@ -108,7 +112,6 @@ public class Player extends Entity {
     }
 
     public void plusXp(double weight) {
-        double currentXp = getXp();
         this.XP += weight;
         while(getXp() >= getXpLength()) { //caso ganhe um xp com peso muito alto, o nivel vai aumentar até o chegar no nivel considerado
             this.XP -= getXpLength();

@@ -1,12 +1,14 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
+import com.retronova.game.objects.entities.AttackTypes;
+import com.retronova.game.objects.entities.Entity;
 
 import java.awt.*;
 import java.util.List;
 
-public class Arrow extends Entity {
+public class Arrow extends Utility {
 
     private final double damage;
     private double angle;

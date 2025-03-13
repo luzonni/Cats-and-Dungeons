@@ -1,16 +1,18 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class CatToyBoss extends Entity {
+public class CatToyBoss extends Enemy {
 
     private int countAnim;
 
-    CatToyBoss(int ID, double x, double y) {
+    public CatToyBoss(int ID, double x, double y) {
         super(ID, x, y, 0.4);
         loadSprites("cattoyboss");
         //adicionar resistência

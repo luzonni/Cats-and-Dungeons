@@ -1,26 +1,27 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class MonarkMouse extends Entity{
+public class KingCursedCatBoss extends Enemy {
 
     private int countAnim;
 
-    MonarkMouse(int ID, double x, double y) {
-        super(ID, x, y, 0.6);
-        loadSprites("monarkmouse");
-        //adicionar resistência
-        setSolid();
-        setAlive();
+    public KingCursedCatBoss(int ID, double x, double y) {
+        super(ID,x,y, 0.3);
+        loadSprites("kingcursedcatboss");
     }
 
+    @Override
     public void tick() {
         moveIA();
         animation();
+
     }
 
     public void moveIA() {
@@ -35,24 +36,16 @@ public class MonarkMouse extends Entity{
             countAnim = 0;
             getSheet().plusIndex();
         }
-
     }
 
-    public void render(Graphics2D d) {
+    @Override
+    public void render(Graphics2D k) {
         int orientation = getPhysical().getOrientation()[0] * -1;
         if (orientation == 0) {
             orientation = -1;
         }
         BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
-        renderSprite(sprite, d);
+        renderSprite(sprite, k);
     }
 
-    @Override
-    public void dispose() {}
 }
-
-
-
-
-
-

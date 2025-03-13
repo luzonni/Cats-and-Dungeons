@@ -1,17 +1,15 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.game.objects.entities.Arrow;
+import com.retronova.game.objects.entities.utilities.Arrow;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 public class Bow extends Item {

@@ -1,16 +1,18 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.Alpha;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
+import com.retronova.game.objects.entities.AttackTypes;
+import com.retronova.game.objects.entities.Entity;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Silk extends Entity {
+public class Silk extends Utility {
 
     private final List<Entity> visited;
     private float fading = 1f;

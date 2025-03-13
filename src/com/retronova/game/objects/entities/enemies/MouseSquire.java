@@ -1,18 +1,21 @@
-package com.retronova.game.objects.entities;
+package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.entities.AttackTypes;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class MouseSquire extends Entity {
+public class MouseSquire extends Enemy {
 
     private int countAnim;
     private int cooldown;
 
-    MouseSquire(int ID, double x, double y) {
+    public MouseSquire(int ID, double x, double y) {
         super(ID, x, y, 0.4);
         loadSprites("mousesquire");
         setSolid();
