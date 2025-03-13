@@ -14,7 +14,7 @@ public class TrapDoor extends Furniture {
 
     public TrapDoor(int ID, double x, double y) {
         super(ID, x, y);
-        loadSprites("firetest");
+        loadSprites("trapdoor");
     }
 
     @Override

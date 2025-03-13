@@ -27,7 +27,6 @@ class Hotbar {
         for(int i = 0; i < sheetSize; i++) {
             this.sprites[i] = sheet.getSpriteWithIndex(i, 0);
         }
-        refreshPositions();
     }
 
     private void refreshPositions() {
@@ -85,6 +84,7 @@ class Hotbar {
     }
 
     public void render(Graphics2D g) {
+        refreshPositions();
         Item[] items = player.getInventory().getHotbar();
         int length = player.getInventory().getHotbarSize();
         int w = bounds[0].width * bounds.length;

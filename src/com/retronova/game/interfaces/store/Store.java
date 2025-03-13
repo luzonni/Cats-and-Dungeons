@@ -40,18 +40,28 @@ public class Store implements Activity {
         }
         this.prices = prices;
         this.store = new SpriteSheet("ui", "store", Configs.UISCALE).getSHEET();
+        this.slots = new Slot[3];
+        this.positionStore = new Point();
+        this.buttonBuy = new Rectangle(20 * Configs.UISCALE, 10 * Configs.UISCALE);
+        for(int i = 0; i < slots.length; i++) {
+            this.slots[i] = new Slot(0, 0);
+            this.slots[i].put(items[i]);
+        }
+        this.selected = new Slot(0, 0);
+        refreshPosition();
+    }
+
+    private void refreshPosition() {
         int w = Engine.window.getWidth();
         int h = Engine.window.getHeight();
-        this.positionStore = new Point(w/2 - store.getWidth()/2, h/2 - store.getHeight()/2);
-        this.buttonBuy = new Rectangle(positionStore.x + 97 * Configs.UISCALE, positionStore.y + 76 * Configs.UISCALE, 20 * Configs.UISCALE, 10 * Configs.UISCALE);
-        this.slots = new Slot[3];
+        this.positionStore.setLocation(w/2 - store.getWidth()/2, h/2 - store.getHeight()/2);
+        this.buttonBuy.setLocation(positionStore.x + 97 * Configs.UISCALE, positionStore.y + 76 * Configs.UISCALE);
         for(int i = 0; i < slots.length; i++) {
             int x = positionStore.x + slotsPositions[i].x * Configs.UISCALE;
             int y = positionStore.y + slotsPositions[i].y * Configs.UISCALE;
-            this.slots[i] = new Slot(x, y);
-            this.slots[i].put(items[i]);
+            this.slots[i].setPosition(x, y);
         }
-        this.selected = new Slot(positionStore.x + 32 * Configs.UISCALE, positionStore.y + 37 * Configs.UISCALE);
+        this.selected.setPosition(positionStore.x + 32 * Configs.UISCALE, positionStore.y + 37 * Configs.UISCALE);
     }
 
     @Override
@@ -77,6 +87,7 @@ public class Store implements Activity {
 
     @Override
     public void render(Graphics2D g) {
+        refreshPosition();
         int fw = Engine.window.getWidth();
         int fh = Engine.window.getHeight();
         g.setColor(new Color(0,0,0, 180));
