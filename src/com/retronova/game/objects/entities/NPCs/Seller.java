@@ -1,6 +1,8 @@
 package com.retronova.game.objects.entities.NPCs;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.Window;
+import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
@@ -10,6 +12,9 @@ import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class Seller extends NPC {
 
@@ -41,6 +46,13 @@ public class Seller extends NPC {
             }
         }else {
             Game.getInter().remove("store");
+        }
+        //Logica errada...
+        if(Mouse.onMap(getBounds(), Game.C)) {
+            BufferedImage image = new SpriteSheet("ui", "cursor_on", 2).getSHEET();
+            Engine.window.setCursor(image, new Point(image.getWidth()/2, image.getHeight()/2));
+        }else {
+            Engine.window.resetCursor();
         }
     }
 }

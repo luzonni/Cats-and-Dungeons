@@ -17,10 +17,15 @@ public class Window extends Canvas {
     @Serial
     private static final long serialVersionUID = 36752349087L;
 
+    public static final BufferedImage defalutCursor;
+
+    static {
+        defalutCursor = new SpriteSheet("ui","cursor", 3).getSHEET();
+    }
+
     private final String name;
     private Thread thread;
     private JFrame frame;
-    private SpriteSheet cursor;
     private final Toolkit toolkit;
     private int C_W, C_H;
     boolean oglEnabled = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -71,8 +76,7 @@ public class Window extends Canvas {
         frame.pack();
         try {
             SpriteSheet icon = new SpriteSheet("ui","icon", 3);
-            cursor = new SpriteSheet("ui", "cursor", 3);
-            setCursor(cursor.getSHEET());
+            setCursor(defalutCursor);
             frame.setIconImage(icon.getSHEET());
         }catch(Exception ignore) { }
         frame.setLocationRelativeTo(null);
@@ -107,7 +111,7 @@ public class Window extends Canvas {
     }
 
     public synchronized void resetCursor() {
-        Cursor c = toolkit.createCustomCursor(cursor.getSHEET(), new Point(0,0), "cursor");
+        Cursor c = toolkit.createCustomCursor(defalutCursor, new Point(0,0), "cursor");
         frame.setCursor(c);
     }
 

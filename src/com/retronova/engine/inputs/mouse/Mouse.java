@@ -152,6 +152,10 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         return 0;
     }
 
+    public static boolean onMap(Rectangle bounds, Camera cam) {
+        return bounds.contains(xMouse + cam.getX(), yMouse + cam.getY());
+    }
+
     //Interface Methods
 
     @Override
