@@ -13,13 +13,19 @@ public class Feed extends Consumable {
 
     Feed(int id) {
         super(id, "Feed", "feed");
+        addSpecifications("Add 10 points of life", "Less 10% os luck", "10 seconds of regeneration");
+
     }
 
     @Override
     public void consume() {
         Player player = Game.getPlayer();
         player.addModifier(Modifiers.Life, 10);
-        player.addModifier(Modifiers.Luck, -0.1);
+        player.addModifier(Modifiers.Luck, 0.1);
+        player.addEffect("regeneration", e -> {
+            if(e.getLife() < e.getLifeSize())
+                e.setLife(e.getLife()+0.1d);
+        }, 10);
     }
 
     @Override

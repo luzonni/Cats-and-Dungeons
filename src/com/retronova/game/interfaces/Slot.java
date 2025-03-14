@@ -1,8 +1,6 @@
 package com.retronova.game.interfaces;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.inputs.mouse.Mouse_Button;
-import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -48,15 +46,6 @@ public class Slot {
         return caught;
     }
 
-    public void tick() {
-        if(item instanceof Consumable consumable) {
-            if(Mouse.clickOn(Mouse_Button.RIGHT, getBounds())) {
-                consumable.consume();
-                take();
-            }
-        }
-    }
-
     public boolean isEmpty() {
         return this.item == null;
     }
@@ -79,6 +68,23 @@ public class Slot {
         int width = bounds.width - overAnimPref*2;
         int height = bounds.height - overAnimPref*2;
         g.drawImage(item.getSprite(), x, y, width, height, null);
+    }
 
+    public void renderInfo(Graphics2D g) {
+        InfoBox info = null;
+        if(Mouse.on(getBounds()) && !isEmpty()) {
+            String[] values = new String[item().getSpecifications().length + 1];
+            values[0] = item().getName();
+            for (int j = 1; j < values.length; j++) {
+                values[j] = "- " + item().getSpecifications()[j - 1];
+            }
+            info = new InfoBox(values);
+        }
+        if(info == null) {
+            return;
+        }
+        int x = Mouse.getX() + 16;
+        int y = Mouse.getY() + 16;
+        info.render(x, y, g);
     }
 }

@@ -6,7 +6,6 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.StoreException;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.graphics.SpriteSheet;
-import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
@@ -93,6 +92,7 @@ public class Store implements Activity {
         renderPriceSelected(g);
         renderMoney(g);
         renderButtonBuy(g);
+        renderInfo(g);
     }
 
     private void renderStore(Graphics2D g) {
@@ -137,6 +137,15 @@ public class Store implements Activity {
         g.setColor(Color.white);
         g.setStroke(new BasicStroke(Configs.HudScale()));
         g.drawRect(buttonBuy.x, buttonBuy.y, buttonBuy.width, buttonBuy.height);
+    }
+
+    private void renderInfo(Graphics2D g) {
+        for(int i = 0; i < slots.length; i++) {
+            Slot slot = slots[i];
+            if (Mouse.on(slot.getBounds()) && !slot.isEmpty()) {
+                slot.renderInfo(g);
+            }
+        }
     }
 
     @Override

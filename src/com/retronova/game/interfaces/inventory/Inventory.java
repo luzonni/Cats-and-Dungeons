@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.InventoryOutsOfBounds;
 import com.retronova.game.interfaces.Slot;
+import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
@@ -159,10 +160,6 @@ public class Inventory implements Activity {
     public void tick() {
         refreshPositions();
         interation();
-        Slot[] slots = merge();
-        for(int i = 0; i < slots.length; i++) {
-            slots[i].tick();
-        }
     }
 
     private void interation() {
@@ -214,6 +211,13 @@ public class Inventory implements Activity {
             if(Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
                slotPermutation(slot, this.insurer);
             }
+            if(slot.item() instanceof Consumable consumable) {
+                if(Mouse.clickOn(Mouse_Button.RIGHT, slot.getBounds())) {
+                    consumable.consume();
+                    slot.take();
+                    //TODO adicionar som de item sendo consumido
+                }
+            }
         }
     }
 
@@ -246,7 +250,7 @@ public class Inventory implements Activity {
     public void render(Graphics2D g) {
         renderInventory(g);
         renderInsurer(g);
-        renderItemTag(g);
+        renderInfo(g);
     }
 
     private void renderInventory(Graphics2D g) {
@@ -267,26 +271,14 @@ public class Inventory implements Activity {
         }
     }
 
-    private void renderItemTag(Graphics2D g) {
-        InfoBox info = null;
+    private void renderInfo(Graphics2D g) {
         Slot[] slots = merge();
         for(int i = 0; i < slots.length; i++) {
             Slot slot = slots[i];
-            if(Mouse.on(slot.getBounds()) && !slot.isEmpty()) {
-                String[] values = new String[slot.item().getSpecifications().length + 1];
-                values[0] = slot.item().getName();
-                for(int j = 1; j < values.length; j++) {
-                    values[j] = "- "+slot.item().getSpecifications()[j-1];
-                }
-                info = new InfoBox(values);
+            if (Mouse.on(slot.getBounds()) && !slot.isEmpty()) {
+                slot.renderInfo(g);
             }
         }
-        if(info == null) {
-            return;
-        }
-        int x = Mouse.getX() + 16;
-        int y = Mouse.getY() + 16;
-        info.render(x, y, g);
     }
 
     @Override

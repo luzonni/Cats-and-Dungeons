@@ -1,11 +1,11 @@
-package com.retronova.game.interfaces.inventory;
+package com.retronova.game.interfaces;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontG;
 
 import java.awt.*;
 
-class InfoBox {
+public class InfoBox {
 
     private final String[] values;
     private final Rectangle bounds;
