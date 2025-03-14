@@ -1,5 +1,6 @@
 package com.retronova.game.items;
 
+import com.retronova.engine.Engine;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
@@ -15,6 +16,8 @@ public class Feed extends Consumable {
         super(id, "Feed", "feed");
         addSpecifications("Add 10 points of life", "Less 10% os luck", "10 seconds of regeneration");
 
+        if(Engine.RAND.nextBoolean())
+            plusIndexSprite();
     }
 
     @Override

@@ -18,16 +18,16 @@ import java.awt.image.BufferedImage;
 
 public class Seller extends NPC {
 
-    private Store store;
-    private Item[][] stock = {
+    private final Store store;
+
+    public static final Item[][] stock = {
             {Item.build(ItemIDs.Sword), Item.build(ItemIDs.Silk), Item.build(ItemIDs.Feed)},
             {Item.build(ItemIDs.Silk), Item.build(ItemIDs.Bomb), Item.build(ItemIDs.Sword)},
     };
-
-    private int[][] prices = {
-            {12, 16, 7}
+    public static final int[][] prices = {
+            {12, 16, 7},
+            {6, 3, 10}
     };
-
 
     public Seller(int ID, double x, double y) {
         super(ID, x, y, 0.5);

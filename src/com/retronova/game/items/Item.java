@@ -3,11 +3,21 @@ package com.retronova.game.items;
 import com.retronova.engine.Configs;
 import com.retronova.engine.exceptions.NotFound;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.Sheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class Item {
+
+    private static final Map<String, BufferedImage[]> sheet;
+    
+    static {
+        sheet = new HashMap<>();
+    }
 
     public static Item build(ItemIDs id) {
         int i = id.ordinal();
@@ -34,21 +44,25 @@ public abstract class Item {
 
     private final int id;
     private final String name;
-    private final BufferedImage[] sprite;
     private int indexSprite;
 
+    private BufferedImage[] sprite;
     private String[] specifications;
 
      Item(int id, String name, String sprite) {
         this.id = id;
         this.name = name;
-        SpriteSheet sheet = new SpriteSheet("items", sprite, Configs.GameScale());
-        int length = sheet.getWidth()/16;
-        this.sprite = new BufferedImage[length];
-        for(int i = 0; i < length; i++) {
-            this.sprite[i] = sheet.getSpriteWithIndex(i, 0);
+        if(!sheet.containsKey(sprite)) {
+            SpriteSheet sheet = new SpriteSheet("items", sprite, Configs.GameScale());
+            int length = sheet.getWidth() / 16;
+            this.sprite = new BufferedImage[length];
+            for (int i = 0; i < length; i++) {
+                this.sprite[i] = sheet.getSpriteWithIndex(i, 0);
+            }
+        }else {
+            this.sprite = sheet.get(sprite);
         }
-        addSpecifications("Teste1", "Teste2", "Teste3", "Teste4", "Teste5");
+        addSpecifications("espec");
     }
 
     protected void addSpecifications(String... specifications) {
