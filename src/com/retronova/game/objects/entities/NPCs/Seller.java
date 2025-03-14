@@ -20,7 +20,7 @@ public class Seller extends NPC {
 
     private Store store;
     private Item[][] stock = {
-            {Item.build(ItemIDs.Sword), Item.build(ItemIDs.Silk), Item.build(ItemIDs.Bow)},
+            {Item.build(ItemIDs.Sword), Item.build(ItemIDs.Silk), Item.build(ItemIDs.Feed)},
             {Item.build(ItemIDs.Silk), Item.build(ItemIDs.Bomb), Item.build(ItemIDs.Sword)},
     };
 

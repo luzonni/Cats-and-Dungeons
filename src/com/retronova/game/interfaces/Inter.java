@@ -56,24 +56,34 @@ public class Inter implements Activity {
         }
         this.inter.remove(interName);
         this.tabs = tabs();
+        refreshPositions();
+    }
+
+    private void refreshPositions() {
+        String[] keys = keys();
+        Rectangle rec = this.tabs[0];
+        int width = rec.width * keys.length;
+        int x = Engine.window.getWidth()/2 - width/2;
+        int y = Configs.Margin();
+        for(int i = 0; i < keys.length; i++) {
+            tabs[i].setLocation(x + (rec.width+Configs.HudScale()*3)*i, y);
+        }
     }
 
     private Rectangle[] tabs() {
         String[] keys = keys();
         int scale = Configs.HudScale();
         Rectangle rec = new Rectangle(48*scale, 16*scale);
-        int width = rec.width * keys.length;
-        int x = Engine.window.getWidth()/2 - width/2;
-        int y = Configs.Margin();
         Rectangle[] tabs = new Rectangle[keys.length];
         for(int i = 0; i < keys.length; i++) {
-            tabs[i] = new Rectangle(x + rec.width*i, y, rec.width, rec.height);
+            tabs[i] = new Rectangle(rec.width, rec.height);
         }
         return tabs;
     }
 
     @Override
     public void tick() {
+        refreshPositions();
         if(KeyBoard.KeyPressed("E")) {
             Engine.pause(null);
         }
@@ -91,13 +101,18 @@ public class Inter implements Activity {
         g.setColor(new Color(0,0,0, 80));
         g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
         inter.get(index).render(g);
+        renderTabs(g);
+    }
+
+    private void renderTabs(Graphics2D g) {
         Font font = FontG.font(Configs.HudScale()*6);
         g.setFont(font);
         g.setStroke(new BasicStroke(Configs.HudScale()*2));
         for(int i = 0; i < tabs.length; i++) {
             Rectangle rec = tabs[i];
             String name = keys()[i];
-            g.setColor(new Color(0x09122c));
+            Color border = index.equals(name) ? new Color(0xe17564) : new Color(0x09122c);
+            g.setColor(border);
             g.drawRect(rec.x, rec.y, rec.width, rec.height);
             g.setColor(new Color(0x872341));
             g.fillRect(rec.x, rec.y, rec.width, rec.height);
@@ -109,7 +124,6 @@ public class Inter implements Activity {
             g.setColor(c);
             g.drawString(name, rec.x + rec.width/2 - wf/2, rec.y + rec.height/2 + hf/2);
         }
-
     }
 
     @Override

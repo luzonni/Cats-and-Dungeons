@@ -34,7 +34,7 @@ public class Sheet<T extends GameObject> {
         }
     }
 
-    BufferedImage getSprite() {
+    public BufferedImage getSprite() {
         return this.sheet[type][index];
     }
 

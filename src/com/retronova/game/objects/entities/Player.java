@@ -76,6 +76,11 @@ public class Player extends Entity {
         return this.inventory;
     }
 
+    public BufferedImage getSprite(int index) {
+        getSheet().setIndex(index);
+        return getSheet().getSprite();
+    }
+
     @Override
     public void tick() {
         countAnim++;

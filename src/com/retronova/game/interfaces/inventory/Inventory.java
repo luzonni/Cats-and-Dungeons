@@ -159,6 +159,10 @@ public class Inventory implements Activity {
     public void tick() {
         refreshPositions();
         interation();
+        Slot[] slots = merge();
+        for(int i = 0; i < slots.length; i++) {
+            slots[i].tick();
+        }
     }
 
     private void interation() {

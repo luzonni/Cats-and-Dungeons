@@ -1,6 +1,8 @@
 package com.retronova.game.interfaces;
 
 import com.retronova.engine.Configs;
+import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -44,6 +46,15 @@ public class Slot {
         Item caught = this.item;
         this.item = null;
         return caught;
+    }
+
+    public void tick() {
+        if(item instanceof Consumable consumable) {
+            if(Mouse.clickOn(Mouse_Button.RIGHT, getBounds())) {
+                consumable.consume();
+                take();
+            }
+        }
     }
 
     public boolean isEmpty() {
