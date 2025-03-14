@@ -6,8 +6,13 @@ import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.engine.graphics.Galaxy;
 import com.retronova.game.hud.HUD;
+import com.retronova.game.interfaces.Inter;
 import com.retronova.game.interfaces.Pause;
+import com.retronova.game.interfaces.status.Status;
 import com.retronova.game.map.*;
+import com.retronova.game.map.arena.Arena;
+import com.retronova.game.map.arena.Waves;
+import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
@@ -33,17 +38,21 @@ public class Game implements Activity {
     private Physically physically;
 
     private final HUD hud;
+    private final Inter inter;
 
     //Teste
     public Game(int indexPlayer, int difficulty, GameMap map) {
         this.difficulty = difficulty;
         this.indexPlayer = indexPlayer;
+        this.inter = new Inter();
         Player player = Player.newPlayer(indexPlayer);
+        this.inter.put("inventory", player.getInventory());
+        this.inter.put("status", new Status(player));
         this.player = player;
         this.changeMap(map);
         this.map.addPlayer(player);
         this.hud = new HUD(player);
-        galaxy = new Galaxy();
+        this.galaxy = new Galaxy();
     }
 
     public void changeMap(GameMap newMap) {
@@ -71,7 +80,7 @@ public class Game implements Activity {
             Engine.pause(new Pause(this));
         }
         if(KeyBoard.KeyPressed("E")) {
-            Engine.pause(player.getInventory());
+            inter.open();
         }
         if(!physically.isRunning()) {
             physically.start();
@@ -138,14 +147,18 @@ public class Game implements Activity {
 
     @Override
     public void dispose() {
-        //limpar memoria
         System.out.println("Dispose Game");
         physically.dispose();
+        inter.dispose();
     }
 
     public static void restart() {
-        Game game = getGame();
+        Game.getInter().remove("inventory");
         GameMap map = getMap();
+        if(map instanceof Arena) {
+            map = getRoom();
+        }
+        Game game = getGame();
         map.restart();
         Engine.setActivity(new Game(game.indexPlayer, game.difficulty, map));
         //TODO tirar saídas de console após finalização da lógica.
@@ -180,16 +193,25 @@ public class Game implements Activity {
         throw new NotInMap("O mapa atual não é uma Arena!");
     }
 
-    public static Room getRoom() {
-        if(getMap() instanceof Room room) {
-            return room;
+    public static Arena getArena() {
+        if(getMap() instanceof Arena arena) {
+            return arena;
         }
         throw new NotInMap("O mapa atual não é uma room!");
     }
 
-    public static HUD getHUD() {
+    public static Room getRoom() {
+        if(getMap() instanceof Room room) {
+            return room;
+        }else if(getMap() instanceof Arena arena) {
+            return arena.getRoom();
+        }
+        throw new NotInMap("O mapa atual não é uma room!");
+    }
+
+    public static Inter getInter() {
         if(Engine.getACTIVITY() instanceof Game game) {
-            return game.hud;
+            return game.inter;
         }
         throw new NotInActivity("Não é possível retornar a UI pois a activity atual não é um jogo");
     }

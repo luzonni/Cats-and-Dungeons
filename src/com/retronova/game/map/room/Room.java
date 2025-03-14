@@ -1,7 +1,8 @@
-package com.retronova.game.map;
+package com.retronova.game.map.room;
 
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.game.map.GameMap;
 
 public class Room extends GameMap {
 

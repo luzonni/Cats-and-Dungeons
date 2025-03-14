@@ -1,8 +1,10 @@
-package com.retronova.game.map;
+package com.retronova.game.map.arena;
 
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
+import com.retronova.game.map.GameMap;
+import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.particles.Portal;
 
@@ -12,9 +14,11 @@ public class Arena extends GameMap {
     private static final String[] ARENAS = {"easy", "normal", "hard"};
 
     private final Waves waves;
+    private final Room room;
 
-    public Arena(int type) {
+    public Arena(int type, Room room) {
         super(ARENAS[type]);
+        this.room = room;
         this.waves = new Waves(this);
         Player player = Game.getPlayer();
         player.setX(getBounds().width/2d);
@@ -28,6 +32,10 @@ public class Arena extends GameMap {
 
     public Waves getWaves() {
         return waves;
+    }
+
+    public Room getRoom() {
+        return this.room;
     }
 
     @Override

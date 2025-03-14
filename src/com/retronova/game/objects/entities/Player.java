@@ -7,6 +7,7 @@ import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.Sheet;
+import com.retronova.game.objects.particles.DamageMobs;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -15,14 +16,14 @@ import java.util.List;
 public class Player extends Entity {
 
     public static final Player[] TEMPLATES = new Player[] {
-            new Player("cinzento", 100,10, 5, 0.3, 15, 30, 5, 3),
+            new Player("cinzento", 100,10, 5, 0.3, 15, 8, 5, 3),
             new Player("mago", 80,10, 5, 0.3, 12, 11, 5, 4),
             new Player("sortudo", 1000,200, 7, 0.3, 1, 50, 5, 4)
     };
 
     public static Player newPlayer(int index) {
         Player p = TEMPLATES[index];
-        return new Player(
+        Player player = new Player(
                 p.getName(),
                 p.getLife(),
                 p.getDamage(),
@@ -33,6 +34,8 @@ public class Player extends Entity {
                 p.getInventory().getBagSize(),
                 p.getInventory().getHotbarSize()
         );
+        System.out.println("Add player inventory in interfaces");
+        return player;
     }
 
     private final String name;
@@ -41,7 +44,7 @@ public class Player extends Entity {
     private int level;
     private int countAnim;
 
-    private double luck;
+    private double luck; // 0.0 ~ 1.0
 
     private final Inventory inventory;
 
@@ -93,11 +96,6 @@ public class Player extends Entity {
         }
         updateMovement();
         tickItemHand();
-    }
-
-    @Override
-    public void strike(AttackTypes type, double damage) {
-        //TODO eh necessario fazer uma implementação no player direfente, com base em suas passivas...
     }
 
     @Override

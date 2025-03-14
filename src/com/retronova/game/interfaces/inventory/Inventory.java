@@ -6,7 +6,6 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.InventoryOutsOfBounds;
 import com.retronova.game.interfaces.Slot;
 import com.retronova.game.items.Item;
-import com.retronova.game.items.ItemIDs;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -43,12 +42,14 @@ public class Inventory implements Activity {
     }
 
     public void refreshPositions() {
+        int X = Engine.window.getWidth()/2 - inventory.getWidth()/2;
+        int Y = Engine.window.getHeight()/2 - inventory.getHeight()/2;
         int xh = Configs.HudScale() * 6;
         int yh = Configs.HudScale() * 70;
-        int xi = Configs.HudScale() *6;
-        int yi = Configs.HudScale() *6;
+        int xi = Configs.HudScale() * 6;
+        int yi = Configs.HudScale() * 6;
         if(this.inventoryPosition == null) {
-            this.inventoryPosition = new Point(Configs.Margin(), Configs.Margin());
+            this.inventoryPosition = new Point(X, Y);
             xh += inventoryPosition.x;
             yh += inventoryPosition.y;
             xi += inventoryPosition.x;
@@ -69,9 +70,9 @@ public class Inventory implements Activity {
             }
             return;
         }
-        if(this.inventoryPosition.x == Configs.Margin() && this.inventoryPosition.y == Configs.Margin())
+        if(this.inventoryPosition.x == X && this.inventoryPosition.y == Y)
             return;
-        this.inventoryPosition.setLocation(Configs.Margin(), Configs.Margin());
+        this.inventoryPosition.setLocation(X, Y);
         xh += inventoryPosition.x;
         yh += inventoryPosition.y;
         xi += inventoryPosition.x;
@@ -156,9 +157,6 @@ public class Inventory implements Activity {
 
     @Override
     public void tick() {
-        if(KeyBoard.KeyPressed("E")) {
-            Engine.pause(null);
-        }
         refreshPositions();
         interation();
     }
@@ -171,7 +169,7 @@ public class Inventory implements Activity {
                     char keyChar = KeyBoard.getKeyChar(numbers);
                     int index = Integer.parseInt(String.valueOf(keyChar)) - 1;
                     if (index < lengthHotbar)
-                        nomeKrai(slot, hotbar[index]);
+                        slotPermutation(slot, hotbar[index]);
                 }catch (Exception ignore) {}
             }
             if(KeyBoard.KeyPressing("SHIFT") && Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
@@ -184,7 +182,7 @@ public class Inventory implements Activity {
                     }
                 }
                 if(toChange != null) {
-                    nomeKrai(slot, toChange);
+                    slotPermutation(slot, toChange);
                     return;
                 }
             }
@@ -201,7 +199,7 @@ public class Inventory implements Activity {
                     }
                 }
                 if(toChange != null) {
-                    nomeKrai(slot, toChange);
+                    slotPermutation(slot, toChange);
                     return;
                 }
             }
@@ -210,12 +208,12 @@ public class Inventory implements Activity {
         for(int i = 0; i < currentSlots.length; i++) {
             Slot slot = currentSlots[i];
             if(Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
-               nomeKrai(slot, this.insurer);
+               slotPermutation(slot, this.insurer);
             }
         }
     }
 
-    private void nomeKrai(Slot slot1, Slot slot2) {
+    private void slotPermutation(Slot slot1, Slot slot2) {
         if(!slot1.isEmpty() && slot2.isEmpty()) {
             slot2.put(slot1.take());
         }else if(slot1.isEmpty() && !slot2.isEmpty()) {
@@ -242,10 +240,6 @@ public class Inventory implements Activity {
 
     @Override
     public void render(Graphics2D g) {
-        int fw = Engine.window.getWidth();
-        int fh = Engine.window.getHeight();
-        g.setColor(new Color(0,0,0, 180));
-        g.fillRect(0, 0, fw, fh);
         renderInventory(g);
         renderInsurer(g);
         renderItemTag(g);

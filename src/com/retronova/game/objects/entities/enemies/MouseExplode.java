@@ -18,15 +18,11 @@ public class MouseExplode extends Enemy {
 
     private int countAnim;
 
-
-    //private final int raioExplosao;
-    private final double danoExplosao;
-
     // TODO: Entender pq a sprite ta nervosa virando de um lado pro outro sem motivo
     public MouseExplode(int ID, double x, double y) {
         super(ID,x,y,0.5);
-        this.danoExplosao = 5;
         loadSprites("ratexplode");
+        setDamage(33);
         setSolid();
         setSpeed(1.3d);
         setLife(200);
@@ -51,7 +47,7 @@ public class MouseExplode extends Enemy {
     }
 
     private void explodir(Player player) {
-        player.strike(AttackTypes.Explosion, danoExplosao);
+        player.strike(AttackTypes.Explosion, getDamage());
         double range = GameObject.SIZE()*1.5d;
         for(int i = 0; i < 60; i++) {
             double angle = Engine.RAND.nextDouble(Math.toRadians(360));

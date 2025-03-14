@@ -66,9 +66,6 @@ public class Store implements Activity {
 
     @Override
     public void tick() {
-        if(KeyBoard.KeyPressed("E")) {
-            Engine.pause(null);
-        }
         for(int i = 0; i < slots.length; i++) {
             Slot slot = slots[i];
             if(Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds()) && !slot.isEmpty()) {
@@ -91,10 +88,6 @@ public class Store implements Activity {
     @Override
     public void render(Graphics2D g) {
         refreshPosition();
-        int fw = Engine.window.getWidth();
-        int fh = Engine.window.getHeight();
-        g.setColor(new Color(0,0,0, 180));
-        g.fillRect(0, 0, fw, fh);
         renderStore(g);
         renderSlots(g);
         renderPriceSelected(g);

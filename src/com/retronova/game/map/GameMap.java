@@ -1,6 +1,7 @@
 package com.retronova.game.map;
 
 import com.retronova.engine.io.Resources;
+import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.NPCs.NPC;

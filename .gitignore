@@ -1,5 +1,6 @@
 ### IntelliJ IDEA ###
 out/
+META-INF/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .idea

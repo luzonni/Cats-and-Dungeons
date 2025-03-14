@@ -17,7 +17,6 @@ import java.util.Map;
 
 public abstract class Enemy extends Entity {
 
-    private final Map<AttackTypes, Double> resistances;
 
     private double xpWeight;
 
@@ -26,7 +25,6 @@ public abstract class Enemy extends Entity {
 
     protected Enemy(int ID, double x, double y, double friction) {
         super(ID, x, y, friction);
-        this.resistances = new HashMap<>();
         addResistances(AttackTypes.Flat, 0);
     }
 
@@ -47,19 +45,10 @@ public abstract class Enemy extends Entity {
         }
     }
 
-    protected void addResistances(AttackTypes attack, double resistance) {
-        this.resistances.put(attack, resistance);
-    }
-
     @Override
     public void strike(AttackTypes type, double damage) {
         Game.getMap().put(new DamageMobs(getX(), getY(), 0.6, Engine.RAND.nextDouble()*Math.PI*2));
-        if(resistances.containsKey(type)) {
-            double r = resistances.get(type);
-            setLife(getLife() - (damage * (1 - r))); // Dano total
-            return;
-        }
-        setLife(getLife() - damage);
+        super.strike(type, damage);
         this.tookDamage = true;
     }
 

@@ -12,6 +12,7 @@ import com.retronova.game.objects.entities.enemies.*;
 import com.retronova.game.objects.entities.furniture.Door;
 import com.retronova.game.objects.entities.furniture.TrapDoor;
 import com.retronova.game.objects.entities.utilities.Drop;
+import com.retronova.game.objects.particles.DamageMobs;
 import com.retronova.game.objects.physical.Physical;
 
 import java.awt.*;
@@ -24,6 +25,7 @@ public abstract class Entity extends GameObject {
 
     private final Physical physical;
 
+    private final Map<AttackTypes, Double> resistances;
     protected final Map<Modifiers, Double> modifiers;
     private final List<Effect> effects;
 
@@ -83,6 +85,7 @@ public abstract class Entity extends GameObject {
         setX(x);
         setY(y);
         this.physical = new Physical(this, friction);
+        this.resistances = new HashMap<>();
         this.modifiers = new HashMap<>();
         this.effects = new ArrayList<>();
     }
@@ -90,6 +93,20 @@ public abstract class Entity extends GameObject {
     @Override
     public void loadSprites(String... sprites) {
         setSheet(new Sheet<>(Entity.class, sprites));
+    }
+
+    protected void addResistances(AttackTypes attack, double resistance) {
+        this.resistances.put(attack, resistance);
+    }
+
+
+    public void strike(AttackTypes type, double damage) {
+        if(resistances.containsKey(type)) {
+            double r = resistances.get(type);
+            setLife(getLife() - (damage * (1 - r))); // Dano total
+            return;
+        }
+        setLife(getLife() - damage);
     }
 
     public void addModifier(Modifiers modifier, double value) {
@@ -187,8 +204,6 @@ public abstract class Entity extends GameObject {
     protected void setAttackSpeed(double attackSpeed) {
         this.attackSpeed = attackSpeed;
     }
-
-    public abstract void strike(AttackTypes type, double damage);
 
     public Entity getNearest(double range){
         List<Entity> entities = Game.getMap().getEntities();

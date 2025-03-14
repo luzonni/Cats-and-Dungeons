@@ -35,9 +35,12 @@ public class Seller extends NPC {
     public void tick() {
         Player player = Game.getPlayer();
         if(player.getDistance(this) <= GameObject.SIZE()*3) {
+            Game.getInter().put("store", this.store);
             if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
-                Engine.pause(this.store);
+                Game.getInter().open("store");
             }
+        }else {
+            Game.getInter().remove("store");
         }
     }
 }

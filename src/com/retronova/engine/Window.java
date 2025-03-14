@@ -4,10 +4,13 @@ import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.Serial;
+import java.net.URL;
 
 public class Window extends Canvas {
 
@@ -18,7 +21,7 @@ public class Window extends Canvas {
     private Thread thread;
     private JFrame frame;
     private SpriteSheet cursor;
-    private final Toolkit toolkit = Toolkit.getDefaultToolkit();
+    private final Toolkit toolkit;
     private int C_W, C_H;
     boolean oglEnabled = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
             .getDefaultScreenDevice()
@@ -29,6 +32,7 @@ public class Window extends Canvas {
 
     public Window(String name) {
         this.name = name;
+        this.toolkit = Toolkit.getDefaultToolkit();
         createOpenGl(true);
         initFrame();
         Mouse m = new Mouse();
