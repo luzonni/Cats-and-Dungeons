@@ -16,7 +16,7 @@ public class Menu implements Activity {
     private Rectangle[] quadrados;
     private final Color[] coresQuadrados = {new Color(0x00A878), new Color(0x4169E1), new Color(0x708090)};
     private final String[] quadradosNomes = {"Play", "Options", "Quit"};
-    private final Font fonteQuadrados = FontG.font(8 * Configs.UiScale());
+    private final Font fonteQuadrados = FontG.font(FontG.Game,8 * Configs.UiScale());
     private FontMetrics fmQuadrados;
     private int quadradoSeta = -1;
 

@@ -38,7 +38,7 @@ public class Engine implements Runnable {
     public Engine() {
         Configs.init();
         Configs.load();
-        FontG.addFont("game");
+        FontG.addFont("game", "septem");
         Sound.load();
         Engine.window = new Window(GameTag);
         setActivity(new Menu());

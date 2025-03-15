@@ -2,16 +2,18 @@ package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
-import com.retronova.game.interfaces.inventory.Inventory;
+import com.retronova.game.interfaces.Inventory;
+import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.Sheet;
-import com.retronova.game.objects.particles.DamageMobs;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Player extends Entity {
 
@@ -46,6 +48,8 @@ public class Player extends Entity {
 
     private double luck; // 0.0 ~ 1.0
 
+    private final List<Consumable> passives;
+
     private final Inventory inventory;
 
     Player(String name, double life, double damage, double speed, double luck, double attackSpeed, double range, int bagSize, int hotSize) {
@@ -53,6 +57,7 @@ public class Player extends Entity {
         this.name = name;
         this.luck = luck;
         this.inventory = new Inventory(bagSize, hotSize);
+        this.passives = new ArrayList<>();
         loadSprites("player_"+name+"_idle", "player_"+name+"_walking");
         setLife(life);
         setDamage(damage);
@@ -113,6 +118,14 @@ public class Player extends Entity {
             return this.luck + this.modifiers.get(Modifiers.Luck);
         }
         return luck;
+    }
+
+    public List<Consumable> getPassives() {
+        return List.copyOf(this.passives);
+    }
+
+    public void addPassive(Consumable passive) {
+        this.passives.add(passive);
     }
 
     private void setLuck(double luck) {

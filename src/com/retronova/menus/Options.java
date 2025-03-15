@@ -103,7 +103,7 @@ public class Options implements Activity {
 
     private void desenharTitulo(Graphics2D g) {
         g.setColor(corTexto);
-        g.setFont(FontG.font(15 * Configs.UiScale()));
+        g.setFont(FontG.font(FontG.Game,15 * Configs.UiScale()));
         FontMetrics fmTitulo = g.getFontMetrics();
 
         int x = Engine.window.getWidth() / 2 - fmTitulo.stringWidth(titulo) / 2;
@@ -113,7 +113,7 @@ public class Options implements Activity {
 
     private void desenharTextosTeste(Graphics2D g) {
         g.setColor(corTexto);
-        g.setFont(FontG.font(11 * Configs.UiScale()));
+        g.setFont(FontG.font(FontG.Game,11 * Configs.UiScale()));
         FontMetrics fmTeste = g.getFontMetrics();
 
         String[] titulosTeste = {"General", "Screen", "Sounds"};
@@ -140,12 +140,12 @@ public class Options implements Activity {
                     Rectangle quadrado = quadrados[linha][coluna];
 
                     int tamanhoFonte = 8 * Configs.UiScale();
-                    Font fonteAtual = FontG.font(tamanhoFonte);
+                    Font fonteAtual = FontG.font(FontG.Game,tamanhoFonte);
                     FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 
                     while (fmQuadrados.stringWidth(textosBotoes[linha][coluna]) > quadrado.width - 20) {
                         tamanhoFonte--;
-                        fonteAtual = FontG.font(tamanhoFonte);
+                        fonteAtual = FontG.font(FontG.Game,tamanhoFonte);
                         fmQuadrados = g.getFontMetrics(fonteAtual);
                     }
 

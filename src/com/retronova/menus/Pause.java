@@ -18,7 +18,7 @@ import java.awt.geom.RoundRectangle2D;
 public class Pause implements Activity {
 
     private Rectangle[] quadrados;
-    private final Font fonteTitulo = FontG.font(15 * Configs.UiScale());
+    private final Font fonteTitulo = FontG.font(FontG.Game,15 * Configs.UiScale());
     private final Color corFundo = new Color(50, 50, 50, 150);
     private final Color corBotao = new Color(0xc17564);
     private final Color corTexto = Color.WHITE;
@@ -137,12 +137,12 @@ public class Pause implements Activity {
 
         for (int i = 0; i < quadrados.length; i++) {
             int tamanhoFonte = 8 * Configs.UiScale();
-            Font fonteAtual = FontG.font(tamanhoFonte);
+            Font fonteAtual = FontG.font(FontG.Game,tamanhoFonte);
             FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 
             while (fmQuadrados.stringWidth(quadradosNomes[i]) > quadrados[i].width - 20) {
                 tamanhoFonte--;
-                fonteAtual = FontG.font(tamanhoFonte);
+                fonteAtual = FontG.font(FontG.Game,tamanhoFonte);
                 fmQuadrados = g.getFontMetrics(fonteAtual);
             }
 

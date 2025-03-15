@@ -1,10 +1,9 @@
-package com.retronova.game.interfaces.inventory;
+package com.retronova.game.interfaces;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.InventoryOutsOfBounds;
-import com.retronova.game.interfaces.Slot;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;

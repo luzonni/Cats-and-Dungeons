@@ -51,7 +51,7 @@ public class Loading implements Activity, Runnable {
         Rotate.draw(spriteLoad, x, y, rotating, null, g);
 
         int padding = Configs.Margin();
-        Font font = FontG.font(Configs.UiScale() * 12);
+        Font font = FontG.font(FontG.Game,Configs.UiScale() * 12);
         String value = "Loading...";
         g.setColor(Color.white);
         g.setFont(font);

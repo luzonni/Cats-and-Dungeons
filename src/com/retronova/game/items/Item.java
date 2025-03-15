@@ -37,7 +37,9 @@ public abstract class Item {
             case Feed -> {
                 return new Feed(i);
             }
-
+            case Catnip -> {
+                return new Catnip(i);
+            }
         }
         throw new NotFound("Item not found");
     }
@@ -46,7 +48,7 @@ public abstract class Item {
     private final String name;
     private int indexSprite;
 
-    private BufferedImage[] sprite;
+    private final BufferedImage[] sprite;
     private String[] specifications;
 
      Item(int id, String name, String sprite) {

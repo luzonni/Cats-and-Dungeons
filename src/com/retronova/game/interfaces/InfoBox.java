@@ -15,9 +15,9 @@ public class InfoBox {
 
     InfoBox(String[] values) {
         this.values = values;
-        this.padding = Configs.UiScale() * 5;
-        this.fontTitle = FontG.font(Configs.UiScale() * 8);
-        this.fontSpecs = FontG.font(Configs.UiScale() * 6);
+        this.padding = Configs.HudScale() * 5;
+        this.fontTitle = FontG.font(FontG.Septem,Configs.HudScale() * 10);
+        this.fontSpecs = FontG.font(FontG.Septem,Configs.HudScale() * 8);
         int height = padding*2 + FontG.getHeight(values[0], fontTitle);
         int lastWidth = padding*2 + FontG.getWidth(values[0], fontTitle);
         for(int i = 1; i < values.length; i++) {
@@ -34,11 +34,11 @@ public class InfoBox {
         g.setColor(new Color(190, 49, 68));
         g.fillRect(x, y, this.bounds.width, this.bounds.height);
         g.setColor(new Color(135, 35, 65));
-        g.setStroke(new BasicStroke(Configs.UiScale() *2));
+        g.setStroke(new BasicStroke(Configs.HudScale() *2));
         g.drawRect(x, y, this.bounds.width, this.bounds.height);
         g.setFont(fontTitle);
         g.setColor(Color.black);
-        g.drawString(values[0], x + padding + Configs.UiScale(), y + FontG.getHeight(values[0], fontTitle)  + padding + Configs.UiScale());
+        g.drawString(values[0], x + padding + Configs.HudScale(), y + FontG.getHeight(values[0], fontTitle)  + padding + Configs.HudScale());
         g.setColor(Color.white);
         g.drawString(values[0], x + padding, y + FontG.getHeight(values[0], fontTitle)  + padding);
         g.setFont(fontSpecs);
@@ -46,7 +46,7 @@ public class InfoBox {
         for(int i = 1; i < values.length; i++) {
             lastY += FontG.getHeight(values[i-1], fontSpecs) + padding;
             g.setColor(Color.black);
-            g.drawString(values[i], x + padding + Configs.UiScale(), lastY + Configs.UiScale());
+            g.drawString(values[i], x + padding + Configs.HudScale(), lastY + Configs.HudScale());
             g.setColor(Color.white);
             g.drawString(values[i], x + padding, lastY);
         }

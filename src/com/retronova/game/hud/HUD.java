@@ -124,7 +124,7 @@ public class HUD implements Activity {
         int size = Configs.HudScale() * 15;
         int x = Engine.window.getWidth() - size - Configs.Margin();
         int y = Configs.Margin();
-        Font font = FontG.font(Configs.HudScale() * 8);
+        Font font = FontG.font(FontG.Game,Configs.HudScale() * 8);
         String value = "" + player.getLevel();
         int wf = FontG.getWidth(value, font);
         int hf = FontG.getHeight(value, font);

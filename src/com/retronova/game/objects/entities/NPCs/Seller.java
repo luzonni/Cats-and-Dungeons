@@ -1,16 +1,14 @@
 package com.retronova.game.objects.entities.NPCs;
 
 import com.retronova.engine.Engine;
-import com.retronova.engine.Window;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
-import com.retronova.game.interfaces.store.Store;
+import com.retronova.game.interfaces.Store;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
@@ -21,7 +19,7 @@ public class Seller extends NPC {
     private final Store store;
 
     public static final Item[][] stock = {
-            {Item.build(ItemIDs.Sword), Item.build(ItemIDs.Silk), Item.build(ItemIDs.Feed)},
+            {Item.build(ItemIDs.Sword), Item.build(ItemIDs.Catnip), Item.build(ItemIDs.Feed)},
             {Item.build(ItemIDs.Silk), Item.build(ItemIDs.Bomb), Item.build(ItemIDs.Sword)},
     };
     public static final int[][] prices = {

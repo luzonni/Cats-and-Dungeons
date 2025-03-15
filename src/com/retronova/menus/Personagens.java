@@ -49,12 +49,12 @@ public class Personagens implements Activity {
     private final Color corTexto = Color.WHITE;
 
     // Fontes de todos os botões (quadrados)
-    private final Font fonteTitulo = FontG.font(22 * Configs.UiScale());
-    private final Font fonteGatos = FontG.font(7 * Configs.UiScale());
-    private final Font fonteDificuldade = FontG.font(8 * Configs.UiScale());
-    private final Font fonteBotoes = FontG.font(8 * Configs.UiScale());
-    private final Font fonteDificuldadeTitulo = FontG.font(10 * Configs.UiScale());
-    private final Font fonteInfoPersonagens = FontG.font(5 * Configs.UiScale());
+    private final Font fonteTitulo = FontG.font(FontG.Game, 22 * Configs.UiScale());
+    private final Font fonteGatos = FontG.font(FontG.Game,7 * Configs.UiScale());
+    private final Font fonteDificuldade = FontG.font(FontG.Game,8 * Configs.UiScale());
+    private final Font fonteBotoes = FontG.font(FontG.Game,8 * Configs.UiScale());
+    private final Font fonteDificuldadeTitulo = FontG.font(FontG.Game,10 * Configs.UiScale());
+    private final Font fonteInfoPersonagens = FontG.font(FontG.Game,5 * Configs.UiScale());
 
     public Personagens() {
         imagens = new ArrayList<>();

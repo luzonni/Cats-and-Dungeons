@@ -31,6 +31,9 @@ public class Game implements Activity {
     private final int difficulty;
     private final int indexPlayer;
 
+    private long seconds;
+    private int count;
+
     private final Player player;
     public static Camera C;
 
@@ -74,6 +77,12 @@ public class Game implements Activity {
 
     @Override
     public void tick() {
+        count++;
+        if(count > 60) {
+            count = 0;
+            seconds++;
+            System.out.println(seconds);
+        }
         hud.tick();
         galaxy.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {

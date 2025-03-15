@@ -2,6 +2,8 @@ package com.retronova.game.hud;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.engine.graphics.SpriteSheet;
@@ -48,6 +50,11 @@ class Hotbar {
     public void tick() {
         refreshPositions();
         Item itemHand = player.getInventory().getHotbar()[getIndexHot()];
+        if(itemHand instanceof Consumable consumable) {
+            if(Mouse.click(Mouse_Button.LEFT)) {
+                consumable.consume();
+            }
+        }
         player.getInventory().setItemHand(itemHand);
         if(KeyBoard.KeyPressed("Q") && itemHand != null) {
             if(player.getInventory().drop(itemHand)) {

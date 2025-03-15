@@ -66,7 +66,7 @@ public class Inter implements Activity {
         int x = Engine.window.getWidth()/2 - width/2;
         int y = Configs.Margin();
         for(int i = 0; i < keys.length; i++) {
-            tabs[i].setLocation(x + (rec.width+Configs.HudScale()*3)*i, y);
+            tabs[i].setLocation(x + (rec.width+Configs.HudScale()*2)*i, y);
         }
     }
 
@@ -105,7 +105,7 @@ public class Inter implements Activity {
     }
 
     private void renderTabs(Graphics2D g) {
-        Font font = FontG.font(Configs.HudScale()*6);
+        Font font = FontG.font(FontG.Game,Configs.HudScale()*6);
         g.setFont(font);
         g.setStroke(new BasicStroke(Configs.HudScale()*2));
         for(int i = 0; i < tabs.length; i++) {

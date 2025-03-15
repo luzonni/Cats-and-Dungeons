@@ -1,4 +1,4 @@
-package com.retronova.game.interfaces.store;
+package com.retronova.game.interfaces;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
@@ -9,7 +9,6 @@ import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
-import com.retronova.game.interfaces.Slot;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.entities.Player;
 
@@ -111,7 +110,7 @@ public class Store implements Activity {
             return;
         int x = positionStore.x + 62 * Configs.HudScale();
         int y = positionStore.y + 48 * Configs.HudScale();
-        Font font = FontG.font(Configs.HudScale() * 8);
+        Font font = FontG.font(FontG.Game,Configs.HudScale() * 8);
         g.setFont(font);
         g.setColor(Color.black);
         g.drawString("" + prices[indexSelected], x + Configs.HudScale(), y + Configs.HudScale());
@@ -123,7 +122,7 @@ public class Store implements Activity {
         int x = positionStore.x + 25 * Configs.HudScale();
         int y = positionStore.y + 83 * Configs.HudScale();
         Player player = Game.getPlayer();
-        Font font = FontG.font(Configs.HudScale() * 10);
+        Font font = FontG.font(FontG.Game,Configs.HudScale() * 10);
         g.setFont(font);
         g.setColor(Color.black);
         g.drawString("" + player.getMoney(), x + Configs.HudScale(), y + Configs.HudScale());
