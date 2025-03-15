@@ -56,7 +56,8 @@ public class Personagens implements Activity {
     private final Font fonteTitulo = FontG.font(FontG.Game, 22 * Configs.UiScale());
     private final Font fonteGatos = FontG.font(FontG.Game,7 * Configs.UiScale());
     private final Font fonteBotoes = FontG.font(FontG.Game,8 * Configs.UiScale());
-    private final Font fonteInfoPersonagens = FontG.font(FontG.Game,5 * Configs.UiScale());
+    private final Font fonteInfoPersonagens = FontG.font(FontG.Game,4 * Configs.UiScale());
+    private final Font fonteLore = FontG.font(FontG.Game,5 * Configs.UiScale());
 
     public Personagens() {
         imagens = new ArrayList<>();
@@ -71,9 +72,17 @@ public class Personagens implements Activity {
         for (int i = 0; i < players.length; i++) {
             players[i] = Player.TEMPLATES[i];
         }
+        atualizarInfoPersonagens();
 
         for (int i = 0; i < rotacao.length; i++) {
             rotacao[i] = 1;
+        }
+    }
+
+    private void atualizarInfoPersonagens() {
+        infoPersonagens = new String[players.length][];
+        for (int i = 0; i < players.length; i++) {
+            infoPersonagens[i] = players[i].getInfo();
         }
     }
 
@@ -156,7 +165,7 @@ public class Personagens implements Activity {
 
     private void desenharLore(Graphics2D g) {
         if (!loreAtual.isEmpty()) {
-            g.setFont(fonteInfoPersonagens);
+            g.setFont(fonteLore);
             FontMetrics fmLore = g.getFontMetrics();
             int x = (Engine.window.getWidth() - fmLore.stringWidth(loreAtual)) / 2;
             int y = Engine.window.getHeight() - 80;
@@ -227,7 +236,6 @@ public class Personagens implements Activity {
             g.setTransform(originalTransform);
 
             if (quadradoClicadoDireito[i]) {
-                originalTransform = g.getTransform();
                 g.translate(selecao[i].x + selecao[i].width / 2, selecao[i].y + selecao[i].height / 2);
                 g.scale(rotacao[i], 1);
 
@@ -236,9 +244,10 @@ public class Personagens implements Activity {
                 FontMetrics fmInfo = g.getFontMetrics();
                 String[] info = infoPersonagens[i];
                 int y = -selecao[i].height / 2 + 20;
+                int espacamentoVertical = 2 * Configs.UiScale();
                 for (String line : info) {
                     g.drawString(line, -selecao[i].width / 2 + 10, y);
-                    y += fmInfo.getHeight();
+                    y += fmInfo.getHeight() + espacamentoVertical;
                 }
                 g.setFont(fonteOriginal);
                 g.setTransform(originalTransform);
@@ -283,7 +292,6 @@ public class Personagens implements Activity {
             RoundRectangle2D shadowRect = new RoundRectangle2D.Double(x + 3, y + 3, larguraBotao, alturaBotao, 15, 15);
             g.fill(shadowRect);
 
-            // Adiciona a sombra espelhada na esquerda
             RoundRectangle2D shadowRectLeft = new RoundRectangle2D.Double(x - 3, y + 3, larguraBotao, alturaBotao, 15, 15);
             g.fill(shadowRectLeft);
 

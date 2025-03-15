@@ -174,7 +174,6 @@ public class Pause implements Activity {
             RoundRectangle2D shadowRect = new RoundRectangle2D.Double(x + 3, y + 3, larguraBotao, alturaBotao, 15, 15);
             g.fill(shadowRect);
 
-            // Adiciona a sombra espelhada na esquerda
             RoundRectangle2D shadowRectLeft = new RoundRectangle2D.Double(x - 3, y + 3, larguraBotao, alturaBotao, 15, 15);
             g.fill(shadowRectLeft);
 

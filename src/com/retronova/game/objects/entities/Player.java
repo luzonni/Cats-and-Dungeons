@@ -102,9 +102,9 @@ public class Player extends Entity {
             this.addEffect(
                     "teste",
                     e -> {
-                            e.setLife(e.getLifeSize());
-                        },
-            1);
+                        e.setLife(e.getLifeSize());
+                    },
+                    1);
         }
         updateMovement();
         tickItemHand();
@@ -218,5 +218,30 @@ public class Player extends Entity {
         if(item == null)
             return;
         item.render(g);
+    }
+
+    public String[] getInfo() {
+        return new String[] {
+                "HP: " + getLife(),
+                "Attack: " + getDamage(),
+                "Speed: " + getSpeedDescription(),
+                "Luck: " + getLuck(),
+                "Attack Speed: " + getAttackSpeed(),
+                "Range: " + getRange(),
+                "Bag Size: " + getInventory().getBagSize(),
+                "Hotbar Size: " + getInventory().getHotbarSize()
+
+        };
+    }
+
+    private String getSpeedDescription() {
+        double speed = getSpeed();
+        if (speed < 0.3) {
+            return "Slow";
+        } else if (speed < 0.5) {
+            return "Normal";
+        } else {
+            return "Fast";
+        }
     }
 }
