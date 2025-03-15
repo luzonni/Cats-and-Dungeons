@@ -1,6 +1,8 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.sound.Musics;
+import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
 import com.retronova.game.interfaces.Inventory;
 import com.retronova.game.items.Consumable;
@@ -111,6 +113,8 @@ public class Player extends Entity {
     @Override
     public void die() {
         Game.restart();
+        Sound.stopAll();
+        Sound.play(Musics.Music2, true);
     }
 
     public double getLuck() {

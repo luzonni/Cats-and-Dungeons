@@ -104,7 +104,7 @@ public class Waves implements Runnable {
     @Override
     public void run() {
         try {
-            EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie, EntityIDs.Slime, EntityIDs.MouseVampire, EntityIDs.RatExplode};
+            EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie, EntityIDs.Slime, EntityIDs.MouseVampire, EntityIDs.RatExplode, EntityIDs.MouseSquire};
             listAppend = spawner(listEntity(types, amount));
         }catch (Exception e) {
             System.err.println("Erro em waves...");

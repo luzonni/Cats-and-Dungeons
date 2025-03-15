@@ -7,7 +7,8 @@ public enum Sounds {
 	MouseVampire("vampire_sound"),
 	MouseExplode("explosion"),
 	Slime("slime1"),
-	Bow("bowshoot");
+	Bow("bowshoot"),
+	MouseSquire("mousesquire"),;
 	
 	private final String ResourceName;
 	

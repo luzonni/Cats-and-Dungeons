@@ -68,8 +68,6 @@ public class Pause implements Activity {
                         System.out.println("Clicou em Restart");
                         Engine.pause(null);
                         Game.restart();
-                        Sound.stop(Musics.Music3);
-                        Sound.play(Musics.Music3, true);
                         break;
                     case 2:
                         System.out.println("Clicou em Options");
@@ -85,6 +83,7 @@ public class Pause implements Activity {
                         System.out.println("Clicou em Main Menu");
                         Engine.pause(null);
                         Sound.stop(Musics.Music3);
+                        Sound.stop(Musics.Music2);
                         Engine.setActivity(new Menu());
                         break;
                     case 5:

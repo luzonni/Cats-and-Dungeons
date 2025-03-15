@@ -78,6 +78,27 @@ public class Sound {
 		musics.get(music.resource()).stop();
 	}
 
+	public static void stopAllSounds() {
+		if (sounds != null) {
+			for (kuusisto.tinysound.Sound sound : sounds.values()) {
+				sound.stop();
+			}
+		}
+	}
+
+	public static void stopAllMusics() {
+		if (musics != null) {
+			for(Music music : musics.values()){
+				music.stop();
+			}
+		}
+	}
+
+	public static void stopAll() {
+		stopAllSounds();
+		stopAllMusics();
+	}
+
 
 	public static void dispose() {
 		TinySound.shutdown();
