@@ -17,6 +17,8 @@ import java.awt.image.BufferedImage;
 public class Seller extends NPC {
 
     private final Store store;
+    private int frame = 0;
+    private int animationSpeed = 10; // Ajuste este valor para controlar a velocidade
 
     public static final Item[][] stock = {
             {Item.build(ItemIDs.Sword), Item.build(ItemIDs.Catnip), Item.build(ItemIDs.Feed)},
@@ -31,26 +33,33 @@ public class Seller extends NPC {
         super(ID, x, y, 0.5);
         int index = 0;
         this.store = new Store(stock[index], prices[index]);
-        loadSprites("seller");
+        loadSprites("seller2");
     }
 
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        if(player.getDistance(this) <= GameObject.SIZE()*3) {
+        if (player.getDistance(this) <= GameObject.SIZE() * 3) {
             Game.getInter().put("store", this.store);
-            if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
+            if (Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
                 Game.getInter().open("store");
             }
-        }else {
+        } else {
             Game.getInter().remove("store");
         }
-        //Logica errada...
-        if(Mouse.onMap(getBounds(), Game.C)) {
+
+        if (Mouse.onMap(getBounds(), Game.C)) {
             BufferedImage image = new SpriteSheet("ui", "cursor_on", 2).getSHEET();
-            Engine.window.setCursor(image, new Point(image.getWidth()/2, image.getHeight()/2));
-        }else {
+            Engine.window.setCursor(image, new Point(image.getWidth() / 2, image.getHeight() / 2));
+        } else {
             Engine.window.resetCursor();
+        }
+
+        // Lógica de animação
+        frame++;
+        if (frame >= animationSpeed) {
+            frame = 0;
+            getSheet().nextFrame();
         }
     }
 }

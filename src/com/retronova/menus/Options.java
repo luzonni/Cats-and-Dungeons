@@ -98,7 +98,6 @@ public class Options implements Activity {
         desenharTitulo(g);
         desenharTextosTeste(g);
         desenharBotoes(g);
-        desenharSeta(g);
     }
 
     private void desenharTitulo(Graphics2D g) {
@@ -140,55 +139,56 @@ public class Options implements Activity {
                     Rectangle quadrado = quadrados[linha][coluna];
 
                     int tamanhoFonte = 8 * Configs.UiScale();
-                    Font fonteAtual = FontG.font(FontG.Game,tamanhoFonte);
+                    Font fonteAtual = FontG.font(FontG.Game, tamanhoFonte);
                     FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 
                     while (fmQuadrados.stringWidth(textosBotoes[linha][coluna]) > quadrado.width - 20) {
                         tamanhoFonte--;
-                        fonteAtual = FontG.font(FontG.Game,tamanhoFonte);
+                        fonteAtual = FontG.font(FontG.Game, tamanhoFonte);
                         fmQuadrados = g.getFontMetrics(fonteAtual);
                     }
 
-                    RoundRectangle2D arredondar = new RoundRectangle2D.Double(quadrado.x, quadrado.y, quadrado.width, quadrado.height, 15, 15);
-
-                    GradientPaint gradient = new GradientPaint(quadrado.x, quadrado.y, corBotao.brighter(), quadrado.x, quadrado.y + quadrado.height, corBotao.darker());
-
-                    g.setPaint(gradient);
-                    g.fill(arredondar);
-
-                    g.setColor(corBotao.brighter().darker());
-                    g.setStroke(new BasicStroke(1.0f));
-                    g.draw(arredondar);
+                    int larguraBotao = quadrado.width;
+                    int alturaBotao = quadrado.height;
+                    int x = quadrado.x;
+                    int y = quadrado.y;
 
                     if (quadrado.contains(Mouse.getX(), Mouse.getY())) {
-                        g.setColor(Color.WHITE);
-                        g.setStroke(new BasicStroke(2.0f));
-                        g.draw(arredondar);
+                        larguraBotao = (int) (quadrado.width * 1.1);
+                        alturaBotao = (int) (quadrado.height * 1.1);
+                        x = quadrado.x - (larguraBotao - quadrado.width) / 2;
+                        y = quadrado.y - (alturaBotao - quadrado.height) / 2;
                     }
+
+                    g.setColor(new Color(0xF0A59B));
+                    g.fillRect(x, y, larguraBotao, 8);
+
+                    g.setColor(new Color(0x6A2838));
+                    g.fillRect(x, y + alturaBotao - 6, larguraBotao, 6);
+
+                    RoundRectangle2D arredondar = new RoundRectangle2D.Double(x, y, larguraBotao, alturaBotao, 25, 25);
+
+                    g.setColor(new Color(0x6A2838));
+                    RoundRectangle2D shadowRect = new RoundRectangle2D.Double(x + 3, y + 3, larguraBotao, alturaBotao, 15, 15);
+                    g.fill(shadowRect);
+
+                    // Adiciona a sombra espelhada na esquerda
+                    RoundRectangle2D shadowRectLeft = new RoundRectangle2D.Double(x - 3, y + 3, larguraBotao, alturaBotao, 15, 15);
+                    g.fill(shadowRectLeft);
+
+                    g.setColor(new Color(0xCC4154));
+                    g.fill(arredondar);
 
                     g.setStroke(defaultStroke);
 
                     g.setColor(corTexto);
                     g.setFont(fonteAtual);
-                    g.drawString(textosBotoes[linha][coluna], quadrado.x + (quadrado.width - fmQuadrados.stringWidth(textosBotoes[linha][coluna])) / 2, quadrado.y + (quadrado.height - fmQuadrados.getHeight()) / 2 + fmQuadrados.getAscent());
+                    g.drawString(textosBotoes[linha][coluna], x + (larguraBotao - fmQuadrados.stringWidth(textosBotoes[linha][coluna])) / 2, y + (alturaBotao - fmQuadrados.getHeight()) / 2 + fmQuadrados.getAscent());
                 }
             }
         }
     }
 
-    private void desenharSeta(Graphics2D g) {
-        if (botaoSelecionadoLinha != -1 && botaoSelecionadoColuna != -1) {
-            if (quadrados[botaoSelecionadoLinha][botaoSelecionadoColuna] != null) {
-                Rectangle quadradoSelecionado = quadrados[botaoSelecionadoLinha][botaoSelecionadoColuna];
-                int setaX = quadradoSelecionado.x - 20;
-                int setaY = quadradoSelecionado.y + quadradoSelecionado.height / 2;
-                g.setColor(Color.WHITE);
-                g.setStroke(new BasicStroke(3.0f));
-                g.drawLine(setaX, setaY, setaX - 10, setaY - 8);
-                g.drawLine(setaX, setaY, setaX - 10, setaY + 8);
-            }
-        }
-    }
 
     @Override
     public void dispose() {

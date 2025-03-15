@@ -236,4 +236,17 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         scroolSide = e.getWheelRotation();
     }
 
+    public static boolean isPressed(Mouse_Button button, Rectangle rec) {
+        if (button.equals(Mouse_Button.LEFT)) {
+            return pressingLeft && rec.contains(xMouse, yMouse);
+        }
+        if (button.equals(Mouse_Button.RIGHT)) {
+            return pressingRight && rec.contains(xMouse, yMouse);
+        }
+        if (button.equals(Mouse_Button.SCROOL)) {
+            return pressingScrool && rec.contains(xMouse, yMouse);
+        }
+        return false;
+    }
+
 }
