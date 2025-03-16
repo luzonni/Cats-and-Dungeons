@@ -211,7 +211,7 @@ public class Inventory implements Activity {
                slotPermutation(slot, this.insurer);
             }
             if(slot.item() instanceof Consumable consumable) {
-                if(Mouse.clickOn(Mouse_Button.RIGHT, slot.getBounds())) {
+                if(Mouse.on(slot.getBounds()) && KeyBoard.KeyPressed("F")) {
                     consumable.consume();
                     slot.take();
                     //TODO adicionar som de item sendo consumido

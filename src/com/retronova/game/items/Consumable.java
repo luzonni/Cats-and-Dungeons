@@ -1,7 +1,5 @@
 package com.retronova.game.items;
 
-import com.retronova.engine.Engine;
-
 import java.awt.*;
 
 public abstract class Consumable extends Item {

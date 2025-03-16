@@ -19,13 +19,13 @@ public class Status implements Activity {
     private final HashMap<String, Point> points;
     private final Font font;
 
-    private Div frame;
+    private final Frame frame;
 
     public Status(Player player) {
         this.player = player;
         this.status = new SpriteSheet("ui","status", Configs.HudScale()).getSHEET();
         this.font = FontG.font(FontG.Septem,Configs.HudScale() * 6);
-        this.frame = new Div(player, 52 * Configs.HudScale(), 68 * Configs.HudScale());
+        this.frame = new Frame(player, 52 * Configs.HudScale(), 68 * Configs.HudScale());
         this.points = new HashMap<>();
         this.points.put("main", new Point());
         this.points.put("player", new Point());
@@ -74,4 +74,5 @@ public class Status implements Activity {
     public void dispose() {
 
     }
+    
 }

@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 
 public class Slot {
 
+    private final InfoBox info;
     private final BufferedImage sprite;
     private final Rectangle bounds;
     private Item item;
@@ -18,6 +19,7 @@ public class Slot {
         this.item = null;
         this.sprite = new SpriteSheet("ui", "slot", Configs.HudScale()).getSHEET();
         this.bounds = new Rectangle(x, y, this.sprite.getWidth(), this.sprite.getHeight());
+        info = new InfoBox();
     }
 
     public void setPosition(int x, int y) {
@@ -71,20 +73,9 @@ public class Slot {
     }
 
     public void renderInfo(Graphics2D g) {
-        InfoBox info = null;
         if(Mouse.on(getBounds()) && !isEmpty()) {
-            String[] values = new String[item().getSpecifications().length + 1];
-            values[0] = item().getName();
-            for (int j = 1; j < values.length; j++) {
-                values[j] = "- " + item().getSpecifications()[j - 1];
-            }
-            info = new InfoBox(values);
+            info.setValues(this.item);
+            info.render(g);
         }
-        if(info == null) {
-            return;
-        }
-        int x = Mouse.getX() + 16;
-        int y = Mouse.getY() + 16;
-        info.render(x, y, g);
     }
 }

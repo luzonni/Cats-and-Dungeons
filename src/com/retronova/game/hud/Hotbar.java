@@ -50,11 +50,6 @@ class Hotbar {
     public void tick() {
         refreshPositions();
         Item itemHand = player.getInventory().getHotbar()[getIndexHot()];
-        if(itemHand instanceof Consumable consumable) {
-            if(Mouse.click(Mouse_Button.LEFT)) {
-                consumable.consume();
-            }
-        }
         player.getInventory().setItemHand(itemHand);
         if(KeyBoard.KeyPressed("Q") && itemHand != null) {
             if(player.getInventory().drop(itemHand)) {
