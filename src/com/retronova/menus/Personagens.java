@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Player;
@@ -90,6 +91,7 @@ public class Personagens implements Activity {
     public void tick() {
         for (int i = 0; i < selecao.length; i++) {
             if (Mouse.clickOn(Mouse_Button.LEFT, selecao[i])) {
+                Sound.play(Sounds.Cat);
                 personagemSelecionado = (personagemSelecionado == i) ? -1 : i;
                 if (personagemSelecionado != -1) {
                     loreAtual = getLore(personagemSelecionado);
@@ -124,6 +126,7 @@ public class Personagens implements Activity {
                 switch (i) {
                     case 0:
                         System.out.println("Clicou em Back");
+                        Sound.play(Sounds.Button);
                         Engine.setActivity(new Menu());
                         break;
                     case 1:
@@ -136,6 +139,7 @@ public class Personagens implements Activity {
                                 } catch (Exception ignore) {
                                 }
                             });
+                            Sound.play(Sounds.Button);
                             Engine.setActivity(loading);
                             Sound.stop(Musics.Music1);
                         } else {

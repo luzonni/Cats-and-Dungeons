@@ -13,7 +13,6 @@ import java.awt.geom.RoundRectangle2D;
 public class Options implements Activity {
 
     private Rectangle[][] quadrados;
-    private final Color corBotao = new Color(0xc17564);
     private final Color corTexto = Color.WHITE;
     private final String titulo = "Options";
     private final String[][] textosBotoes = {

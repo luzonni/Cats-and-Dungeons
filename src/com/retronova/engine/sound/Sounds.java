@@ -2,13 +2,16 @@ package com.retronova.engine.sound;
 
 public enum Sounds {
 	
-	Zombie("zombie_sound"),
+	Zombie("zombie"),
 	Skeleton("bones"),
-	MouseVampire("vampire_sound"),
+	MouseVampire("vampire"),
 	MouseExplode("explosion"),
-	Slime("slime1"),
+	Slime("slime"),
 	Bow("bowshoot"),
-	MouseSquire("mousesquire"),;
+	MouseSquire("mousesquire"),
+	Cat("cat"),
+	Button("button"),;
+
 	
 	private final String ResourceName;
 	

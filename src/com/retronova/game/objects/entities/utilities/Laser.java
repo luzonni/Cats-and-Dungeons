@@ -43,10 +43,10 @@ public class Laser<T extends Entity> extends Utility {
         }
 
         if (currentTarget != null && getDistance(currentTarget) <= range) {
-            currentTarget.strike(AttackTypes.Piercing, damage);
+            currentTarget.strike(AttackTypes.Laser, damage);
             currentTarget.getPhysical().addForce("knockback", 3.0, this.angle);
             currentTarget.addEffect("burn", (Entity e) -> {
-                e.strike(AttackTypes.Poison, 0.2d);
+                e.strike(AttackTypes.Laser, 0.2d);
             }, 3);
         }
 

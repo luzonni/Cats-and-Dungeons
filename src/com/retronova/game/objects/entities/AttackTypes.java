@@ -8,6 +8,7 @@ public enum AttackTypes {
     Melee,
     Poison,
     Explosion,
-    Sorcery
+    Sorcery,
+    Laser,
 
 }

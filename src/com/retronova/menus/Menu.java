@@ -8,13 +8,14 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.engine.sound.Sounds;
+
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
 public class Menu implements Activity {
 
     private Rectangle[] quadrados;
-    private final Color[] coresQuadrados = {new Color(0x00A878), new Color(0x4169E1), new Color(0x708090)};
     private final String[] quadradosNomes = {"Play", "Options", "Quit"};
     private final Font fonteQuadrados = FontG.font(FontG.Game,8 * Configs.UiScale());
     private FontMetrics fmQuadrados;
@@ -48,10 +49,12 @@ public class Menu implements Activity {
                 switch (i) {
                     case 0:
                         System.out.println("Clicou em Play");
+                        Sound.play(Sounds.Button);
                         Engine.setActivity(new Personagens());
                         break;
                     case 1:
                         System.out.println("Clicou em Options");
+                        Sound.play(Sounds.Button);
                         Engine.setActivity(new Options());
                         break;
                     case 2:

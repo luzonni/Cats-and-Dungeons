@@ -2,7 +2,7 @@ package com.retronova.engine.sound;
 
 public enum Musics {
 
-    Music1("menusom"),
+    Music1("menu"),
     Music2("room"),
     Music3("fight");
 

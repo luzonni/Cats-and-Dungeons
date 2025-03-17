@@ -21,7 +21,7 @@ public class Seller extends NPC {
     private int animationSpeed = 10; // Ajuste este valor para controlar a velocidade
 
     public static final Item[][] stock = {
-            {Item.build(ItemIDs.Laser), Item.build(ItemIDs.Catnip), Item.build(ItemIDs.Feed)},
+            {Item.build(ItemIDs.Laser), Item.build(ItemIDs.Sword), Item.build(ItemIDs.Feed)},
             {Item.build(ItemIDs.Silk), Item.build(ItemIDs.Bomb), Item.build(ItemIDs.Sword)},
     };
     public static final int[][] prices = {
