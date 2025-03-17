@@ -22,7 +22,7 @@ public class Store implements Activity {
     private final Point[] slotsPositions = {
             new Point(36, 10),
             new Point(54, 10),
-            new Point(72, 10)
+            new Point(72, 10),
     };
     private final Slot[] slots;
     private final Slot selected;

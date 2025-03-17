@@ -3,8 +3,6 @@ package com.retronova.game.items;
 import com.retronova.engine.Configs;
 import com.retronova.engine.exceptions.NotFound;
 import com.retronova.engine.graphics.SpriteSheet;
-import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.Sheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -39,6 +37,9 @@ public abstract class Item {
             }
             case Catnip -> {
                 return new Catnip(i);
+            }
+            case Laser -> {
+                return new ItemLaser(i);
             }
         }
         throw new NotFound("Item not found");
