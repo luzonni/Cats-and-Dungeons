@@ -73,7 +73,7 @@ public class ItemLaser extends Item {
         int y = (int) player.getY() + player.getHeight() / 2 - Game.C.getY();
         double xx = x - getSprite().getWidth() / 2d + itemOffsetX;
         double yy = y - getSprite().getHeight() / 2d + itemOffsetY;
-        Rotate.draw(getSprite(), (int) xx, (int) yy, angle, null, g);
+        Rotate.draw(getSprite(), (int) xx, (int) yy, angle + Math.PI/4, null, g);
     }
 
     public double getX() {

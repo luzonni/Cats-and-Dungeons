@@ -24,24 +24,32 @@ public class Status implements Activity {
     public Status(Player player) {
         this.player = player;
         this.status = new SpriteSheet("ui","status", Configs.HudScale()).getSHEET();
-        this.font = FontG.font(FontG.Septem,Configs.HudScale() * 6);
+        this.font = FontG.font(FontG.Septem,Configs.HudScale() * 8);
         this.frame = new Frame(player, 52 * Configs.HudScale(), 68 * Configs.HudScale());
         this.points = new HashMap<>();
-        this.points.put("main", new Point());
-        this.points.put("player", new Point());
-        this.points.put("life", new Point());
-        this.points.put("luck", new Point());
         refreshPositions();
+    }
+
+    private void setLocation(String name, int x, int y) {
+        if(!this.points.containsKey(name)) {
+            this.points.put(name, new Point());
+        }
+        this.points.get(name).setLocation(x, y);
     }
 
     private void refreshPositions() {
         int x = Engine.window.getWidth()/2 - status.getWidth()/2;
         int y = Engine.window.getHeight()/2 - status.getHeight()/2;
         int s = Configs.HudScale();
-        this.points.get("main").setLocation(x, y);
-        this.points.get("player").setLocation(x + 8*s, y + 9*s);
-        this.points.get("life").setLocation(x + 40*s, y + 9*s);
-        this.points.get("luck").setLocation(x + 40*s, y + 21*s);
+        setLocation("main", x, y);
+        setLocation("player", x + 8*s, y + 8*s);
+        setLocation("life", x + 40*s, y + 7*s);
+        setLocation("luck", x + 40*s, y + 20*s);
+        setLocation("level", x + 91*s, y + 7*s);
+        setLocation("money", x + 91*s, y + 20*s);
+        setLocation("damage", x + 23*s, y + 49*s);
+        setLocation("resistence", x + 23*s, y + 63*s);
+        setLocation("range", x + 23*s, y + 76*s);
         frame.setLocation(x + 78*s, y + 46*s);
     }
 
@@ -57,6 +65,11 @@ public class Status implements Activity {
         g.drawImage(player.getSprite(0), points.get("player").x, points.get("player").y, 16 * Configs.HudScale(), 16 * Configs.HudScale(), Engine.window);
         renderString((int)player.getLife()+"/"+(int)player.getLifeSize(), points.get("life"), g);
         renderString((int)(player.getLuck()*100d)+"%", points.get("luck"), g);
+        renderString(String.valueOf(player.getLevel()), points.get("level"), g);
+        renderString("$ "+player.getMoney(), points.get("money"), g);
+        renderString(String.valueOf(player.getDamage()), points.get("damage"), g);
+        renderString(String.valueOf(player.getDamage()), points.get("resistence"), g);
+        renderString(String.valueOf(player.getRange()), points.get("range"), g);
         frame.render(g);
     }
 

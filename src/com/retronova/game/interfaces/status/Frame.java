@@ -24,7 +24,7 @@ class Frame {
         this.player = player;
         this.bounds = new Rectangle(width, height);
         this.frame = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        this.font = FontG.font(FontG.Septem, Configs.HudScale() * 6);
+        this.font = FontG.font(FontG.Septem, Configs.HudScale() * 8);
         this.info = new InfoBox();
     }
 
@@ -45,7 +45,7 @@ class Frame {
         g.fillRect(0, 0, WIDTH, HEIGHT);
         int x = 0;
         int y = scroll;
-        Rectangle rec = new Rectangle(x, y, WIDTH, 16 * Configs.HudScale());
+        Rectangle rec = new Rectangle(x, y, WIDTH, 12 * Configs.HudScale());
         int H = 0;
         List<Consumable> passives = player.getPassives();
         if(passives.isEmpty())
@@ -70,13 +70,17 @@ class Frame {
     private void renderPassive(Consumable passive, Rectangle rec, Graphics2D g) {
         String name = passive.getName();
         BufferedImage icon = passive.getSprite();
-        g.drawImage(icon, rec.x, rec.y, null);
+        int size = rec.height - 4;
+        g.drawImage(icon, rec.x, rec.y, size, size, null);
         g.setFont(font);
         int hf = FontG.getHeight(name, font);
         g.setColor(Color.black);
-        g.drawString(name, rec.x + icon.getWidth() + Configs.HudScale()*2 + Configs.HudScale(), rec.y + (rec.height/2 + hf/2) + Configs.HudScale());
+        g.drawString(name, rec.x + size + Configs.HudScale()*2 + Configs.HudScale()/2, rec.y + (rec.height/2 + hf/2) + Configs.HudScale()/2);
         g.setColor(Color.white);
-        g.drawString(name, rec.x + icon.getWidth() + Configs.HudScale()*2, rec.y + (rec.height/2 + hf/2));
+        g.drawString(name, rec.x + size + Configs.HudScale()*2, rec.y + (rec.height/2 + hf/2));
+        g.setColor(new Color(0xbe3144));
+        g.setStroke(new BasicStroke(Configs.HudScale()));
+        g.drawLine(rec.x, rec.y + rec.height, rec.x + rec.width, rec.y + rec.height);
         if(Mouse.on(bounds.x + rec.x, bounds.y + rec.y, rec.width, rec.height)) {
             info.setValues(passive);
         }
