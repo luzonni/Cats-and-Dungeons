@@ -4,18 +4,17 @@ import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
 
-public class Catnip extends Consumable {
+public class Watermelon extends Consumable {
 
-    Catnip(int id) {
-        super(id, "Catnip", "catnip");
-        addSpecifications("add +3 of speed", "less 3 of range");
+    Watermelon(int id) {
+        super(id, "Watermelon", "watermelon");
+        addSpecifications("set 20% of dodge", "Uniq Passive");
     }
 
     @Override
     public void consume() {
         Player player = Game.getPlayer();
-        player.addModifier(Modifiers.Speed, +3);
-        player.addModifier(Modifiers.Range, -3);
+        player.addModifier(Modifiers.Dodge, 0.2);
         player.addPassive(this);
     }
 }

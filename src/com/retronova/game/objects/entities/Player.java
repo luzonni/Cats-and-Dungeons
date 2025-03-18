@@ -10,6 +10,7 @@ import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.Sheet;
+import com.retronova.game.objects.particles.Word;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class Player extends Entity {
 
     public static final Player[] TEMPLATES = new Player[] {
-            new Player("cinzento", 100,10, 5, 0.6, 15, 8, 5, 3),
+            new Player("cinzento", 100,10, 5, 1, 15, 8, 5, 3),
             new Player("mago", 80,10, 5, 0.3, 12, 11, 5, 4),
             new Player("sortudo", 1000,200, 7, 0.3, 1, 50, 5, 4)
     };
@@ -48,7 +49,10 @@ public class Player extends Entity {
     private int level;
     private int countAnim;
 
-    private double luck; // 0.0 ~ 1.0
+    private final double luck; // 0.0 ~ 1.0
+
+    private int countDash;
+    private boolean dash;
 
     private final List<Consumable> passives;
 
@@ -108,6 +112,20 @@ public class Player extends Entity {
         }
         updateMovement();
         tickItemHand();
+    }
+
+    @Override
+    public void strike(AttackTypes type, double damage) {
+        if(modifiers.containsKey(Modifiers.Dodge)) {
+            double percent = modifiers.get(Modifiers.Dodge);
+            double a = Engine.RAND.nextDouble(1d) * getLuck()*0.25d;
+            if(a <= percent) {
+                Game.getMap().put(new Word("Dodge", getX() + getWidth()/2d, getY() + getHeight()/2d, 1));
+                return;
+            }
+        }
+        super.strike(type, damage);
+
     }
 
     @Override
@@ -203,8 +221,19 @@ public class Player extends Entity {
         if(KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")){
             horizontal = 1;
         }
+        countDash++;
+        if(KeyBoard.KeyPressed("SPACE")) {
+            if(modifiers.containsKey(Modifiers.Dodge) && countDash > 2*60) {
+                dash = true;
+                countDash = 0;
+            }
+        }
         double radians = Math.atan2(vertical, horizontal);
         if(vertical != 0 || horizontal != 0){
+            if(dash) {
+                getPhysical().addForce("dodge", getSpeed() * modifiers.get(Modifiers.Dash), radians);
+                dash = false;
+            }
             getPhysical().addForce("move", getSpeed(), radians);
         }
     }

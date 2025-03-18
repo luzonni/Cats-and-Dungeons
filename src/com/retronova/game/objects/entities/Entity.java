@@ -112,7 +112,7 @@ public abstract class Entity extends GameObject {
     public void addModifier(Modifiers modifier, double value) {
         if(!this.modifiers.containsKey(modifier))
             this.modifiers.put(modifier, value);
-        else {
+        else if(modifier.getHeapable()){
             double currentValue = this.modifiers.get(modifier);
             this.modifiers.replace(modifier, currentValue + value);
         }

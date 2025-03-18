@@ -3,13 +3,12 @@ package com.retronova.game.items;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.enemies.Enemy;
-import com.retronova.game.objects.entities.utilities.Laser;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 
-public class ItemLaser extends Item {
+public class Laser extends Item {
 
     private double angle = 0;
     private int count;
@@ -21,11 +20,22 @@ public class ItemLaser extends Item {
     private double laserOffsetY = 0;
     private double laserDistance = 30;
 
-    ItemLaser(int id) {
+    Laser(int id) {
         super(id, "Laser", "laser");
         addSpecifications("Laser add burn", "player damage", "shot instant");
     }
+    /*
 
+        Lógica: Crei uma variavel Target;
+        essa variavel target será o inimigo mais perto, e, quando sua vida zerar, o target será setada null;
+
+        a lógica de encontrat targets é que, quando o target for null, voce usa o getNearest para encontrar outro target
+
+        para renderizar o lazer, pegue a posição do target e da ponta do lazer e use o drawLine e coloque os pontos.
+
+        a parte do cudaoa é com vc!
+
+     */
     @Override
     public void tick() {
         Player player = Game.getPlayer();
@@ -61,9 +71,7 @@ public class ItemLaser extends Item {
         double laserY = centerY;
 
         double constantDamage = 10.0;
-        Laser<Enemy> laser = new Laser<>(laserX, laserY, constantDamage, angle, Enemy.class, this);
-        Game.getMap().put(laser);
-
+        //Local onde estava a adição do objeto
     }
 
     @Override

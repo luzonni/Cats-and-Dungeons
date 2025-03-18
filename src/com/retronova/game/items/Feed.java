@@ -16,7 +16,7 @@ public class Feed extends Consumable {
 
     Feed(int id) {
         super(id, "Feed", "feed");
-        addSpecifications("(Consumable) Press F", "Add 10 points of life", "Less 10% os luck", "plus +1 bag slot", "plus +1 hotbar slotf");
+        addSpecifications("Add 10 points of life", "Less 10% os luck", "plus +1 bag slot", "plus +1 hotbar slotf");
         if(Engine.RAND.nextBoolean())
             plusIndexSprite();
     }

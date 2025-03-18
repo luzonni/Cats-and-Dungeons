@@ -9,6 +9,7 @@ public enum ItemIDs {
     Feed,
     Acorn,
     Catnip,
-    Laser;
+    Laser,
+    Watermelon;
 
 }

@@ -80,7 +80,6 @@ class Frame {
         g.drawString(name, rec.x + size + Configs.HudScale()*2 + Configs.HudScale()/2, rec.y + (rec.height/2 + hf/2) + Configs.HudScale()/2);
         g.setColor(Color.white);
         g.drawString(name, rec.x + size + Configs.HudScale()*2, rec.y + (rec.height/2 + hf/2));
-
         String stack = passive.getStack()+"x";
         int hfs = FontG.getHeight(stack, fontStack);
         g.setFont(fontStack);
@@ -88,8 +87,6 @@ class Frame {
         g.drawString(stack, rec.x + Configs.HudScale()/2, rec.y + rec.height - hfs/2 + Configs.HudScale()/2);
         g.setColor(Color.white);
         g.drawString(stack, rec.x, rec.y + rec.height - hfs/2);
-
-
         g.setColor(new Color(0xbe3144));
         g.setStroke(new BasicStroke(Configs.HudScale()));
         g.drawLine(rec.x, rec.y + rec.height, rec.x + rec.width, rec.y + rec.height);

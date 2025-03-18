@@ -6,15 +6,15 @@ import com.retronova.game.Game;
 
 import java.awt.*;
 
-public class Number extends Particle {
+public class Word extends Particle {
 
-    private final int number;
+    private final String value;
     private final Font font;
     private int count;
 
-    public Number(int number, double x, double y, double seconds) {
+    public Word(String value, double x, double y, double seconds) {
         super(x, y, seconds);
-        this.number = number;
+        this.value = value;
         this.font = FontG.font(FontG.Septem, Configs.GameScale() * 8);
     }
 
@@ -29,7 +29,7 @@ public class Number extends Particle {
 
     @Override
     public void render(Graphics2D g) {
-        String value = String.valueOf(number);
+        String value = this.value;
         int wF = FontG.getWidth(value, font);
         int hF = FontG.getHeight(value, font);
         int x = (int)getX() - wF/2 - Game.C.getX();

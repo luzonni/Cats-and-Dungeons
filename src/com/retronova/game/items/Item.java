@@ -45,11 +45,17 @@ public abstract class Item {
                 return consumable;
             }
             case Laser -> {
-                return new ItemLaser(id);
+                return new Laser(id);
             }
             case Acorn -> {
                 int stack = (int)values[0];
                 Consumable consumable = new Acorn(id);
+                consumable.setStack(stack);
+                return consumable;
+            }
+            case Watermelon -> {
+                int stack = (int)values[0];
+                Consumable consumable = new Watermelon(id);
                 consumable.setStack(stack);
                 return consumable;
             }

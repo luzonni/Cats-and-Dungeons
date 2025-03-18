@@ -10,13 +10,10 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.utilities.Xp;
 import com.retronova.game.objects.particles.DamageMobs;
-import com.retronova.game.objects.particles.Number;
-import com.retronova.game.objects.particles.Particle;
+import com.retronova.game.objects.particles.Word;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class Enemy extends Entity {
 
@@ -57,7 +54,7 @@ public abstract class Enemy extends Entity {
         double x = getX() + Engine.RAND.nextDouble(getWidth());
         double y = getY() + Engine.RAND.nextDouble(getHeight());
         if(damage >= 1d)
-            Game.getMap().put(new Number((int)damage, x, y, 1));
+            Game.getMap().put(new Word(String.valueOf((int)damage), x, y, 1));
         Game.getMap().put(new DamageMobs(x, y, 1, Engine.RAND.nextDouble()*Math.PI*2));
     }
 
