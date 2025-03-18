@@ -7,6 +7,7 @@ public enum ItemIDs {
     Bow,
     Bomb,
     Feed,
+    Acorn,
     Catnip,
     Laser;
 

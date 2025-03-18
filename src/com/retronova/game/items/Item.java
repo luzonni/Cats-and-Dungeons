@@ -47,6 +47,12 @@ public abstract class Item {
             case Laser -> {
                 return new ItemLaser(id);
             }
+            case Acorn -> {
+                int stack = (int)values[0];
+                Consumable consumable = new Acorn(id);
+                consumable.setStack(stack);
+                return consumable;
+            }
         }
         throw new NotFound("Item not found");
     }
