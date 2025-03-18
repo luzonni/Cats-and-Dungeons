@@ -98,7 +98,7 @@ public class Slot {
             String stack = String.valueOf(consumable.getStack());
             int wf = FontG.getWidth(stack, fontStack);
             int hf = FontG.getHeight(stack, fontStack);
-            DrawString.draw(stack, fontStack, x + width - wf, y + height - hf, g);
+            DrawString.draw(stack, fontStack, x + width - wf - Configs.HudScale(), y + height - hf - Configs.HudScale(), g);
         }
     }
 

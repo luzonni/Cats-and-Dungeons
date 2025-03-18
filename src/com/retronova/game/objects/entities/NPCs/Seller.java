@@ -37,7 +37,7 @@ public class Seller extends NPC {
         super(ID, x, y, 0.5);
         int index = 0;
         this.store = new Store(stock[index], prices[index]);
-        loadSprites("seller2");
+        loadSprites("seller");
     }
 
     @Override

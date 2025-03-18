@@ -93,7 +93,7 @@ public class Store implements Activity {
     }
 
     private void renderStore(Graphics2D g) {
-        g.drawImage(store, positionStore.x, positionStore.y, null);
+        g.drawImage(store, positionStore.x, positionStore.y - 16 * Configs.HudScale(), null);
     }
 
     private void renderSlots(Graphics2D g) {
