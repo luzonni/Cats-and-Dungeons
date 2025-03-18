@@ -17,29 +17,35 @@ public abstract class Item {
         sheet = new HashMap<>();
     }
 
-    public static Item build(ItemIDs id) {
-        int i = id.ordinal();
-        switch (id) {
+    public static Item build(int id, Object... values) {
+        ItemIDs type = ItemIDs.values()[id];
+        switch (type) {
             case Silk -> {
-                return new ItemSilk(i);
+                return new ItemSilk(id);
             }
             case Sword -> {
-                return new Sword(i);
+                return new Sword(id);
             }
             case Bow -> {
-                return new Bow(i);
+                return new Bow(id);
             }
             case Bomb -> {
-                return new ItemBomb(i);
+                return new ItemBomb(id);
             }
             case Feed -> {
-                return new Feed(i);
+                int stack = (int)values[0];
+                Consumable consumable = new Feed(id);
+                consumable.setStack(stack);
+                return consumable;
             }
             case Catnip -> {
-                return new Catnip(i);
+                int stack = (int)values[0];
+                Consumable consumable = new Catnip(id);
+                consumable.setStack(stack);
+                return consumable;
             }
             case Laser -> {
-                return new ItemLaser(i);
+                return new ItemLaser(id);
             }
         }
         throw new NotFound("Item not found");

@@ -2,7 +2,10 @@ package com.retronova.game.hud;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.graphics.DrawString;
+import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.game.interfaces.Slot;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.entities.Player;
@@ -21,11 +24,14 @@ class Hotbar {
     private int index;
     private char[] numbers = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
+    private Font fontStack;
+
     public Hotbar(Player player) {
         this.player = player;
         SpriteSheet sheet = new SpriteSheet("ui", "hotbar", Configs.HudScale());
         int sheetSize = sheet.getWidth()/16;
         this.sprites = new BufferedImage[sheetSize];
+        this.fontStack = FontG.font(FontG.Septem, Configs.HudScale() * 8);
         for(int i = 0; i < sheetSize; i++) {
             this.sprites[i] = sheet.getSpriteWithIndex(i, 0);
         }
@@ -49,11 +55,17 @@ class Hotbar {
 
     public void tick() {
         refreshPositions();
-        Item itemHand = player.getInventory().getHotbar()[getIndexHot()];
-        player.getInventory().setItemHand(itemHand);
-        if(KeyBoard.KeyPressed("Q") && itemHand != null) {
-            if(player.getInventory().drop(itemHand)) {
-                player.dropLoot(itemHand);
+        Slot slot = player.getInventory().getHotbar()[getIndexHot()];
+        player.getInventory().setItemHand(slot.item());
+        if(!slot.isEmpty()) {
+            if(KeyBoard.KeyPressed("F")) {
+                if(slot.item() instanceof Consumable consumable) {
+                    consumable.consume();
+                    slot.take();
+                }
+            }
+            if(KeyBoard.KeyPressed("Q")) {
+                player.dropLoot(slot.take());
             }
         }
     }
@@ -87,7 +99,7 @@ class Hotbar {
 
     public void render(Graphics2D g) {
         refreshPositions();
-        Item[] items = player.getInventory().getHotbar();
+        Slot[] items = player.getInventory().getHotbar();
         int length = player.getInventory().getHotbarSize();
         int w = bounds[0].width * bounds.length;
         int ww = bounds[0].width * length;
@@ -95,10 +107,18 @@ class Hotbar {
         for(int i = 0; i < length; i++) {
             BufferedImage sprite = index == i ? sprites[1] : sprites[0];
             g.drawImage(sprite, bounds[i].x + difX, bounds[i].y, null);
-            if(items[i] != null) {
-                int x = bounds[i].x + difX + 2 * Configs.HudScale();
-                int y = bounds[i].y + 2 * Configs.HudScale();
-                g.drawImage(items[i].getSprite(), x, y,12 * Configs.HudScale(), 12 * Configs.HudScale(), null);
+            if(!items[i].isEmpty()) {
+                int x = bounds[i].x + difX;
+                int y = bounds[i].y;
+                g.drawImage(items[i].item().getSprite(), x + 2 * Configs.HudScale(), y + 2 * Configs.HudScale(),12 * Configs.HudScale(), 12 * Configs.HudScale(), null);
+                if(items[i].item() instanceof Consumable consumable) {
+                    if(consumable.getStack() <= 1)
+                        continue;
+                    String stack = String.valueOf(consumable.getStack());
+                    int wf = FontG.getWidth(stack, fontStack);
+                    int hf = FontG.getHeight(stack, fontStack);
+                    DrawString.draw(stack, fontStack, x + bounds[i].width - wf - 2 * Configs.HudScale(), y + bounds[i].height - hf - 2 * Configs.HudScale(), g);
+                }
             }
         }
     }

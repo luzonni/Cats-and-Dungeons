@@ -3,6 +3,8 @@ package com.retronova.game.objects.entities.utilities;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
+import com.retronova.game.objects.entities.Effect;
+import com.retronova.game.objects.entities.EffectApplicator;
 import com.retronova.game.objects.entities.Entity;
 
 import java.awt.*;
@@ -13,12 +15,24 @@ public class Arrow<T extends Entity> extends Utility {
     private final double damage;
     private final double angle;
     private final Class<T> type;
+    private EffectApplicator effect;
 
     public Arrow(double x, double y, double damage, double angle, Class<T> type) {
         super(-1, x, y, 0);
         this.damage = damage;
         this.angle = angle;
         this.type = type;
+        loadSprites("arrow");
+        setSpeed(7d);
+        this.getPhysical().addForce("shot", getSpeed(), angle);
+    }
+
+    public Arrow(double x, double y, double damage, double angle, Class<T> type, EffectApplicator effect) {
+        super(-1, x, y, 0);
+        this.damage = damage;
+        this.angle = angle;
+        this.type = type;
+        this.effect = effect;
         loadSprites("arrow");
         setSpeed(7d);
         this.getPhysical().addForce("shot", getSpeed(), angle);
@@ -35,10 +49,8 @@ public class Arrow<T extends Entity> extends Utility {
             if(this.colliding(entity)) {
                 entity.strike(AttackTypes.Piercing, damage);
                 entity.getPhysical().addForce("knockback", 2.2, this.angle);
-                entity.addEffect("poison", (Entity e) -> {
-                    //Quando a flecha colide com uma entidade, ela fica com efeito de dano de veneno. APENAS TESTE!
-                    e.strike(AttackTypes.Poison, 0.1d);
-                }, 3);
+                if(this.effect != null)
+                    entity.addEffect("arrowEffect", effect, 1);
                 this.disappear();
             }
         }

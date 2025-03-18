@@ -34,8 +34,8 @@ public class DamageMobs extends Particle {
     @Override
     public void render(Graphics2D g) {
         float t = 1f - count / (float) getSeconds();
-        int x = (int) getX() - Game.C.getX();
-        int y = (int) getY() - Game.C.getY();
+        int x = (int) getX() - getWidth()/2 - Game.C.getX();
+        int y = (int) getY() - getHeight()/2 - Game.C.getY();
         Alpha.draw(getSprite(), x, y, t, g);
     }
 }

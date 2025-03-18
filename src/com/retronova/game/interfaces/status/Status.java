@@ -3,6 +3,7 @@ package com.retronova.game.interfaces.status;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.graphics.DrawString;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.game.objects.entities.Player;
@@ -74,13 +75,7 @@ public class Status implements Activity {
     }
 
     private void renderString(String value, Point p, Graphics2D g){
-        g.setFont(font);
-        int h = FontG.getHeight(value, font);
-        int s = Configs.HudScale();
-        g.setColor(Color.black);
-        g.drawString(value, p.x + s, p.y + h + s);
-        g.setColor(Color.white);
-        g.drawString(value, p.x, p.y + h);
+        DrawString.draw(value, font, p, g);
     }
 
     @Override

@@ -10,6 +10,7 @@ public enum Sounds {
 	Bow("bowshoot"),
 	MouseSquire("mousesquire"),
 	Cat("cat"),
+	Crack("crack"),
 	Button("button"),;
 
 	

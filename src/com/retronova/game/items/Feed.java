@@ -3,6 +3,8 @@ package com.retronova.game.items;
 import com.retronova.engine.Engine;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
@@ -14,7 +16,7 @@ public class Feed extends Consumable {
 
     Feed(int id) {
         super(id, "Feed", "feed");
-        addSpecifications("(Consumable)", "Add 10 points of life", "Less 10% os luck", "10 seconds of regeneration");
+        addSpecifications("(Consumable)", "Add 10 points of life", "Less 10% os luck", "10 seconds of regeneration", "plus +1 bag slot", "plus +1 hotbar slotf");
         if(Engine.RAND.nextBoolean())
             plusIndexSprite();
     }
@@ -24,11 +26,14 @@ public class Feed extends Consumable {
         Player player = Game.getPlayer();
         player.addModifier(Modifiers.Life, 10);
         player.addModifier(Modifiers.Luck, -0.1);
+        player.getInventory().plusBag(1);
+        player.getInventory().plusHotbar(1);
         player.addEffect("regeneration", e -> {
             if(e.getLife() < e.getLifeSize())
                 e.setLife(e.getLife()+0.1d);
         }, 10);
         player.addPassive(this);
+        Sound.play(Sounds.Crack);
     }
 
 }

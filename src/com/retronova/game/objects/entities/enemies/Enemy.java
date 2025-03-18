@@ -7,8 +7,11 @@ import com.retronova.game.Game;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.utilities.Xp;
 import com.retronova.game.objects.particles.DamageMobs;
+import com.retronova.game.objects.particles.Number;
+import com.retronova.game.objects.particles.Particle;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -47,9 +50,15 @@ public abstract class Enemy extends Entity {
 
     @Override
     public void strike(AttackTypes type, double damage) {
-        Game.getMap().put(new DamageMobs(getX(), getY(), 0.6, Engine.RAND.nextDouble()*Math.PI*2));
+        Player player = Game.getPlayer();
+        damage *= Engine.RAND.nextDouble() + player.getLuck();
         super.strike(type, damage);
         this.tookDamage = true;
+        double x = getX() + Engine.RAND.nextDouble(getWidth());
+        double y = getY() + Engine.RAND.nextDouble(getHeight());
+        if(damage >= 1d)
+            Game.getMap().put(new Number((int)damage, x, y, 1));
+        Game.getMap().put(new DamageMobs(x, y, 1, Engine.RAND.nextDouble()*Math.PI*2));
     }
 
     public BufferedImage getSprite() {
@@ -77,7 +86,7 @@ public abstract class Enemy extends Entity {
     private void dropXp() {
         double luck = Game.getPlayer().getLuck();
         Xp e = new Xp(getX(), getY());
-        e.setWeight(getXpWeight() * (1d + Engine.RAND.nextDouble(luck)));
+        e.setWeight(getXpWeight() * Engine.RAND.nextDouble() * luck);
         Game.getMap().put(e);
         e.getPhysical().addForce("move", 7, Math.PI*2);
     }

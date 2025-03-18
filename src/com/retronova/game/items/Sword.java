@@ -1,6 +1,7 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.Configs;
+import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.game.Game;
@@ -60,7 +61,7 @@ public class Sword extends Item {
         for(int i = 0; i < enemies.size(); i++) {
             Enemy e = enemies.get(i);
             if(e.colliding(this.boundsAttack)) {
-                e.strike(AttackTypes.Melee, player.getDamage() + this.damage);
+                e.strike(AttackTypes.Melee, this.damage + player.getDamage());
                 double r = e.getAngle(player);
                 e.getPhysical().addForce("knockback", 16, r);
             }

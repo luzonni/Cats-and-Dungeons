@@ -20,7 +20,7 @@ import java.util.Map;
 public class Player extends Entity {
 
     public static final Player[] TEMPLATES = new Player[] {
-            new Player("cinzento", 100,10, 5, 0.3, 15, 8, 5, 3),
+            new Player("cinzento", 100,10, 5, 0.6, 15, 8, 5, 3),
             new Player("mago", 80,10, 5, 0.3, 12, 11, 5, 4),
             new Player("sortudo", 1000,200, 7, 0.3, 1, 50, 5, 4)
     };
@@ -119,7 +119,10 @@ public class Player extends Entity {
 
     public double getLuck() {
         if(this.modifiers.containsKey(Modifiers.Luck)) {
-            return this.luck + this.modifiers.get(Modifiers.Luck);
+            double l = this.luck + this.modifiers.get(Modifiers.Luck);
+            if(l < 0)
+                l = 0;
+            return l;
         }
         return luck;
     }

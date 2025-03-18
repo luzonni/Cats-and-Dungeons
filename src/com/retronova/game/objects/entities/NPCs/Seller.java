@@ -21,11 +21,15 @@ public class Seller extends NPC {
     private int animationSpeed = 10; // Ajuste este valor para controlar a velocidade
 
     public static final Item[][] stock = {
-            {Item.build(ItemIDs.Laser), Item.build(ItemIDs.Sword), Item.build(ItemIDs.Feed)},
-            {Item.build(ItemIDs.Silk), Item.build(ItemIDs.Bomb), Item.build(ItemIDs.Sword)},
+            {
+                    Item.build(ItemIDs.Bow.ordinal()), Item.build(ItemIDs.Sword.ordinal()), Item.build(ItemIDs.Feed.ordinal(), 5),
+                    Item.build(ItemIDs.Silk.ordinal()), Item.build(ItemIDs.Bomb.ordinal()), Item.build(ItemIDs.Laser.ordinal()),
+                    Item.build(ItemIDs.Catnip.ordinal(), 312)
+            },
+            {Item.build(ItemIDs.Silk.ordinal()), Item.build(ItemIDs.Bomb.ordinal()), Item.build(ItemIDs.Sword.ordinal())},
     };
     public static final int[][] prices = {
-            {12, 16, 7},
+            {12, 16, 7, 2, 12, 1, 5},
             {6, 3, 10}
     };
 
@@ -46,13 +50,6 @@ public class Seller extends NPC {
             }
         } else {
             Game.getInter().remove("store");
-        }
-
-        if (Mouse.onMap(getBounds(), Game.C)) {
-            BufferedImage image = new SpriteSheet("ui", "cursor_on", 2).getSHEET();
-            Engine.window.setCursor(image, new Point(image.getWidth() / 2, image.getHeight() / 2));
-        } else {
-            Engine.window.resetCursor();
         }
 
         // Lógica de animação

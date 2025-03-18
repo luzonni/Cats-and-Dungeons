@@ -5,6 +5,7 @@ import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
+import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.game.objects.entities.utilities.Arrow;
 import com.retronova.game.objects.entities.Entity;
@@ -23,7 +24,7 @@ public class Bow extends Item {
     Bow(int id) {
         super(id, "Bow", "bow");
         addSpecifications("Arrow add poisson", "player damage", "shot slowed");
-        this.arrowSprite = new Arrow(0,0,0,0, null).getSprite();
+        this.arrowSprite = new Arrow(0,0,0,0, Enemy.class).getSprite();
     }
 
     @Override
@@ -50,7 +51,9 @@ public class Bow extends Item {
     private void shot(Player shooter) {
         double x = shooter.getX();
         double y = shooter.getY();
-        Arrow<Enemy> arrow = new Arrow<>(x, y, shooter.getDamage(), angle, Enemy.class);
+        Arrow<Enemy> arrow = new Arrow<>(x, y, shooter.getDamage(), angle, Enemy.class, (e) -> {
+            e.strike(AttackTypes.Poison, 1d);
+        });
         Game.getMap().put(arrow);
         Sound.play(Sounds.Bow);
     }
