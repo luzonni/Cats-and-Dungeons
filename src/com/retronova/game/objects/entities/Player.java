@@ -132,11 +132,13 @@ public class Player extends Entity {
     }
 
     public void addPassive(Consumable passive) {
-        this.passives.add(passive);
-    }
-
-    private void setLuck(double luck) {
-        this.luck = luck;
+        if(this.passives.contains(passive)) {
+            int i = this.passives.indexOf(passive);
+            int stack = this.passives.get(i).getStack();
+            this.passives.get(i).setStack(stack + 1);
+        }else {
+            this.passives.add((Consumable) Item.build(passive.getID(), 1));
+        }
     }
 
     public void plusXp(double weight) {

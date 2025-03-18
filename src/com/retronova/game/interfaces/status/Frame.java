@@ -16,7 +16,8 @@ class Frame {
     private final Player player;
     private final Rectangle bounds;
     private final BufferedImage frame;
-    private final Font font;
+    private final Font fontName;
+    private final Font fontStack;
     private int scroll;
     private final InfoBox info;
 
@@ -24,7 +25,8 @@ class Frame {
         this.player = player;
         this.bounds = new Rectangle(width, height);
         this.frame = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        this.font = FontG.font(FontG.Septem, Configs.HudScale() * 8);
+        this.fontName = FontG.font(FontG.Septem, Configs.HudScale() * 8);
+        this.fontStack = FontG.font(FontG.Septem, Configs.HudScale() * 6);
         this.info = new InfoBox();
     }
 
@@ -45,7 +47,7 @@ class Frame {
         g.fillRect(0, 0, WIDTH, HEIGHT);
         int x = 0;
         int y = scroll;
-        Rectangle rec = new Rectangle(x, y, WIDTH, 12 * Configs.HudScale());
+        Rectangle rec = new Rectangle(x, y, WIDTH, 16 * Configs.HudScale());
         int H = 0;
         List<Consumable> passives = player.getPassives();
         if(passives.isEmpty())
@@ -72,12 +74,22 @@ class Frame {
         BufferedImage icon = passive.getSprite();
         int size = rec.height - 4;
         g.drawImage(icon, rec.x, rec.y, size, size, null);
-        g.setFont(font);
-        int hf = FontG.getHeight(name, font);
+        g.setFont(fontName);
+        int hf = FontG.getHeight(name, fontName);
         g.setColor(Color.black);
         g.drawString(name, rec.x + size + Configs.HudScale()*2 + Configs.HudScale()/2, rec.y + (rec.height/2 + hf/2) + Configs.HudScale()/2);
         g.setColor(Color.white);
         g.drawString(name, rec.x + size + Configs.HudScale()*2, rec.y + (rec.height/2 + hf/2));
+
+        String stack = passive.getStack()+"x";
+        int hfs = FontG.getHeight(stack, fontStack);
+        g.setFont(fontStack);
+        g.setColor(Color.black);
+        g.drawString(stack, rec.x + Configs.HudScale()/2, rec.y + rec.height - hfs/2 + Configs.HudScale()/2);
+        g.setColor(Color.white);
+        g.drawString(stack, rec.x, rec.y + rec.height - hfs/2);
+
+
         g.setColor(new Color(0xbe3144));
         g.setStroke(new BasicStroke(Configs.HudScale()));
         g.drawLine(rec.x, rec.y + rec.height, rec.x + rec.width, rec.y + rec.height);

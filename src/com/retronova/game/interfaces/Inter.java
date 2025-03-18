@@ -73,7 +73,7 @@ public class Inter implements Activity {
     private Rectangle[] tabs() {
         String[] keys = keys();
         int scale = Configs.HudScale();
-        Rectangle rec = new Rectangle(48*scale, 16*scale);
+        Rectangle rec = new Rectangle(48*scale, 12*scale);
         Rectangle[] tabs = new Rectangle[keys.length];
         for(int i = 0; i < keys.length; i++) {
             tabs[i] = new Rectangle(rec.width, rec.height);

@@ -96,6 +96,17 @@ public abstract class Item {
         return name;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj == null) {
+            return false;
+        }
+        if(obj instanceof Item item) {
+            return this.getID() == item.getID();
+        }
+        return false;
+    }
+
     public BufferedImage getSprite() {
         return this.sprite[indexSprite];
     }
