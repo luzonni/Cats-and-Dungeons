@@ -101,15 +101,6 @@ public class Player extends Entity {
         }
         if(!(Engine.getACTIVITY() instanceof Game))
             return;
-        if(KeyBoard.KeyPressed("F")) {//Only teste
-            //Teste de aplicação de efeito na entidade player
-            this.addEffect(
-                    "teste",
-                    e -> {
-                        e.setLife(e.getLifeSize());
-                    },
-                    1);
-        }
         updateMovement();
         tickItemHand();
     }
