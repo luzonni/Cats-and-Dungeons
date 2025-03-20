@@ -8,13 +8,13 @@ public class Watermelon extends Consumable {
 
     Watermelon(int id) {
         super(id, "Watermelon", "watermelon");
-        addSpecifications("set 20% of dodge", "Uniq Passive");
+        addSpecifications("set 5% of dodge", "Uniq Passive");
     }
 
     @Override
     public void consume() {
         Player player = Game.getPlayer();
-        player.addModifier(Modifiers.Dodge, 0.2);
+        player.addModifier(Modifiers.Dodge, 0.05);
         player.addPassive(this);
     }
 }

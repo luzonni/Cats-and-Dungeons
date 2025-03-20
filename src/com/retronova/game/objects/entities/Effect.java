@@ -7,10 +7,10 @@ public class Effect {
     private final String name;
     private final Entity entity;
     private final EffectApplicator applicator;
-    private final int seconds;
+    private final double seconds;
     private int count;
 
-    public Effect(String name, Entity entity, EffectApplicator applicator, int seconds) {
+    public Effect(String name, Entity entity, EffectApplicator applicator, double seconds) {
         this.name = name;
         this.entity = entity;
         this.applicator = applicator;

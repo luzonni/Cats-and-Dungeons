@@ -117,8 +117,9 @@ public class Player extends Entity {
     @Override
     public void strike(AttackTypes type, double damage) {
         if(modifiers.containsKey(Modifiers.Dodge)) {
-            double percent = modifiers.get(Modifiers.Dodge);
-            double a = Engine.RAND.nextDouble(1d) * getLuck()*0.25d;
+            double percent = modifiers.get(Modifiers.Dodge) + getLuck()*0.10d;
+            double a = Engine.RAND.nextDouble(1d);
+            System.out.println(percent * 100 + " / " + a * 100);
             if(a <= percent) {
                 Game.getMap().put(new Word("Dodge", getX() + getWidth()/2d, getY() + getHeight()/2d, 1));
                 return;
@@ -223,7 +224,7 @@ public class Player extends Entity {
         }
         countDash++;
         if(KeyBoard.KeyPressed("SPACE")) {
-            if(modifiers.containsKey(Modifiers.Dodge) && countDash > 2*60) {
+            if(modifiers.containsKey(Modifiers.Dash) && countDash > 45) {
                 dash = true;
                 countDash = 0;
             }
@@ -231,7 +232,10 @@ public class Player extends Entity {
         double radians = Math.atan2(vertical, horizontal);
         if(vertical != 0 || horizontal != 0){
             if(dash) {
-                getPhysical().addForce("dodge", getSpeed() * modifiers.get(Modifiers.Dash), radians);
+                addEffect("dash", (e) -> {
+                    getPhysical().addForce("dash", getSpeed() * modifiers.get(Modifiers.Dash), radians);
+                    e.getPhysical().setFriction(0.1d);
+                }, 0.01d);
                 dash = false;
             }
             getPhysical().addForce("move", getSpeed(), radians);

@@ -8,7 +8,7 @@ public class Catnip extends Consumable {
 
     Catnip(int id) {
         super(id, "Catnip", "catnip");
-        addSpecifications("add +3 of speed", "less 3 of range");
+        addSpecifications("add +3 of speed", "less 3 of range", "small Dash");
     }
 
     @Override

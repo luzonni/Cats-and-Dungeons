@@ -115,10 +115,12 @@ public abstract class Entity extends GameObject {
         else if(modifier.getHeapable()){
             double currentValue = this.modifiers.get(modifier);
             this.modifiers.replace(modifier, currentValue + value);
+        }else {
+            this.modifiers.replace(modifier, value);
         }
     }
 
-    public void addEffect(String name, EffectApplicator applicator, int seconds) {
+    public void addEffect(String name, EffectApplicator applicator, double seconds) {
         Effect effect = new Effect(name, this, applicator, seconds);
         if(!this.effects.contains(effect)) {
             this.effects.add(new Effect(name, this, applicator, seconds));
