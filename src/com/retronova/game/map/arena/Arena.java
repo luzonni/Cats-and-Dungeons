@@ -13,6 +13,7 @@ public class Arena extends GameMap {
     //Para cada tipo de arena, colocar o nome do .png.
     private static final String[] ARENAS = {"easy", "normal", "hard"};
 
+
     private final Waves waves;
     private final Room room;
 

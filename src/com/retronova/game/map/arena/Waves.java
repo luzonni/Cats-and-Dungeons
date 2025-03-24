@@ -54,10 +54,8 @@ public class Waves implements Runnable {
             System.out.println("Fim da wave");
         }else if(counter > lastCounter + 3.5 * 60){
             lastCounter = counter;
-
             amount = (int) (4 * waveMultiplier);
             waveMultiplier += 0.09 + wave * 0.2; // testar balanceamento apos adicionar armas
-
             thread = new Thread(this, "Waves-Thread");
             thread.start();
         }
