@@ -10,6 +10,7 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.utilities.Xp;
 import com.retronova.game.objects.particles.DamageMobs;
+import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.Word;
 
 import java.awt.*;
@@ -46,7 +47,7 @@ public abstract class Enemy extends Entity {
     }
 
     @Override
-    public void strike(AttackTypes type, double damage) {
+    public void strike(AttackTypes type, double damage, Particle particle) {
         Player player = Game.getPlayer();
         damage *= Engine.RAND.nextDouble() + player.getLuck();
         super.strike(type, damage);

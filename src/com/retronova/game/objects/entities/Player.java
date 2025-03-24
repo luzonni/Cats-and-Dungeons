@@ -11,6 +11,8 @@ import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.Sheet;
+import com.retronova.game.objects.particles.Particle;
+import com.retronova.game.objects.particles.Poison;
 import com.retronova.game.objects.particles.Word;
 
 import java.awt.*;
@@ -104,6 +106,18 @@ public class Player extends Entity {
             return;
         updateMovement();
         tickItemHand();
+        if(KeyBoard.KeyPressed("F")) {
+            this.addEffect("Poison", (e) -> {
+                if(Engine.RAND.nextInt(100) > 10) {
+                    return;
+                }
+                Sound.play(Sounds.Poison);
+                double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
+                double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
+                Particle poison = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
+                e.strike(AttackTypes.Poison, 2, poison);
+            }, 3);
+        }
     }
 
     @Override

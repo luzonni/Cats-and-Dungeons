@@ -9,8 +9,8 @@ import java.awt.*;
 public class Poison extends Particle {
 
     private final double dir;
-    private double r;
     private int count;
+    private int indexAnim;
 
     public Poison(double x, double y, double seconds, double dir) {
         super(x, y, seconds);
@@ -22,11 +22,15 @@ public class Poison extends Particle {
 
     @Override
     public void tick() {
-        r += Math.toRadians(2);
         setX(getX() + Math.cos(dir) * 0.5d);
         setY(getY() + Math.sin(dir) * 0.5d);
         count++;
-        if (count >= getSeconds()) {
+        if (count >= 7) {
+            count = 0;
+            indexAnim++;
+            getSheet().setIndex(indexAnim);
+        }
+        if(indexAnim >= 8) {
             Game.getMap().remove(this);
         }
     }
@@ -36,6 +40,6 @@ public class Poison extends Particle {
         float t = 1f - count / (float) getSeconds();
         int x = (int) getX() - getWidth()/2 - Game.C.getX();
         int y = (int) getY() - getHeight()/2 - Game.C.getY();
-        Alpha.draw(getSprite(), x, y, t, g);
+        Alpha.draw(getSprite(), x, y, 1, g);
     }
 }

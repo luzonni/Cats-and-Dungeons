@@ -15,7 +15,8 @@ public enum Sounds {
 	Laser("laser"),
 	Sword("sword"),
 	Coin("coin"),
-	DamageCat("damage_cat");
+	DamageCat("damage_cat"),
+	Poison("poison");
 
 	
 	private final String ResourceName;
