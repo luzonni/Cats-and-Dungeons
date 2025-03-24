@@ -4,13 +4,10 @@ import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.Serial;
-import java.net.URL;
 
 public class Window extends Canvas {
 
@@ -60,14 +57,15 @@ public class Window extends Canvas {
     public void initFrame(){
         this.frame = new JFrame(this.name);
         frame.add(this);
-        frame.setUndecorated(false);
+        frame.setUndecorated(Configs.Fullscreen());
         frame.setResizable(true);
-        frame.setAlwaysOnTop(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         if(Configs.Fullscreen()) {
             GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-            if (gd.isFullScreenSupported()) {
-                gd.setFullScreenWindow(frame);
+            gd.setFullScreenWindow(frame);
+            if (!gd.isFullScreenSupported()) {
+                System.out.println("Fullscreen without support!");
+                System.exit(0);
             }
         }else {
             setPreferredSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
@@ -94,7 +92,7 @@ public class Window extends Canvas {
         frame = null;
     }
 
-    public void setResolution() {
+    public void resetWindow() {
         closeFrame();
         initFrame();
         requestFocus();

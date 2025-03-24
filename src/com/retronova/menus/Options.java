@@ -137,7 +137,7 @@ public class Options implements Activity {
                                 Configs.setVolum(tempMobsVolume);
                                 Configs.setMargin(tempMargin);
                                 Engine.index_res = resolutionIndex;
-                                Engine.window.setResolution();
+                                Engine.window.resetWindow();
                                 Sound.updateVolumes();
                                 System.out.println("Opções Aplicadas!");
                                 break;
