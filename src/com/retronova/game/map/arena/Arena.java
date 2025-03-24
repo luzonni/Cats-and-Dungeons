@@ -25,9 +25,6 @@ public class Arena extends GameMap {
         player.setY(getBounds().height/2d);
         Sound.stop(Musics.Music2);
         Sound.play(Musics.Music3, true);
-
-        Portal portal = new Portal(player.getX(), player.getY(), 5, player);
-        put(portal);
     }
 
     public Waves getWaves() {

@@ -1,12 +1,12 @@
 Itens:
 
 Armas:
-1. Espada; - Feito
-2. Arco ; - Feito
-3. Bomba; - Feito
-4. Laser;
+1. Espada; - ✅
+2. Arco ; - ✅
+3. Bomba; - ✅
+4. Laser; - ✅
 5. Garra(tipo luva) que da dano e empurra o jogador;
-6. Bolã de lã. - Feito
+6. Bolã de lã. - ✅
 7. Vara de gato: dano à distância
 
 Passíveis:

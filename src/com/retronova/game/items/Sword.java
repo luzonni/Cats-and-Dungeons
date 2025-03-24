@@ -4,6 +4,8 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.AttackTypes;
@@ -66,6 +68,7 @@ public class Sword extends Item {
                 e.getPhysical().addForce("knockback", 16, r);
             }
         }
+        Sound.play(Sounds.Sword);
     }
 
     public void render(Graphics2D g) {

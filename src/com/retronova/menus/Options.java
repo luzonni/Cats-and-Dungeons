@@ -266,7 +266,6 @@ public class Options implements Activity {
         }
     }
 
-
     @Override
     public void dispose() {
     }

@@ -101,12 +101,23 @@ public abstract class Entity extends GameObject {
 
 
     public void strike(AttackTypes type, double damage) {
+        System.out.println("Dano recebido: " + damage + ", Tipo de ataque: " + type);
         if(resistances.containsKey(type)) {
             double r = resistances.get(type);
-            setLife(getLife() - (damage * (1 - r))); // Dano total
+            System.out.println("Resistência encontrada: " + r);
+            double finalDamage = damage * (1 - r);
+            System.out.println("Dano final: " + finalDamage);
+            double currentLife = getLife();
+            System.out.println("Vida antes do dano: " + currentLife);
+            setLife(currentLife - finalDamage); // Dano total
+            System.out.println("Vida depois do dano: " + getLife());
             return;
         }
-        setLife(getLife() - damage);
+        System.out.println("Sem resistência encontrada");
+        double currentLife = getLife();
+        System.out.println("Vida antes do dano: " + currentLife);
+        setLife(currentLife - damage);
+        System.out.println("Vida depois do dano: " + getLife());
     }
 
     public void addModifier(Modifiers modifier, double value) {

@@ -11,7 +11,11 @@ public enum Sounds {
 	MouseSquire("mousesquire"),
 	Cat("cat"),
 	Crack("crack"),
-	Button("button"),;
+	Button("button"),
+	Laser("laser"),
+	Sword("sword"),
+	Coin("coin"),
+	DamageCat("damage_cat");
 
 	
 	private final String ResourceName;

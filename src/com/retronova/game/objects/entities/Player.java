@@ -3,6 +3,7 @@ package com.retronova.game.objects.entities;
 import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.interfaces.Inventory;
 import com.retronova.game.items.Consumable;
@@ -107,17 +108,17 @@ public class Player extends Entity {
 
     @Override
     public void strike(AttackTypes type, double damage) {
-        if(modifiers.containsKey(Modifiers.Dodge)) {
-            double percent = modifiers.get(Modifiers.Dodge) + getLuck()*0.10d;
+        if (modifiers.containsKey(Modifiers.Dodge)) {
+            double percent = modifiers.get(Modifiers.Dodge) + getLuck() * 0.10d;
             double a = Engine.RAND.nextDouble(1d);
             System.out.println(percent * 100 + " / " + a * 100);
-            if(a <= percent) {
-                Game.getMap().put(new Word("Dodge", getX() + getWidth()/2d, getY() + getHeight()/2d, 1));
+            if (a <= percent) {
+                Game.getMap().put(new Word("Dodge", getX() + getWidth() / 2d, getY() + getHeight() / 2d, 1));
                 return;
             }
         }
+        Sound.play(Sounds.DamageCat);
         super.strike(type, damage);
-
     }
 
     @Override
