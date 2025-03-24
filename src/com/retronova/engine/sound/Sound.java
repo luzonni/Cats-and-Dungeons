@@ -99,6 +99,16 @@ public class Sound {
 		stopAllMusics();
 	}
 
+	public static void updateVolumes() {
+		if (musics != null) {
+			for (Music music : musics.values()) {
+				double volume = (double) Configs.Music() / 100d;
+				music.setVolume(volume);
+			}
+		}
+	}
+
+
 
 	public static void dispose() {
 		TinySound.shutdown();

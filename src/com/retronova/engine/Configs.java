@@ -99,6 +99,7 @@ public class Configs {
 
     public static void setUiScale(int uiScale) {
         VALUES.replace("UISCALE", uiScale);
+        update();
     }
 
     public static int HudScale() {
@@ -115,6 +116,7 @@ public class Configs {
 
     public static void setMargin(int MARGIN) {
         VALUES.replace("MARGIN", MARGIN);
+        update();
     }
 
     public static boolean isNeatGraphics() {
@@ -131,6 +133,7 @@ public class Configs {
 
     public static void setVolum(int VOLUM) {
         VALUES.replace("VOLUM", VOLUM);
+        update();
     }
 
     public static int Music() {
@@ -139,6 +142,7 @@ public class Configs {
 
     public static void setMusic(int MUSIC) {
         VALUES.replace("MUSIC", MUSIC);
+        update();
     }
 
     public static int MaxFrames() {
@@ -147,6 +151,7 @@ public class Configs {
 
     public static void setMaxFrames(int MaxFrames) {
         VALUES.replace("MaxFrames", MaxFrames);
+        update();
     }
 
 }

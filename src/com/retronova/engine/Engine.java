@@ -5,6 +5,7 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.menus.Loading;
 import com.retronova.menus.Menu;
+import java.util.Stack;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
@@ -13,6 +14,7 @@ import java.util.Random;
 public class Engine implements Runnable {
 
     private static String GameTag = "Roguelike";
+
 
     private static Thread thread;
     private static boolean isRunning;
@@ -143,30 +145,39 @@ public class Engine implements Runnable {
         double delta_HZ = 0;
 
         long lastTimeFPS = System.nanoTime();
-        double amountOfFPS = Configs.MaxFrames();
+        double amountOfFPS = Math.max(Configs.MaxFrames(), 1);
         double ns_FPS = Engine.T / amountOfFPS;
         double delta_FPS = 0;
 
-        //To Show
+        // To Show
         int Hz = 0;
         int frames = 0;
         double timer = System.currentTimeMillis();
         window.requestFocus();
-        while(isRunning) {
+
+        while (isRunning) {
             try {
+                // Atualiza os valores dinamicamente para refletir mudanças no FPS/Hz
+                amountOfHz = Engine.HZ;
+                ns_HZ = Engine.T / amountOfHz;
+
+                amountOfFPS = Math.max(Configs.MaxFrames(), 1);
+                ns_FPS = Engine.T / amountOfFPS;
+
                 long nowHZ = System.nanoTime();
                 delta_HZ += (nowHZ - lastTimeHZ) / ns_HZ;
                 lastTimeHZ = nowHZ;
-                if(delta_HZ >= 1) {
-                    if(KeyBoard.KeyPressed("F11") && window != null) {
+
+                if (delta_HZ >= 1) {
+                    if (KeyBoard.KeyPressed("F11") && window != null) {
                         Configs.setFullscreen(!Configs.Fullscreen());
                         Thread.sleep(10);
                         window.setResolution();
                     }
-                    if(ACTIVITY_RUNNING && ACTIVITY != null) {
+                    if (ACTIVITY_RUNNING && ACTIVITY != null) {
                         ACTIVITY.tick();
                     }
-                    if(OverView != null) {
+                    if (OverView != null) {
                         OverView.tick();
                     }
                     Hz++;
@@ -176,12 +187,13 @@ public class Engine implements Runnable {
                 long nowFPS = System.nanoTime();
                 delta_FPS += (nowFPS - lastTimeFPS) / ns_FPS;
                 lastTimeFPS = nowFPS;
-                if(delta_FPS >= 1) {
+
+                if (delta_FPS >= 1) {
                     Graphics2D g = getGraphics();
-                    if(ACTIVITY != null) {
+                    if (ACTIVITY != null) {
                         ACTIVITY.render(g);
                     }
-                    if(OverView != null) {
+                    if (OverView != null) {
                         OverView.render(g);
                     }
                     render(g);
@@ -190,16 +202,17 @@ public class Engine implements Runnable {
                 }
 
                 //Show fps
-                if(System.currentTimeMillis() - timer >= 1000){
-                    Engine.window.getFrame().setTitle(Engine.GameTag+" - Hz: " + Hz + " / Frames: " + frames);
+                if (System.currentTimeMillis() - timer >= 1000) {
+                    Engine.window.getFrame().setTitle(Engine.GameTag + " - Hz: " + Hz + " / Frames: " + frames);
                     Engine.FRAMES = frames;
                     frames = 0;
                     Engine.HERTZ = Hz;
                     Hz = 0;
                     timer += 1000;
                 }
+
                 Thread.sleep(1); //Otimização de CPU ( limita a renderização ilimitada )
-            }catch(Exception e) {
+            } catch (Exception e) {
                 System.out.println("ERROR!");
                 e.printStackTrace();
                 System.exit(1);
@@ -208,4 +221,6 @@ public class Engine implements Runnable {
         stop();
         System.out.println("Exit");
     }
+
 }
+
