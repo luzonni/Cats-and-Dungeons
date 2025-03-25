@@ -32,7 +32,7 @@ public class Engine implements Runnable {
     public static int index_res = 0;
 
     public static Window window;
-    static BufferStrategy BUFFER;
+    private static BufferStrategy BUFFER;
 
     public static Random RAND = new Random();
 
@@ -96,6 +96,11 @@ public class Engine implements Runnable {
     }
 
     private Graphics2D getGraphics() {
+        if(Engine.BUFFER == null) {
+            window.createBufferStrategy(3);
+            Engine.BUFFER = window.getBufferStrategy();
+            return null;
+        }
         Graphics2D graphics = (Graphics2D) BUFFER.getDrawGraphics();
         graphics.setColor(Color.black);
         graphics.fillRect(0, 0, window.getWidth(), window.getHeight());
@@ -137,7 +142,7 @@ public class Engine implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("Inicializando Thread");
+        System.out.println("Inicializando Thread MAX FRAMES = " + Configs.MaxFrames());
         long lastTimeHZ = System.nanoTime();
         double amountOfHz = Engine.HZ;
         double ns_HZ = Engine.T / amountOfHz;
@@ -156,13 +161,11 @@ public class Engine implements Runnable {
                 delta_HZ += (nowHZ - lastTimeHZ) / ns_HZ;
                 lastTimeHZ = nowHZ;
                 if (delta_HZ >= 1) {
+                    if (KeyBoard.KeyPressed("F11") && window != null) {
+                        Configs.setFullscreen(!Configs.Fullscreen());
+                        window.resetWindow();
+                    }
                     if (ACTIVITY_RUNNING && ACTIVITY != null) {
-
-                        if (KeyBoard.KeyPressed("F11") && window != null) {
-                            Configs.setFullscreen(!Configs.Fullscreen());
-                            window.resetWindow();
-                        }
-
                         ACTIVITY.tick();
                     }
                     if (OverView != null) {
@@ -176,6 +179,8 @@ public class Engine implements Runnable {
                 lastTimeFPS = nowFPS;
                 if (delta_FPS >= 1) {
                     Graphics2D g = getGraphics();
+                    if(g == null)
+                        continue;
                     if (ACTIVITY != null) {
                         ACTIVITY.render(g);
                     }

@@ -63,7 +63,6 @@ public class Window extends Canvas {
         if(Configs.Fullscreen()) {
             GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
             gd.setFullScreenWindow(frame);
-            setSize(toolkit.getScreenSize().width, toolkit.getScreenSize().height);
             if (!gd.isFullScreenSupported()) {
                 System.out.println("Fullscreen without support!");
                 System.exit(0);
@@ -80,8 +79,6 @@ public class Window extends Canvas {
         }catch(Exception ignore) { }
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        createBufferStrategy(3);
-        Engine.BUFFER = getBufferStrategy();
         createOpenGl(true);
         System.out.println("OpenGL: " + System.getProperty("sun.java2d.opengl")); // "true" se OpenGL estiver ativado
         System.out.println("DirectX: " + System.getProperty("sun.java2d.d3d"));   // "true" se Direct3D estiver ativado
