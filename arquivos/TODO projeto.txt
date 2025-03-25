@@ -1,0 +1,74 @@
+Problema a serem resolvidos: 
+
+
+ENGINE:
+
+A fazer:
+ 1. Sistema de pilha para activity;
+ 
+
+FÍSICA:
+
+A fazer:
+ 1. Fazer movimentações diferentes para os inimigos;
+
+A ser resolvido:
+ 1. Ajustar a movimentação do zombie;
+
+
+DESIGN:
+
+A ser resolvido:
+ 1. Outline;
+ 2. Concertar o F11;
+ 3. Atualizar os Sprites dos gatos;
+ 4. Ajustar as arenas;
+ 5. Alterar os Sprites dos itens.
+
+A fazer:
+ 1. Fazer os mapas individuais por nível;
+ 2. Adicionar partículas(elementos):
+	-elementos;
+	- andar;
+	-efeito de porção;
+
+ 3. Criação das Sprites dos Bosses;
+ 4. "Qual tipo de partícula o strike vai emitir";
+ 5. Criar os 12 itens adicionais;
+ 6. Criar 6 inimigos;
+ 7. Criar a tela de GAMEOVER.
+
+
+WAVES:
+
+A fazer:
+ 1. Quantidade de Waves;
+ 2. Loja pós waves;
+
+
+Resolução:
+
+A fazer:
+ 1. problema do F11;
+
+
+Sons:
+
+A fazer:
+ 1. Som de andar 
+
+
+
+
+
+
+
+
+
+
+
+
+
+***MAQUINA DE GATCHA***
+
+
