@@ -8,6 +8,8 @@ import com.retronova.menus.Menu;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Engine implements Runnable {
@@ -23,7 +25,7 @@ public class Engine implements Runnable {
     public static int HERTZ;
 
     private static Activity OverView;
-    private static Activity ACTIVITY;
+    private static List<Activity> stackActivities;
     private static boolean ACTIVITY_RUNNING;
 
     public static final String resPath = "/com/retronova/res/";
@@ -37,32 +39,44 @@ public class Engine implements Runnable {
     public static Random RAND = new Random();
 
     public Engine() {
+        stackActivities = new ArrayList<>();
         Configs.init();
         Configs.load();
         FontG.addFont("game", "septem");
         Sound.load();
         Engine.window = new Window(GameTag);
-        setActivity(new Menu());
+        heapActivity(new Menu());
         start();
     }
 
     //Sempre usar essa função para mudar de Activity! Nunca usar a variável direto.
-    public static void setActivity(Activity activity) {
+    public static void heapActivity(Activity activity) {
         ACTIVITY_RUNNING = true;
-        Activity ac = Engine.ACTIVITY;
-        if(ac != null) {
-            ac.dispose();
-        }
-        Engine.ACTIVITY = activity;
+        Engine.stackActivities.add(activity);
     }
 
-    public static void setActivity(Activity activity, ActionBack action) {
+    public static void heapActivity(Activity activity, ActionBack action) {
         ACTIVITY_RUNNING = true;
-        Activity ac = Engine.ACTIVITY;
+        Engine.stackActivities.add(new Loading(stackActivities, activity, action));
+    }
+
+    public static void backActivity() {
+        Activity ac = Engine.getACTIVITY();
         if(ac != null) {
             ac.dispose();
         }
-        Engine.ACTIVITY = new Loading(activity, action);
+        Engine.stackActivities.removeLast();
+    }
+
+    public static void backActivity(int amount) {
+        Engine.pause(null);
+        for(int i = 0; i < amount; i++) {
+            Activity ac = Engine.getACTIVITY();
+            if(ac != null) {
+                ac.dispose();
+            }
+            Engine.stackActivities.removeLast();
+        }
     }
 
     /**
@@ -83,11 +97,11 @@ public class Engine implements Runnable {
     }
 
     public static Activity getACTIVITY() {
-        return Engine.ACTIVITY;
+        return Engine.stackActivities.getLast();
     }
 
     public static void CLOSE() {
-        Engine.ACTIVITY.dispose();
+        Engine.getACTIVITY().dispose();
         Engine.isRunning = false;
     }
 
@@ -165,8 +179,8 @@ public class Engine implements Runnable {
                         Configs.setFullscreen(!Configs.Fullscreen());
                         window.resetWindow();
                     }
-                    if (ACTIVITY_RUNNING && ACTIVITY != null) {
-                        ACTIVITY.tick();
+                    if (ACTIVITY_RUNNING && !stackActivities.isEmpty()) {
+                        getACTIVITY().tick();
                     }
                     if (OverView != null) {
                         OverView.tick();
@@ -181,8 +195,8 @@ public class Engine implements Runnable {
                     Graphics2D g = getGraphics();
                     if(g == null)
                         continue;
-                    if (ACTIVITY != null) {
-                        ACTIVITY.render(g);
+                    if (!stackActivities.isEmpty()) {
+                        getACTIVITY().render(g);
                     }
                     if (OverView != null) {
                         OverView.render(g);

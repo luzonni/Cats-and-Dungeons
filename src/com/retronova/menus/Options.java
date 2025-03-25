@@ -142,7 +142,7 @@ public class Options implements Activity {
                                 System.out.println("Opções Aplicadas!");
                                 break;
                             case "Back":
-                                Engine.setActivity(new Menu());
+                                Engine.backActivity();
                                 break;
                             default:
                                 System.out.println("Botão desconhecido: " + textoBotao);

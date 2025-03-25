@@ -169,7 +169,7 @@ public class Game implements Activity {
         }
         Game game = getGame();
         map.restart();
-        Engine.setActivity(new Game(game.indexPlayer, game.difficulty, map));
+        Engine.heapActivity(new Game(game.indexPlayer, game.difficulty, map));
         //TODO tirar saídas de console após finalização da lógica.
         System.out.println("Jogo reiniciado com personagem " + game.indexPlayer + " e dificuldade " + game.difficulty);
     }

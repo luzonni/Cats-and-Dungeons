@@ -10,22 +10,25 @@ import com.retronova.engine.graphics.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class Loading implements Activity, Runnable {
 
     private final Thread thread;
 
-    private final Activity activity;
+    private final List<Activity> stack;
+    private final Activity next;
     private final ActionBack action;
     private volatile boolean finish;
     private boolean start;
 
-    private BufferedImage spriteLoad;
+    private final BufferedImage spriteLoad;
     private double rotating;
 
-    public Loading(Activity activity, ActionBack action) {
+    public Loading(List<Activity> stack, Activity next, ActionBack action) {
         this.thread = new Thread(this);
-        this.activity = activity;
+        this.stack = stack;
+        this.next = next;
         this.action = action;
         finish = false;
         this.start = false;
@@ -38,8 +41,10 @@ public class Loading implements Activity, Runnable {
             start = true;
             this.thread.start();
         }
-        if(finish)
-            Engine.setActivity(activity);
+        if(finish) {
+            stack.remove(this);
+            stack.add(next);
+        }
         rotating += Math.toRadians(2);
     }
 

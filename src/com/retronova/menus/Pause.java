@@ -11,6 +11,7 @@ import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.menus.Menu;
+import com.retronova.menus.Options;
 
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
@@ -76,6 +77,8 @@ public class Pause implements Activity {
                             break;
                         case 2:
                             System.out.println("Clicou em Options");
+                            Engine.pause(null);
+                            Engine.heapActivity(new Options());
                             break;
                         case 3:
                             System.out.println("Clicou em Looby");
@@ -89,7 +92,7 @@ public class Pause implements Activity {
                             Engine.pause(null);
                             Sound.stop(Musics.Music3);
                             Sound.stop(Musics.Music2);
-                            Engine.setActivity(new Menu());
+                            Engine.backActivity(2);
                             break;
                         case 5:
                             System.out.println("Clicou em Quit");

@@ -127,20 +127,20 @@ public class Personagens implements Activity {
                     case 0:
                         System.out.println("Clicou em Back");
                         Sound.play(Sounds.Button);
-                        Engine.setActivity(new Menu());
+                        Engine.heapActivity(new Menu());
                         break;
                     case 1:
                         System.out.println("Clicou em Play");
                         if (personagemSelecionado != -1) {
                             Activity newGame = new Game(personagemSelecionado, 1, new Room("beginning"));
-                            Activity loading = new Loading(newGame, () -> {
+                            Sound.play(Sounds.Button);
+                            Engine.heapActivity(newGame, () -> {
                                 try {
-                                    Thread.sleep(60);
-                                } catch (Exception ignore) {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
                                 }
                             });
-                            Sound.play(Sounds.Button);
-                            Engine.setActivity(loading);
                             Sound.stop(Musics.Music1);
                         } else {
                             System.out.println("Selecione um personagem antes de jogar!");

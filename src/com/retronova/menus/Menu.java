@@ -50,12 +50,12 @@ public class Menu implements Activity {
                     case 0:
                         System.out.println("Clicou em Play");
                         Sound.play(Sounds.Button);
-                        Engine.setActivity(new Personagens());
+                        Engine.heapActivity(new Personagens());
                         break;
                     case 1:
                         System.out.println("Clicou em Options");
                         Sound.play(Sounds.Button);
-                        Engine.setActivity(new Options());
+                        Engine.heapActivity(new Options());
                         break;
                     case 2:
                         System.out.println("Clicou em Quit");
