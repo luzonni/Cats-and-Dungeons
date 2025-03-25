@@ -60,27 +60,33 @@ public class Window extends Canvas {
         frame.setUndecorated(Configs.Fullscreen());
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         if(Configs.Fullscreen()) {
             GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-            gd.setFullScreenWindow(frame);
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            if (!gd.isFullScreenSupported()) {
-                System.out.println("Fullscreen without support!");
-                System.exit(0);
+            if (gd.isFullScreenSupported()) {
+                gd.setFullScreenWindow(frame);
+                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             }
         }else {
             setPreferredSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
             frame.setMinimumSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
         }
-        frame.pack();
+
         try {
             SpriteSheet icon = new SpriteSheet("ui","icon", 3);
             setCursor(defalutCursor);
             frame.setIconImage(icon.getSHEET());
         }catch(Exception ignore) { }
+
+        createOpenGl(true);
+
+        frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        createOpenGl(true);
+//        showAccelerators();
+    }
+
+    private void showAccelerators() {
         System.out.println("OpenGL: " + System.getProperty("sun.java2d.opengl")); // "true" se OpenGL estiver ativado
         System.out.println("DirectX: " + System.getProperty("sun.java2d.d3d"));   // "true" se Direct3D estiver ativado
     }
