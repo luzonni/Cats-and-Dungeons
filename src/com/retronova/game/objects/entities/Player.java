@@ -14,6 +14,7 @@ import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.Poison;
 import com.retronova.game.objects.particles.Word;
+import com.retronova.menus.GameOver;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -137,9 +138,7 @@ public class Player extends Entity {
 
     @Override
     public void die() {
-        Game.restart();
-        Sound.stopAll();
-        Sound.play(Musics.Music2, true);
+        disappear();
     }
 
     public double getLuck() {

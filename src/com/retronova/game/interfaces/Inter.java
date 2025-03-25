@@ -130,4 +130,5 @@ public class Inter implements Activity {
     public void dispose() {
         this.inter.clear();
     }
+
 }

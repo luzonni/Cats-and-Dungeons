@@ -20,6 +20,7 @@ import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.menus.GameOver;
 
 import java.awt.*;
 import java.util.List;
@@ -56,6 +57,11 @@ public class Game implements Activity {
         this.map.addPlayer(player);
         this.hud = new HUD(player);
         this.galaxy = new Galaxy();
+    }
+
+    private void gameOver() {
+        Engine.backActivity();
+        Engine.heapActivity(new GameOver(player));
     }
 
     public void changeMap(GameMap newMap) {
@@ -116,6 +122,9 @@ public class Game implements Activity {
             tile.tick();
         }
         C.tick();
+        if(!this.map.getEntities().contains(player)) {
+            gameOver();
+        }
     }
 
     @Override
@@ -162,7 +171,7 @@ public class Game implements Activity {
     }
 
     public static void restart() {
-        Game.getInter().remove("inventory");
+        Game.getInter().dispose();
         GameMap map = getMap();
         if(map instanceof Arena) {
             map = getRoom();
