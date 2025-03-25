@@ -62,10 +62,17 @@ public class Window extends Canvas {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         if(Configs.Fullscreen()) {
-            GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-            if (gd.isFullScreenSupported()) {
-                gd.setFullScreenWindow(frame);
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win")) {
+                Dimension screenSize = toolkit.getScreenSize();
                 frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                setSize(screenSize);
+            } else {
+                GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+                if (gd.isFullScreenSupported()) {
+                    gd.setFullScreenWindow(frame);
+                    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                }
             }
         }else {
             setPreferredSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
