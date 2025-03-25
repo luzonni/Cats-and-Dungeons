@@ -63,6 +63,7 @@ public class Window extends Canvas {
         if(Configs.Fullscreen()) {
             GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
             gd.setFullScreenWindow(frame);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             if (!gd.isFullScreenSupported()) {
                 System.out.println("Fullscreen without support!");
                 System.exit(0);
