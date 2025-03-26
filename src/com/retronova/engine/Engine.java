@@ -214,11 +214,12 @@ public class Engine implements Runnable {
                     Hz = 0;
                     timer += 1000;
                 }
-                Thread.sleep(1); //Otimização de CPU ( limita a renderização ilimitada )
+                Thread.sleep(1);
             } catch (Exception e) {
-                System.out.println("ERROR!");
+                System.err.println("Exception: " + e.getMessage());
+                System.err.println("==============================================================");
                 e.printStackTrace();
-                System.exit(1);
+                //System.exit(1);
             }
         }
         stop();

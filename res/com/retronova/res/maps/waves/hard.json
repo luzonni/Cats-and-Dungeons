@@ -1,0 +1,9 @@
+{
+  "waves":[
+    {
+      "amountSpawns": 2,
+      "amountEnemies" : 4,
+      "enemies": ["Zombie", "Skeleton"]
+    }
+  ]
+}

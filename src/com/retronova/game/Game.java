@@ -39,6 +39,7 @@ public class Game implements Activity {
     public static Camera C;
 
     private GameMap map;
+    private int level;
     private Physically physically;
 
     private final HUD hud;
@@ -54,9 +55,20 @@ public class Game implements Activity {
         this.inter.put("status", new Status(player));
         this.player = player;
         this.changeMap(map);
-        this.map.addPlayer(player);
         this.hud = new HUD(player);
         this.galaxy = new Galaxy();
+    }
+
+    public int getDifficult() {
+        return this.difficulty;
+    }
+
+    public int getLevel() {
+        return this.level;
+    }
+
+    public void plusLevel() {
+        this.level++;
     }
 
     private void gameOver() {
@@ -65,17 +77,17 @@ public class Game implements Activity {
     }
 
     public void changeMap(GameMap newMap) {
+        if(newMap == null) {
+            return;
+        }
         if (this.physically != null) {
             this.physically.dispose();
         }
-
-        if (newMap == null) {
-            this.map = new Room("beginning");
-            this.map.addPlayer(player);
-        } else {
-            this.map = newMap;
+        if(this.map != null) {
+            this.map.remove(player);
         }
-
+        this.map = newMap;
+        this.map.addPlayer(player);
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
         this.physically = new Physically(map);
@@ -87,7 +99,7 @@ public class Game implements Activity {
         if(count > 60) {
             count = 0;
             seconds++;
-            System.out.println(seconds);
+            System.out.println("Seconds: " + seconds);
         }
         hud.tick();
         galaxy.tick();
@@ -221,8 +233,6 @@ public class Game implements Activity {
     public static Room getRoom() {
         if(getMap() instanceof Room room) {
             return room;
-        }else if(getMap() instanceof Arena arena) {
-            return arena.getRoom();
         }
         throw new NotInMap("O mapa atual não é uma room!");
     }
@@ -233,5 +243,4 @@ public class Game implements Activity {
         }
         throw new NotInActivity("Não é possível retornar a UI pois a activity atual não é um jogo");
     }
-
 }

@@ -84,7 +84,7 @@ public class Pause implements Activity {
                             System.out.println("Clicou em Looby");
                             Sound.stop(Musics.Music3);
                             Sound.play(Musics.Music2, true);
-                            game.changeMap(null);
+                            System.err.println("Tirar esse botão...");
                             Engine.pause(null);
                             break;
                         case 4:

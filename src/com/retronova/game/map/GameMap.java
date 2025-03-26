@@ -24,7 +24,7 @@ import java.util.List;
 
 public abstract class GameMap {
 
-    private String name;
+    private final String name;
     private int length;
     private Rectangle bounds;
 
@@ -65,16 +65,17 @@ public abstract class GameMap {
         } catch (IOException ignore) {
             System.err.println("Arquivo: " + mapName);
         }
-        //TODO isso está tendo problema de incimpatibilidade com Windows!
         if(jsonObject != null && !jsonObject.isEmpty()) {
             List<Entity> list = new ArrayList<>();
             JSONArray arrEntity = (JSONArray) jsonObject.get("entities");
             for(int i = 0; i < arrEntity.size(); i++) {
                 JSONArray arr = (JSONArray) arrEntity.get(i);
-                int id = ((Number)arr.get(0)).intValue();
-                int x = ((Number)arr.get(1)).intValue();
-                int y = ((Number)arr.get(2)).intValue();
-                Entity e = Entity.build(id, x, y);
+                int id = ((Number)arr.getFirst()).intValue();
+                Object[] values = new Object[arr.size()-1];
+                for(int j = 0; j < values.length; j++) {
+                    values[j] = arr.get(j+1);
+                }
+                Entity e = Entity.build(id, values);
                 list.add(e);
             }
             putAll(list);

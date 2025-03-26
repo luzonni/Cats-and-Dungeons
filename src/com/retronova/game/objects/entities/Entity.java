@@ -36,10 +36,13 @@ public abstract class Entity extends GameObject {
     private double damage;
     private double attackSpeed;
 
-    public static Entity build(int ID, double x, double y) {
+    public static Entity build(int ID, Object... values) {
         EntityIDs entityId = EntityIDs.values()[ID];
-        x *= GameObject.SIZE();
-        y *= GameObject.SIZE();
+        int length = values.length;
+        int ix = (length >= 1) ? ((Number)values[0]).intValue() : 0;
+        int iy = (length >= 2) ? ((Number)values[1]).intValue() : 0;
+        int x = ix * GameObject.SIZE();
+        int y = iy * GameObject.SIZE();
         switch (entityId) {
             case Zombie -> {
                 return new Zombie(ID, x, y);
@@ -75,7 +78,8 @@ public abstract class Entity extends GameObject {
                 return new Door(ID, x, y);
             }
             case TrapDoor -> {
-                return new TrapDoor(ID, x, y);
+                String place = (length >= 3) ? (String)values[2] : "None";
+                return new TrapDoor(ID, x, y, place);
             }
         }
         throw new EntityNotFound("Entity not found");

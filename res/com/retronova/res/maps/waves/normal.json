@@ -1,0 +1,14 @@
+{
+  "waves":[
+    {
+      "period": 4,
+      "amount" : [4, 6, 8, 12],
+      "enemies": ["Zombie", "Skeleton"]
+    },
+    {
+      "period": 6,
+      "amount" : [12, 14, 18, 22, 24, 26],
+      "enemies": ["Zombie", "Skeleton", "Slime"]
+    }
+  ]
+}
