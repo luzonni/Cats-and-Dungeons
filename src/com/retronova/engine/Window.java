@@ -63,7 +63,8 @@ public class Window extends Canvas {
 
         if(Configs.Fullscreen()) {
             String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("win")) {
+            if (os.contains("windows 11")) {
+                System.out.println(os);
                 Dimension screenSize = toolkit.getScreenSize();
                 frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
                 setSize(screenSize);
