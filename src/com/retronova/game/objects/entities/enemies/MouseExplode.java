@@ -18,7 +18,6 @@ public class MouseExplode extends Enemy {
 
     private int countAnim;
 
-    // TODO: Entender pq a sprite ta nervosa virando de um lado pro outro sem motivo
     public MouseExplode(int ID, double x, double y) {
         super(ID,x,y,0.5);
         loadSprites("ratexplode");
@@ -39,9 +38,9 @@ public class MouseExplode extends Enemy {
 
         if(this.getDistance(player) < GameObject.SIZE()) {
             explodir(player);
-        }else {
-            double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce("move", getSpeed(), radians);
+//        }else {
+//            double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+//            getPhysical().addForce("move", getSpeed(), radians);
         }
 
     }
