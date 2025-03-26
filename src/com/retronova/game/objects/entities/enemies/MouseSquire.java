@@ -45,7 +45,7 @@ public class MouseSquire extends Enemy {
         if (player.getBounds().intersects(this.getBounds()) && cooldown > 40) {
             cooldown = 0;
             player.strike(AttackTypes.Melee, 6);
-            player.getPhysical().addForce("knockback", 3.0d, getPhysical().getAngleForce());
+            player.getPhysical().addForce("knockback", 7.0d, getPhysical().getAngleForce());
             Sound.play(Sounds.MouseSquire);
             soundPlaying = true;
         } else {
