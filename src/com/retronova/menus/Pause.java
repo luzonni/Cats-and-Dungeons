@@ -93,6 +93,7 @@ public class Pause implements Activity {
                             Sound.stop(Musics.Music3);
                             Sound.stop(Musics.Music2);
                             Engine.backActivity(2);
+                            Sound.play(Musics.Music1, true);
                             break;
                         case 5:
                             System.out.println("Clicou em Quit");

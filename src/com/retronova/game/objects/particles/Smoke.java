@@ -14,7 +14,7 @@ public class Smoke extends Particle {
 
     public Smoke(double x, double y, double seconds, double dir) {
         super(x, y, seconds);
-        loadSprites("smoking");
+        loadSprites("smoke");
         this.dir = dir;
         if(Engine.RAND.nextBoolean())
             getSheet().plusIndex();

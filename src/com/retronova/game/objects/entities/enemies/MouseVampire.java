@@ -35,7 +35,7 @@ public class MouseVampire extends Enemy {
     public void moveIA() {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        getPhysical().addForce("move", 0.50, radians);
+        getPhysical().addForce("move", 0.80, radians);
     }
 
     public void animation() {
