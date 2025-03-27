@@ -17,4 +17,5 @@ public class Room extends GameMap {
     public void tick() {
 
     }
+
 }
