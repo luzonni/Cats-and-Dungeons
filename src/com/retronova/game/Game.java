@@ -29,7 +29,6 @@ public class Game implements Activity {
 
     private final Galaxy galaxy;
 
-    private final int difficulty;
     private final int indexPlayer;
 
     private long seconds;
@@ -45,8 +44,7 @@ public class Game implements Activity {
     private final Inter inter;
 
     //Teste
-    public Game(int indexPlayer, int difficulty, GameMap map) {
-        this.difficulty = difficulty;
+    public Game(int indexPlayer, GameMap map) {
         this.indexPlayer = indexPlayer;
         this.inter = new Inter();
         Player player = Player.newPlayer(indexPlayer);
@@ -56,10 +54,6 @@ public class Game implements Activity {
         this.changeMap(map);
         this.hud = new HUD(player);
         this.galaxy = new Galaxy();
-    }
-
-    public int getDifficult() {
-        return this.difficulty;
     }
 
     public int getLevel() {
@@ -180,9 +174,8 @@ public class Game implements Activity {
         GameMap map = getMap();
         Game game = getGame();
         map.restart();
-        Engine.heapActivity(new Game(game.indexPlayer, game.difficulty, map));
-        //TODO tirar saídas de console após finalização da lógica.
-        System.out.println("Jogo reiniciado com personagem " + game.indexPlayer + " e dificuldade " + game.difficulty);
+        Engine.backActivity();
+        Engine.heapActivity(new Game(game.indexPlayer, map));
     }
 
     public static Game getGame() {

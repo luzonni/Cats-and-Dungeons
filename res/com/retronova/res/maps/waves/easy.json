@@ -1,9 +1,14 @@
 {
   "waves":[
     {
-      "amountSpawns": 2,
-      "amountEnemies" : 4,
-      "enemies": ["Zombie", "Skeleton"]
+      "period": 4,
+      "amount" : [4, 6, 8, 12],
+      "enemies": ["Zombie", "Skeleton", "MouseSquire"]
+    },
+    {
+      "period": 6,
+      "amount" : [12, 14, 18, 22, 24, 26],
+      "enemies": ["Zombie", "Skeleton", "Slime"]
     }
   ]
 }

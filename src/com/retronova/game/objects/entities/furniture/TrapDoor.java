@@ -52,11 +52,13 @@ public class TrapDoor extends Furniture {
         String[] result = placeName.split("_");
         String type = result[0];
         String name = result[1];
+
         if(type.equals("room")) {
             Room room = new Room(name);
             Game.getGame().changeMap(room);
         }else if(type.equals("arena")) {
-            Arena arena = new Arena(name, level);
+            //TODO consertar sistema de dificuldade
+            Arena arena = new Arena(name, 1, level);
             Game.getGame().changeMap(arena);
         }
     }

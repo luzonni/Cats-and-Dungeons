@@ -132,7 +132,7 @@ public class Personagens implements Activity {
                     case 1:
                         System.out.println("Clicou em Play");
                         if (personagemSelecionado != -1) {
-                            Activity newGame = new Game(personagemSelecionado, 1, new Room("beginning"));
+                            Activity newGame = new Game(personagemSelecionado, new Room("beginning"));
                             Sound.play(Sounds.Button);
                             Engine.heapActivity(newGame, () -> {
                                 try {

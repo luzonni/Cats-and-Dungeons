@@ -14,16 +14,13 @@ import com.retronova.game.objects.particles.Portal;
 
 public class Arena extends GameMap {
 
-    //Para cada tipo de arena, colocar o nome do .png.
-
-
     private final Waves waves;
     private boolean ended;
 
-    public Arena(String name, int level) {
+    public Arena(String name, int difficult, int level) {
         super(name);
         this.ended = false;
-        this.waves = new Waves(this, level, Game.getGame().getDifficult());
+        this.waves = new Waves(this, level, difficult);
         Sound.stop(Musics.Music2);
         Sound.play(Musics.Music3, true);
     }
