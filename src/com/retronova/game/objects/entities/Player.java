@@ -68,6 +68,8 @@ public class Player extends Entity {
         this.luck = luck;
         this.inventory = new Inventory(bagSize, hotSize);
         this.passives = new ArrayList<>();
+        setWidth(0.85);
+        setHeight(0.9);
         loadSprites("player_"+name+"_idle", "player_"+name+"_walking");
         setLife(life);
         setDamage(damage);

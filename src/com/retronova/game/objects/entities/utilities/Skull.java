@@ -2,6 +2,7 @@ package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
+import com.retronova.engine.graphics.Scaling;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Player;
@@ -12,6 +13,7 @@ import java.awt.image.BufferedImage;
 
 public class Skull extends Utility {
 
+    private final BufferedImage sprite;
     private final double dir;
     private double r;
 
@@ -23,7 +25,10 @@ public class Skull extends Utility {
         if(Engine.RAND.nextBoolean()) {
             getSheet().plusIndex();
         }
-        setSpeed(4.5);
+        setWidth(0.75);
+        setHeight(0.75);
+        this.sprite = Scaling.s(getSprite(), getWidth(), getHeight());
+        setSpeed(1.5);
         setDamage(7.3);
     }
 
@@ -39,16 +44,12 @@ public class Skull extends Utility {
             this.disappear();
         }
         r += 0.02d;
-
     }
 
     @Override
     public void render(Graphics2D g) {
-        BufferedImage sprite = getSprite();
         int x = (int)getX() - Game.C.getX();
         int y = (int)getY() - Game.C.getY();
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.scale(0.5,0.5);
-        Rotate.draw(sprite, x, y, r, null, g2);
+        Rotate.draw(sprite, x, y, r, null, g);
     }
 }

@@ -10,10 +10,10 @@ import java.awt.*;
 
 public abstract class Tile extends GameObject {
 
-    public static Tile build(int ID, int x, int y) {
+    public static Tile build(int ID, Object... values) {
         TileIDs mapping = TileIDs.values()[ID];
-        x *= GameObject.SIZE();
-        y *= GameObject.SIZE();
+        int x = ((values.length >= 1) ? ((Number)values[0]).intValue() : 0) * GameObject.SIZE();
+        int y = ((values.length >= 2) ? ((Number)values[1]).intValue() : 0) * GameObject.SIZE();
         boolean solid = mapping.getSolid();
         switch (mapping) {
             case Brick -> {

@@ -5,6 +5,7 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.particles.Particle;
+import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.TileIDs;
 import com.retronova.engine.graphics.SpriteSheet;
@@ -27,12 +28,15 @@ public abstract class GameMap {
 
     private List<Particle> particles;
     private Tile[] map;
+    private final Physically physically;
 
     public GameMap(String mapName) {
         this.name = mapName;
         this.entities = new ArrayList<>();
         this.particles = new ArrayList<>();
         this.map = loadMap(mapName);
+        this.physically = new Physically(this);
+        this.physically.start();
     }
 
     public void restart() {
@@ -100,15 +104,18 @@ public abstract class GameMap {
 
     public Tile getTile(int x, int y) {
         try {
-            if (x > 0 || y > 0 || x < length || y < map.length / length) {
-                return getMap()[x + y * length];
-            }
-        }catch(IndexOutOfBoundsException e) {
+            return getMap()[x + y * length];
+        }catch(IndexOutOfBoundsException ignore) {
+
+        }
+        try {
             x /= GameObject.SIZE();
             y /= GameObject.SIZE();
             return getMap()[x + y * length];
+        }catch (IndexOutOfBoundsException ignore) {
+
         }
-        throw new IndexOutOfBoundsException("Posição fora do mapa");
+        return Tile.build(TileIDs.Void.ordinal());
     }
 
     public void depth() {
@@ -142,9 +149,8 @@ public abstract class GameMap {
         entities.add(e);
     }
 
-    public boolean putAll(List<Entity> e) {
-        //TODO mudar isso
-        return this.entities.addAll(e);
+    public void putAll(List<Entity> e) {
+        this.entities.addAll(e);
     }
 
     public boolean put(Particle p) {
@@ -163,6 +169,10 @@ public abstract class GameMap {
 
     public Rectangle getBounds() {
         return this.bounds;
+    }
+
+    public void dispose() {
+        this.physically.dispose();
     }
 
 }

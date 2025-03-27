@@ -40,7 +40,6 @@ public class Game implements Activity {
 
     private GameMap map;
     private int level;
-    private Physically physically;
 
     private final HUD hud;
     private final Inter inter;
@@ -80,17 +79,14 @@ public class Game implements Activity {
         if(newMap == null) {
             return;
         }
-        if (this.physically != null) {
-            this.physically.dispose();
-        }
         if(this.map != null) {
             this.map.remove(player);
+            this.map.dispose();
         }
         this.map = newMap;
         this.map.addPlayer(player);
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
-        this.physically = new Physically(map);
     }
 
     @Override
@@ -108,9 +104,6 @@ public class Game implements Activity {
         }
         if(KeyBoard.KeyPressed("E")) {
             inter.open();
-        }
-        if(!physically.isRunning()) {
-            physically.start();
         }
         map.tick();
         map.depth();
@@ -178,16 +171,13 @@ public class Game implements Activity {
     @Override
     public void dispose() {
         System.out.println("Dispose Game");
-        physically.dispose();
+        map.dispose();
         inter.dispose();
     }
 
     public static void restart() {
         Game.getInter().dispose();
         GameMap map = getMap();
-        if(map instanceof Arena) {
-            map = getRoom();
-        }
         Game game = getGame();
         map.restart();
         Engine.heapActivity(new Game(game.indexPlayer, game.difficulty, map));

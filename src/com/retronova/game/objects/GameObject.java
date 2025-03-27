@@ -9,10 +9,10 @@ import java.util.Comparator;
 
 public abstract class GameObject {
 
-    private final Values values;
     protected Sheet<? extends GameObject> sheet;
 
     private int depth;
+    private final int ID;
     private final Rectangle bounds;
     private boolean solid = false;
 
@@ -21,13 +21,8 @@ public abstract class GameObject {
     }
 
     public GameObject(int ID) {
-        this.values = new Values();
-        this.values.addInt("id", ID);
-        this.values.addDouble("x", 0d);
-        this.values.addDouble("y", 0d);
-        this.values.addInt("width", SIZE());
-        this.values.addInt("height", SIZE());
-        this.bounds = new Rectangle(getWidth(), getHeight());
+        this.ID = ID;
+        this.bounds = new Rectangle(0, 0, SIZE(), SIZE());
     }
 
     public abstract void loadSprites(String... sprites);
@@ -37,23 +32,23 @@ public abstract class GameObject {
     }
 
     public int getID() {
-        return this.values.getInt("id");
+        return this.ID;
     }
 
     public double getX() {
-        return this.values.getDouble("x");
+        return this.bounds.getX();
     }
 
     public double getY() {
-        return this.values.getDouble("y");
+        return this.bounds.getY();
     }
 
     public int getWidth() {
-        return this.values.getInt("width");
+        return this.bounds.width;
     }
 
     public int getHeight() {
-        return this.values.getInt("height");
+        return this.bounds.height;
     }
 
     public Rectangle getBounds() {
@@ -73,13 +68,19 @@ public abstract class GameObject {
     }
 
     public void setX(double newX) {
-        this.values.setDouble("x", newX);
         this.bounds.setLocation((int)newX, this.bounds.y);
     }
 
     public void setY(double newY) {
-        this.values.setDouble("y", newY);
         this.bounds.setLocation(this.bounds.x, (int)newY);
+    }
+
+    public void setWidth(double scale) {
+        this.bounds.setSize((int)(SIZE()*scale), this.bounds.height);
+    }
+
+    public void setHeight(double scale) {
+        this.bounds.setSize(this.bounds.width, (int)(SIZE()*scale));
     }
 
     public void setDepth() {
@@ -109,15 +110,9 @@ public abstract class GameObject {
     public static Comparator<GameObject> Depth = Comparator.comparingInt(GameObject::getDepth);
 
     public void renderSprite(BufferedImage sprite, Graphics2D g) {
-        g.drawImage(sprite, (int)getX() - Game.C.getX(), (int)getY() - Game.C.getY(), getWidth(), getHeight(),null);
-    }
-
-    public void renderSprite(BufferedImage sprite, int x, int y, Graphics2D g) {
-        g.drawImage(sprite, x - Game.C.getX(), y - Game.C.getY(), getWidth(), getHeight(),null);
-    }
-
-    public void renderSprite(BufferedImage sprite, int x, int y, int width, int height, Graphics2D g) {
-        g.drawImage(sprite, x - Game.C.getX(), y - Game.C.getY(), width, height,null);
+        int x = ((int)getX() + (getWidth() - sprite.getWidth())/2) - Game.C.getX();
+        int y = ((int)getY() - (sprite.getHeight()) + getHeight()) - Game.C.getY();
+        g.drawImage(sprite, x, y,null);
     }
 
     public abstract void tick();

@@ -45,7 +45,7 @@ public class Waves implements Runnable {
 
     private volatile int step;
     private volatile List<Entity> listAppend;
-    private boolean end = false;
+    private boolean end = true;
 
     public Waves(Arena gameMap, int waveLevel, int difficult) {
         this.gameMap = gameMap;
