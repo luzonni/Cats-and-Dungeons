@@ -219,7 +219,7 @@ public class Engine implements Runnable {
                 System.err.println("Exception: " + e.getMessage());
                 System.err.println("==============================================================");
                 e.printStackTrace();
-                //System.exit(1);
+                System.exit(1);
             }
         }
         stop();

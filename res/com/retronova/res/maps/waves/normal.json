@@ -3,7 +3,7 @@
     {
       "period": 4,
       "amount" : [4, 6, 8, 12],
-      "enemies": ["Zombie", "Skeleton"]
+      "enemies": ["Zombie", "Skeleton", "MouseSquire"]
     },
     {
       "period": 6,

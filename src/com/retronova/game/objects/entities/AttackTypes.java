@@ -10,5 +10,6 @@ public enum AttackTypes {
     Explosion,
     Sorcery,
     Laser,
+    Impact,
 
 }
