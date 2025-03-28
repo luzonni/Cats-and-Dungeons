@@ -1,23 +1,22 @@
 package com.retronova.game.objects.particles;
 
 import com.retronova.engine.Engine;
-import com.retronova.engine.graphics.Alpha;
 import com.retronova.game.Game;
 
 import java.awt.*;
 
-public class Poison extends Particle {
+public class Volatile extends Particle {
 
     private final double dir;
     private int count;
     private int indexAnim;
 
-    public Poison(double x, double y, double seconds, double dir) {
-        super(x, y, seconds);
-        loadSprites("poison");
-        this.dir = dir;
-        if (Engine.RAND.nextBoolean())
-            getSheet().plusIndex();
+    public Volatile(String sprite, double x, double y) {
+        super(x, y, 0.5);
+        loadSprites(sprite);
+        this.dir = Engine.RAND.nextDouble()*Math.PI*2;
+        setX(getX() - getWidth()/2d);
+        setY(getY() - getHeight()/2d);
     }
 
     @Override
@@ -30,16 +29,13 @@ public class Poison extends Particle {
             indexAnim++;
             getSheet().setIndex(indexAnim);
         }
-        if(indexAnim >= 8) {
+        if(indexAnim >= getSheet().size()) {
             Game.getMap().remove(this);
         }
     }
 
     @Override
     public void render(Graphics2D g) {
-        float t = 1f - count / (float) getSeconds();
-        int x = (int) getX() - getWidth()/2 - Game.C.getX();
-        int y = (int) getY() - getHeight()/2 - Game.C.getY();
-        Alpha.draw(getSprite(), x, y, 1, g);
+        renderSprite(getSprite(), g);
     }
 }

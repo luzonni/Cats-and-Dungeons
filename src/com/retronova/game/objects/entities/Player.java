@@ -1,7 +1,6 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
-import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
@@ -11,16 +10,12 @@ import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.Sheet;
-import com.retronova.game.objects.particles.Particle;
-import com.retronova.game.objects.particles.Poison;
 import com.retronova.game.objects.particles.Word;
-import com.retronova.menus.GameOver;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class Player extends Entity {
 
@@ -111,7 +106,8 @@ public class Player extends Entity {
         tickItemHand();
         if(KeyBoard.KeyPressed("F")) {
             //TODO teste de efeitos
-            this.EFFECT_REGENERATION(10, 500);
+            this.EFFECT_FIRE(10, 10);
+            //this.EFFECT_REGENERATION(10, 100);
         }
     }
 

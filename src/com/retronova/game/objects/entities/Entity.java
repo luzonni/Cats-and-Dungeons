@@ -14,9 +14,8 @@ import com.retronova.game.objects.entities.enemies.*;
 import com.retronova.game.objects.entities.furniture.Door;
 import com.retronova.game.objects.entities.furniture.TrapDoor;
 import com.retronova.game.objects.entities.utilities.Drop;
-import com.retronova.game.objects.particles.DamageMobs;
 import com.retronova.game.objects.particles.Particle;
-import com.retronova.game.objects.particles.Poison;
+import com.retronova.game.objects.particles.Volatile;
 import com.retronova.game.objects.physical.Physical;
 
 import java.awt.*;
@@ -333,7 +332,7 @@ public abstract class Entity extends GameObject {
             Sound.play(Sounds.Poison);
             double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
             double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
-            Particle particle = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
+            Particle particle = new Volatile("poison", x, y);
             double damage = e.getLifeSize() * 0.1;
             e.strike(AttackTypes.Poison, damage, particle);
         }, seconds, repetitions);
@@ -351,8 +350,7 @@ public abstract class Entity extends GameObject {
             Sound.play(Sounds.Poison);
             double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
             double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
-            //TODO FAZER PARTICULA DE FOGO!
-            Particle particle = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
+            Particle particle = new Volatile("fire", x, y);
             double damage = e.getLifeSize() * 0.15;
             e.strike(AttackTypes.Fire, damage, particle);
         }, seconds, repetitions);
@@ -370,8 +368,7 @@ public abstract class Entity extends GameObject {
             Sound.play(Sounds.Poison);
             double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
             double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
-            //TODO FAZER PARTICULA DE REGENERAÇÃO!
-            Particle particle = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
+            Particle particle = new Volatile("heart", x, y);
             double reg = e.getLifeSize() * 0.05;
             e.setLife(e.getLife() + reg);
             Game.getMap().put(particle);
