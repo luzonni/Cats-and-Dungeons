@@ -23,19 +23,17 @@ public class TrapDoor extends Furniture {
 
     @Override
     public void tick() {
-        Entity nearest = getNearest(2);
-        if(nearest != null) {
-            count++;
-            if(count > 7 && indexSprite < 11) {
+        Entity nearest = getNearest(1.5d);
+        count++;
+        if(count > 2) {
+            count = 0;
+            if (nearest != null && indexSprite < 7) {
                 indexSprite++;
-            }
-        }else {
-            count++;
-            if(count > 0 && indexSprite > 0) {
+            } else if(indexSprite > 0) {
                 indexSprite--;
             }
         }
-        if(indexSprite == 11) {
+        if(indexSprite == 7) {
             if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
                 if(!placeName.equals("None")) {
                     loadPlace();

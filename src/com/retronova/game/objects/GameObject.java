@@ -13,7 +13,7 @@ public abstract class GameObject {
 
     private int depth;
     private final int ID;
-    private final Rectangle bounds;
+    private double x, y, width, height;
     private boolean solid = false;
 
     public static int SIZE() {
@@ -22,7 +22,8 @@ public abstract class GameObject {
 
     public GameObject(int ID) {
         this.ID = ID;
-        this.bounds = new Rectangle(0, 0, SIZE(), SIZE());
+        this.width = SIZE();
+        this.height = SIZE();
     }
 
     public abstract void loadSprites(String... sprites);
@@ -36,23 +37,23 @@ public abstract class GameObject {
     }
 
     public double getX() {
-        return this.bounds.getX();
+        return this.x;
     }
 
     public double getY() {
-        return this.bounds.getY();
+        return y;
     }
 
     public int getWidth() {
-        return this.bounds.width;
+        return (int)this.width;
     }
 
     public int getHeight() {
-        return this.bounds.height;
+        return (int)this.height;
     }
 
     public Rectangle getBounds() {
-        return this.bounds;
+        return new Rectangle((int)x, (int)y, (int)width, (int)height);
     }
 
     public int getDepth() {
@@ -68,19 +69,19 @@ public abstract class GameObject {
     }
 
     public void setX(double newX) {
-        this.bounds.setLocation((int)newX, this.bounds.y);
+        this.x = newX;
     }
 
     public void setY(double newY) {
-        this.bounds.setLocation(this.bounds.x, (int)newY);
+        this.y = newY;
     }
 
     public void setWidth(double scale) {
-        this.bounds.setSize((int)(SIZE()*scale), this.bounds.height);
+        this.width = SIZE()*scale;
     }
 
     public void setHeight(double scale) {
-        this.bounds.setSize(this.bounds.width, (int)(SIZE()*scale));
+        this.height = SIZE()*scale;
     }
 
     public void setDepth() {
