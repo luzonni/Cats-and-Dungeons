@@ -184,7 +184,9 @@ public abstract class Entity extends GameObject {
             this.life = new double[] {life, life};
             return;
         }
-        this.life[1] = life;
+        if(life <= getLifeSize()) {
+            this.life[1] = life;
+        }
     }
 
     public double getDamage() {
@@ -331,9 +333,9 @@ public abstract class Entity extends GameObject {
             Sound.play(Sounds.Poison);
             double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
             double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
-            Particle poison = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
+            Particle particle = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
             double damage = e.getLifeSize() * 0.1;
-            e.strike(AttackTypes.Poison, damage, poison);
+            e.strike(AttackTypes.Poison, damage, particle);
         }, seconds, repetitions);
     }
 
@@ -345,14 +347,34 @@ public abstract class Entity extends GameObject {
      */
     public void EFFECT_FIRE(double seconds, int repetitions) {
         this.addEffect("Fire", (e) -> {
-            //TODO TROCAR PARA SOL DE FOGO!
+            //TODO TROCAR PARA SOM DE FOGO!
             Sound.play(Sounds.Poison);
             double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
             double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
             //TODO FAZER PARTICULA DE FOGO!
-            Particle poison = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
+            Particle particle = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
             double damage = e.getLifeSize() * 0.15;
-            e.strike(AttackTypes.Fire, damage, poison);
+            e.strike(AttackTypes.Fire, damage, particle);
+        }, seconds, repetitions);
+    }
+
+    /**
+     *
+     * @param seconds quantos segundos ela durará
+     * @param repetitions são dentro do tempo total, quantas vezes ele irá acontecer
+     * @apiNote A regeneração regenerará 5% da vida da entidade a cada repetição
+     */
+    public void EFFECT_REGENERATION(double seconds, int repetitions) {
+        this.addEffect("Regeneration", (e) -> {
+            //TODO TROCAR PARA SOM DE REGENERAÇÃO!
+            Sound.play(Sounds.Poison);
+            double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
+            double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
+            //TODO FAZER PARTICULA DE REGENERAÇÃO!
+            Particle particle = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
+            double reg = e.getLifeSize() * 0.05;
+            e.setLife(e.getLife() + reg);
+            Game.getMap().put(particle);
         }, seconds, repetitions);
     }
 

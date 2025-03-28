@@ -110,8 +110,8 @@ public class Player extends Entity {
         updateMovement();
         tickItemHand();
         if(KeyBoard.KeyPressed("F")) {
-            //TODO teste de efeito de poison no player
-            this.EFFECT_POISON(10, 9);
+            //TODO teste de efeitos
+            this.EFFECT_REGENERATION(10, 500);
         }
     }
 
