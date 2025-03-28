@@ -110,16 +110,8 @@ public class Player extends Entity {
         updateMovement();
         tickItemHand();
         if(KeyBoard.KeyPressed("F")) {
-            this.addEffect("Poison", (e) -> {
-                if(Engine.RAND.nextInt(100) > 10) {
-                    return;
-                }
-                Sound.play(Sounds.Poison);
-                double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
-                double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
-                Particle poison = new Poison(x, y, 0.5, Engine.RAND.nextDouble()*Math.PI*2);
-                e.strike(AttackTypes.Poison, 2, poison);
-            }, 3);
+            //TODO teste de efeito de poison no player
+            this.EFFECT_POISON(10, 9);
         }
     }
 
@@ -128,7 +120,6 @@ public class Player extends Entity {
         if (modifiers.containsKey(Modifiers.Dodge)) {
             double percent = modifiers.get(Modifiers.Dodge) + getLuck() * 0.10d;
             double a = Engine.RAND.nextDouble(1d);
-            System.out.println(percent * 100 + " / " + a * 100);
             if (a <= percent) {
                 Game.getMap().put(new Word("Dodge", getX() + getWidth() / 2d, getY() + getHeight() / 2d, 1));
                 return;

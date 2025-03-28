@@ -43,6 +43,10 @@ public class Camera {
         this.followed = followed;
     }
 
+    public GameObject getFollowed() {
+        return this.followed;
+    }
+
     private void follow() {
         int width = Engine.window.getWidth();
         int height = Engine.window.getHeight();

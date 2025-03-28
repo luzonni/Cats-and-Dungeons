@@ -13,9 +13,11 @@ import com.retronova.game.map.*;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.arena.Waves;
 import com.retronova.game.map.room.Room;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
+import com.retronova.game.objects.entities.utilities.Bomb;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
@@ -167,6 +169,10 @@ public class Game implements Activity {
         System.out.println("Dispose Game");
         map.dispose();
         inter.dispose();
+    }
+
+    public static void focus(GameObject obj) {
+        Game.C.setFollowed(obj);
     }
 
     public static void restart() {
