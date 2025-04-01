@@ -10,6 +10,7 @@ import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.Sheet;
+import com.retronova.game.objects.particles.Walking;
 import com.retronova.game.objects.particles.Word;
 
 import java.awt.*;
@@ -41,6 +42,8 @@ public class Player extends Entity {
         System.out.println("Add player inventory in interfaces");
         return player;
     }
+
+    private boolean isWalkingSoundPlaying = false;
 
     private final String name;
     private double XP;
@@ -198,34 +201,41 @@ public class Player extends Entity {
             item.tick();
     }
 
-    private void updateMovement(){
-        if(!(Engine.getACTIVITY() instanceof Game))
+    private void updateMovement() {
+        if (!(Engine.getACTIVITY() instanceof Game))
             return;
         getSheet().setType(getPhysical().isMoving() ? 1 : 0);
         int vertical = 0;
         int horizontal = 0;
-        if(KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")){
+        boolean isMoving = false;
+
+        if (KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")) {
             vertical = -1;
+            isMoving = true;
         }
-        if(KeyBoard.KeyPressing("S") || KeyBoard.KeyPressing("Down")){
+        if (KeyBoard.KeyPressing("S") || KeyBoard.KeyPressing("Down")) {
             vertical = 1;
+            isMoving = true;
         }
-        if(KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")){
+        if (KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")) {
             horizontal = -1;
+            isMoving = true;
         }
-        if(KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")){
+        if (KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")) {
             horizontal = 1;
+            isMoving = true;
         }
+
         countDash++;
-        if(KeyBoard.KeyPressed("SPACE")) {
-            if(modifiers.containsKey(Modifiers.Dash) && countDash > 45) {
+        if (KeyBoard.KeyPressed("SPACE")) {
+            if (modifiers.containsKey(Modifiers.Dash) && countDash > 45) {
                 dash = true;
                 countDash = 0;
             }
         }
         double radians = Math.atan2(vertical, horizontal);
-        if(vertical != 0 || horizontal != 0){
-            if(dash) {
+        if (isMoving) {
+            if (dash) {
                 addEffect("dash", (e) -> {
                     getPhysical().addForce("dash", getSpeed() * modifiers.get(Modifiers.Dash), radians);
                     e.getPhysical().setFriction(0.1d);
@@ -233,6 +243,17 @@ public class Player extends Entity {
                 dash = false;
             }
             getPhysical().addForce("move", getSpeed(), radians);
+            Walking.createWalkingParticle(getX() + getWidth() / 2d, getY() + getHeight() + 2);
+
+            if (!isWalkingSoundPlaying) {
+                Sound.play(Sounds.Walking);
+                isWalkingSoundPlaying = true;
+            }
+        } else {
+            Walking.resetTimer();
+            if (isWalkingSoundPlaying) {
+                isWalkingSoundPlaying = false;
+            }
         }
     }
 
