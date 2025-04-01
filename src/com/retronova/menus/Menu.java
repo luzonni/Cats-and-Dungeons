@@ -18,13 +18,13 @@ public class Menu implements Activity {
     private Rectangle[] quadrados;
     private final String[] quadradosNomes = {"Play", "Options", "Quit"};
     private final Font fonteQuadrados = FontG.font(FontG.Game,8 * Configs.UiScale());
-    private FontMetrics fmQuadrados;
     private int quadradoSeta = -1;
 
     public Menu() {
         quadrados = new Rectangle[3];
         telacheia();
-        Sound.play(Musics.Music1, true);
+        Sound.stopAll();
+        Sound.play(Musics.Menu, true);
     }
 
 
@@ -48,21 +48,17 @@ public class Menu implements Activity {
             if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[i])) {
                 switch (i) {
                     case 0:
-                        System.out.println("Clicou em Play");
                         Sound.play(Sounds.Button);
                         Engine.heapActivity(new Personagens());
                         break;
                     case 1:
-                        System.out.println("Clicou em Options");
                         Sound.play(Sounds.Button);
                         Engine.heapActivity(new Options());
                         break;
                     case 2:
-                        System.out.println("Clicou em Quit");
                         Engine.CLOSE();
                         break;
                     default:
-                        System.out.println("Botão desconhecido");
                         break;
                 }
             }
@@ -81,7 +77,6 @@ public class Menu implements Activity {
 
     @Override
     public void render(Graphics2D g) {
-        fmQuadrados = g.getFontMetrics(fonteQuadrados);
         g.setFont(fonteQuadrados);
 
         Stroke defaultStroke = g.getStroke();

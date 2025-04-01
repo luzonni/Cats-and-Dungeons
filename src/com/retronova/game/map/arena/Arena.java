@@ -4,13 +4,9 @@ import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
-import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.EntityIDs;
-import com.retronova.game.objects.entities.Player;
-import com.retronova.game.objects.entities.furniture.TrapDoor;
-import com.retronova.game.objects.particles.Portal;
 
 public class Arena extends GameMap {
 
@@ -21,8 +17,8 @@ public class Arena extends GameMap {
         super(name);
         this.ended = false;
         this.waves = new Waves(this, level, difficult);
-        Sound.stop(Musics.Music2);
-        Sound.play(Musics.Music3, true);
+        Sound.stop(Musics.Room);
+        Sound.play(Musics.Fight, true);
     }
 
     public Waves getWaves() {

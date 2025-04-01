@@ -28,19 +28,14 @@ public class Personagens implements Activity {
     private int personagemSelecionado = -1;
     private Player[] players;
     private boolean[] quadradoClicadoDireito = {false, false, false};
-    private String[][] infoPersonagens = {
-            {"HP: 100", "Attack: 10", "Speed: Normal"},
-            {"HP: 80", "Attack: 15", "Speed: Slow"},
-            {"HP: 120", "Attack: 8", "Speed: Fast"}
-    };
     private String loreAtual = "";
 
-    // Variáveis para a animação de virada de carta
+
     private float[] rotacao = {0, 0, 0};
     private boolean[] animando = {false, false, false};
     private final float VELOCIDADE_ROTACAO = 0.1f;
 
-    // Cores de todos os botões (quadrados)
+
     private final Color[] coresGatos = {
             new Color(0x6A2838),
             new Color(0x6A2838),
@@ -53,7 +48,7 @@ public class Personagens implements Activity {
     };
     private final Color corTexto = Color.WHITE;
 
-    // Fontes de todos os botões (quadrados)
+
     private final Font fonteTitulo = FontG.font(FontG.Game, 22 * Configs.UiScale());
     private final Font fonteGatos = FontG.font(FontG.Game,7 * Configs.UiScale());
     private final Font fonteBotoes = FontG.font(FontG.Game,8 * Configs.UiScale());
@@ -73,17 +68,9 @@ public class Personagens implements Activity {
         for (int i = 0; i < players.length; i++) {
             players[i] = Player.TEMPLATES[i];
         }
-        atualizarInfoPersonagens();
 
         for (int i = 0; i < rotacao.length; i++) {
             rotacao[i] = 1;
-        }
-    }
-
-    private void atualizarInfoPersonagens() {
-        infoPersonagens = new String[players.length][];
-        for (int i = 0; i < players.length; i++) {
-            infoPersonagens[i] = players[i].getInfo();
         }
     }
 
@@ -141,7 +128,7 @@ public class Personagens implements Activity {
                                     throw new RuntimeException(e);
                                 }
                             });
-                            Sound.stop(Musics.Music1);
+                            Sound.stop(Musics.Menu);
                         } else {
                             System.out.println("Selecione um personagem antes de jogar!");
                         }
@@ -246,7 +233,7 @@ public class Personagens implements Activity {
                 Font fonteOriginal = g.getFont();
                 g.setFont(fonteInfoPersonagens);
                 FontMetrics fmInfo = g.getFontMetrics();
-                String[] info = infoPersonagens[i];
+                String[] info = players[i].getInfo();
                 int y = -selecao[i].height / 2 + 20;
                 int espacamentoVertical = 2 * Configs.UiScale();
                 for (String line : info) {

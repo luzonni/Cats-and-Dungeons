@@ -2,9 +2,10 @@ package com.retronova.engine.sound;
 
 public enum Musics {
 
-    Music1("menu"),
-    Music2("room"),
-    Music3("fight");
+    Menu("menu"),
+    Room("room"),
+    Fight("fight"),
+    GameOver("game_over");
 
     private final String ResourceName;
 
