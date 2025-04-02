@@ -43,7 +43,7 @@ public class Skull extends Utility {
             player.strike(AttackTypes.Impact, getDamage());
             this.disappear();
         }
-        r += 0.02d;
+        r += 0.2d;
     }
 
     @Override
