@@ -3,6 +3,8 @@ package com.retronova.game.objects.entities.utilities;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.graphics.Scaling;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Player;
@@ -30,6 +32,7 @@ public class Skull extends Utility {
         this.sprite = Scaling.s(getSprite(), getWidth(), getHeight());
         setSpeed(1.5);
         setDamage(7.3);
+        Sound.play(Sounds.Woosh);
     }
 
     @Override
@@ -41,9 +44,10 @@ public class Skull extends Utility {
         Player player = Game.getPlayer();
         if(player.colliding(this)){
             player.strike(AttackTypes.Impact, getDamage());
+            Sound.play(Sounds.Skeleton);
             this.disappear();
         }
-        r += 0.02d;
+        r += 0.2d;
     }
 
     @Override
