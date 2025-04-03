@@ -13,7 +13,9 @@ public enum Modifiers {
     Dodge(false),
     Dash(false);
 
+
     private final boolean heapable;
+
     Modifiers(boolean heapable) {
         this.heapable = heapable;
     }
