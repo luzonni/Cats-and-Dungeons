@@ -1,8 +1,28 @@
 {
   "entities": [
-    [10, 16, 13],
-    [12, 12, 19, "arena_easy"],
-    [12, 15, 19, "arena_normal"],
-    [12, 18, 19, "arena_hard"]
+    {
+      "id": 10,
+      "x": 16,
+      "y": 13,
+      "values": []
+    },
+    {
+      "id": 12,
+      "x": 12,
+      "y": 19,
+      "values": ["arena_easy"]
+    },
+    {
+      "id": 12,
+      "x": 15,
+      "y": 19,
+      "values": ["arena_normal"]
+    },
+    {
+      "id": 12,
+      "x": 18,
+      "y": 19,
+      "values": ["arena_hard"]
+    }
   ]
 }

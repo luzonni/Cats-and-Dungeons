@@ -68,11 +68,16 @@ public abstract class GameMap {
             List<Entity> list = new ArrayList<>();
             JSONArray arrEntity = (JSONArray) jsonObject.get("entities");
             for(int i = 0; i < arrEntity.size(); i++) {
-                JSONArray arr = (JSONArray) arrEntity.get(i);
-                int id = ((Number)arr.getFirst()).intValue();
-                Object[] values = new Object[arr.size()-1];
-                for(int j = 0; j < values.length; j++) {
-                    values[j] = arr.get(j+1);
+                JSONObject obj = (JSONObject) arrEntity.get(i);
+                int id = ((Number)obj.get("id")).intValue();
+                int x = ((Number)obj.get("x")).intValue();
+                int y = ((Number)obj.get("y")).intValue();
+                JSONArray objValues = (JSONArray)obj.get("values");
+                Object[] values = new Object[objValues.size() + 2];
+                values[0] = x;
+                values[1] = y;
+                for(int j = 2; j < values.length; j++) {
+                    values[j] = objValues.get(j-2);
                 }
                 Entity e = Entity.build(id, values);
                 list.add(e);
