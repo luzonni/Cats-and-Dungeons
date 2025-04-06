@@ -66,6 +66,10 @@ public class Game implements Activity {
         this.level++;
     }
 
+    public long getSeconds() {
+        return this.seconds;
+    }
+
     private void gameOver() {
         Engine.backActivity();
         Engine.heapActivity(new GameOver(player));

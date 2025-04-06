@@ -56,7 +56,7 @@ public class TrapDoor extends Furniture {
             Game.getGame().changeMap(room);
         }else if(type.equals("arena")) {
             //TODO consertar sistema de dificuldade
-            Arena arena = new Arena(name, 1, level);
+            Arena arena = new Arena(name, level);
             Game.getGame().changeMap(arena);
         }
     }

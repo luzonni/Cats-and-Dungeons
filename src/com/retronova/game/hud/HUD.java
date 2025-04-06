@@ -5,6 +5,8 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.game.Game;
+import com.retronova.game.map.arena.Arena;
+import com.retronova.game.map.arena.Waves;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.engine.graphics.SpriteSheet;
 
@@ -25,9 +27,11 @@ public class HUD implements Activity {
     private BufferedImage vignette;
 
     private final Hotbar hotbar;
+    private final WaveDisplay waveDisplay;
 
     public HUD(Player player) {
         this.hotbar = new Hotbar(player);
+        this.waveDisplay = new WaveDisplay();
         SpriteSheet sheetBust = new SpriteSheet("ui","bust", Configs.HudScale());
         SpriteSheet sheetBottle = new SpriteSheet("ui","lifebottle", Configs.HudScale());
         int indexBust = 0;
@@ -40,7 +44,6 @@ public class HUD implements Activity {
         this.frameBust = sheetBust.getSpriteWithIndex(1,0);
         this.chains = sheetBust.getSpriteWithIndex(0,0);
         this.bottle = sheetBottle.getSprites(0);
-
     }
 
     private void createVignette() {
@@ -70,6 +73,7 @@ public class HUD implements Activity {
     public void tick() {
         createVignette();
         hotbar.tick();
+        waveDisplay.tick();
         count++;
         if(count > 5) {
             indexBottle++;
@@ -86,6 +90,7 @@ public class HUD implements Activity {
         bust(g);
         bottleLife(g);
         renderXpBar(g);
+        waveDisplay.render(g);
         hotbar.render(g);
     }
 

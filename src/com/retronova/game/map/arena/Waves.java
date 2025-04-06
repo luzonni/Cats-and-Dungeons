@@ -42,7 +42,6 @@ public class Waves implements Runnable {
     private int counter;
     private int lastCounter;
 
-
     private volatile int step;
     private volatile List<Entity> listAppend;
     private boolean end;
@@ -69,6 +68,18 @@ public class Waves implements Runnable {
                 }
             }
         }
+    }
+
+    public int getSeconds() {
+        return (int)((this.counter/60d));
+    }
+
+    public int currentSpawn() {
+        return this.step;
+    }
+
+    public int amountSpawns() {
+        return this.amount.length;
     }
 
     public boolean ended() {
