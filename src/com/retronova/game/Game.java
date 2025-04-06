@@ -40,7 +40,7 @@ public class Game implements Activity {
     public static Camera C;
 
     private GameMap map;
-    private int level;
+    private int level = 2;
 
     private final HUD hud;
     private final Inter inter;

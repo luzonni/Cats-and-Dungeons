@@ -46,7 +46,6 @@ public class TrapDoor extends Furniture {
     }
 
     private void loadPlace() {
-        int level = Game.getGame().getLevel();
         String[] result = placeName.split("_");
         String type = result[0];
         String name = result[1];
@@ -56,7 +55,7 @@ public class TrapDoor extends Furniture {
             Game.getGame().changeMap(room);
         }else if(type.equals("arena")) {
             //TODO consertar sistema de dificuldade
-            Arena arena = new Arena(name, level);
+            Arena arena = new Arena(name, 1);
             Game.getGame().changeMap(arena);
         }
     }
