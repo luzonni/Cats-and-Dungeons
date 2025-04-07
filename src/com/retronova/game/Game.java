@@ -40,7 +40,8 @@ public class Game implements Activity {
     public static Camera C;
 
     private GameMap map;
-    private int level = 2;
+    private int level;
+    private int difficult;
 
     private final HUD hud;
     private final Inter inter;
@@ -64,6 +65,14 @@ public class Game implements Activity {
 
     public void plusLevel() {
         this.level++;
+    }
+
+    public int getDifficult() {
+        return this.difficult;
+    }
+
+    public void setDifficult(int difficult) {
+        this.difficult = difficult;
     }
 
     public long getSeconds() {
@@ -236,4 +245,5 @@ public class Game implements Activity {
         }
         throw new NotInActivity("Não é possível retornar a UI pois a activity atual não é um jogo");
     }
+
 }

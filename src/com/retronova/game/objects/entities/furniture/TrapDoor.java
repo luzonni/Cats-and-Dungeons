@@ -1,9 +1,9 @@
 package com.retronova.game.objects.entities.furniture;
 
+import com.retronova.engine.exceptions.TrapDoorCommandException;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
-import com.retronova.game.map.GameMap;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Entity;
@@ -13,12 +13,12 @@ public class TrapDoor extends Furniture {
     private int indexSprite;
     private int count;
 
-    private final String placeName;
+    private final String command;
 
-    public TrapDoor(int ID, double x, double y, String place) {
+    public TrapDoor(int ID, double x, double y, String command) {
         super(ID, x, y);
         loadSprites("trapdoor");
-        this.placeName = place;
+        this.command = command;
     }
 
     @Override
@@ -35,8 +35,8 @@ public class TrapDoor extends Furniture {
         }
         if(indexSprite == 7) {
             if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
-                if(!placeName.equals("None")) {
-                    loadPlace();
+                if(!command.equals("None")) {
+                    getCommand();
                 }else {
                     System.err.println("A trapdoor foi instanciada sem a referencia do próximo mapa!");
                 }
@@ -45,18 +45,38 @@ public class TrapDoor extends Furniture {
         getSheet().setIndex(indexSprite);
     }
 
-    private void loadPlace() {
-        String[] result = placeName.split("_");
-        String type = result[0];
-        String name = result[1];
-
-        if(type.equals("room")) {
-            Room room = new Room(name);
-            Game.getGame().changeMap(room);
-        }else if(type.equals("arena")) {
-            //TODO consertar sistema de dificuldade
-            Arena arena = new Arena(name, 1);
-            Game.getGame().changeMap(arena);
+    private void getCommand() {
+        // LOAD ["ARENA", "ROOM] SPACE_NAME => Para carregar o espaço referente ao mapa.
+        // NEXT ["ARENA", "ROOM] => Para passar para a proxima arena/room
+        String[] commands = this.command.split(" ");
+        if(commands[0].equalsIgnoreCase("LOAD") && commands.length == 3) {
+            String name = commands[2];
+            if(commands[1].equalsIgnoreCase("ARENA")) {
+                String[] types = {"EASY", "NORMAL", "HARD"};
+                Arena arena = null;
+                for(int i = 0; i < types.length; i++) {
+                    if(types[i].equalsIgnoreCase(name)) {
+                        arena = new Arena(i);
+                        Game.getGame().setDifficult(i);
+                        break;
+                    }
+                }
+                if(arena != null) {
+                    Game.getGame().changeMap(arena);
+                }else {
+                    throw new TrapDoorCommandException("Arena type not found!");
+                }
+            }else if(commands[1].equalsIgnoreCase("ROOM")) {
+                Room room = new Room(name);
+                Game.getGame().changeMap(room);
+            }
+        }
+        if(commands[0].equalsIgnoreCase("NEXT") && commands.length == 2) {
+            if(commands[1].equalsIgnoreCase("ARENA")) {
+                Game.getGame().plusLevel();
+                int difficult = Game.getGame().getDifficult();
+                Game.getGame().changeMap(new Arena(difficult));
+            }
         }
     }
 

@@ -13,11 +13,12 @@ import java.util.List;
 
 public class Arena extends GameMap {
 
+    private static final String[] maps = {"easy", "normal", "hard"};
     private final Waves waves;
     private boolean ended;
 
-    public Arena(String name, int difficult) {
-        super(name);
+    public Arena(int difficult) {
+        super(maps[difficult]);
         this.ended = false;
         this.waves = new Waves(this, Game.getGame().getLevel(), difficult);
         Sound.stop(Musics.Room);
@@ -33,9 +34,8 @@ public class Arena extends GameMap {
         if(waves.ended() && !ended && enemiesEmpty()) {
             int x = (getBounds().width / GameObject.SIZE()) / 2;
             int y = (getBounds().height / GameObject.SIZE()) / 2;
-            Entity trapdoor = Entity.build(EntityIDs.TrapDoor.ordinal(), x, y, "room_shopping");
+            Entity trapdoor = Entity.build(EntityIDs.TrapDoor.ordinal(), x, y, "LOAD ROOM shopping");
             put(trapdoor);
-            Game.getGame().plusLevel();
             ended = true;
         }else {
             waves.tick();
