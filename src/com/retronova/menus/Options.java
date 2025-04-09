@@ -31,7 +31,7 @@ public class Options implements Activity {
 
     private boolean tempFullScreen = Configs.Fullscreen();
 
-    private int resolutionIndex = Engine.index_res;
+    private int resolutionIndex = Configs.getIndexResolution();
     private int[] tempResolution = Engine.resolutions[resolutionIndex];
 
     private int tempUiScale = Configs.UiScale();
@@ -136,10 +136,11 @@ public class Options implements Activity {
                                 Configs.setMusic(tempMusicVolume);
                                 Configs.setVolum(tempMobsVolume);
                                 Configs.setMargin(tempMargin);
-                                Engine.index_res = resolutionIndex;
+                                Configs.setIndexResolution(resolutionIndex);
                                 Engine.window.resetWindow();
                                 Sound.updateVolumes();
                                 System.out.println("Opções Aplicadas!");
+                                Configs.update();
                                 break;
                             case "Back":
                                 Engine.backActivity();
