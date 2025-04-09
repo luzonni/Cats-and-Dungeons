@@ -61,7 +61,7 @@ public class GameOver implements Activity {
             g.setColor(Color.WHITE);
             g.setFont(escFont);
             FontMetrics fmEsc = g.getFontMetrics(escFont);
-            String esc = "Press ESC to back to Menu";
+            String esc = "Press ESC to back to Geral";
             int escX = (Engine.window.getWidth() - fmEsc.stringWidth(esc)) / 2;
             int escY = gameOverBottomY + fmEsc.getHeight();
             g.drawString(esc, escX, escY);

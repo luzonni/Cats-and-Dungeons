@@ -58,6 +58,9 @@ public class Personagens implements Activity {
     public Personagens() {
         imagens = new ArrayList<>();
 
+        Sound.stopAll();
+        Sound.play(Musics.Geral, true);
+
         String[] gatos = {"cinzento", "mago", "sortudo"};
         for (String nome : gatos) {
             BufferedImage imagem = new SpriteSheet("objects/player", nome, Configs.UiScale()).getSHEET();
@@ -128,7 +131,7 @@ public class Personagens implements Activity {
                                     throw new RuntimeException(e);
                                 }
                             });
-                            Sound.stop(Musics.Menu);
+                            Sound.stop(Musics.Geral);
                         } else {
                             System.out.println("Selecione um personagem antes de jogar!");
                         }

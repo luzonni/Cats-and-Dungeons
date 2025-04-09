@@ -2,7 +2,8 @@ package com.retronova.engine.sound;
 
 public enum Musics {
 
-    Menu("menu"),
+    Geral("geral"),
+    Menu("menu_principal"),
     Room("room"),
     Fight("fight"),
     GameOver("game_over");

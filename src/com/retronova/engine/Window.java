@@ -62,13 +62,11 @@ public class Window extends Canvas {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         if(Configs.Fullscreen()) {
-            //TODO fix it!
             String os = System.getProperty("os.name").toLowerCase();
             if (os.contains("windows 11")) {
                 System.out.println(os);
-                Dimension screenSize = toolkit.getScreenSize();
-                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                setSize(screenSize);
+                setPreferredSize(toolkit.getScreenSize());
+                frame.setMinimumSize(toolkit.getScreenSize());
             } else if(os.contains("nix") || os.contains("nux") || os.contains("aix")) {
                 GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
                 if (gd.isFullScreenSupported()) {
@@ -78,9 +76,14 @@ public class Window extends Canvas {
             }
         }else {
             Dimension dim = new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]);
+            System.out.println(toolkit.getScreenSize().getWidth() + " Para " + dim.getWidth()) ;
             if(toolkit.getScreenSize().getWidth() >= dim.getWidth()) {
                 setPreferredSize(dim);
                 frame.setMinimumSize(dim);
+            } else {
+                setPreferredSize(toolkit.getScreenSize());
+                frame.setMinimumSize(toolkit.getScreenSize());
+                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
             }
         }
 

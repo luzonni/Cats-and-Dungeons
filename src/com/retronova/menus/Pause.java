@@ -21,7 +21,7 @@ public class Pause implements Activity {
     private final Font fonteTitulo = FontG.font(FontG.Game, 15 * Configs.UiScale());
     private final Color corFundo = new Color(50, 50, 50, 150);
     private final Color corTexto = Color.WHITE;
-    private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Menu", "Quit"};
+    private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Geral", "Quit"};
     private int quadradoSeta = -1;
     private Game game;
     private int botaoPressionado = -1;
@@ -77,8 +77,7 @@ public class Pause implements Activity {
                             break;
                         case 3:
                             Engine.pause(null);
-                            Sound.stop(Musics.Fight);
-                            Sound.stop(Musics.Room);
+                            Sound.stopAll();
                             Engine.backActivity(2);
                             Sound.play(Musics.Menu, true);
                             break;
