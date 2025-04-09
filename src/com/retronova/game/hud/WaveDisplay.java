@@ -37,6 +37,7 @@ public class WaveDisplay {
     }
 
     private void renderClock(int x, int y, Graphics2D g) {
+        Graphics2D g2 = (Graphics2D) g.create();
         g.drawImage(this.clock, x, y, null);
         int xCenter = (int)(x + 7.5 * Configs.HudScale());
         int yCenter = (int)(y + 7.5 * Configs.HudScale());
@@ -44,8 +45,9 @@ public class WaveDisplay {
         double rad = ((Math.PI*2)/60) * waveSeconds;
         int xPole = (int)(xCenter + Math.cos(rad - Math.PI/2) * (3*Configs.HudScale()));
         int yPole = (int)(yCenter + Math.sin(rad - Math.PI/2) * (3*Configs.HudScale()));
-        g.setStroke(new BasicStroke(Configs.HudScale()));
-        g.drawLine(xCenter, yCenter, xPole, yPole);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setStroke(new BasicStroke(Configs.HudScale()));
+        g2.drawLine(xCenter, yCenter, xPole, yPole);
     }
 
     private void renderValues(int x, int y, Graphics2D g) {

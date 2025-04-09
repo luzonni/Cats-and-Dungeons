@@ -23,6 +23,7 @@ public class Configs {
         VALUES.put("VOLUM", 20);
         VALUES.put("MUSIC", 20);
         VALUES.put("MaxFrames", 60);
+        VALUES.put("indexResolution", 0);
     }
 
     public static void load() {
@@ -92,6 +93,13 @@ public class Configs {
         VALUES.replace("SCALE", scale);
     }
 
+    public static void setIndexResolution(int resolution) {
+        VALUES.replace("indexResolution", resolution);
+    }
+
+    public static int getIndexResolution() {
+        return ((Number)VALUES.get("indexResolution")).intValue();
+    }
 
     public static int UiScale() {
         return ((Number)VALUES.get("UISCALE")).intValue();

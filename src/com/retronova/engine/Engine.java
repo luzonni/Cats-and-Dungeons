@@ -31,7 +31,6 @@ public class Engine implements Runnable {
     public static final String resPath = "/com/retronova/res/";
 
     public static final int[][] resolutions = {{1280, 720}, {1366, 768}, {1600, 900}, {1920, 1080}, {2560, 1440}, {3840, 2160}};
-    public static int index_res = 0;
 
     public static Window window;
     private static BufferStrategy BUFFER;
@@ -106,7 +105,7 @@ public class Engine implements Runnable {
     }
 
     public static int[] getResolution() {
-        return Engine.resolutions[index_res];
+        return Engine.resolutions[Configs.getIndexResolution()];
     }
 
     private Graphics2D getGraphics() {
