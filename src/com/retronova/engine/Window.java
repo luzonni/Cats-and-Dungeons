@@ -77,8 +77,11 @@ public class Window extends Canvas {
                 }
             }
         }else {
-            setPreferredSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
-            frame.setMinimumSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
+            Dimension dim = new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]);
+            if(toolkit.getScreenSize().getWidth() >= dim.getWidth()) {
+                setPreferredSize(dim);
+                frame.setMinimumSize(dim);
+            }
         }
 
         try {

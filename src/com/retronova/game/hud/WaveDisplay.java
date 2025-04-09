@@ -41,7 +41,6 @@ public class WaveDisplay {
         int xCenter = (int)(x + 7.5 * Configs.HudScale());
         int yCenter = (int)(y + 7.5 * Configs.HudScale());
         int waveSeconds = Game.getWave().getSeconds();
-        System.out.println(waveSeconds);
         double rad = ((Math.PI*2)/60) * waveSeconds;
         int xPole = (int)(xCenter + Math.cos(rad - Math.PI/2) * (3*Configs.HudScale()));
         int yPole = (int)(yCenter + Math.sin(rad - Math.PI/2) * (3*Configs.HudScale()));
