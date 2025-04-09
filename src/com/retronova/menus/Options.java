@@ -207,8 +207,6 @@ public class Options implements Activity {
     }
 
     private void desenharBotoes(Graphics2D g) {
-        Stroke defaultStroke = g.getStroke();
-
         for (int linha = 0; linha < 4; linha++) {
             for (int coluna = 0; coluna < 3; coluna++) {
                 if (quadrados[linha][coluna] != null) {
@@ -229,32 +227,34 @@ public class Options implements Activity {
                     int x = quadrado.x;
                     int y = quadrado.y;
 
-                    if (quadrado.contains(Mouse.getX(), Mouse.getY())) {
+                    boolean selecionado = quadrado.contains(Mouse.getX(), Mouse.getY());
+
+                    if (selecionado) {
                         larguraBotao = (int) (quadrado.width * 1.1);
                         alturaBotao = (int) (quadrado.height * 1.1);
                         x = quadrado.x - (larguraBotao - quadrado.width) / 2;
                         y = quadrado.y - (alturaBotao - quadrado.height) / 2;
                     }
 
-                    g.setColor(new Color(0xF0A59B));
-                    g.fillRect(x, y, larguraBotao, 8);
+                    g.setColor(new Color(0x4A5364));
+                    g.fillRect(x, y + alturaBotao - 5, larguraBotao, 5);
 
-                    g.setColor(new Color(0x6A2838));
-                    g.fillRect(x, y + alturaBotao - 6, larguraBotao, 6);
+                    g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
+                    g.setColor(new Color(0x000000));
+                    RoundRectangle2D shadowRect = new RoundRectangle2D.Double(x + 2, y + 2, larguraBotao, alturaBotao, 20, 20);
+                    g.fill(shadowRect);
+                    g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
                     RoundRectangle2D arredondar = new RoundRectangle2D.Double(x, y, larguraBotao, alturaBotao, 25, 25);
-
-                    g.setColor(new Color(0x6A2838));
-                    RoundRectangle2D shadowRect = new RoundRectangle2D.Double(x + 3, y + 3, larguraBotao, alturaBotao, 15, 15);
-                    g.fill(shadowRect);
-
-                    RoundRectangle2D shadowRectLeft = new RoundRectangle2D.Double(x - 3, y + 3, larguraBotao, alturaBotao, 15, 15);
-                    g.fill(shadowRectLeft);
-
-                    g.setColor(new Color(0xCC4154));
+                    g.setColor(new Color(0x6B7A8F));
                     g.fill(arredondar);
 
-                    g.setStroke(defaultStroke);
+                    GradientPaint lightTop = new GradientPaint(
+                            x, y, new Color(255, 255, 255, 60),
+                            x, y + alturaBotao / 2, new Color(255, 255, 255, 0)
+                    );
+                    g.setPaint(lightTop);
+                    g.fill(new RoundRectangle2D.Double(x, y, larguraBotao, alturaBotao, 25, 25));
 
                     g.setColor(corTexto);
                     g.setFont(fonteAtual);
