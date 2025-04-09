@@ -113,6 +113,7 @@ public abstract class GameMap {
         }catch(IndexOutOfBoundsException ignore) {
 
         }
+
         try {
             x /= GameObject.SIZE();
             y /= GameObject.SIZE();
