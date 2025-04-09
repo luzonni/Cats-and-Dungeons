@@ -91,10 +91,12 @@ public class Waves implements Runnable {
             return;
         }
         counter++;
+        if(this.gameMap.enemiesEmpty()) {
+            counter+=5;
+        }
         if(counter > M){
             counter = 0;
             end = true;
-            System.out.println("Fim da wave");
             return;
         }
         if(counter > lastCounter){

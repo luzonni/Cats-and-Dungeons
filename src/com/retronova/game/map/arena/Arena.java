@@ -42,7 +42,7 @@ public class Arena extends GameMap {
         }
     }
 
-    private boolean enemiesEmpty() {
+    boolean enemiesEmpty() {
         List<Enemy> entities = Game.getMap().getEntities(Enemy.class);
         return entities.isEmpty();
     }
