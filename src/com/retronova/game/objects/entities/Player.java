@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
@@ -10,6 +11,7 @@ import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.Sheet;
+import com.retronova.game.objects.particles.Volatile;
 import com.retronova.game.objects.particles.Walking;
 import com.retronova.game.objects.particles.Word;
 
@@ -43,18 +45,17 @@ public class Player extends Entity {
         return player;
     }
 
-    private boolean isWalkingSoundPlaying = false;
-
     private final String name;
     private double XP;
     private int money;
     private int level;
     private int countAnim;
 
-    private final double luck; // 0.0 ~ 1.0
+    private final double luck;
 
     private int countDash;
     private boolean dash;
+    private int countWalking;
 
     private final List<Consumable> passives;
 
@@ -233,8 +234,8 @@ public class Player extends Entity {
                 countDash = 0;
             }
         }
-        double radians = Math.atan2(vertical, horizontal);
         if (isMoving) {
+            double radians = Math.atan2(vertical, horizontal);
             if (dash) {
                 addEffect("dash", (e) -> {
                     getPhysical().addForce("dash", getSpeed() * modifiers.get(Modifiers.Dash), radians);
@@ -243,16 +244,12 @@ public class Player extends Entity {
                 dash = false;
             }
             getPhysical().addForce("move", getSpeed(), radians);
-            Walking.createWalkingParticle(getX() + getWidth() / 2d, getY() + getHeight() + 2);
-
-            if (!isWalkingSoundPlaying) {
+            countWalking++;
+            if(countWalking > 10) {
+                countWalking = 0;
+                Volatile walkingP = new Volatile("walking", getX() + getWidth()/2d, getY() + getHeight());
+                Game.getMap().put(walkingP);
                 Sound.play(Sounds.Walking);
-                isWalkingSoundPlaying = true;
-            }
-        } else {
-            Walking.resetTimer();
-            if (isWalkingSoundPlaying) {
-                isWalkingSoundPlaying = false;
             }
         }
     }
