@@ -1,4 +1,4 @@
-![Image](https://github.com/user-attachments/assets/8015e33d-4c00-41b9-a2dd-ea4a189e12c9)
+![Image](https://i.imgur.com/k7O5GhT.jpeg)
 
 # 🎮 Roguelike Game  
 
