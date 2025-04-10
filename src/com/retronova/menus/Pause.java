@@ -1,4 +1,4 @@
-package com.retronova.game.interfaces;
+package com.retronova.menus;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
