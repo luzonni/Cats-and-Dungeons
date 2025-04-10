@@ -14,10 +14,12 @@ import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Personagens implements Activity {
@@ -29,6 +31,7 @@ public class Personagens implements Activity {
     private Player[] players;
     private boolean[] quadradoClicadoDireito = {false, false, false};
     private String loreAtual = "";
+    private BufferedImage imagemFundo;
 
 
     private float[] rotacao = {0, 0, 0};
@@ -37,14 +40,9 @@ public class Personagens implements Activity {
 
 
     private final Color[] coresGatos = {
-            new Color(0x4A5364),
-            new Color(0x4A5364),
-            new Color(0x4A5364)
-    };
-    private final Color[] coresPersonagensSelecionados = {
-            new Color(0x6B7A8F),
-            new Color(0x6B7A8F),
-            new Color(0x6B7A8F)
+            new Color(0x464664),
+            new Color(0x24153D),
+            new Color(0x421c27)
     };
     private final Color corTexto = Color.WHITE;
 
@@ -52,14 +50,21 @@ public class Personagens implements Activity {
     private final Font fonteTitulo = FontG.font(FontG.Game, 22 * Configs.UiScale());
     private final Font fonteGatos = FontG.font(FontG.Game,7 * Configs.UiScale());
     private final Font fonteBotoes = FontG.font(FontG.Game,8 * Configs.UiScale());
-    private final Font fonteInfoPersonagens = FontG.font(FontG.Game,4 * Configs.UiScale());
-    private final Font fonteLore = FontG.font(FontG.Game,5 * Configs.UiScale());
+    private final Font fonteInfoPersonagens = FontG.font(FontG.Game,5 * Configs.UiScale());
+    private final Font fonteLore = FontG.font(FontG.Game,6 * Configs.UiScale());
+
 
     public Personagens() {
         imagens = new ArrayList<>();
 
         Sound.stopAll();
         Sound.play(Musics.Geral, true);
+
+        try {
+            imagemFundo = ImageIO.read(getClass().getResource("/com/retronova/res/icons/Gato_fundo.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         String[] gatos = {"cinzento", "mago", "sortudo"};
         for (String nome : gatos) {
@@ -115,9 +120,8 @@ public class Personagens implements Activity {
             if (Mouse.clickOn(Mouse_Button.LEFT, botoes[i])) {
                 switch (i) {
                     case 0:
-                        System.out.println("Clicou em Back");
-                        Sound.play(Sounds.Button);
                         Engine.heapActivity(new Menu());
+                        Sound.play(Sounds.Button);
                         break;
                     case 1:
                         System.out.println("Clicou em Play");
@@ -170,6 +174,9 @@ public class Personagens implements Activity {
 
     @Override
     public void render(Graphics2D g) {
+        if (imagemFundo != null) {
+            g.drawImage(imagemFundo, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
+        }
         atualizarPosicoes();
         desenharTitulo(g);
         desenharSelecao(g);
@@ -229,7 +236,13 @@ public class Personagens implements Activity {
             }
             g.setTransform(originalTransform);
 
+            g.setColor(personagemSelecionado == i ? new Color(255, 255, 255, 150) : coresGatos[i].brighter().brighter());
+            g.setStroke(new BasicStroke(2.0f));
+            g.draw(arredondar);
+            g.setStroke(new BasicStroke(2.0f));
+
             if (quadradoClicadoDireito[i]) {
+                AffineTransform originalTransformTexto = g.getTransform();
                 g.translate(selecao[i].x + selecao[i].width / 2, selecao[i].y + selecao[i].height / 2);
                 g.scale(rotacao[i], 1);
 
@@ -239,19 +252,13 @@ public class Personagens implements Activity {
                 String[] info = players[i].getInfo();
                 int y = -selecao[i].height / 2 + 20;
                 int espacamentoVertical = 2 * Configs.UiScale();
+                g.setColor(corTexto);
                 for (String line : info) {
                     g.drawString(line, -selecao[i].width / 2 + 10, y);
                     y += fmInfo.getHeight() + espacamentoVertical;
                 }
                 g.setFont(fonteOriginal);
-                g.setTransform(originalTransform);
-            }
-
-            if (personagemSelecionado == i) {
-                g.setColor(coresPersonagensSelecionados[i]);
-                g.setStroke(new BasicStroke(3.0f));
-                g.draw(arredondar);
-                g.setStroke(new BasicStroke(1.0f));
+                g.setTransform(originalTransformTexto);
             }
         }
     }

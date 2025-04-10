@@ -7,9 +7,13 @@ import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 public class Options implements Activity {
 
@@ -22,14 +26,13 @@ public class Options implements Activity {
             {"Volume", "Music", "Mobs"},
             {null, "Save Changes", "Back"}
     };
-    private int botaoSelecionadoLinha = -1;
-    private int botaoSelecionadoColuna = -1;
 
     private int tempFps = Configs.MaxFrames();
     private int[] fpsOptions = {30, 60, 120};
     private int fpsIndex = 0;
 
-    private boolean tempFullScreen = Configs.Fullscreen();
+    private boolean tempFullScreen;
+    private boolean configFullScreen;
 
     private int resolutionIndex = Configs.getIndexResolution();
     private int[] tempResolution = Engine.resolutions[resolutionIndex];
@@ -41,9 +44,19 @@ public class Options implements Activity {
     private int tempMusicVolume = Configs.Music();
     private int tempMobsVolume = Configs.Volum();
 
+    private BufferedImage imagemFundo;
+
     public Options() {
+        configFullScreen = Configs.Fullscreen();
+        tempFullScreen = configFullScreen;
         inicializarBotoes();
         atualizarTextosBotoes();
+
+        try {
+            imagemFundo = ImageIO.read(getClass().getResource("/com/retronova/res/icons/Gato_fundo.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void inicializarBotoes() {
@@ -71,9 +84,17 @@ public class Options implements Activity {
     }
 
     private void atualizarTextosBotoes() {
+        String uiScaleText;
+        if (tempUiScale == 2) {
+            uiScaleText = "1";
+        } else if (tempUiScale == 3) {
+            uiScaleText = "2";
+        } else {
+            uiScaleText = String.valueOf(tempUiScale); // Fallback
+        }
+        textosBotoes[1][0] = "Text Size: " + uiScaleText;
         textosBotoes[0][0] = "Res: " + tempResolution[0] + "x" + tempResolution[1];
         textosBotoes[0][1] = "FPS: " + tempFps;
-        textosBotoes[1][0] = "Text Size: " + tempUiScale;
         textosBotoes[1][1] = "Margin: " + tempMargin;
         textosBotoes[1][2] = "Full Screen: " + (tempFullScreen ? "On" : "Off");
         textosBotoes[2][1] = "Music: " + tempMusicVolume;
@@ -85,68 +106,111 @@ public class Options implements Activity {
         inicializarBotoes();
         atualizarBotaoSelecionado();
 
+        if (Configs.Fullscreen() != configFullScreen) {
+            tempFullScreen = Configs.Fullscreen();
+            configFullScreen = Configs.Fullscreen();
+            atualizarTextosBotoes();
+        }
+
         for (int linha = 0; linha < 4; linha++) {
             for (int coluna = 0; coluna < 3; coluna++) {
                 if (quadrados[linha][coluna] != null) {
                     boolean clickEsquerdo = Mouse.clickOn(Mouse_Button.LEFT, quadrados[linha][coluna]);
                     boolean clickDireito = Mouse.clickOn(Mouse_Button.RIGHT, quadrados[linha][coluna]);
 
-                    if (clickEsquerdo || clickDireito) {
+                    if (clickEsquerdo) {
                         String textoBotao = textosBotoes[linha][coluna];
-                        int direcao = clickEsquerdo ? 1 : -1;
 
                         switch (textoBotao.split(":")[0].trim()) {
                             case "Res":
-                                resolutionIndex = (resolutionIndex + direcao + Engine.resolutions.length) % Engine.resolutions.length;
+                                Sound.play(Sounds.Button);
+                                resolutionIndex = (resolutionIndex + 1 + Engine.resolutions.length) % Engine.resolutions.length;
                                 tempResolution = Engine.resolutions[resolutionIndex];
                                 break;
                             case "FPS":
-                                fpsIndex = (fpsIndex + direcao + fpsOptions.length) % fpsOptions.length;
+                                Sound.play(Sounds.Button);
+                                fpsIndex = (fpsIndex + 1 + fpsOptions.length) % fpsOptions.length;
                                 tempFps = fpsOptions[fpsIndex];
                                 break;
                             case "Text Size":
-                                tempUiScale = ((tempUiScale - 1 + direcao + 3) % 3) + 1;
+                                Sound.play(Sounds.Button);
+                                tempUiScale = (tempUiScale == 2) ? 3 : 2;
                                 break;
                             case "Margin":
-                                tempMargin += direcao * 5;
-                                if (tempMargin < 0) {
-                                    tempMargin = 0;
-                                } else if (tempMargin > 20) {
-                                    tempMargin = 20;
-                                }
+                                Sound.play(Sounds.Button);
+                                tempMargin += 5;
+                                if (tempMargin > 20) tempMargin = 20;
                                 break;
                             case "Full Screen":
-                                if (clickEsquerdo) tempFullScreen = !tempFullScreen;
+                                Sound.play(Sounds.Button);
+                                tempFullScreen = !tempFullScreen;
                                 break;
                             case "Volume":
-                                int volumeChange = (clickEsquerdo ? 10 : -10);
-                                tempMusicVolume = (tempMusicVolume + volumeChange + 110) % 110;
-                                tempMobsVolume = (tempMobsVolume + volumeChange + 110) % 110;
+                                Sound.play(Sounds.Button);
+                                tempMusicVolume = Math.min(100, tempMusicVolume + 10);
+                                tempMobsVolume = Math.min(100, tempMobsVolume + 10);
                                 break;
                             case "Music":
-                                tempMusicVolume = (tempMusicVolume + (clickEsquerdo ? 10 : -10) + 110) % 110;
+                                Sound.play(Sounds.Button);
+                                tempMusicVolume = Math.min(100, tempMusicVolume + 10);
                                 break;
                             case "Mobs":
-                                tempMobsVolume = (tempMobsVolume + (clickEsquerdo ? 10 : -10) + 110) % 110;
+                                Sound.play(Sounds.Button);
+                                tempMobsVolume = Math.min(100, tempMobsVolume + 10);
                                 break;
                             case "Save Changes":
-                                Configs.setMaxFrames(tempFps);
-                                Configs.setFullscreen(tempFullScreen);
-                                Configs.setUiScale(tempUiScale);
-                                Configs.setMusic(tempMusicVolume);
-                                Configs.setVolum(tempMobsVolume);
-                                Configs.setMargin(tempMargin);
-                                Configs.setIndexResolution(resolutionIndex);
-                                Engine.window.resetWindow();
-                                Sound.updateVolumes();
-                                System.out.println("Opções Aplicadas!");
-                                Configs.update();
+                                Sound.play(Sounds.Button);
+                                aplicarConfiguracoes();
+                                Engine.backActivity();
                                 break;
                             case "Back":
+                                Sound.play(Sounds.Button);
                                 Engine.backActivity();
                                 break;
                             default:
                                 System.out.println("Botão desconhecido: " + textoBotao);
+                                break;
+                        }
+                        atualizarTextosBotoes();
+                    } else if (clickDireito) {
+                        String textoBotao = textosBotoes[linha][coluna];
+
+                        switch (textoBotao.split(":")[0].trim()) {
+                            case "Res":
+                                Sound.play(Sounds.Button);
+                                resolutionIndex = (resolutionIndex - 1 + Engine.resolutions.length) % Engine.resolutions.length;
+                                tempResolution = Engine.resolutions[resolutionIndex];
+                                break;
+                            case "FPS":
+                                Sound.play(Sounds.Button);
+                                fpsIndex = (fpsIndex - 1 + fpsOptions.length) % fpsOptions.length;
+                                tempFps = fpsOptions[fpsIndex];
+                                break;
+                            case "Text Size":
+                                Sound.play(Sounds.Button);
+                                tempUiScale = (tempUiScale == 2) ? 3 : 2;
+                                break;
+                            case "Margin":
+                                Sound.play(Sounds.Button);
+                                tempMargin -= 5;
+                                if (tempMargin < 0) tempMargin = 0;
+                                break;
+                            case "Full Screen":
+                                Sound.play(Sounds.Button);
+                                tempFullScreen = !tempFullScreen;
+                                break;
+                            case "Volume":
+                                Sound.play(Sounds.Button);
+                                tempMusicVolume = Math.max(0, tempMusicVolume - 10);
+                                tempMobsVolume = Math.max(0, tempMobsVolume - 10);
+                                break;
+                            case "Music":
+                                Sound.play(Sounds.Button);
+                                tempMusicVolume = Math.max(0, tempMusicVolume - 10);
+                                break;
+                            case "Mobs":
+                                Sound.play(Sounds.Button);
+                                tempMobsVolume = Math.max(0, tempMobsVolume - 10);
                                 break;
                         }
                         atualizarTextosBotoes();
@@ -156,14 +220,24 @@ public class Options implements Activity {
         }
     }
 
+    private void aplicarConfiguracoes() {
+        Configs.setMaxFrames(tempFps);
+        Configs.setFullscreen(tempFullScreen);
+        Configs.setUiScale(tempUiScale);
+        Configs.setMusic(tempMusicVolume);
+        Configs.setVolum(tempMobsVolume);
+        Configs.setMargin(tempMargin);
+        Configs.setIndexResolution(resolutionIndex);
+        Engine.window.resetWindow();
+        Sound.updateVolumes();
+        Configs.update();
+    }
+
     private void atualizarBotaoSelecionado() {
-        botaoSelecionadoLinha = -1;
-        botaoSelecionadoColuna = -1;
+
         for (int linha = 0; linha < 4; linha++) {
             for (int coluna = 0; coluna < 3; coluna++) {
                 if (quadrados[linha][coluna] != null && quadrados[linha][coluna].contains(Mouse.getX(), Mouse.getY())) {
-                    botaoSelecionadoLinha = linha;
-                    botaoSelecionadoColuna = coluna;
                     return;
                 }
             }
@@ -172,6 +246,9 @@ public class Options implements Activity {
 
     @Override
     public void render(Graphics2D g) {
+        if (imagemFundo != null) {
+            g.drawImage(imagemFundo, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
+        }
         desenharTitulo(g);
         desenharTextosTeste(g);
         desenharBotoes(g);

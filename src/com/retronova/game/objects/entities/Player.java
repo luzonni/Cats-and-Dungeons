@@ -12,7 +12,6 @@ import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.particles.Volatile;
-import com.retronova.game.objects.particles.Walking;
 import com.retronova.game.objects.particles.Word;
 
 import java.awt.*;
@@ -276,7 +275,7 @@ public class Player extends Entity {
                 "Attack: " + getDamage(),
                 "Speed: " + getSpeedDescription(),
                 "Luck: " + getLuck(),
-                "Attack Speed: " + getAttackSpeed(),
+                "Atk Speed: " + getAttackSpeed(),
                 "Range: " + getRange(),
                 "Bag Size: " + getInventory().getBagSize(),
                 "Hotbar Size: " + getInventory().getHotbarSize()
