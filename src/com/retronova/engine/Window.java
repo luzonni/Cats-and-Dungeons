@@ -4,13 +4,10 @@ import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.Serial;
-import java.net.URL;
 
 public class Window extends Canvas {
 
@@ -60,30 +57,51 @@ public class Window extends Canvas {
     public void initFrame(){
         this.frame = new JFrame(this.name);
         frame.add(this);
-        frame.setUndecorated(false);
+        frame.setUndecorated(Configs.Fullscreen());
         frame.setResizable(true);
-        frame.setAlwaysOnTop(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         if(Configs.Fullscreen()) {
-            GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-            if (gd.isFullScreenSupported()) {
-                gd.setFullScreenWindow(frame);
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("windows 11")) {
+                System.out.println(os);
+                setPreferredSize(toolkit.getScreenSize());
+                frame.setMinimumSize(toolkit.getScreenSize());
+            } else if(os.contains("nix") || os.contains("nux") || os.contains("aix")) {
+                GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+                if (gd.isFullScreenSupported()) {
+                    gd.setFullScreenWindow(frame);
+                    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                }
             }
         }else {
-            setPreferredSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
-            frame.setMinimumSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
+            Dimension dim = new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]);
+            System.out.println(toolkit.getScreenSize().getWidth() + " Para " + dim.getWidth()) ;
+            if(toolkit.getScreenSize().getWidth() >= dim.getWidth()) {
+                setPreferredSize(dim);
+                frame.setMinimumSize(dim);
+            } else {
+                setPreferredSize(toolkit.getScreenSize());
+                frame.setMinimumSize(toolkit.getScreenSize());
+                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            }
         }
-        frame.pack();
+
         try {
             SpriteSheet icon = new SpriteSheet("ui","icon", 3);
             setCursor(defalutCursor);
             frame.setIconImage(icon.getSHEET());
         }catch(Exception ignore) { }
+
+        createOpenGl(true);
+
+        frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-        createBufferStrategy(3);
-        Engine.BUFFER = getBufferStrategy();
-        createOpenGl(true);
+//        showAccelerators();
+    }
+
+    private void showAccelerators() {
         System.out.println("OpenGL: " + System.getProperty("sun.java2d.opengl")); // "true" se OpenGL estiver ativado
         System.out.println("DirectX: " + System.getProperty("sun.java2d.d3d"));   // "true" se Direct3D estiver ativado
     }
@@ -94,7 +112,7 @@ public class Window extends Canvas {
         frame = null;
     }
 
-    public void setResolution() {
+    public void resetWindow() {
         closeFrame();
         initFrame();
         requestFocus();
@@ -143,7 +161,6 @@ public class Window extends Canvas {
     public Dimension getScreenSize() {
         return toolkit.getScreenSize();
     }
-
 
 
 }

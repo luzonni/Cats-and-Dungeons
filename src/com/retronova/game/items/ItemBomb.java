@@ -31,6 +31,7 @@ public class ItemBomb extends Item {
             if(nearest != null) {
                 Bomb bomb = new Bomb(player.getX(), player.getY(), player.getDamage() * 3, player);
                 bomb.getPhysical().addForce("throw", 10, nearest.getAngle(player));
+                Game.focus(bomb);
                 Game.getMap().put(bomb);
             }
         }
@@ -48,5 +49,6 @@ public class ItemBomb extends Item {
 
     @Override
     public void render(Graphics2D g) {
+
     }
 }

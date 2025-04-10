@@ -3,6 +3,8 @@ package com.retronova.game.objects.entities;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.EntityNotFound;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.GameObject;
@@ -12,7 +14,8 @@ import com.retronova.game.objects.entities.enemies.*;
 import com.retronova.game.objects.entities.furniture.Door;
 import com.retronova.game.objects.entities.furniture.TrapDoor;
 import com.retronova.game.objects.entities.utilities.Drop;
-import com.retronova.game.objects.particles.DamageMobs;
+import com.retronova.game.objects.particles.Particle;
+import com.retronova.game.objects.particles.Volatile;
 import com.retronova.game.objects.physical.Physical;
 
 import java.awt.*;
@@ -35,10 +38,13 @@ public abstract class Entity extends GameObject {
     private double damage;
     private double attackSpeed;
 
-    public static Entity build(int ID, double x, double y) {
+    public static Entity build(int ID, Object... values) {
         EntityIDs entityId = EntityIDs.values()[ID];
-        x *= GameObject.SIZE();
-        y *= GameObject.SIZE();
+        int length = values.length;
+        int ix = (length >= 1) ? ((Number)values[0]).intValue() : 0;
+        int iy = (length >= 2) ? ((Number)values[1]).intValue() : 0;
+        int x = ix * GameObject.SIZE();
+        int y = iy * GameObject.SIZE();
         switch (entityId) {
             case Zombie -> {
                 return new Zombie(ID, x, y);
@@ -74,7 +80,8 @@ public abstract class Entity extends GameObject {
                 return new Door(ID, x, y);
             }
             case TrapDoor -> {
-                return new TrapDoor(ID, x, y);
+                String place = (length >= 3) ? (String)values[2] : "None";
+                return new TrapDoor(ID, x, y, place);
             }
         }
         throw new EntityNotFound("Entity not found");
@@ -103,10 +110,18 @@ public abstract class Entity extends GameObject {
     public void strike(AttackTypes type, double damage) {
         if(resistances.containsKey(type)) {
             double r = resistances.get(type);
-            setLife(getLife() - (damage * (1 - r))); // Dano total
+            double finalDamage = damage * (1 - r);
+            double currentLife = getLife();
+            setLife(currentLife - finalDamage); // Dano total
             return;
         }
-        setLife(getLife() - damage);
+        double currentLife = getLife();
+        setLife(currentLife - damage);
+    }
+
+    public void strike(AttackTypes type, double damage, Particle particle) {
+        strike(type, damage);
+        Game.getMap().put(particle);
     }
 
     public void addModifier(Modifiers modifier, double value) {
@@ -120,11 +135,15 @@ public abstract class Entity extends GameObject {
         }
     }
 
-    public void addEffect(String name, EffectApplicator applicator, double seconds) {
-        Effect effect = new Effect(name, this, applicator, seconds);
+    public void addEffect(String name, EffectApplicator applicator, double seconds, int repetitions) {
+        Effect effect = new Effect(name, this, applicator, seconds, repetitions);
         if(!this.effects.contains(effect)) {
-            this.effects.add(new Effect(name, this, applicator, seconds));
+            this.effects.add(effect);
         }
+    }
+
+    public void addEffect(String name, EffectApplicator applicator, double seconds) {
+        this.addEffect(name, applicator, seconds, (int)(seconds*60));
     }
 
     void removeEffect(Effect effect) {
@@ -164,7 +183,9 @@ public abstract class Entity extends GameObject {
             this.life = new double[] {life, life};
             return;
         }
-        this.life[1] = life;
+        if(life <= getLifeSize()) {
+            this.life[1] = life;
+        }
     }
 
     public double getDamage() {
@@ -282,6 +303,9 @@ public abstract class Entity extends GameObject {
      * Esta função serve apenas para retirar uma entidade do mara, sem nenhum tipo de efeito.
      */
     public void disappear() {
+        if(Game.C.getFollowed() == this) {
+            Game.C.setFollowed(Game.getPlayer());
+        }
         Game.getMap().remove(this);
     }
 
@@ -294,4 +318,61 @@ public abstract class Entity extends GameObject {
     public Physical getPhysical() {
         return this.physical;
     }
+
+    // LOCAL PARA EFEITOS PADRÕES (sempre começando com EFFECT);
+
+    /**
+     *
+     * @param seconds quantos segundos ela durará
+     * @param repetitions são dentro do tempo total, quantas vezes ele irá acontecer
+     * @apiNote O dano de poison retira SEMPRE 10% da vida da entidade!
+     */
+    public void EFFECT_POISON(double seconds, int repetitions) {
+        this.addEffect("Poison", (e) -> {
+            Sound.play(Sounds.Poison);
+            double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
+            double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
+            Particle particle = new Volatile("poison", x, y);
+            double damage = e.getLifeSize() * 0.1;
+            e.strike(AttackTypes.Poison, damage, particle);
+        }, seconds, repetitions);
+    }
+
+    /**
+     *
+     * @param seconds quantos segundos ela durará
+     * @param repetitions são dentro do tempo total, quantas vezes ele irá acontecer
+     * @apiNote O dano de poison retira SEMPRE 15% da vida da entidade!
+     */
+    public void EFFECT_FIRE(double seconds, int repetitions) {
+        this.addEffect("Fire", (e) -> {
+            //TODO TROCAR PARA SOM DE FOGO!
+            Sound.play(Sounds.Poison);
+            double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
+            double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
+            Particle particle = new Volatile("fire", x, y);
+            double damage = e.getLifeSize() * 0.15;
+            e.strike(AttackTypes.Fire, damage, particle);
+        }, seconds, repetitions);
+    }
+
+    /**
+     *
+     * @param seconds quantos segundos ela durará
+     * @param repetitions são dentro do tempo total, quantas vezes ele irá acontecer
+     * @apiNote A regeneração regenerará 5% da vida da entidade a cada repetição
+     */
+    public void EFFECT_REGENERATION(double seconds, int repetitions) {
+        this.addEffect("Regeneration", (e) -> {
+            //TODO TROCAR PARA SOM DE REGENERAÇÃO!
+            Sound.play(Sounds.Poison);
+            double x = e.getX() + Engine.RAND.nextInt(e.getWidth());
+            double y = e.getY() + Engine.RAND.nextInt(e.getHeight());
+            Particle particle = new Volatile("heart", x, y);
+            double reg = e.getLifeSize() * 0.05;
+            e.setLife(e.getLife() + reg);
+            Game.getMap().put(particle);
+        }, seconds, repetitions);
+    }
+
 }

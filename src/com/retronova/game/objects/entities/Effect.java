@@ -1,20 +1,21 @@
 package com.retronova.game.objects.entities;
 
-import java.beans.ConstructorProperties;
-
 public class Effect {
 
     private final String name;
     private final Entity entity;
     private final EffectApplicator applicator;
     private final double seconds;
-    private int count;
+    private final double repetition;
+    private double ticks, count;
 
-    public Effect(String name, Entity entity, EffectApplicator applicator, double seconds) {
+    public Effect(String name, Entity entity, EffectApplicator applicator, double seconds, int repetitions) {
         this.name = name;
         this.entity = entity;
         this.applicator = applicator;
         this.seconds = seconds * 60;
+        this.repetition = this.seconds / repetitions;
+        this.count = this.repetition;
     }
 
     @Override
@@ -33,9 +34,13 @@ public class Effect {
     }
 
     public void tick() {
-        this.applicator.effect(entity);
         count++;
-        if(count >= seconds) {
+        if(count > repetition) {
+            count = 0;
+            this.applicator.effect(entity);
+        }
+        ticks++;
+        if(ticks >= seconds) {
             entity.removeEffect(this);
         }
     }

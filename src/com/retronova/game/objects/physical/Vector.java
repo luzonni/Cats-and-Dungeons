@@ -1,7 +1,5 @@
 package com.retronova.game.objects.physical;
 
-import com.retronova.engine.Configs;
-
 public class Vector {
 
     private final String id;

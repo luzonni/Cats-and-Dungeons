@@ -28,32 +28,27 @@ public class Personagens implements Activity {
     private int personagemSelecionado = -1;
     private Player[] players;
     private boolean[] quadradoClicadoDireito = {false, false, false};
-    private String[][] infoPersonagens = {
-            {"HP: 100", "Attack: 10", "Speed: Normal"},
-            {"HP: 80", "Attack: 15", "Speed: Slow"},
-            {"HP: 120", "Attack: 8", "Speed: Fast"}
-    };
     private String loreAtual = "";
 
-    // Variáveis para a animação de virada de carta
+
     private float[] rotacao = {0, 0, 0};
     private boolean[] animando = {false, false, false};
     private final float VELOCIDADE_ROTACAO = 0.1f;
 
-    // Cores de todos os botões (quadrados)
+
     private final Color[] coresGatos = {
-            new Color(0x6A2838),
-            new Color(0x6A2838),
-            new Color(0x6A2838)
+            new Color(0x4A5364),
+            new Color(0x4A5364),
+            new Color(0x4A5364)
     };
     private final Color[] coresPersonagensSelecionados = {
-            new Color(0xCC4154),
-            new Color(0xCC4154),
-            new Color(0xCC4154)
+            new Color(0x6B7A8F),
+            new Color(0x6B7A8F),
+            new Color(0x6B7A8F)
     };
     private final Color corTexto = Color.WHITE;
 
-    // Fontes de todos os botões (quadrados)
+
     private final Font fonteTitulo = FontG.font(FontG.Game, 22 * Configs.UiScale());
     private final Font fonteGatos = FontG.font(FontG.Game,7 * Configs.UiScale());
     private final Font fonteBotoes = FontG.font(FontG.Game,8 * Configs.UiScale());
@@ -62,6 +57,9 @@ public class Personagens implements Activity {
 
     public Personagens() {
         imagens = new ArrayList<>();
+
+        Sound.stopAll();
+        Sound.play(Musics.Geral, true);
 
         String[] gatos = {"cinzento", "mago", "sortudo"};
         for (String nome : gatos) {
@@ -73,17 +71,9 @@ public class Personagens implements Activity {
         for (int i = 0; i < players.length; i++) {
             players[i] = Player.TEMPLATES[i];
         }
-        atualizarInfoPersonagens();
 
         for (int i = 0; i < rotacao.length; i++) {
             rotacao[i] = 1;
-        }
-    }
-
-    private void atualizarInfoPersonagens() {
-        infoPersonagens = new String[players.length][];
-        for (int i = 0; i < players.length; i++) {
-            infoPersonagens[i] = players[i].getInfo();
         }
     }
 
@@ -127,21 +117,21 @@ public class Personagens implements Activity {
                     case 0:
                         System.out.println("Clicou em Back");
                         Sound.play(Sounds.Button);
-                        Engine.setActivity(new Menu());
+                        Engine.heapActivity(new Menu());
                         break;
                     case 1:
                         System.out.println("Clicou em Play");
                         if (personagemSelecionado != -1) {
-                            Activity newGame = new Game(personagemSelecionado, 1, new Room("beginning"));
-                            Activity loading = new Loading(newGame, () -> {
+                            Activity newGame = new Game(personagemSelecionado, new Room("beginning"));
+                            Sound.play(Sounds.Button);
+                            Engine.heapActivity(newGame, () -> {
                                 try {
-                                    Thread.sleep(60);
-                                } catch (Exception ignore) {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
                                 }
                             });
-                            Sound.play(Sounds.Button);
-                            Engine.setActivity(loading);
-                            Sound.stop(Musics.Music1);
+                            Sound.stop(Musics.Geral);
                         } else {
                             System.out.println("Selecione um personagem antes de jogar!");
                         }
@@ -246,7 +236,7 @@ public class Personagens implements Activity {
                 Font fonteOriginal = g.getFont();
                 g.setFont(fonteInfoPersonagens);
                 FontMetrics fmInfo = g.getFontMetrics();
-                String[] info = infoPersonagens[i];
+                String[] info = players[i].getInfo();
                 int y = -selecao[i].height / 2 + 20;
                 int espacamentoVertical = 2 * Configs.UiScale();
                 for (String line : info) {
@@ -277,33 +267,41 @@ public class Personagens implements Activity {
             int x = botoes[i].x;
             int y = botoes[i].y;
 
-            if (botoes[i].contains(Mouse.getX(), Mouse.getY())) {
+            boolean selecionado = botoes[i].contains(Mouse.getX(), Mouse.getY());
+
+            if (selecionado) {
                 larguraBotao = (int) (botoes[i].width * 1.1);
                 alturaBotao = (int) (botoes[i].height * 1.1);
                 x = botoes[i].x - (larguraBotao - botoes[i].width) / 2;
                 y = botoes[i].y - (alturaBotao - botoes[i].height) / 2;
             }
 
-            g.setColor(new Color(0xF0A59B));
-            g.fillRect(x, y, larguraBotao, 8);
+            g.setColor(new Color(0x4A5364));
+            g.fillRect(x, y + alturaBotao - 5, larguraBotao, 5);
 
-            g.setColor(new Color(0x6A2838));
-            g.fillRect(x, y + alturaBotao - 6, larguraBotao, 6);
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
+            g.setColor(new Color(0x000000));
+            RoundRectangle2D shadowRect = new RoundRectangle2D.Double(x + 2, y + 2, larguraBotao, alturaBotao, 20, 20);
+            g.fill(shadowRect);
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
             RoundRectangle2D roundedRect = new RoundRectangle2D.Double(x, y, larguraBotao, alturaBotao, 25, 25);
-
-            g.setColor(new Color(0x6A2838));
-            RoundRectangle2D shadowRect = new RoundRectangle2D.Double(x + 3, y + 3, larguraBotao, alturaBotao, 15, 15);
-            g.fill(shadowRect);
-
-            RoundRectangle2D shadowRectLeft = new RoundRectangle2D.Double(x - 3, y + 3, larguraBotao, alturaBotao, 15, 15);
-            g.fill(shadowRectLeft);
-
-            g.setColor(new Color(0xCC4154));
+            g.setColor(new Color(0x6B7A8F));
             g.fill(roundedRect);
 
+            GradientPaint lightTop = new GradientPaint(
+                    x, y, new Color(255, 255, 255, 60),
+                    x, y + alturaBotao / 2, new Color(255, 255, 255, 0)
+            );
+            g.setPaint(lightTop);
+            g.fill(new RoundRectangle2D.Double(x, y, larguraBotao, alturaBotao, 25, 25));
+
             g.setColor(Color.WHITE);
-            g.drawString(botoesNomes[i], x + (larguraBotao - fmBotoes.stringWidth(botoesNomes[i])) / 2, y + (alturaBotao - fmBotoes.getHeight()) / 2 + fmBotoes.getAscent());
+            g.drawString(
+                    botoesNomes[i],
+                    x + (larguraBotao - fmBotoes.stringWidth(botoesNomes[i])) / 2,
+                    y + (alturaBotao - fmBotoes.getHeight()) / 2 + fmBotoes.getAscent()
+            );
         }
     }
 

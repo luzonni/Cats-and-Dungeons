@@ -1,12 +1,11 @@
 package com.retronova.game.objects.entities.enemies;
 
-import com.retronova.engine.sound.Sound;
-import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.AttackTypes;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.entities.utilities.Skull;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -15,8 +14,6 @@ public class Skeleton extends Enemy {
 
     private int countAnim;
     private int cooldown;
-    private boolean soundPlaying = false;
-    private int soundStopDelay = 0;
 
     public Skeleton(int ID, double x, double y) {
         super(ID, x, y, 0.5);
@@ -38,29 +35,20 @@ public class Skeleton extends Enemy {
         }
         Player player = Game.getPlayer();
         cooldown++;
-        if (player.getBounds().intersects(this.getBounds()) && cooldown > 45) {
+        if(cooldown >= 45 && player.getDistance(this) <= GameObject.SIZE() * 5) {
             cooldown = 0;
-            player.strike(AttackTypes.Melee, 2);
-            Sound.play(Sounds.Skeleton);
-            soundPlaying = true;
-            soundStopDelay = 30;
-            player.getPhysical().addForce("knockback_skeleton", 0.82d, getPhysical().getAngleForce());
-        } else {
-            if (soundPlaying) {
-                if (soundStopDelay > 0) {
-                    soundStopDelay--;
-                } else {
-                    Sound.stop(Sounds.Skeleton);
-                    soundPlaying = false;
-                }
-            }
+            Skull skull = new Skull(getX(), getY(), player.getAngle(this));
+            Game.getMap().put(skull);
         }
     }
 
     private void moveIA() {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        getPhysical().addForce("move", getSpeed(), radians);
+        if(player.getDistance(this) >= GameObject.SIZE() * 3){
+            getPhysical().addForce("move", getSpeed(), radians);
+        }
+
     }
 
     @Override

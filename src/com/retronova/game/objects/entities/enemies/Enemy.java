@@ -9,7 +9,8 @@ import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.utilities.Xp;
-import com.retronova.game.objects.particles.DamageMobs;
+import com.retronova.game.objects.particles.Particle;
+import com.retronova.game.objects.particles.Volatile;
 import com.retronova.game.objects.particles.Word;
 
 import java.awt.*;
@@ -47,15 +48,22 @@ public abstract class Enemy extends Entity {
 
     @Override
     public void strike(AttackTypes type, double damage) {
+        this.strike(type, damage, new Volatile("damagemobs", 0, 0));
+    }
+
+    @Override
+    public void strike(AttackTypes type, double damage, Particle particle) {
         Player player = Game.getPlayer();
         damage *= Engine.RAND.nextDouble() + player.getLuck();
         super.strike(type, damage);
         this.tookDamage = true;
         double x = getX() + Engine.RAND.nextDouble(getWidth());
         double y = getY() + Engine.RAND.nextDouble(getHeight());
+        particle.setX(x);
+        particle.setY(y);
         if(damage >= 1d)
             Game.getMap().put(new Word(String.valueOf((int)damage), x, y, 1));
-        Game.getMap().put(new DamageMobs(x, y, 1, Engine.RAND.nextDouble()*Math.PI*2));
+        Game.getMap().put(particle);
     }
 
     public BufferedImage getSprite() {

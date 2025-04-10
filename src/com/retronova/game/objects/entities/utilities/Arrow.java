@@ -15,24 +15,12 @@ public class Arrow<T extends Entity> extends Utility {
     private final double damage;
     private final double angle;
     private final Class<T> type;
-    private EffectApplicator effect;
 
     public Arrow(double x, double y, double damage, double angle, Class<T> type) {
         super(-1, x, y, 0);
         this.damage = damage;
         this.angle = angle;
         this.type = type;
-        loadSprites("arrow");
-        setSpeed(7d);
-        this.getPhysical().addForce("shot", getSpeed(), angle);
-    }
-
-    public Arrow(double x, double y, double damage, double angle, Class<T> type, EffectApplicator effect) {
-        super(-1, x, y, 0);
-        this.damage = damage;
-        this.angle = angle;
-        this.type = type;
-        this.effect = effect;
         loadSprites("arrow");
         setSpeed(7d);
         this.getPhysical().addForce("shot", getSpeed(), angle);
@@ -49,8 +37,8 @@ public class Arrow<T extends Entity> extends Utility {
             if(this.colliding(entity)) {
                 entity.strike(AttackTypes.Piercing, damage);
                 entity.getPhysical().addForce("knockback", 2.2, this.angle);
-                if(this.effect != null)
-                    entity.addEffect("arrowEffect", effect, 1);
+                entity.EFFECT_POISON(10, 100);
+                System.out.println("Poison Aeeow added");
                 this.disappear();
             }
         }

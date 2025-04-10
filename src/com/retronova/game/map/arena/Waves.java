@@ -1,72 +1,116 @@
 package com.retronova.game.map.arena;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.io.Resources;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.EntityIDs;
 import com.retronova.game.objects.tiles.Tile;
+import com.retronova.game.objects.tiles.Void;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Waves implements Runnable {
 
-    private Thread thread;
+    private static final int M;
 
-    private int wave = 1;
-    private double waveMultiplier = 1;
-    private int amount;
+    private static final JSONObject[] controller;
+
+    static {
+        M = 60 * 60;
+        controller = new JSONObject[3];
+        try {
+            controller[0] = Resources.getJsonFile("maps/waves", "easy");
+            controller[1] = Resources.getJsonFile("maps/waves", "normal");
+            controller[2] = Resources.getJsonFile("maps/waves", "hard");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private final Arena gameMap;
+
+    private final int period;
+    private final int[] amount;
+    private final EntityIDs[] types;
+
     private int counter;
     private int lastCounter;
-    private boolean paused;
-    private final Arena gameMap;
-    volatile List<Entity> listAppend;
 
-    public Waves(Arena gameMap) {
+    private volatile int step;
+    private volatile List<Entity> listAppend;
+    private boolean end;
+
+    public Waves(Arena gameMap, int waveLevel, int difficult) {
         this.gameMap = gameMap;
-    }
-
-    public boolean getPause(){
-        return paused;
-    }
-
-    public void setPause(boolean paused){
-        this.paused = paused;
-    }
-
-    public int getWave() {
-        return wave;
-    }
-
-    public void setWave(int wave) {
-        this.wave = wave;
-    }
-
-    private void wavingHandling(){
-        if(!paused){
-            counter++;
+        JSONArray listWaves = (JSONArray) controller[difficult].get("waves");
+        JSONObject wave = (JSONObject) listWaves.get(waveLevel);
+        this.period = ((Number)wave.get("period")).intValue();
+        this.amount = new int[this.period];
+        JSONArray listAmount = (JSONArray) wave.get("amount");
+        for(int i = 0; i < amount.length; i++) {
+            int currentAmount = ((Number)listAmount.get(i)).intValue();
+            this.amount[i] = currentAmount;
         }
-        if(counter > 60 * 60){
+        JSONArray listTypes = (JSONArray) wave.get("enemies");
+        this.types = new EntityIDs[listTypes.size()];
+        EntityIDs[] types = EntityIDs.values();
+        for(int i = 0; i < listTypes.size(); i++) {
+            String type = String.valueOf(listTypes.get(i));
+            for(int j = 0; j < types.length; j++) {
+                if(type.equalsIgnoreCase(types[j].name())) {
+                    this.types[i] = types[j];
+                }
+            }
+        }
+    }
+
+    public int getSeconds() {
+        return (int)((this.counter/60d));
+    }
+
+    public int currentSpawn() {
+        return this.step;
+    }
+
+    public int amountSpawns() {
+        return this.amount.length;
+    }
+
+    public boolean ended() {
+        return this.end;
+    }
+
+    private void periodic(){
+        if(end){
+            return;
+        }
+        counter++;
+        if(this.gameMap.enemiesEmpty()) {
+            counter+=5;
+        }
+        if(counter > M){
             counter = 0;
-            wave++;
-            paused = true;
-            System.out.println("Fim da wave");
-        }else if(counter > lastCounter + 3.5 * 60){
-            lastCounter = counter;
-
-            amount = (int) (4 * waveMultiplier);
-            waveMultiplier += 0.09 + wave * 0.2; // testar balanceamento apos adicionar armas
-
-            thread = new Thread(this, "Waves-Thread");
-            thread.start();
+            end = true;
+            return;
+        }
+        if(counter > lastCounter){
+            lastCounter += (M/period);
+            new Thread(this, "Waves-Thread").start();
         }
     }
 
-    private List<Entity> listEntity(EntityIDs[] types, int amount){
+    private synchronized List<Entity> listEntity(){
         List<Entity> lista = new ArrayList<>();
-        for(int i = 0; i < amount;i++){
-            lista.add(Entity.build(types[Engine.RAND.nextInt(types.length)].ordinal(), 0, 0));
+        for(int i = 0; i < amount[step]; i++){
+            int id = types[Engine.RAND.nextInt(types.length)].ordinal();
+            Entity e = Entity.build(id, 0, 0);
+            lista.add(e);
         }
         return lista;
     }
@@ -76,8 +120,8 @@ public class Waves implements Runnable {
         while (!entidades.isEmpty()){
             int x = Engine.RAND.nextInt(gameMap.getBounds().width / GameObject.SIZE());
             int y = Engine.RAND.nextInt(gameMap.getBounds().height / GameObject.SIZE());
-            Tile tile = gameMap.getTile(x ,y );
-            if(!tile.isSolid()){
+            Tile tile = gameMap.getTile(x ,y);
+            if(!tile.isSolid() && !(tile instanceof Void)){
                 Entity e = entidades.getFirst();
                 e.setX(x * GameObject.SIZE());
                 e.setY(y * GameObject.SIZE());
@@ -94,18 +138,21 @@ public class Waves implements Runnable {
     }
 
     public void tick() {
-        wavingHandling();
+        periodic();
         if(listAppend != null && !listAppend.isEmpty()) {
             Game.getMap().putAll(listAppend);
             listAppend.clear();
+            synchronized (this) {
+                step++;
+            }
         }
     }
 
     @Override
     public void run() {
         try {
-            EntityIDs[] types = {EntityIDs.Skeleton, EntityIDs.Zombie, EntityIDs.Slime, EntityIDs.MouseVampire, EntityIDs.RatExplode, EntityIDs.MouseSquire};
-            listAppend = spawner(listEntity(types, amount));
+            List<Entity> enemies = listEntity();
+            listAppend = spawner(enemies);
         }catch (Exception e) {
             System.err.println("Erro em waves...");
         }

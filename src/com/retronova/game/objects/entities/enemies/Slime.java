@@ -3,6 +3,7 @@ package com.retronova.game.objects.entities.enemies;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
+import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
@@ -45,6 +46,7 @@ public class Slime extends Enemy {
                 Sound.play(Sounds.Slime);
                 attackCooldown = 15; // Reduzido para 15 para teste
                 System.out.println("Slime sound played!"); // Debug
+                player.strike(AttackTypes.Melee, 2);
             } catch (Exception e) {
                 System.err.println("Error playing Slime sound: " + e.getMessage());
                 e.printStackTrace();

@@ -14,6 +14,6 @@ public enum EntityIDs {
     MonarkMouse,
     Seller,
     Door,
-    TrapDoor;
+    TrapDoor
     
 }

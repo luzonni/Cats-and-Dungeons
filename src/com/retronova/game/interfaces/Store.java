@@ -8,6 +8,8 @@ import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
@@ -79,6 +81,8 @@ public class Store implements Activity {
             if (slots[indexSelected].isEmpty()) {
                 indexSelected = -1;
             }
+            Sound.play(Sounds.Coin);
+            Sound.play(Sounds.Cat);
         }
     }
 

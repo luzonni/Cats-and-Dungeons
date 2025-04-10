@@ -13,13 +13,16 @@ import com.retronova.game.map.*;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.arena.Waves;
 import com.retronova.game.map.room.Room;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
+import com.retronova.game.objects.entities.utilities.Bomb;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.menus.GameOver;
 
 import java.awt.*;
 import java.util.List;
@@ -28,7 +31,6 @@ public class Game implements Activity {
 
     private final Galaxy galaxy;
 
-    private final int difficulty;
     private final int indexPlayer;
 
     private long seconds;
@@ -38,14 +40,14 @@ public class Game implements Activity {
     public static Camera C;
 
     private GameMap map;
-    private Physically physically;
+    private int level;
+    private int difficult;
 
     private final HUD hud;
     private final Inter inter;
 
     //Teste
-    public Game(int indexPlayer, int difficulty, GameMap map) {
-        this.difficulty = difficulty;
+    public Game(int indexPlayer, GameMap map) {
         this.indexPlayer = indexPlayer;
         this.inter = new Inter();
         Player player = Player.newPlayer(indexPlayer);
@@ -53,26 +55,47 @@ public class Game implements Activity {
         this.inter.put("status", new Status(player));
         this.player = player;
         this.changeMap(map);
-        this.map.addPlayer(player);
         this.hud = new HUD(player);
         this.galaxy = new Galaxy();
     }
 
+    public int getLevel() {
+        return this.level;
+    }
+
+    public void plusLevel() {
+        this.level++;
+    }
+
+    public int getDifficult() {
+        return this.difficult;
+    }
+
+    public void setDifficult(int difficult) {
+        this.difficult = difficult;
+    }
+
+    public long getSeconds() {
+        return this.seconds;
+    }
+
+    private void gameOver() {
+        Engine.backActivity();
+        Engine.heapActivity(new GameOver(player));
+    }
+
     public void changeMap(GameMap newMap) {
-        if (this.physically != null) {
-            this.physically.dispose();
+        if(newMap == null) {
+            return;
         }
-
-        if (newMap == null) {
-            this.map = new Room("beginning");
-            this.map.addPlayer(player);
-        } else {
-            this.map = newMap;
+        if(this.map != null) {
+            this.map.remove(player);
+            this.map.dispose();
         }
-
+        this.map = newMap;
+        this.map.addPlayer(player);
         Game.C = new Camera(this.map.getBounds(), 0.25d);
         Game.C.setFollowed(player);
-        this.physically = new Physically(map);
     }
 
     @Override
@@ -81,7 +104,7 @@ public class Game implements Activity {
         if(count > 60) {
             count = 0;
             seconds++;
-            System.out.println(seconds);
+            System.out.println("Seconds: " + seconds);
         }
         hud.tick();
         galaxy.tick();
@@ -90,9 +113,6 @@ public class Game implements Activity {
         }
         if(KeyBoard.KeyPressed("E")) {
             inter.open();
-        }
-        if(!physically.isRunning()) {
-            physically.start();
         }
         map.tick();
         map.depth();
@@ -116,6 +136,9 @@ public class Game implements Activity {
             tile.tick();
         }
         C.tick();
+        if(!this.map.getEntities().contains(player)) {
+            gameOver();
+        }
     }
 
     @Override
@@ -157,21 +180,21 @@ public class Game implements Activity {
     @Override
     public void dispose() {
         System.out.println("Dispose Game");
-        physically.dispose();
+        map.dispose();
         inter.dispose();
     }
 
+    public static void focus(GameObject obj) {
+        Game.C.setFollowed(obj);
+    }
+
     public static void restart() {
-        Game.getInter().remove("inventory");
+        Game.getInter().dispose();
         GameMap map = getMap();
-        if(map instanceof Arena) {
-            map = getRoom();
-        }
         Game game = getGame();
         map.restart();
-        Engine.setActivity(new Game(game.indexPlayer, game.difficulty, map));
-        //TODO tirar saídas de console após finalização da lógica.
-        System.out.println("Jogo reiniciado com personagem " + game.indexPlayer + " e dificuldade " + game.difficulty);
+        Engine.backActivity();
+        Engine.heapActivity(new Game(game.indexPlayer, map));
     }
 
     public static Game getGame() {
@@ -212,8 +235,6 @@ public class Game implements Activity {
     public static Room getRoom() {
         if(getMap() instanceof Room room) {
             return room;
-        }else if(getMap() instanceof Arena arena) {
-            return arena.getRoom();
         }
         throw new NotInMap("O mapa atual não é uma room!");
     }

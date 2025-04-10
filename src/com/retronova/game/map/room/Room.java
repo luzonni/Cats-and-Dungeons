@@ -8,12 +8,12 @@ public class Room extends GameMap {
 
     public Room(String mapName) {
         super(mapName);
-        Sound.play(Musics.Music2, true);
+        Sound.play(Musics.Room, true);
     }
-
 
     @Override
     public void tick() {
 
     }
+
 }

@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities.furniture;
 
+import com.retronova.engine.exceptions.TrapDoorCommandException;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
@@ -8,36 +9,75 @@ import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Entity;
 
 public class TrapDoor extends Furniture {
+
     private int indexSprite;
     private int count;
 
-    public TrapDoor(int ID, double x, double y) {
+    private final String command;
+
+    public TrapDoor(int ID, double x, double y, String command) {
         super(ID, x, y);
         loadSprites("trapdoor");
+        this.command = command;
     }
 
     @Override
     public void tick() {
-        Entity nearest = getNearest(2);
-        if(nearest != null) {
-            count++;
-            if(count > 7 && indexSprite < 11) {
+        Entity nearest = getNearest(1.5d);
+        count++;
+        if(count > 2) {
+            count = 0;
+            if (nearest != null && indexSprite < 7) {
                 indexSprite++;
-            }
-        }else {
-            count++;
-            if(count > 0 && indexSprite > 0) {
+            } else if(indexSprite > 0) {
                 indexSprite--;
             }
         }
-        if(indexSprite == 11) {
+        if(indexSprite == 7) {
             if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
-                Room room = Game.getRoom();
-                Arena arena = new Arena(1, room);
-                arena.put(Game.getPlayer());
-                Game.getGame().changeMap(arena);
+                if(!command.equals("None")) {
+                    getCommand();
+                }else {
+                    System.err.println("A trapdoor foi instanciada sem a referencia do próximo mapa!");
+                }
             }
         }
         getSheet().setIndex(indexSprite);
     }
+
+    private void getCommand() {
+        // LOAD ["ARENA", "ROOM] SPACE_NAME => Para carregar o espaço referente ao mapa.
+        // NEXT ["ARENA", "ROOM] => Para passar para a proxima arena/room
+        String[] commands = this.command.split(" ");
+        if(commands[0].equalsIgnoreCase("LOAD") && commands.length == 3) {
+            String name = commands[2];
+            if(commands[1].equalsIgnoreCase("ARENA")) {
+                String[] types = {"EASY", "NORMAL", "HARD"};
+                Arena arena = null;
+                for(int i = 0; i < types.length; i++) {
+                    if(types[i].equalsIgnoreCase(name)) {
+                        arena = new Arena(i);
+                        Game.getGame().setDifficult(i);
+                        break;
+                    }
+                }
+                if(arena != null) {
+                    Game.getGame().changeMap(arena);
+                }else {
+                    throw new TrapDoorCommandException("Arena type not found!");
+                }
+            }else if(commands[1].equalsIgnoreCase("ROOM")) {
+                Room room = new Room(name);
+                Game.getGame().changeMap(room);
+            }
+        }
+        if(commands[0].equalsIgnoreCase("NEXT") && commands.length == 2) {
+            if(commands[1].equalsIgnoreCase("ARENA")) {
+                Game.getGame().plusLevel();
+                int difficult = Game.getGame().getDifficult();
+                Game.getGame().changeMap(new Arena(difficult));
+            }
+        }
+    }
+
 }

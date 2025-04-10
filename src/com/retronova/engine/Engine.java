@@ -8,11 +8,14 @@ import com.retronova.menus.Menu;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Engine implements Runnable {
 
     private static String GameTag = "Roguelike";
+
 
     private static Thread thread;
     private static boolean isRunning;
@@ -22,46 +25,57 @@ public class Engine implements Runnable {
     public static int HERTZ;
 
     private static Activity OverView;
-    private static Activity ACTIVITY;
+    private static List<Activity> stackActivities;
     private static boolean ACTIVITY_RUNNING;
 
     public static final String resPath = "/com/retronova/res/";
 
     public static final int[][] resolutions = {{1280, 720}, {1366, 768}, {1600, 900}, {1920, 1080}, {2560, 1440}, {3840, 2160}};
-    public static int index_res = 0;
 
     public static Window window;
-    static BufferStrategy BUFFER;
+    private static BufferStrategy BUFFER;
 
     public static Random RAND = new Random();
 
     public Engine() {
+        stackActivities = new ArrayList<>();
         Configs.init();
         Configs.load();
         FontG.addFont("game", "septem");
         Sound.load();
         Engine.window = new Window(GameTag);
-        setActivity(new Menu());
+        heapActivity(new Menu());
         start();
     }
 
     //Sempre usar essa função para mudar de Activity! Nunca usar a variável direto.
-    public static void setActivity(Activity activity) {
+    public static void heapActivity(Activity activity) {
         ACTIVITY_RUNNING = true;
-        Activity ac = Engine.ACTIVITY;
-        if(ac != null) {
-            ac.dispose();
-        }
-        Engine.ACTIVITY = activity;
+        Engine.stackActivities.add(activity);
     }
 
-    public static void setActivity(Activity activity, ActionBack action) {
+    public static void heapActivity(Activity activity, ActionBack action) {
         ACTIVITY_RUNNING = true;
-        Activity ac = Engine.ACTIVITY;
+        Engine.stackActivities.add(new Loading(stackActivities, activity, action));
+    }
+
+    public static void backActivity() {
+        Activity ac = Engine.getACTIVITY();
         if(ac != null) {
             ac.dispose();
         }
-        Engine.ACTIVITY = new Loading(activity, action);
+        Engine.stackActivities.removeLast();
+    }
+
+    public static void backActivity(int amount) {
+        Engine.pause(null);
+        for(int i = 0; i < amount; i++) {
+            Activity ac = Engine.getACTIVITY();
+            if(ac != null) {
+                ac.dispose();
+            }
+            Engine.stackActivities.removeLast();
+        }
     }
 
     /**
@@ -82,19 +96,24 @@ public class Engine implements Runnable {
     }
 
     public static Activity getACTIVITY() {
-        return Engine.ACTIVITY;
+        return Engine.stackActivities.getLast();
     }
 
     public static void CLOSE() {
-        Engine.ACTIVITY.dispose();
+        Engine.getACTIVITY().dispose();
         Engine.isRunning = false;
     }
 
     public static int[] getResolution() {
-        return Engine.resolutions[index_res];
+        return Engine.resolutions[Configs.getIndexResolution()];
     }
 
     private Graphics2D getGraphics() {
+        if(Engine.BUFFER == null) {
+            window.createBufferStrategy(3);
+            Engine.BUFFER = window.getBufferStrategy();
+            return null;
+        }
         Graphics2D graphics = (Graphics2D) BUFFER.getDrawGraphics();
         graphics.setColor(Color.black);
         graphics.fillRect(0, 0, window.getWidth(), window.getHeight());
@@ -136,71 +155,68 @@ public class Engine implements Runnable {
 
     @Override
     public void run() {
-        //System values
+        System.out.println("Inicializando Thread MAX FRAMES = " + Configs.MaxFrames());
         long lastTimeHZ = System.nanoTime();
         double amountOfHz = Engine.HZ;
         double ns_HZ = Engine.T / amountOfHz;
         double delta_HZ = 0;
-
         long lastTimeFPS = System.nanoTime();
         double amountOfFPS = Configs.MaxFrames();
         double ns_FPS = Engine.T / amountOfFPS;
         double delta_FPS = 0;
-
-        //To Show
         int Hz = 0;
         int frames = 0;
         double timer = System.currentTimeMillis();
         window.requestFocus();
-        while(isRunning) {
+        while (isRunning) {
             try {
                 long nowHZ = System.nanoTime();
                 delta_HZ += (nowHZ - lastTimeHZ) / ns_HZ;
                 lastTimeHZ = nowHZ;
-                if(delta_HZ >= 1) {
-                    if(KeyBoard.KeyPressed("F11") && window != null) {
+                if (delta_HZ >= 1) {
+                    if (KeyBoard.KeyPressed("F11") && window != null) {
                         Configs.setFullscreen(!Configs.Fullscreen());
-                        Thread.sleep(10);
-                        window.setResolution();
+                        window.resetWindow();
                     }
-                    if(ACTIVITY_RUNNING && ACTIVITY != null) {
-                        ACTIVITY.tick();
+                    if (ACTIVITY_RUNNING && !stackActivities.isEmpty()) {
+                        getACTIVITY().tick();
                     }
-                    if(OverView != null) {
+                    if (OverView != null) {
                         OverView.tick();
                     }
                     Hz++;
                     delta_HZ--;
                 }
-
                 long nowFPS = System.nanoTime();
                 delta_FPS += (nowFPS - lastTimeFPS) / ns_FPS;
                 lastTimeFPS = nowFPS;
-                if(delta_FPS >= 1) {
+                if (delta_FPS >= 1) {
                     Graphics2D g = getGraphics();
-                    if(ACTIVITY != null) {
-                        ACTIVITY.render(g);
+                    if(g == null)
+                        continue;
+                    if (!stackActivities.isEmpty()) {
+                        getACTIVITY().render(g);
                     }
-                    if(OverView != null) {
+                    if (OverView != null) {
                         OverView.render(g);
                     }
                     render(g);
                     frames++;
                     delta_FPS--;
                 }
-
                 //Show fps
-                if(System.currentTimeMillis() - timer >= 1000){
-                    Engine.window.getFrame().setTitle(Engine.GameTag+" - Hz: " + Hz + " / Frames: " + frames);
+                if (System.currentTimeMillis() - timer >= 1000) {
+                    Engine.window.getFrame().setTitle(Engine.GameTag + " - Hz: " + Hz + " / Frames: " + frames);
                     Engine.FRAMES = frames;
                     frames = 0;
                     Engine.HERTZ = Hz;
                     Hz = 0;
                     timer += 1000;
                 }
-                Thread.sleep(1); //Otimização de CPU ( limita a renderização ilimitada )
-            }catch(Exception e) {
-                System.out.println("ERROR!");
+                Thread.sleep(1);
+            } catch (Exception e) {
+                System.err.println("Exception: " + e.getMessage());
+                System.err.println("==============================================================");
                 e.printStackTrace();
                 System.exit(1);
             }
@@ -208,4 +224,8 @@ public class Engine implements Runnable {
         stop();
         System.out.println("Exit");
     }
+
 }
+
+
+

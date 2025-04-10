@@ -1,8 +1,9 @@
 package com.retronova.game.objects.entities;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.interfaces.Inventory;
 import com.retronova.game.items.Consumable;
@@ -10,13 +11,14 @@ import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.Sheet;
+import com.retronova.game.objects.particles.Volatile;
+import com.retronova.game.objects.particles.Walking;
 import com.retronova.game.objects.particles.Word;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class Player extends Entity {
 
@@ -49,10 +51,11 @@ public class Player extends Entity {
     private int level;
     private int countAnim;
 
-    private final double luck; // 0.0 ~ 1.0
+    private final double luck;
 
     private int countDash;
     private boolean dash;
+    private int countWalking;
 
     private final List<Consumable> passives;
 
@@ -64,6 +67,8 @@ public class Player extends Entity {
         this.luck = luck;
         this.inventory = new Inventory(bagSize, hotSize);
         this.passives = new ArrayList<>();
+        setWidth(0.85);
+        setHeight(0.9);
         loadSprites("player_"+name+"_idle", "player_"+name+"_walking");
         setLife(life);
         setDamage(damage);
@@ -103,28 +108,30 @@ public class Player extends Entity {
             return;
         updateMovement();
         tickItemHand();
+        if(KeyBoard.KeyPressed("F")) {
+            //TODO teste de efeitos
+            this.EFFECT_FIRE(10, 10);
+            //this.EFFECT_REGENERATION(10, 100);
+        }
     }
 
     @Override
     public void strike(AttackTypes type, double damage) {
-        if(modifiers.containsKey(Modifiers.Dodge)) {
-            double percent = modifiers.get(Modifiers.Dodge) + getLuck()*0.10d;
+        if (modifiers.containsKey(Modifiers.Dodge)) {
+            double percent = modifiers.get(Modifiers.Dodge) + getLuck() * 0.10d;
             double a = Engine.RAND.nextDouble(1d);
-            System.out.println(percent * 100 + " / " + a * 100);
-            if(a <= percent) {
-                Game.getMap().put(new Word("Dodge", getX() + getWidth()/2d, getY() + getHeight()/2d, 1));
+            if (a <= percent) {
+                Game.getMap().put(new Word("Dodge", getX() + getWidth() / 2d, getY() + getHeight() / 2d, 1));
                 return;
             }
         }
+        Sound.play(Sounds.DamageCat);
         super.strike(type, damage);
-
     }
 
     @Override
     public void die() {
-        Game.restart();
-        Sound.stopAll();
-        Sound.play(Musics.Music2, true);
+        disappear();
     }
 
     public double getLuck() {
@@ -195,34 +202,41 @@ public class Player extends Entity {
             item.tick();
     }
 
-    private void updateMovement(){
-        if(!(Engine.getACTIVITY() instanceof Game))
+    private void updateMovement() {
+        if (!(Engine.getACTIVITY() instanceof Game))
             return;
         getSheet().setType(getPhysical().isMoving() ? 1 : 0);
         int vertical = 0;
         int horizontal = 0;
-        if(KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")){
+        boolean isMoving = false;
+
+        if (KeyBoard.KeyPressing("W") || KeyBoard.KeyPressing("Up")) {
             vertical = -1;
+            isMoving = true;
         }
-        if(KeyBoard.KeyPressing("S") || KeyBoard.KeyPressing("Down")){
+        if (KeyBoard.KeyPressing("S") || KeyBoard.KeyPressing("Down")) {
             vertical = 1;
+            isMoving = true;
         }
-        if(KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")){
+        if (KeyBoard.KeyPressing("A") || KeyBoard.KeyPressing("Left")) {
             horizontal = -1;
+            isMoving = true;
         }
-        if(KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")){
+        if (KeyBoard.KeyPressing("D") || KeyBoard.KeyPressing("Right")) {
             horizontal = 1;
+            isMoving = true;
         }
+
         countDash++;
-        if(KeyBoard.KeyPressed("SPACE")) {
-            if(modifiers.containsKey(Modifiers.Dash) && countDash > 45) {
+        if (KeyBoard.KeyPressed("SPACE")) {
+            if (modifiers.containsKey(Modifiers.Dash) && countDash > 45) {
                 dash = true;
                 countDash = 0;
             }
         }
-        double radians = Math.atan2(vertical, horizontal);
-        if(vertical != 0 || horizontal != 0){
-            if(dash) {
+        if (isMoving) {
+            double radians = Math.atan2(vertical, horizontal);
+            if (dash) {
                 addEffect("dash", (e) -> {
                     getPhysical().addForce("dash", getSpeed() * modifiers.get(Modifiers.Dash), radians);
                     e.getPhysical().setFriction(0.1d);
@@ -230,6 +244,13 @@ public class Player extends Entity {
                 dash = false;
             }
             getPhysical().addForce("move", getSpeed(), radians);
+            countWalking++;
+            if(countWalking > 10) {
+                countWalking = 0;
+                Volatile walkingP = new Volatile("walking", getX() + getWidth()/2d, getY() + getHeight());
+                Game.getMap().put(walkingP);
+                Sound.play(Sounds.Walking);
+            }
         }
     }
 

@@ -23,7 +23,11 @@ public class MouseSquire extends Enemy {
         super(ID, x, y, 0.4);
         loadSprites("mousesquire");
         setSolid();
-        setLife(60);
+        setLife(70);
+        setSpeed(1);
+        addResistances(AttackTypes.Fire, 0.6);
+        addResistances(AttackTypes.Poison, 1);
+        addResistances(AttackTypes.Piercing, 0.7);
         setXpWeight(500000.0d);
     }
 
@@ -45,7 +49,11 @@ public class MouseSquire extends Enemy {
         if (player.getBounds().intersects(this.getBounds()) && cooldown > 40) {
             cooldown = 0;
             player.strike(AttackTypes.Melee, 6);
-            player.getPhysical().addForce("knockback", 3.0d, getPhysical().getAngleForce());
+            player.addEffect("knockback", (e) -> {
+                e.getPhysical().setFriction(0.2);
+                e.getPhysical().addForce("knockback", 8.0d, getPhysical().getAngleForce());
+            }, 0.08);
+
             Sound.play(Sounds.MouseSquire);
             soundPlaying = true;
         } else {
@@ -62,10 +70,9 @@ public class MouseSquire extends Enemy {
 
     public void moveIA() {
         Player player = Game.getPlayer();
-        if (this.getDistance(player) < GameObject.SIZE() * 6) {
-            double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-            getPhysical().addForce("move", 0.75d, radians);
-        }
+        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        getPhysical().addForce("move", getSpeed(), radians);
+
     }
 
     public void animation() {

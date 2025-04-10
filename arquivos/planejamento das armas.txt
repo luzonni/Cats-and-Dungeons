@@ -1,13 +1,18 @@
 Itens:
 
 Armas:
-1. Espada; - Feito
-2. Arco ; - Feito
-3. Bomba; - Feito
-4. Laser;
+1. Espada; - ✅
+    1.1. Espaga flamejante
+    1.2. Espada de vida(quando usar restaura uma porcentagem de vida)
+2. Arco ; - ✅
+    2.1. Arco elétrico
+3. Bomba; - ✅
+    3.1. Bomba de gás(causa dano em área enquanto o gás durar)
+4. Laser; - ✅
 5. Garra(tipo luva) que da dano e empurra o jogador;
-6. Bolã de lã. - Feito
+6. Bolã de lã. - ✅
 7. Vara de gato: dano à distância
+8. Lâmina giratória(ao redor do gato)
 
 Passíveis:
 1. Peixe;
