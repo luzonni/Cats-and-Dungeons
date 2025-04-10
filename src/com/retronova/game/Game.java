@@ -7,7 +7,6 @@ import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.engine.graphics.Galaxy;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.interfaces.Inter;
-import com.retronova.game.interfaces.Pause;
 import com.retronova.game.interfaces.status.Status;
 import com.retronova.game.map.*;
 import com.retronova.game.map.arena.Arena;
@@ -23,6 +22,7 @@ import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.menus.GameOver;
+import com.retronova.menus.Pause;
 
 import java.awt.*;
 import java.util.List;
