@@ -5,7 +5,7 @@ META-INF/
 !**/src/test/**/out/
 .idea
 config.json
-Roguelike.iml
+Modules.iml
 
 ### Eclipse ###
 .apt_generated
