@@ -29,7 +29,7 @@ public class Sword extends Item {
 
 
     Sword(int id) {
-        super(id, "Sword", "sword");
+        super(id, "Sword", "sword_new2");
         this.damage = 35;
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));

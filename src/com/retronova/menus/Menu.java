@@ -59,8 +59,8 @@ public class Menu implements Activity {
             if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[i])) {
                 switch (i) {
                     case 0:
-                        Sound.play(Sounds.Button);
                         Engine.heapActivity(new Personagens());
+                        Sound.play(Sounds.Button);
                         break;
                     case 1:
                         Sound.play(Sounds.Button);
@@ -92,8 +92,12 @@ public class Menu implements Activity {
         if (imagemFundo != null) {
             g.drawImage(imagemFundo, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
         }
-        g.setFont(fonteQuadrados);
 
+        g.setFont(fonteQuadrados);
+        desenharBotoes(g);
+    }
+
+    private void desenharBotoes(Graphics2D g) {
         for (int i = 0; i < quadrados.length; i++) {
             int tamanhoFonte = 8 * Configs.UiScale();
             Font fonteAtual = FontG.font(FontG.Game, tamanhoFonte);
@@ -148,6 +152,7 @@ public class Menu implements Activity {
             );
         }
     }
+
 
 
     @Override

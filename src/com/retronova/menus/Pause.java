@@ -1,16 +1,16 @@
-package com.retronova.game.interfaces;
+package com.retronova.menus;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
-import com.retronova.menus.Options;
 
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
@@ -26,6 +26,18 @@ public class Pause implements Activity {
     private Game game;
     private int botaoPressionado = -1;
 
+    private boolean confirmando = false;
+    private ConfirmacaoTipo tipoConfirmacao = null;
+    private final Rectangle botaoSim = new Rectangle();
+    private final Rectangle botaoNao = new Rectangle();
+    private final Font fonteConfirmacaoMensagem = FontG.font(FontG.Game, 10 * Configs.UiScale());
+    private final Font fonteBotaoConfirmacao = FontG.font(FontG.Game, 8 * Configs.UiScale());
+    private final Color corPopup = new Color(0x6B7A8F);
+
+    private enum ConfirmacaoTipo {
+        RESTART, MENU, QUIT
+    }
+
     public Pause(Game game) {
         this.game = game;
         telacheia();
@@ -35,23 +47,39 @@ public class Pause implements Activity {
         quadrados = new Rectangle[5];
 
         int x = Engine.window.getWidth() / 2;
-        int y = 300;
-        int larguraBotao = 200;
+        int yCentro = Engine.window.getHeight() / 2;
+        int espacamento = 50;
         int alturaBotao = 50;
+        int larguraBotao = 200;
 
-        quadrados[0] = new Rectangle(x - larguraBotao / 2, y - 150, larguraBotao, alturaBotao);
-        quadrados[1] = new Rectangle(x - larguraBotao / 2, y - 50, larguraBotao, alturaBotao);
-        quadrados[2] = new Rectangle(x - larguraBotao / 2, y + 50, larguraBotao, alturaBotao);
-        quadrados[3] = new Rectangle(x - larguraBotao / 2, y + 150, larguraBotao, alturaBotao);
-        quadrados[4] = new Rectangle(x - larguraBotao / 2, y + 250, larguraBotao, alturaBotao);
+        int yInicial = yCentro - ((alturaBotao + espacamento) * quadrados.length - espacamento) / 2;
+
+        for (int i = 0; i < quadrados.length; i++) {
+            int y = yInicial + i * (alturaBotao + espacamento);
+            quadrados[i] = new Rectangle(x - larguraBotao / 2, y, larguraBotao, alturaBotao);
+        }
     }
 
     @Override
     public void tick() {
         atualizarAnimacao();
-        if (KeyBoard.KeyPressed("ESCAPE")) {
+
+        if (KeyBoard.KeyPressed("ESCAPE") && !confirmando) {
             System.out.println("Jogo pausado");
             Engine.pause(null);
+            return;
+        }
+
+        if (confirmando) {
+            if (Mouse.isPressed(Mouse_Button.LEFT, botaoSim)) {
+                Sound.play(Sounds.Button);
+                executarAcaoConfirmada();
+                confirmando = false;
+            } else if (Mouse.isPressed(Mouse_Button.LEFT, botaoNao)) {
+                Sound.play(Sounds.Button);
+                confirmando = false;
+                tipoConfirmacao = null;
+            }
             return;
         }
 
@@ -62,39 +90,54 @@ public class Pause implements Activity {
                 botaoPressionado = -1;
                 if (quadrados[i].contains(Mouse.getX(), Mouse.getY())) {
                     switch (i) {
-                        case 0:
+                        case 0 -> {
                             Engine.pause(null);
-                            break;
-                        case 1:
-                            Sound.stop(Musics.Fight);
-                            Sound.play(Musics.Room, true);
-                            Engine.pause(null);
-                            Game.restart();
-                            break;
-                        case 2:
+                            Sound.play(Sounds.Button);
+                        }
+                        case 1 -> {
+                            tipoConfirmacao = ConfirmacaoTipo.RESTART;
+                            confirmando = true;
+                        }
+                        case 2 -> {
+                            Sound.play(Sounds.Button);
                             Engine.pause(null);
                             Engine.heapActivity(new Options());
-                            break;
-                        case 3:
-                            Engine.pause(null);
-                            Sound.stopAll();
-                            Engine.backActivity(2);
-                            Sound.play(Musics.Menu, true);
-                            break;
-                        case 4:
-                            Engine.CLOSE();
-                            break;
-                        default:
-                            System.out.println("Botão desconhecido");
-                            break;
+                        }
+                        case 3 -> {
+                            tipoConfirmacao = ConfirmacaoTipo.MENU;
+                            confirmando = true;
+                        }
+                        case 4 -> {
+                            tipoConfirmacao = ConfirmacaoTipo.QUIT;
+                            confirmando = true;
+                        }
                     }
                 }
             }
         }
     }
 
+    private void executarAcaoConfirmada() {
+        switch (tipoConfirmacao) {
+            case RESTART -> {
+                Engine.pause(null);
+                Game.restart();
+            }
+            case MENU -> {
+                Engine.pause(null);
+                Sound.stopAll();
+                Engine.backActivity(2);
+                Sound.play(Sounds.Button);
+                Sound.play(Musics.Menu, true);
+            }
+            case QUIT -> Engine.CLOSE();
+        }
+        tipoConfirmacao = null;
+    }
+
     private void atualizarAnimacao() {
         quadradoSeta = -1;
+        if (confirmando) return;
         for (int i = 0; i < quadrados.length; i++) {
             if (quadrados[i].contains(Mouse.getX(), Mouse.getY())) {
                 quadradoSeta = i;
@@ -109,6 +152,15 @@ public class Pause implements Activity {
         desenharFundo(g);
         desenharTitulo(g);
         desenharBotoes(g);
+        if (confirmando) {
+            Composite originalComposite = g.getComposite();
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
+            g.setComposite(originalComposite);
+
+            desenharPopupConfirmacao(g);
+        }
     }
 
     private void desenharFundo(Graphics2D g) {
@@ -181,8 +233,57 @@ public class Pause implements Activity {
         }
     }
 
+    private void desenharPopupConfirmacao(Graphics2D g) {
+        int largura = 500;
+        int altura = 180;
+        int x = (Engine.window.getWidth() - largura) / 2;
+        int y = (Engine.window.getHeight() - altura) / 2;
+        int bordaRaio = 25;
+
+        g.setColor(corPopup);
+        g.fillRoundRect(x, y, largura, altura, bordaRaio, bordaRaio);
+
+        g.setColor(corPopup.darker());
+        g.drawRoundRect(x, y, largura, altura, bordaRaio, bordaRaio);
+
+        String mensagem = switch (tipoConfirmacao) {
+            case RESTART -> "Restart the game?";
+            case MENU -> "Return to main menu?";
+            case QUIT -> "Do you want to quit?";
+        };
+
+        g.setFont(fonteConfirmacaoMensagem);
+        FontMetrics fm = g.getFontMetrics();
+        int textoX = x + (largura - fm.stringWidth(mensagem)) / 2;
+        int textoY = y + 60;
+        g.setColor(Color.WHITE);
+        g.drawString(mensagem, textoX, textoY);
+
+        int larguraBotao = 80;
+        int alturaBotao = 35;
+        int espacamentoBotoes = 60;
+        int yBotoes = y + altura - alturaBotao - 30;
+
+        botaoSim.setBounds(x + largura / 2 - larguraBotao - espacamentoBotoes / 2, yBotoes, larguraBotao, alturaBotao);
+        botaoNao.setBounds(x + largura / 2 + espacamentoBotoes / 2, yBotoes, larguraBotao, alturaBotao);
+
+        desenharBotaoConfirmacao(g, botaoSim, "Yes");
+        desenharBotaoConfirmacao(g, botaoNao, "No");
+    }
+
+    private void desenharBotaoConfirmacao(Graphics2D g, Rectangle botao, String texto) {
+        g.setColor(corPopup.darker());
+        g.fillRoundRect(botao.x, botao.y, botao.width, botao.height, 15, 15);
+
+        g.setColor(Color.WHITE);
+        g.setFont(fonteBotaoConfirmacao);
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(texto,
+                botao.x + (botao.width - fm.stringWidth(texto)) / 2,
+                botao.y + (botao.height - fm.getHeight()) / 2 + fm.getAscent()
+        );
+    }
 
     @Override
-    public void dispose() {
-    }
+    public void dispose() {}
 }

@@ -1,3 +1,5 @@
+![Image](https://i.imgur.com/k7O5GhT.jpeg)
+
 # 🎮 Roguelike Game  
 
 Um jogo roguelike desenvolvido em **Java**, focado em exploração, sobrevivência e desafios gerados de forma
