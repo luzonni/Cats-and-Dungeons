@@ -39,14 +39,14 @@ public class WaveDisplay {
     private void renderClock(int x, int y, Graphics2D g) {
         Graphics2D g2 = (Graphics2D) g.create();
         g.drawImage(this.clock, x, y, null);
-        int xCenter = (int)(x + 7.5 * Configs.HudScale());
-        int yCenter = (int)(y + 7.5 * Configs.HudScale());
+        int xCenter = x + 12 * Configs.HudScale();
+        int yCenter = y + 12 * Configs.HudScale();
         int waveSeconds = Game.getWave().getSeconds();
         double rad = ((Math.PI*2)/60) * waveSeconds;
-        int xPole = (int)(xCenter + Math.cos(rad - Math.PI/2) * (3*Configs.HudScale()));
-        int yPole = (int)(yCenter + Math.sin(rad - Math.PI/2) * (3*Configs.HudScale()));
+        int xPole = (int)(xCenter + Math.cos(rad - Math.PI/2) * (6*Configs.HudScale()));
+        int yPole = (int)(yCenter + Math.sin(rad - Math.PI/2) * (6*Configs.HudScale()));
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setStroke(new BasicStroke(Configs.HudScale()));
+        g2.setStroke(new BasicStroke(2*Configs.HudScale(), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.drawLine(xCenter, yCenter, xPole, yPole);
     }
 
@@ -54,7 +54,7 @@ public class WaveDisplay {
         Font font = FontG.font(FontG.Septem, Configs.HudScale()*6);
         g.setFont(font);
 
-        int xLevel = x + 18 * Configs.HudScale();
+        int xLevel = x + 25 * Configs.HudScale();
         int yLevel = y + 7 * Configs.HudScale();
         String level = "Level: " + (Game.getGame().getLevel()+1);
         g.setColor(new Color(0x872341));
@@ -62,7 +62,7 @@ public class WaveDisplay {
         g.setColor(Color.white);
         g.drawString(level, xLevel, yLevel);
 
-        int xCount = x + 18 * Configs.HudScale();
+        int xCount = x + 25 * Configs.HudScale();
         int yCount = y + 13 * Configs.HudScale();
         String count = "Spawns: " + Game.getWave().currentSpawn() + " / " + Game.getWave().amountSpawns();
         g.setColor(new Color(0x872341));
@@ -70,7 +70,7 @@ public class WaveDisplay {
         g.setColor(Color.white);
         g.drawString(count, xCount, yCount);
 
-        int xAmount = x + 18 * Configs.HudScale();
+        int xAmount = x + 25 * Configs.HudScale();
         int yAmount = y + 19 * Configs.HudScale();
         String amount = "Enemies: " + this.amountOfEnemies;
         g.setColor(new Color(0x872341));
