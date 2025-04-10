@@ -2,6 +2,7 @@ package com.retronova.game.map.arena;
 
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.GameObject;
@@ -45,5 +46,10 @@ public class Arena extends GameMap {
     boolean enemiesEmpty() {
         List<Enemy> entities = Game.getMap().getEntities(Enemy.class);
         return entities.isEmpty();
+    }
+
+    @Override
+    public void dispose() {
+        Sound.stop(Musics.Fight);
     }
 }

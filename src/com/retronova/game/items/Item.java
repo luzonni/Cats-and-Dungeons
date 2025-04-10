@@ -74,7 +74,7 @@ public abstract class Item {
         this.id = id;
         this.name = name;
         if(!sheet.containsKey(sprite)) {
-            SpriteSheet sheet = new SpriteSheet("items", sprite, Configs.GameScale());
+            SpriteSheet sheet = new SpriteSheet("sprites/items", sprite, Configs.GameScale());
             int length = sheet.getWidth() / 16;
             this.sprite = new BufferedImage[length];
             for (int i = 0; i < length; i++) {

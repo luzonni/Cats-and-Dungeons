@@ -32,7 +32,7 @@ public class Menu implements Activity {
         Sound.play(Musics.Menu, true);
 
         try {
-            imagemFundo = ImageIO.read(getClass().getResource("/com/retronova/res/icons/Gato.png"));
+            imagemFundo = ImageIO.read(getClass().getResource("/com/retronova/resources/icons/Gato.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }

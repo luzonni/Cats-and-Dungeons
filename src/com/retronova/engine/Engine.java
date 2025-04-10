@@ -28,7 +28,7 @@ public class Engine implements Runnable {
     private static List<Activity> stackActivities;
     private static boolean ACTIVITY_RUNNING;
 
-    public static final String resPath = "/com/retronova/res/";
+    public static final String resPath = "/com/retronova/resources/";
 
     public static final int[][] resolutions = {{1280, 720}, {1366, 768}, {1600, 900}, {1920, 1080}, {2560, 1440}, {3840, 2160}};
 

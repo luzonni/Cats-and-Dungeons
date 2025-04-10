@@ -17,7 +17,7 @@ public abstract class FontG {
         font = new Font[fonts.length];
         for(int i = 0; i < fonts.length; i++) {
             try {
-                InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("com/retronova/res/source/" + fonts[i] + ".ttf");
+                InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("com/retronova/resources/fonts/" + fonts[i] + ".ttf");
                 if(stream != null)
                     font[i] = Font.createFont(Font.TRUETYPE_FONT, stream);
             } catch (FontFormatException | IOException e) {

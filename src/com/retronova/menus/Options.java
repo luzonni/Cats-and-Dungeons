@@ -53,7 +53,7 @@ public class Options implements Activity {
         atualizarTextosBotoes();
 
         try {
-            imagemFundo = ImageIO.read(getClass().getResource("/com/retronova/res/icons/Gato_fundo.png"));
+            imagemFundo = ImageIO.read(getClass().getResource("/com/retronova/resources/icons/Gato_fundo.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
