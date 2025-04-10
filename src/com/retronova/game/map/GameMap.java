@@ -2,6 +2,7 @@ package com.retronova.game.map;
 
 import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.engine.io.Resources;
+import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
@@ -38,12 +39,6 @@ public abstract class GameMap {
         this.map = loadMap(mapName);
         this.physically = new Physically(this);
         this.physically.start();
-    }
-
-    public void restart() {
-        this.entities = new ArrayList<>();
-        this.particles = new ArrayList<>();
-        this.map = loadMap(name);
     }
 
     public void addPlayer(Player player) {

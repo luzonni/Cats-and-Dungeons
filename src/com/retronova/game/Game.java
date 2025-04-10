@@ -190,9 +190,8 @@ public class Game implements Activity {
 
     public static void restart() {
         Game.getInter().dispose();
-        GameMap map = getMap();
         Game game = getGame();
-        map.restart();
+        GameMap map = new Room("beginning");
         Engine.backActivity();
         Engine.heapActivity(new Game(game.indexPlayer, map));
     }
