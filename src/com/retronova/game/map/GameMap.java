@@ -1,5 +1,6 @@
 package com.retronova.game.map;
 
+import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.engine.io.Resources;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
@@ -110,17 +111,12 @@ public abstract class GameMap {
     public Tile getTile(int x, int y) {
         try {
             return getMap()[x + y * length];
-        }catch(IndexOutOfBoundsException ignore) {
-
-        }
-
+        }catch(IndexOutOfBoundsException ignore) { }
         try {
             x /= GameObject.SIZE();
             y /= GameObject.SIZE();
             return getMap()[x + y * length];
-        }catch (IndexOutOfBoundsException ignore) {
-
-        }
+        }catch (IndexOutOfBoundsException ignore) { }
         return Tile.build(TileIDs.Void.ordinal());
     }
 
