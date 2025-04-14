@@ -15,6 +15,7 @@ public enum EntityIDs {
     Seller,
     Door,
     TrapDoor,
-    Crate
+    Crate,
+    Plate
     
 }

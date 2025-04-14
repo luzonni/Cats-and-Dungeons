@@ -22,6 +22,24 @@
       "x": 18,
       "y": 19,
       "values": ["LOAD ARENA HARD"]
+    },
+    {
+      "name": "Plate",
+      "x": 12,
+      "y": 18,
+      "values": ["ARENA EASY"]
+    },
+    {
+      "name": "Plate",
+      "x": 15,
+      "y": 18,
+      "values": ["ARENA NORMAL"]
+    },
+    {
+      "name": "Plate",
+      "x": 18,
+      "y": 18,
+      "values": ["ARENA HARD"]
     }
   ]
 }

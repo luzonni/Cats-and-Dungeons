@@ -5,35 +5,28 @@
       "position": "Random",
       "chanceToAppear":  0.4,
       "values": [{
-        "loot": ["Acorn", "Bow", "Laser"]
+        "loot": ["Acorn"]
       }]
     },{
       "name": "Crate",
       "position": "Random",
-      "chanceToAppear":  0.4,
+      "chanceToAppear":  0.8,
       "values": [{
-        "loot": ["Acorn", "Bow", "Laser"]
+        "loot": ["Acorn", "Watermelon", "Watermelon"]
       }]
     },{
       "name": "Crate",
-      "position": "Center",
+      "position": "Random",
       "chanceToAppear":  1,
       "values": [{
-        "loot": ["Acorn", "Bow", "Laser"]
+        "loot": ["Watermelon", "Watermelon", "Watermelon"]
       }]
     },{
       "name": "Crate",
       "position": "Random",
-      "chanceToAppear":  0.4,
+      "chanceToAppear":  0.2,
       "values": [{
-        "loot": ["Acorn", "Bow", "Laser"]
-      }]
-    },{
-      "name": "Crate",
-      "position": "Random",
-      "chanceToAppear":  0.4,
-      "values": [{
-        "loot": ["Acorn", "Bow", "Laser"]
+        "loot": ["Feed", "Feed", "Catnip"]
       }]
     }
   ]

@@ -6,7 +6,9 @@ import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.room.Room;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 
 public class TrapDoor extends Furniture {
 
@@ -23,11 +25,11 @@ public class TrapDoor extends Furniture {
 
     @Override
     public void tick() {
-        Entity nearest = getNearest(1.5d);
+        Player player = Game.getPlayer();
         count++;
         if(count > 2) {
             count = 0;
-            if (nearest != null && indexSprite < 7) {
+            if (player.getDistance(this) <= GameObject.SIZE() && indexSprite < 7) {
                 indexSprite++;
             } else if(indexSprite > 0) {
                 indexSprite--;
