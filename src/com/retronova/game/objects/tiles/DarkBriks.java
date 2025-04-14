@@ -8,7 +8,7 @@ public class DarkBriks extends Tile {
     DarkBriks(int ID, int x, int y, boolean solid) {
         super(ID, x, y, solid);
         loadSprites("darkBricks");
-        getSheet().setIndex(Engine.RAND.nextInt(2));
+        getSheet().setIndex(Engine.RAND.nextInt(getSheet().size()));
     }
 
     @Override

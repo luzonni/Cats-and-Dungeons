@@ -1,0 +1,40 @@
+{
+  "entities": [
+    {
+      "name": "Crate",
+      "position": "Random",
+      "chanceToAppear":  0.4,
+      "values": [{
+        "loot": ["Acorn", "Bow", "Laser"]
+      }]
+    },{
+      "name": "Crate",
+      "position": "Random",
+      "chanceToAppear":  0.4,
+      "values": [{
+        "loot": ["Acorn", "Bow", "Laser"]
+      }]
+    },{
+      "name": "Crate",
+      "position": "Center",
+      "chanceToAppear":  1,
+      "values": [{
+        "loot": ["Acorn", "Bow", "Laser"]
+      }]
+    },{
+      "name": "Crate",
+      "position": "Random",
+      "chanceToAppear":  0.4,
+      "values": [{
+        "loot": ["Acorn", "Bow", "Laser"]
+      }]
+    },{
+      "name": "Crate",
+      "position": "Random",
+      "chanceToAppear":  0.4,
+      "values": [{
+        "loot": ["Acorn", "Bow", "Laser"]
+      }]
+    }
+  ]
+}

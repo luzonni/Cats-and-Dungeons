@@ -1,25 +1,24 @@
 {
   "entities": [
     {
-      "id": 10,
-      "x": 16,
-      "y": 13,
+      "name": "Seller",
+      "position": "Random",
       "values": []
     },
     {
-      "id": 12,
+      "name": "TrapDoor",
       "x": 12,
       "y": 19,
       "values": ["LOAD ARENA EASY"]
     },
     {
-      "id": 12,
+      "name": "TrapDoor",
       "x": 15,
       "y": 19,
       "values": ["LOAD ARENA NORMAL"]
     },
     {
-      "id": 12,
+      "name": "TrapDoor",
       "x": 18,
       "y": 19,
       "values": ["LOAD ARENA HARD"]

@@ -7,16 +7,20 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
+import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.NPCs.Seller;
 import com.retronova.game.objects.entities.enemies.*;
+import com.retronova.game.objects.entities.furniture.Crate;
 import com.retronova.game.objects.entities.furniture.Door;
 import com.retronova.game.objects.entities.furniture.TrapDoor;
 import com.retronova.game.objects.entities.utilities.Drop;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.Volatile;
 import com.retronova.game.objects.physical.Physical;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -82,6 +86,21 @@ public abstract class Entity extends GameObject {
             case TrapDoor -> {
                 String place = (length >= 3) ? (String)values[2] : "None";
                 return new TrapDoor(ID, x, y, place);
+            }
+            case Crate -> {
+                JSONArray loot = ((JSONArray)((JSONObject) values[2]).get("loot"));
+                System.out.println(loot.toJSONString());
+                ItemIDs[] ids = ItemIDs.values();
+                int[] lootIds = new int[loot.size()];
+                for(int i = 0; i < lootIds.length; i++) {
+                    String name = (String) loot.get(i);
+                    for(ItemIDs value : ids) {
+                        if(name.equalsIgnoreCase(value.name())) {
+                            lootIds[i] = value.ordinal();
+                        }
+                    }
+                }
+                return new Crate(ID, x, y, lootIds);
             }
         }
         throw new EntityNotFound("Entity not found");

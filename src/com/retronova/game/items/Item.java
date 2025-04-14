@@ -19,6 +19,10 @@ public abstract class Item {
 
     public static Item build(int id, Object... values) {
         ItemIDs type = ItemIDs.values()[id];
+        int stack = 1;
+        if(values.length >= 1) {
+            stack = (int)values[0];
+        }
         switch (type) {
             case Silk -> {
                 return new ItemSilk(id);
@@ -33,13 +37,11 @@ public abstract class Item {
                 return new ItemBomb(id);
             }
             case Feed -> {
-                int stack = (int)values[0];
                 Consumable consumable = new Feed(id);
                 consumable.setStack(stack);
                 return consumable;
             }
             case Catnip -> {
-                int stack = (int)values[0];
                 Consumable consumable = new Catnip(id);
                 consumable.setStack(stack);
                 return consumable;
@@ -48,13 +50,11 @@ public abstract class Item {
                 return new Laser(id);
             }
             case Acorn -> {
-                int stack = (int)values[0];
                 Consumable consumable = new Acorn(id);
                 consumable.setStack(stack);
                 return consumable;
             }
             case Watermelon -> {
-                int stack = (int)values[0];
                 Consumable consumable = new Watermelon(id);
                 consumable.setStack(stack);
                 return consumable;

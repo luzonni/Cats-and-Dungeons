@@ -107,11 +107,6 @@ public class Player extends Entity {
             return;
         updateMovement();
         tickItemHand();
-        if(KeyBoard.KeyPressed("F")) {
-            //TODO teste de efeitos
-            this.EFFECT_FIRE(10, 10);
-            //this.EFFECT_REGENERATION(10, 100);
-        }
     }
 
     @Override

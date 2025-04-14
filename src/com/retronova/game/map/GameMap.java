@@ -1,16 +1,18 @@
 package com.retronova.game.map;
 
-import com.retronova.engine.exceptions.NotInMap;
+import com.retronova.engine.Engine;
+import com.retronova.engine.exceptions.EntityNotFound;
 import com.retronova.engine.io.Resources;
-import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.EntityIDs;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.physical.Physically;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.TileIDs;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.tiles.Void;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -36,7 +38,7 @@ public abstract class GameMap {
         this.name = mapName;
         this.entities = new ArrayList<>();
         this.particles = new ArrayList<>();
-        this.map = loadMap(mapName);
+        loadMap(mapName);
         this.physically = new Physically(this);
         this.physically.start();
     }
@@ -47,12 +49,13 @@ public abstract class GameMap {
         player.setY(getBounds().getHeight()/2);
     }
 
-    private Tile[] loadMap(String mapName) {
+    private void loadMap(String mapName) {
         BufferedImage mapImage = new SpriteSheet("maps", mapName, 1).getSHEET();
         int width = mapImage.getWidth();
         int height = mapImage.getHeight();
         this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
         int[] rgb = mapImage.getRGB(0, 0, width, height, null, 0, width);
+        this.map = convertMap(rgb, width, height);
         this.length = width;
         JSONObject jsonObject = null;
         try {
@@ -61,26 +64,8 @@ public abstract class GameMap {
             System.err.println("Arquivo: " + mapName);
         }
         if(jsonObject != null && !jsonObject.isEmpty()) {
-            List<Entity> list = new ArrayList<>();
-            JSONArray arrEntity = (JSONArray) jsonObject.get("entities");
-            for(int i = 0; i < arrEntity.size(); i++) {
-                JSONObject obj = (JSONObject) arrEntity.get(i);
-                int id = ((Number)obj.get("id")).intValue();
-                int x = ((Number)obj.get("x")).intValue();
-                int y = ((Number)obj.get("y")).intValue();
-                JSONArray objValues = (JSONArray)obj.get("values");
-                Object[] values = new Object[objValues.size() + 2];
-                values[0] = x;
-                values[1] = y;
-                for(int j = 2; j < values.length; j++) {
-                    values[j] = objValues.get(j-2);
-                }
-                Entity e = Entity.build(id, values);
-                list.add(e);
-            }
-            putAll(list);
+            loadEntities(width, height, jsonObject);
         }
-        return convertMap(rgb, width, height);
     }
 
     private Tile[] convertMap(int[] rgb, int width, int height) {
@@ -97,6 +82,65 @@ public abstract class GameMap {
             }
         }
         return map;
+    }
+
+    private void loadEntities(int width, int height, JSONObject jsonObject) {
+        List<Entity> list = new ArrayList<>();
+        JSONArray arrEntity = (JSONArray) jsonObject.get("entities");
+        for(int i = 0; i < arrEntity.size(); i++) {
+            JSONObject obj = (JSONObject) arrEntity.get(i);
+            String name = (String)obj.get("name");
+            EntityIDs[] entityIDs = EntityIDs.values();
+            if(obj.containsKey("chanceToAppear")) {
+                double chance = ((Number)obj.get("chanceToAppear")).doubleValue() * 100;
+                if(Engine.RAND.nextInt(100) > chance) {
+                    continue;
+                }
+            }
+            int id = -1;
+            for(int j = 0; j < entityIDs.length; j++) {
+                if(entityIDs[j].name().equalsIgnoreCase(name)) {
+                    id = entityIDs[j].ordinal();
+                    System.out.println(id);
+                    break;
+                }
+            }
+            if(id == -1) {
+                throw new EntityNotFound("Erro ao colocar a entidade ao mapa.");
+            }
+            int x = -1;
+            int y = -1;
+            if(obj.containsKey("position")) {
+               String type = ((String)obj.get("position"));
+               if(type.equalsIgnoreCase("Random")) {
+                   Tile tile;
+                   do {
+                       x = Engine.RAND.nextInt(width);
+                       y = Engine.RAND.nextInt(height);
+                       tile = this.map[x + y * this.length];
+                   } while (tile.isSolid() || (tile instanceof Void));
+               }else if(type.equalsIgnoreCase("Center")) {
+                   x = width/2;
+                   y = height/2;
+               }
+            }else {
+                x = ((Number)obj.get("x")).intValue();
+                y = ((Number)obj.get("y")).intValue();
+            }
+            if(x == -1 || y == -1) {
+                throw new EntityNotFound("Erro ao colocar a entidade ao mapa.");
+            }
+            JSONArray objValues = (JSONArray)obj.get("values");
+            Object[] values = new Object[objValues.size() + 2];
+            values[0] = x;
+            values[1] = y;
+            for(int j = 2; j < values.length; j++) {
+                values[j] = objValues.get(j-2);
+            }
+            Entity e = Entity.build(id, values);
+            list.add(e);
+        }
+        putAll(list);
     }
 
     public Tile[] getMap() {
