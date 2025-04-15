@@ -13,7 +13,6 @@ import java.awt.*;
 
 public class Feed extends Consumable {
 
-
     Feed(int id) {
         super(id, "Feed", "feed");
         addSpecifications("Add 10 points of life", "Less 10% os luck", "plus +1 bag slot", "plus +1 hotbar slotf");

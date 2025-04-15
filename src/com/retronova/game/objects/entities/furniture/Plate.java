@@ -47,7 +47,7 @@ public class Plate extends  Furniture {
         g.setStroke(new BasicStroke(Configs.GameScale()));
         g.drawRect(x, y, width, height);
         int xT = x + padding;
-        int yT = y + hC + padding;
+        int yT = y + height - hC + padding;
         g.setFont(this.font);
         g.setColor(new Color(0x000000));
         g.drawString(content, xT + Configs.GameScale(), yT + Configs.GameScale());

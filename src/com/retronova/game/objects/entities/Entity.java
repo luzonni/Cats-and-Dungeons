@@ -34,7 +34,7 @@ public abstract class Entity extends GameObject {
     private final Physical physical;
 
     private final Map<AttackTypes, Double> resistances;
-    protected final Map<Modifiers, Double> modifiers;
+    private final Map<Modifiers, Double> modifiers;
     private final List<Effect> effects;
 
     private double[] life; //este valor é um array de dois valores, o primeiro é a vida original, e o outro a vida atual
@@ -133,7 +133,6 @@ public abstract class Entity extends GameObject {
         this.resistances.put(attack, resistance);
     }
 
-
     public void strike(AttackTypes type, double damage) {
         if(resistances.containsKey(type)) {
             double r = resistances.get(type);
@@ -160,6 +159,14 @@ public abstract class Entity extends GameObject {
         }else {
             this.modifiers.replace(modifier, value);
         }
+    }
+
+    public boolean hasModifier(Modifiers modifiers) {
+        return this.modifiers.containsKey(modifiers);
+    }
+
+    public double valueModifier(Modifiers modifiers) {
+        return this.modifiers.get(modifiers);
     }
 
     public void addEffect(String name, EffectApplicator applicator, double seconds, int repetitions) {

@@ -84,7 +84,7 @@ public class Inter implements Activity {
     @Override
     public void tick() {
         refreshPositions();
-        if(KeyBoard.KeyPressed("E")) {
+        if(KeyBoard.KeyPressed("E") || KeyBoard.KeyPressed("Escape") ) {
             Engine.pause(null);
         }
         for(int i = 0; i < tabs.length; i++) {

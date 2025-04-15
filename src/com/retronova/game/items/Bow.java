@@ -5,7 +5,10 @@ import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
+import com.retronova.game.objects.Sheet;
+import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.game.objects.entities.utilities.Arrow;
@@ -18,16 +21,18 @@ public class Bow extends Item {
     private double angle = 0;
     private int count;
     private int countShot;
-    private final BufferedImage arrowSprite;
+    private BufferedImage arrowSprite;
 
     Bow(int id) {
         super(id, "Bow", "bow");
         addSpecifications("Arrow add poisson", "player damage", "shot slowed");
-        this.arrowSprite = new Arrow(0,0,0,0, Enemy.class).getSprite();
     }
 
     @Override
     public void tick() {
+        if(Sheet.SHEETS.containsKey("arrow") && this.arrowSprite == null) {
+            this.arrowSprite = Sheet.SHEETS.get("arrow")[0];
+        }
         Player player = Game.getPlayer();
         Entity nearest = player.getNearest(player.getRange(), Enemy.class);
         if(nearest != null){
@@ -50,7 +55,10 @@ public class Bow extends Item {
     private void shot(Player shooter) {
         double x = shooter.getX();
         double y = shooter.getY();
-        Arrow<Enemy> arrow = new Arrow<>(x, y, shooter.getDamage(), angle, Enemy.class);
+        Arrow arrow = new Arrow(x, y, angle, (entity) -> {
+            entity.strike(AttackTypes.Piercing, shooter.getDamage());
+            entity.getPhysical().addForce("knockback", 2.2, this.angle);
+        });
         Game.getMap().put(arrow);
         Sound.play(Sounds.Bow);
     }
@@ -67,7 +75,7 @@ public class Bow extends Item {
     }
 
     private void renderArrow(Player player, Graphics2D g) {
-        if(countShot < 1) {
+        if(countShot < 1 || this.arrowSprite == null) {
             return;
         }
         double x = player.getX() + Math.cos(angle+Math.PI) * (countShot-3) * Configs.GameScale();

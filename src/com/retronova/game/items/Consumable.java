@@ -4,7 +4,6 @@ import java.awt.*;
 
 public abstract class Consumable extends Item {
 
-
     private int stack;
 
     Consumable(int id, String name, String sprite){

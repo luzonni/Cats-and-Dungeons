@@ -37,6 +37,9 @@ public abstract class Tile extends GameObject {
             case Ceramics -> {
                 return new Ceramics(ID, x, y, solid);
             }
+            case Sand -> {
+                return new Sand(ID, x, y, solid);
+            }
             default -> {
                 return new Void(-1, x, y, solid);
             }

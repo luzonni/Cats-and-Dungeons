@@ -1,6 +1,5 @@
 package com.retronova.game.objects.entities;
 
-import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
@@ -111,8 +110,8 @@ public class Player extends Entity {
 
     @Override
     public void strike(AttackTypes type, double damage) {
-        if (modifiers.containsKey(Modifiers.Dodge)) {
-            double percent = modifiers.get(Modifiers.Dodge) + getLuck() * 0.10d;
+        if (hasModifier(Modifiers.Dodge)) {
+            double percent = valueModifier(Modifiers.Dodge) + getLuck() * 0.10d;
             double a = Engine.RAND.nextDouble(1d);
             if (a <= percent) {
                 Game.getMap().put(new Word("Dodge", getX() + getWidth() / 2d, getY() + getHeight() / 2d, 1));
@@ -129,8 +128,8 @@ public class Player extends Entity {
     }
 
     public double getLuck() {
-        if(this.modifiers.containsKey(Modifiers.Luck)) {
-            double l = this.luck + this.modifiers.get(Modifiers.Luck);
+        if(this.hasModifier(Modifiers.Luck)) {
+            double l = this.luck + this.valueModifier(Modifiers.Luck);
             if(l < 0)
                 l = 0;
             return l;
@@ -223,7 +222,7 @@ public class Player extends Entity {
 
         countDash++;
         if (KeyBoard.KeyPressed("SPACE")) {
-            if (modifiers.containsKey(Modifiers.Dash) && countDash > 45) {
+            if (hasModifier(Modifiers.Dash) && countDash > 45) {
                 dash = true;
                 countDash = 0;
             }
@@ -232,7 +231,7 @@ public class Player extends Entity {
             double radians = Math.atan2(vertical, horizontal);
             if (dash) {
                 addEffect("dash", (e) -> {
-                    getPhysical().addForce("dash", getSpeed() * modifiers.get(Modifiers.Dash), radians);
+                    getPhysical().addForce("dash", getSpeed() * valueModifier(Modifiers.Dash), radians);
                     e.getPhysical().setFriction(0.1d);
                 }, 0.01d);
                 dash = false;

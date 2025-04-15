@@ -20,14 +20,15 @@ DESIGN:
 
 A ser resolvido:
  1. Outline;
- 2. Concertar o F11;
- 3. Atualizar os Sprites dos gatos;
+ 2. Concertar o F11; [Feito!]
+ 3. Atualizar os Sprites dos gatos; [Feito!]
  4. Ajustar as arenas;
  5. Alterar os Sprites dos itens.
+ 6. Deixar mais claro que vendedor é um vendendor.
 
 A fazer:
  1. Fazer os mapas individuais por nível;
- 2. Adicionar partículas:
+ 2. Adicionar partículas: [Feito!]
 	- elementos;
 	- andar;
 	- efeito de porção;
@@ -42,20 +43,24 @@ A fazer:
 WAVES:
 
 A fazer:
- 1. Quantidade de Waves;
+ 1. Quantidade de Waves; [Feito!]
  2. Loja pós waves;
-
-
-Resolução:
-
-A fazer:
- 1. problema do F11;
 
 
 Sons:
 
 A fazer:
- 1. Som de andar 
+ 1. Som de andar [Feito!]
+
+
+Controles:
+ 1.Organizar as teclas de ações;
+ 2.Menu para escolher as teclas de ações;
+
+
+Save:
+ 1. Criar Activity de salvamento entre waves.
+ 2. Salvar os valores do jogo.
 
 
 

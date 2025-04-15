@@ -32,9 +32,10 @@ public class Lava extends Tile {
     public void effect(Entity e) {
         strickCount++;
         if(strickCount > 30) {
-            e.strike(AttackTypes.Fire, 10);
             strickCount = 0;
+            e.EFFECT_FIRE(3, 6);
         }
+        e.getPhysical().setFriction(0.95d);
     }
 
 }

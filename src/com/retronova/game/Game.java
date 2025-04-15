@@ -16,6 +16,8 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
+import com.retronova.game.objects.entities.furniture.Furniture;
+import com.retronova.game.objects.entities.utilities.Utility;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
@@ -119,6 +121,8 @@ public class Game implements Activity {
             Entity entity = entities.get(i);
             entity.tick();
             entity.tickEntityEffects();
+            if(entity instanceof Utility || entity instanceof Furniture)
+                continue;
             Tile tile = map.getTile((int) entity.getX() + entity.getWidth() / 2, (int) entity.getY() + entity.getHeight());
             tile.effect(entity);
         }

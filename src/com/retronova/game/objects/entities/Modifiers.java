@@ -11,7 +11,8 @@ public enum Modifiers {
     AttackSpeed(false),
     Luck(true),
     Dodge(false),
-    Dash(false);
+    Dash(false),
+    Poisoner(false);
 
 
     private final boolean heapable;
@@ -19,6 +20,7 @@ public enum Modifiers {
     Modifiers(boolean heapable) {
         this.heapable = heapable;
     }
+
     public boolean getHeapable() {
         return this.heapable;
     }

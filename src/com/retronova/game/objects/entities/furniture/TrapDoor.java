@@ -26,21 +26,27 @@ public class TrapDoor extends Furniture {
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        count++;
-        if(count > 2) {
-            count = 0;
-            if (player.getDistance(this) <= GameObject.SIZE() && indexSprite < 7) {
-                indexSprite++;
-            } else if(indexSprite > 0) {
-                indexSprite--;
+        if(player.getDistance(this) <= GameObject.SIZE()*1.5) {
+            count++;
+            if(count > 8) {
+                count = 0;
+                if (indexSprite < getSheet().size()-1) {
+                    indexSprite++;
+                }
             }
-        }
-        if(indexSprite == 7) {
             if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
                 if(!command.equals("None")) {
                     getCommand();
                 }else {
                     System.err.println("A trapdoor foi instanciada sem a referencia do próximo mapa!");
+                }
+            }
+        }else {
+            count++;
+            if(count > 8) {
+                count = 0;
+                if (indexSprite > 0) {
+                    indexSprite--;
                 }
             }
         }
