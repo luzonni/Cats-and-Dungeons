@@ -10,6 +10,7 @@ public enum ItemIDs {
     Acorn,
     Catnip,
     Laser,
-    Watermelon;
+    Watermelon,
+    Wand
 
 }

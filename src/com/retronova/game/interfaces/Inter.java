@@ -80,7 +80,7 @@ public class Inter implements Activity {
         }
         return tabs;
     }
-
+    
     @Override
     public void tick() {
         refreshPositions();

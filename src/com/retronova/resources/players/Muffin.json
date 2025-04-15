@@ -1,0 +1,17 @@
+{
+  "values": {
+    "name": "Muffin",
+    "life": 80,
+    "damage": 10,
+    "speed": 5,
+    "luck": 0.6,
+    "attackSpeed": 15,
+    "range": 8,
+    "bagSize": 5,
+    "hotBarSize": 4
+  },
+  "inventory": [
+    ["Bow"],
+    ["CatNip", 2]
+  ]
+}

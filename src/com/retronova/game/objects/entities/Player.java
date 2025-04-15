@@ -1,6 +1,8 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.exceptions.EntityNotFound;
+import com.retronova.engine.io.Resources;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
@@ -9,38 +11,63 @@ import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.particles.Volatile;
 import com.retronova.game.objects.particles.Word;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Player extends Entity {
 
     public static final Player[] TEMPLATES = new Player[] {
-            new Player("cinzento", 100,10, 5, 1, 15, 8, 5, 3),
-            new Player("mago", 80,10, 5, 0.3, 12, 11, 5, 4),
-            new Player("sortudo", 1000,200, 7, 0.3, 1, 50, 5, 4)
+            build("Muffin"),
+            build("Azrael"),
+            build("Finn")
     };
 
+    public static Player build(String name) {
+        try {
+            JSONObject json = Resources.getJsonFile("players", name);
+            JSONObject values = (JSONObject) json.get("values");
+            JSONArray inventory = (JSONArray) json.get("inventory");
+            double life = ((Number)values.get("life")).doubleValue();
+            double damage = ((Number)values.get("damage")).doubleValue();
+            double speed = ((Number)values.get("speed")).doubleValue();
+            double luck = ((Number)values.get("luck")).doubleValue();
+            double attackSpeed = ((Number)values.get("attackSpeed")).doubleValue();
+            double range = ((Number)values.get("range")).doubleValue();
+            int bagSize = ((Number)values.get("bagSize")).intValue();
+            int hotBarSize = ((Number)values.get("hotBarSize")).intValue();
+            Player player = new Player(name, life, damage, speed, luck, attackSpeed, range, bagSize, hotBarSize);
+            for(int i = 0; i < inventory.size(); i++) {
+                JSONArray itemValues = (JSONArray) inventory.get(i);
+                for(ItemIDs itemID : ItemIDs.values()) {
+                    if(itemID.name().equalsIgnoreCase((String)itemValues.get(0))) {
+                        int id = itemID.ordinal();
+                        int amount = 1;
+                        if(itemValues.size() > 1)
+                            amount = ((Number)itemValues.get(1)).intValue();
+                        Item item = Item.build(id, amount);
+                        player.getInventory().give(item);
+                        break;
+                    }
+                }
+            }
+            return player;
+        }catch (IOException ignore) {
+            throw new EntityNotFound("Player não encontrado");
+        }
+    }
+
     public static Player newPlayer(int index) {
-        Player p = TEMPLATES[index];
-        Player player = new Player(
-                p.getName(),
-                p.getLife(),
-                p.getDamage(),
-                p.getSpeed(),
-                p.getLuck(),
-                p.getAttackSpeed(),
-                p.getRange(),
-                p.getInventory().getBagSize(),
-                p.getInventory().getHotbarSize()
-        );
-        System.out.println("Add player inventory in interfaces");
-        return player;
+        return build(TEMPLATES[index].getName());
     }
 
     private final String name;

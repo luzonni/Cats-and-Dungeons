@@ -1,12 +1,8 @@
 package com.retronova.game.objects.tiles;
 
-import com.retronova.engine.exceptions.TileNotFound;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.Entity;
-import com.retronova.game.objects.entities.utilities.Utility;
-
-import java.awt.*;
 
 public abstract class Tile extends GameObject {
 
@@ -19,8 +15,8 @@ public abstract class Tile extends GameObject {
             case Brick -> {
                 return new Bricks(ID, x, y, solid);
             }
-            case Stone -> {
-                return new Stone(ID, x, y, solid);
+            case PurpleMud -> {
+                return new PurpleMud(ID, x, y, solid);
             }
             case Ice -> {
                 return new Ice(ID, x, y, solid);

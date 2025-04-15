@@ -5,8 +5,8 @@ public enum TileIDs {
     // 00 -> 0
     // ff -> 255
     Void(0x00000000, false),
-    Brick(0xff000000, true),
-    Stone(0xffffffff, false),
+    Brick(0xff515453, true),
+    PurpleMud(0xff3d253b, false),
     Lava(0xffdf7126, false),
     Ice(0xff00c8ff, false),
     DeathSand(0xff35211d, false),

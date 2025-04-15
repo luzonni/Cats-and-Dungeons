@@ -1,0 +1,17 @@
+{
+  "values": {
+    "name": "Muffin",
+    "life": 1000,
+    "damage": 200,
+    "speed": 7,
+    "luck": 0.9,
+    "attackSpeed": 1,
+    "range": 50,
+    "bagSize": 5,
+    "hotBarSize": 5
+  },
+  "inventory": [
+    ["ItemSilk"],
+    ["Acorn", 5]
+  ]
+}

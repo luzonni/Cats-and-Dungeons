@@ -3,9 +3,9 @@ package com.retronova.game.items;
 import java.awt.*;
 
 public class Wand extends Item {
-    
-    Wand(int id, String name, String sprite) {
-        super(id, name, sprite);
+
+    Wand(int id) {
+        super(id, "Wand", "wand");
     }
 
     @Override

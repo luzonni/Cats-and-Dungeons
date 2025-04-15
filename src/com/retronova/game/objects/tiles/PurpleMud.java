@@ -2,9 +2,9 @@ package com.retronova.game.objects.tiles;
 
 import com.retronova.game.objects.entities.Entity;
 
-public class Stone extends Tile {
+public class PurpleMud extends Tile {
 
-    Stone(int id, int x, int y, boolean solid) {
+    PurpleMud(int id, int x, int y, boolean solid) {
         super(id, x, y, solid);
         loadSprites("stone");
     }

@@ -1,0 +1,17 @@
+{
+  "values": {
+    "name": "Azrael",
+    "life": 60,
+    "damage": 10,
+    "speed": 5,
+    "luck": 0.4,
+    "attackSpeed": 12,
+    "range": 11,
+    "bagSize": 5,
+    "hotBarSize": 4
+  },
+  "inventory": [
+    ["Sword"],
+    ["Feed", 4]
+  ]
+}

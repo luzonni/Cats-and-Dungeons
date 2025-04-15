@@ -59,6 +59,9 @@ public abstract class Item {
                 consumable.setStack(stack);
                 return consumable;
             }
+            case Wand -> {
+                return new Wand(id);
+            }
         }
         throw new NotFound("Item not found");
     }
