@@ -1,6 +1,5 @@
 package com.retronova.game.objects.entities;
 
-import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.EntityNotFound;
 import com.retronova.engine.sound.Sound;
