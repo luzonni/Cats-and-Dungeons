@@ -19,7 +19,7 @@ import java.io.IOException;
 public class Menu implements Activity {
 
     private Rectangle[] quadrados;
-    private final String[] quadradosNomes = {"Play", "Optionsfdlfjfgklfd", "Quit"};
+    private final String[] quadradosNomes = {"Play", "Options", "Quit"};
     private final Font fonteQuadrados = FontG.font(FontG.Game,8 * Configs.UiScale());
     private int quadradoSeta = -1;
     private BufferedImage imagemFundo;
