@@ -9,7 +9,9 @@ import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Inter implements Activity {
@@ -17,10 +19,12 @@ public class Inter implements Activity {
 
     private Rectangle[] tabs;
     private final Map<String, Activity> inter;
+    private final List<String> temp;
     private String index;
 
     public Inter() {
         this.inter = new HashMap<>();
+        this.temp = new ArrayList<>();
         this.index = "";
     }
 
@@ -39,14 +43,26 @@ public class Inter implements Activity {
         Engine.pause(this);
     }
 
+    private void closeTemps() {
+        for(int i = 0; i < this.temp.size(); i++) {
+            String tempKey = this.temp.get(i);
+            this.remove(tempKey);
+            this.temp.remove(this.temp.get(i));
+            this.index = "";
+        }
+    }
+
     private String[] keys() {
         return inter.keySet().toArray(new String[0]);
     }
 
-    public void put(String interName, Activity inter) {
+    public void put(String interName, Activity inter, boolean temp) {
         if(!this.inter.containsKey(interName)) {
             this.inter.put(interName, inter);
             this.tabs = tabs();
+            if(temp && !this.temp.contains(interName)) {
+                this.temp.add(interName);
+            }
         }
     }
 
@@ -83,24 +99,27 @@ public class Inter implements Activity {
     
     @Override
     public void tick() {
-        refreshPositions();
         if(KeyBoard.KeyPressed("E") || KeyBoard.KeyPressed("Escape") ) {
             Engine.pause(null);
+            closeTemps();
         }
+        refreshPositions();
         for(int i = 0; i < tabs.length; i++) {
             Rectangle rec = tabs[i];
             if(Mouse.clickOn(Mouse_Button.LEFT, rec)) {
                 this.index = keys()[i];
             }
         }
-        inter.get(index).tick();
+        if(inter.containsKey(index))
+            inter.get(index).tick();
     }
 
     @Override
     public void render(Graphics2D g) {
         g.setColor(new Color(0,0,0, 80));
         g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
-        inter.get(index).render(g);
+        if(inter.containsKey(index))
+            inter.get(index).render(g);
         renderTabs(g);
     }
 

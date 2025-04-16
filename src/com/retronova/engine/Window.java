@@ -116,7 +116,7 @@ public class Window extends Canvas {
     void tick() {
         if(pointing) {
             pointing = false;
-            Engine.window.setCursor(Window.POINTER_CURSOR, new Point(3, 1));
+            Engine.window.setCursor(Window.POINTER_CURSOR, new Point(6*3, 3));
         }else {
             Engine.window.setCursor(Window.DEFAULT_CURSOR);
         }

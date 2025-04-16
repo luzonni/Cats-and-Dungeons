@@ -43,6 +43,8 @@ public abstract class Entity extends GameObject {
     private double damage;
     private double attackSpeed;
 
+    private boolean clickable;
+
     public static Entity build(int ID, Object... values) {
         EntityIDs entityId = EntityIDs.values()[ID];
         int length = values.length;
@@ -122,6 +124,14 @@ public abstract class Entity extends GameObject {
         this.resistances = new HashMap<>();
         this.modifiers = new HashMap<>();
         this.effects = new ArrayList<>();
+    }
+
+    protected void setClickable() {
+        this.clickable = true;
+    }
+
+    public boolean clickable() {
+        return this.clickable;
     }
 
     @Override

@@ -16,8 +16,6 @@ public abstract class GameObject {
     private double x, y, width, height;
     private boolean solid = false;
 
-    private boolean clickable;
-
     public static int SIZE() {
         return 16 * Configs.GameScale();
     }
@@ -32,14 +30,6 @@ public abstract class GameObject {
 
     protected <T extends GameObject> void setSheet(Sheet<T> sheet) {
         this.sheet = sheet;
-    }
-
-    protected void setClickable() {
-        this.clickable = true;
-    }
-
-    public boolean clickable() {
-        return this.clickable;
     }
 
     public int getID() {

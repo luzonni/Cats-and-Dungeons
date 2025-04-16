@@ -98,7 +98,7 @@ public class Inventory implements Activity {
         Slot candidate = null;
         for(int i = 0; i < getHotbarSize(); i++) {
             Slot slot = hotbar[i];
-            if(slot.isEmpty() || slot.item().getID() == item.getID()) {
+            if(slot.isEmpty() || (slot.item().stackable() && slot.item().getID() == item.getID())) {
                 candidate = slot;
                 break;
             }
@@ -106,7 +106,7 @@ public class Inventory implements Activity {
         if(candidate == null)
             for(int i = 0; i < getBagSize(); i++) {
                 Slot slot = bag[i];
-                if(slot.isEmpty() || slot.item().getID() == item.getID()) {
+                if(slot.isEmpty() || (slot.item().stackable() && slot.item().getID() == item.getID())) {
                     candidate = slot;
                     break;
                 }

@@ -105,6 +105,10 @@ public abstract class Item {
         return name;
     }
 
+    public boolean stackable() {
+         return this instanceof Consumable;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if(obj == null) {

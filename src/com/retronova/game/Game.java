@@ -51,8 +51,8 @@ public class Game implements Activity {
         this.indexPlayer = indexPlayer;
         this.inter = new Inter();
         Player player = Player.newPlayer(indexPlayer);
-        this.inter.put("inventory", player.getInventory());
-        this.inter.put("status", new Status(player));
+        this.inter.put("inventory", player.getInventory(), false);
+        this.inter.put("status", new Status(player), false);
         this.player = player;
         this.changeMap(map);
         this.hud = new HUD(player);
