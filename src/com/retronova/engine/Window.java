@@ -14,13 +14,16 @@ public class Window extends Canvas {
     @Serial
     private static final long serialVersionUID = 36752349087L;
 
-    public static final BufferedImage defalutCursor;
+    public static final BufferedImage DEFAULT_CURSOR;
+    public static final BufferedImage POINTER_CURSOR;
 
     static {
-        defalutCursor = new SpriteSheet("ui","cursor", 3).getSHEET();
+        DEFAULT_CURSOR = new SpriteSheet("ui","cursor", 3).getSHEET();
+        POINTER_CURSOR = new SpriteSheet("ui", "cursor_hover", 3).getSHEET();
     }
 
     private final String name;
+    private boolean pointing;
     private Thread thread;
     private JFrame frame;
     private final Toolkit toolkit;
@@ -89,7 +92,7 @@ public class Window extends Canvas {
 
         try {
             SpriteSheet icon = new SpriteSheet("ui","icon", 3);
-            setCursor(defalutCursor);
+            setCursor(DEFAULT_CURSOR);
             frame.setIconImage(icon.getSHEET());
         }catch(Exception ignore) { }
 
@@ -104,6 +107,19 @@ public class Window extends Canvas {
     private void showAccelerators() {
         System.out.println("OpenGL: " + System.getProperty("sun.java2d.opengl")); // "true" se OpenGL estiver ativado
         System.out.println("DirectX: " + System.getProperty("sun.java2d.d3d"));   // "true" se Direct3D estiver ativado
+    }
+
+    public void pointing() {
+        this.pointing = true;
+    }
+
+    void tick() {
+        if(pointing) {
+            pointing = false;
+            Engine.window.setCursor(Window.POINTER_CURSOR, new Point(3, 1));
+        }else {
+            Engine.window.setCursor(Window.DEFAULT_CURSOR);
+        }
     }
 
     private void closeFrame() {
@@ -129,7 +145,7 @@ public class Window extends Canvas {
     }
 
     public synchronized void resetCursor() {
-        Cursor c = toolkit.createCustomCursor(defalutCursor, new Point(0,0), "cursor");
+        Cursor c = toolkit.createCustomCursor(DEFAULT_CURSOR, new Point(0,0), "cursor");
         frame.setCursor(c);
     }
 

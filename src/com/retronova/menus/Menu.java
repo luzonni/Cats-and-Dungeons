@@ -19,7 +19,7 @@ import java.io.IOException;
 public class Menu implements Activity {
 
     private Rectangle[] quadrados;
-    private final String[] quadradosNomes = {"Play", "Options", "Quit"};
+    private final String[] quadradosNomes = {"Play", "Optionsfdlfjfgklfd", "Quit"};
     private final Font fonteQuadrados = FontG.font(FontG.Game,8 * Configs.UiScale());
     private int quadradoSeta = -1;
     private BufferedImage imagemFundo;
@@ -56,6 +56,10 @@ public class Menu implements Activity {
         atualizarAnimacao();
 
         for (int i = 0; i < quadrados.length; i++) {
+            if(Mouse.on(quadrados[i])) {
+                Engine.window.pointing();
+            }
+
             if (Mouse.clickOn(Mouse_Button.LEFT, quadrados[i])) {
                 switch (i) {
                     case 0:

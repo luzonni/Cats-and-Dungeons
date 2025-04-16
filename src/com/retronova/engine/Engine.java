@@ -148,6 +148,10 @@ public class Engine implements Runnable {
         window.getFrame().dispose();
     }
 
+    private void tick() {
+        window.tick();
+    }
+
     private void render(Graphics2D graphics) {
         graphics.dispose();
         BUFFER.show();
@@ -174,6 +178,7 @@ public class Engine implements Runnable {
                 delta_HZ += (nowHZ - lastTimeHZ) / ns_HZ;
                 lastTimeHZ = nowHZ;
                 if (delta_HZ >= 1) {
+                    this.tick();
                     if (KeyBoard.KeyPressed("F11") && window != null) {
                         Configs.setFullscreen(!Configs.Fullscreen());
                         window.resetWindow();

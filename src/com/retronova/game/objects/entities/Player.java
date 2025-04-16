@@ -32,7 +32,7 @@ public class Player extends Entity {
             build("Finn")
     };
 
-    public static Player build(String name) {
+    private static Player build(String name) {
         try {
             JSONObject json = Resources.getJsonFile("players", name);
             JSONObject values = (JSONObject) json.get("values");
@@ -94,7 +94,7 @@ public class Player extends Entity {
         this.passives = new ArrayList<>();
         setWidth(0.85);
         setHeight(0.9);
-        loadSprites("player_"+name+"_idle", "player_"+name+"_walking");
+        loadSprites("player_"+name.toLowerCase()+"_idle", "player_"+name.toLowerCase()+"_walking");
         setLife(life);
         setDamage(damage);
         setSpeed(speed);

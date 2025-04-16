@@ -21,6 +21,7 @@ public class TrapDoor extends Furniture {
         super(ID, x, y);
         loadSprites("trapdoor");
         this.command = command;
+        setClickable();
     }
 
     @Override

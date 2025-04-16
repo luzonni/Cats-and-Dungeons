@@ -11,6 +11,7 @@ public abstract class NPC extends Entity {
     protected NPC(int ID, double x, double y, double friction) {
         super(ID, x, y, friction);
         setSolid();
+        setClickable();
     }
 
     @Override

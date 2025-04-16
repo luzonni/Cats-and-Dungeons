@@ -2,6 +2,7 @@ package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.EntityNotFound;
+import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
@@ -191,6 +192,9 @@ public abstract class Entity extends GameObject {
         }
         if (getLife() <= 0) {
             die();
+        }
+        if(clickable() && Mouse.onMap(this.getBounds(), Game.C)) {
+            Engine.window.pointing();
         }
     }
 
