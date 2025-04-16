@@ -179,4 +179,6 @@ public class Window extends Canvas {
     }
 
 
+    public void normalCursor() {
+    }
 }
