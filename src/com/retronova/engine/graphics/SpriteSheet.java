@@ -16,6 +16,10 @@ public class SpriteSheet {
     private final boolean loss;
     private final int scale;
 
+    public static BufferedImage getSprite(String module, String sprite, int scale) {
+        return new SpriteSheet(module, sprite, scale).getSHEET();
+    }
+
     public SpriteSheet(String module, String sprite, int scale) {
         this.scale = scale;
         boolean loss;

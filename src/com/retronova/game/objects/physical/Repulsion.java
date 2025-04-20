@@ -6,17 +6,17 @@ import com.retronova.game.objects.entities.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Physically implements Runnable {
+public class Repulsion implements Runnable {
 
     private final List<Entity> checked;
     private final GameMap map;
     private final Thread thread;
     private boolean running;
 
-    public Physically(GameMap map) {
+    public Repulsion(GameMap map) {
         this.map = map;
         checked = new ArrayList<>();
-        thread = new Thread(this, "Physically-Thread");
+        thread = new Thread(this, "Repulsion-Thread");
     }
 
     public void start() {
@@ -73,8 +73,10 @@ public class Physically implements Runnable {
     public void run() {
         while (running) {
             try {
+                synchronized (this) {
+                    this.wait();
+                }
                 cycle();
-                Thread.sleep(1);
             }catch (Exception e) {
                 String err = "Bem... esse erro não vai afetar em NADA o jogo, mas é um erro ;( " +
                         "\nO que fazer? Acho que chorar, porque resolver isso é desnecessário e chato, então chore, faz bem!";

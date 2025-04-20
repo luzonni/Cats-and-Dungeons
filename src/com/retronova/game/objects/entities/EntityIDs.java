@@ -16,6 +16,7 @@ public enum EntityIDs {
     Door,
     TrapDoor,
     Crate,
-    Plate
+    Plate,
+    GumMachine
     
 }

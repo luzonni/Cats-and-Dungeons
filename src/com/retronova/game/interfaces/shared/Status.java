@@ -1,4 +1,4 @@
-package com.retronova.game.interfaces.status;
+package com.retronova.game.interfaces.shared;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;

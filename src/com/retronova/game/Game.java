@@ -7,7 +7,7 @@ import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.engine.graphics.Galaxy;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.interfaces.Inter;
-import com.retronova.game.interfaces.status.Status;
+import com.retronova.game.interfaces.shared.Status;
 import com.retronova.game.map.*;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.arena.Waves;
@@ -137,10 +137,13 @@ public class Game implements Activity {
             Tile tile = map[i];
             tile.tick();
         }
-        C.tick();
         if(!this.map.getEntities().contains(player)) {
             gameOver();
         }
+        synchronized (this.map.getRepulsion()) {
+            this.map.getRepulsion().notify();
+        }
+        C.tick();
     }
 
     @Override

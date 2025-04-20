@@ -2,6 +2,7 @@ package com.retronova.menus;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
+import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -27,11 +28,7 @@ public class Menu implements Activity {
         Sound.stopAll();
         Sound.play(Musics.Menu, true);
 
-        try {
-            imagemFundo = ImageIO.read(getClass().getResource("/com/retronova/resources/icons/Gato.png"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        imagemFundo = new SpriteSheet("icons", "Gato", 1).getSHEET();
     }
 
     private void inicializarBotoes() {

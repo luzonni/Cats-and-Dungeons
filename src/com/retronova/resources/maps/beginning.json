@@ -6,6 +6,11 @@
       "values": []
     },
     {
+      "name": "GumMachine",
+      "position": "Random",
+      "values": ["Command..."]
+    },
+    {
       "name": "TrapDoor",
       "x": 12,
       "y": 19,

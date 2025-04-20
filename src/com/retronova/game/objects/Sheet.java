@@ -71,10 +71,6 @@ public class Sheet<T extends GameObject> {
         return sprites;
     }
 
-    public void nextFrame() {
-        plusIndex();
-    }
-
     public void dispose() {
         SHEETS.clear();
     }

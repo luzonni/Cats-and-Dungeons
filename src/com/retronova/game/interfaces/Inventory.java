@@ -251,7 +251,8 @@ public class Inventory implements Activity {
 
     @Override
     public void dispose() {
-
+        if(!this.insurer.isEmpty())
+            Game.getPlayer().dropLoot(this.insurer.takeAll());
     }
 
 }

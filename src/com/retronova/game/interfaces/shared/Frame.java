@@ -1,4 +1,4 @@
-package com.retronova.game.interfaces.status;
+package com.retronova.game.interfaces.shared;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontG;

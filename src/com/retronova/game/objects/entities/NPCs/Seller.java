@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities.NPCs;
 
+import com.retronova.engine.Engine;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
@@ -8,12 +9,13 @@ import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.particles.Particle;
+import com.retronova.game.objects.particles.Word;
 
 public class Seller extends NPC {
 
     private final Store store;
-    private int frame = 0;
-    private int animationSpeed = 10; // Ajuste este valor para controlar a velocidade
+    private int countAnim;
 
     public static final Item[][] stock = {
             {
@@ -24,6 +26,7 @@ public class Seller extends NPC {
             },
             {Item.build(ItemIDs.Silk.ordinal()), Item.build(ItemIDs.Bomb.ordinal()), Item.build(ItemIDs.Sword.ordinal())},
     };
+
     public static final int[][] prices = {
             {12, 16, 7, 2, 12, 1, 5, 3, 2},
             {6, 3, 10}
@@ -39,18 +42,26 @@ public class Seller extends NPC {
     @Override
     public void tick() {
         Player player = Game.getPlayer();
+        countAnim++;
         if (player.getDistance(this) <= GameObject.SIZE() * 3) {
             if (Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
                 Game.getInter().put("store", this.store, true);
                 Game.getInter().open("store");
             }
-        }
-
-        // Lógica de animação
-        frame++;
-        if (frame >= animationSpeed) {
-            frame = 0;
-            getSheet().nextFrame();
+            if (countAnim >= 10) {
+                countAnim = 0;
+                getSheet().plusIndex();
+            }
+        }else {
+            getSheet().setIndex(2);
+            if (countAnim >= 60) {
+                countAnim = 0;
+                double x = getX() + Engine.RAND.nextInt(getWidth());
+                double y = getY() + Engine.RAND.nextInt(getHeight());
+                String z = Engine.RAND.nextBoolean() ? "Z" : "z";
+                Particle p = new Word(z, x, y, 1);
+                Game.getMap().put(p);
+            }
         }
     }
 }

@@ -43,6 +43,14 @@ public class Inter implements Activity {
         Engine.pause(this);
     }
 
+    public void close() {
+        Engine.pause(null);
+        closeTemps();
+        for(String key : keys()) {
+            this.inter.get(key).dispose();
+        }
+    }
+
     private void closeTemps() {
         for(int i = 0; i < this.temp.size(); i++) {
             String tempKey = this.temp.get(i);
@@ -70,6 +78,7 @@ public class Inter implements Activity {
         if(index.equals(interName)) {
             this.index = keys()[0];
         }
+        this.inter.get(interName).dispose();
         this.inter.remove(interName);
         this.tabs = tabs();
         refreshPositions();
@@ -100,8 +109,7 @@ public class Inter implements Activity {
     @Override
     public void tick() {
         if(KeyBoard.KeyPressed("E") || KeyBoard.KeyPressed("Escape") ) {
-            Engine.pause(null);
-            closeTemps();
+            close();
         }
         refreshPositions();
         for(int i = 0; i < tabs.length; i++) {

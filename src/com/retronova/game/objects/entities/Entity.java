@@ -12,10 +12,7 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.NPCs.Seller;
 import com.retronova.game.objects.entities.enemies.*;
-import com.retronova.game.objects.entities.furniture.Crate;
-import com.retronova.game.objects.entities.furniture.Door;
-import com.retronova.game.objects.entities.furniture.Plate;
-import com.retronova.game.objects.entities.furniture.TrapDoor;
+import com.retronova.game.objects.entities.furniture.*;
 import com.retronova.game.objects.entities.utilities.Drop;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.Volatile;
@@ -111,6 +108,13 @@ public abstract class Entity extends GameObject {
                     content = (String) values[2];
                 }
                 return new Plate(ID, x, y, content);
+            }
+            case GumMachine -> {
+                String content = "Eu não tenho conteúdo ;(";
+                if(values.length >= 3) {
+                    content = (String) values[2];
+                }
+                return new GumMachine(ID, x, y, content);
             }
         }
         throw new EntityNotFound("Entity not found");

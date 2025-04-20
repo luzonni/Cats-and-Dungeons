@@ -8,7 +8,7 @@ import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.EntityIDs;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.particles.Particle;
-import com.retronova.game.objects.physical.Physically;
+import com.retronova.game.objects.physical.Repulsion;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.TileIDs;
 import com.retronova.engine.graphics.SpriteSheet;
@@ -32,15 +32,16 @@ public abstract class GameMap {
 
     private List<Particle> particles;
     private Tile[] map;
-    private final Physically physically;
+
+    private final Repulsion repulsion;
 
     public GameMap(String mapName) {
         this.name = mapName;
         this.entities = new ArrayList<>();
         this.particles = new ArrayList<>();
         loadMap(mapName);
-        this.physically = new Physically(this);
-        this.physically.start();
+        this.repulsion = new Repulsion(this);
+        this.repulsion.start();
     }
 
     public void addPlayer(Player player) {
@@ -143,6 +144,10 @@ public abstract class GameMap {
         putAll(list);
     }
 
+    public Repulsion getRepulsion() {
+        return this.repulsion;
+    }
+
     public Tile[] getMap() {
         return this.map;
     }
@@ -213,7 +218,7 @@ public abstract class GameMap {
     }
 
     public void dispose() {
-        this.physically.dispose();
+        this.repulsion.dispose();
     }
 
 }
