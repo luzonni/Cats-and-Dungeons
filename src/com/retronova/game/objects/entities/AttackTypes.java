@@ -11,5 +11,6 @@ public enum AttackTypes {
     Sorcery,
     Laser,
     Impact,
+    Throw,
 
 }

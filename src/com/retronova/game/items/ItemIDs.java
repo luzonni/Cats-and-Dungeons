@@ -11,6 +11,7 @@ public enum ItemIDs {
     Catnip,
     Laser,
     Watermelon,
-    Wand
+    Wand,
+    Kunai
 
 }
