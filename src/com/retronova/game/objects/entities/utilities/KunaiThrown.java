@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities.utilities;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
@@ -13,9 +14,11 @@ public class KunaiThrown extends Utility {
 
     private final double damage;
     private final double direction;
+    private final Point spriteRotatePosition;
 
     public KunaiThrown(double x, double y, double damage, double direction) {
         super(x, y, 0.037d);
+        this.spriteRotatePosition = new Point((int)(2.5* Configs.GameScale()), (int)(13.5*Configs.GameScale()));
         this.damage = damage;
         this.direction = direction;
         loadSprites("kunai");
@@ -38,6 +41,6 @@ public class KunaiThrown extends Utility {
 
     @Override
     public void render(Graphics2D g) {
-        Rotate.draw(getSprite(), (int)getX() - Game.C.getX(), (int)getY() - Game.C.getY(), this.direction + Math.PI/4d, null, g);
+        Rotate.draw(getSprite(), (int)getX() - Game.C.getX(), (int)getY() - Game.C.getY(), this.direction + Math.PI/4d, spriteRotatePosition, g);
     }
 }

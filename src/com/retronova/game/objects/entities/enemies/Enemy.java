@@ -7,7 +7,6 @@ import com.retronova.game.Game;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
-import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.utilities.Xp;
 import com.retronova.game.objects.particles.Particle;
@@ -36,8 +35,8 @@ public abstract class Enemy extends Entity {
     }
 
     @Override
-    public void tickEntityEffects() {
-        super.tickEntityEffects();
+    public void postTick() {
+        super.postTick();
         if(tookDamage) {
             countTookDamage++;
             if(countTookDamage > 50) {

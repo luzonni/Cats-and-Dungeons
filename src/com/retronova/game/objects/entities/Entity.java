@@ -198,9 +198,12 @@ public abstract class Entity extends GameObject {
         this.effects.remove(effect);
     }
 
-    public void tickEntityEffects() {
+    public void preTick() {
         setDepth();
         getPhysical().moment();
+    }
+
+    public void postTick() {
         for(int i = 0; i < effects.size(); i++) {
             effects.get(i).tick();
         }

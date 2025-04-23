@@ -19,7 +19,7 @@ public class Seller extends NPC {
 
     public static final Item[][] stock = {
             {
-                    Item.build(ItemIDs.Kunai.ordinal()), Item.build(ItemIDs.Sword.ordinal()), Item.build(ItemIDs.Feed.ordinal(), 5),
+                    Item.build(ItemIDs.ClawBlades.ordinal()), Item.build(ItemIDs.Kunai.ordinal()), Item.build(ItemIDs.Sword.ordinal()), Item.build(ItemIDs.Feed.ordinal(), 5),
                     Item.build(ItemIDs.Silk.ordinal()), Item.build(ItemIDs.Bomb.ordinal()), Item.build(ItemIDs.Laser.ordinal()),
                     Item.build(ItemIDs.Catnip.ordinal(), 312), Item.build(ItemIDs.Acorn.ordinal(), 23),
                     Item.build(ItemIDs.Watermelon.ordinal(), 12)
@@ -28,7 +28,7 @@ public class Seller extends NPC {
     };
 
     public static final int[][] prices = {
-            {12, 16, 7, 2, 12, 1, 5, 3, 2},
+            {11, 12, 16, 7, 2, 12, 1, 5, 3, 2},
             {6, 3, 10}
     };
 

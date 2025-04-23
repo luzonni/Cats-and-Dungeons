@@ -119,8 +119,9 @@ public class Game implements Activity {
         List<Entity> entities = map.getEntities();
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
-            entity.tickEntityEffects();
+            entity.preTick();
             entity.tick();
+            entity.postTick();
             if(entity instanceof Utility || entity instanceof Furniture)
                 continue;
             Tile tile = map.getTile((int) entity.getX() + entity.getWidth() / 2, (int) entity.getY() + entity.getHeight());

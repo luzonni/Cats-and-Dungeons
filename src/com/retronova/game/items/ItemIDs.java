@@ -12,6 +12,7 @@ public enum ItemIDs {
     Laser,
     Watermelon,
     Wand,
-    Kunai
+    Kunai,
+    ClawBlades
 
 }

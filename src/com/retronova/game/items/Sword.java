@@ -41,8 +41,8 @@ public class Sword extends Item {
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        this.boundsAttack.setLocation((int)player.getX() - player.getWidth()/2 + this.boundsAttack.width/2 * side, (int)player.getY() - (this.boundsAttack.height - player.getHeight())/2);
-        Entity nearest = player.getNearest(3, Enemy.class);
+        setBoundsAttack(player);
+        Enemy nearest = player.getNearest(3, Enemy.class);
         if(nearest != null) {
             count++;
             if(count > player.getAttackSpeed()*0.1) {
@@ -51,7 +51,7 @@ public class Sword extends Item {
                     count = 0;
                     rad = 0;
                     side *= -1;
-                    attack(player);
+                    attack(player, nearest);
                 }
             }
         }else {
@@ -59,15 +59,18 @@ public class Sword extends Item {
         }
     }
 
-    private void attack(Player player) {
-        List<Enemy> enemies = Game.getMap().getEntities(Enemy.class);
-        for(int i = 0; i < enemies.size(); i++) {
-            Enemy e = enemies.get(i);
-            if(e.colliding(this.boundsAttack)) {
-                e.strike(AttackTypes.Melee, this.damage + player.getDamage());
-                double r = e.getAngle(player);
-                e.getPhysical().addForce("knockback", 16, r);
-            }
+    private void setBoundsAttack(Player player) {
+        int dist = (this.side == -1) ? this.boundsAttack.width * side : 0;
+        double x = (player.getX() + player.getWidth()/2d) + dist;
+        double y = (player.getY() + player.getHeight()/2d) - this.boundsAttack.height/2d;
+        this.boundsAttack.setLocation((int)x, (int)y);
+    }
+
+    private void attack(Player player, Enemy enemy) {
+        if(enemy.colliding(this.boundsAttack)) {
+            enemy.strike(AttackTypes.Melee, this.damage + player.getDamage());
+            double r = enemy.getAngle(player);
+            enemy.getPhysical().addForce("knockback", 16, r);
         }
         Sound.play(Sounds.Sword);
     }
@@ -78,6 +81,9 @@ public class Sword extends Item {
         double y = player.getY() + player.getHeight()/1.5d - Game.C.getY();
         renderSword((int)x, (int)y, g);
         drawAttackEffect(g);
+        Rectangle rec = this.boundsAttack;
+        g.setColor(Color.red);
+        g.drawRect(rec.x - Game.C.getX(), rec.y - Game.C.getY(), rec.width, rec.height);
     }
 
     private void renderSword(int x, int y, Graphics2D g) {

@@ -12,6 +12,7 @@ public abstract class GameObject {
     protected Sheet<? extends GameObject> sheet;
 
     private int depth;
+    private boolean groundObject;
     private final int ID;
     private double x, y, width, height;
     private boolean solid = false;
@@ -85,7 +86,12 @@ public abstract class GameObject {
     }
 
     public void setDepth() {
-        this.depth = (int)getY() + getHeight();
+        int d = (int)getY() + getHeight();
+        this.depth = groundObject ? 0 : d;
+    }
+
+    protected void setGroundObject() {
+        this.groundObject = true;
     }
 
     protected void setSolid() {
