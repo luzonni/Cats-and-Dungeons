@@ -134,6 +134,13 @@ public abstract class Item {
         }
     }
 
+    protected void setIndexSprite(int index) {
+        this.indexSprite = index;
+        while(indexSprite > sprite.length-1) {
+            indexSprite-=sprite.length-1;
+        }
+    }
+
     protected void resetIndexSprite() {
         this.indexSprite = 0;
     }

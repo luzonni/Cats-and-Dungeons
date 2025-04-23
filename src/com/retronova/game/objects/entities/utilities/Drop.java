@@ -18,7 +18,7 @@ public class Drop extends Utility {
     private int count;
 
     public Drop(double x, double y, Item item) {
-        super(-1, x, y, 0.2);
+        super(x, y, 0.2);
         this.item = item;
         loadSprites("drop");
     }

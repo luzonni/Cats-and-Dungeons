@@ -2,7 +2,7 @@
   "values": {
     "name": "Muffin",
     "life": 1000,
-    "damage": 200,
+    "damage": 12,
     "speed": 7,
     "luck": 0.9,
     "attackSpeed": 1,
@@ -11,7 +11,7 @@
     "hotBarSize": 5
   },
   "inventory": [
-    ["ItemSilk"],
+    ["Kunai"],
     ["Acorn", 5]
   ]
 }

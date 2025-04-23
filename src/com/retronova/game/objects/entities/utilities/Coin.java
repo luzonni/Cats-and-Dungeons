@@ -2,15 +2,14 @@ package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 public class Coin extends Utility {
 
     private int count;
 
-    public Coin(int ID, double x, double y) {
-        super(ID, x, y, 0.2);
+    public Coin(double x, double y) {
+        super(x, y, 0.2);
         loadSprites("coin");
         setSolid();
         getPhysical().addForce("coinSpawn", 7, Engine.RAND.nextDouble() * Math.PI*2);

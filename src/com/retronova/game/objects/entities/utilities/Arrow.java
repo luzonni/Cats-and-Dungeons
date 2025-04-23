@@ -1,12 +1,8 @@
 package com.retronova.game.objects.entities.utilities;
 
-import com.retronova.engine.ActionBack;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
-import com.retronova.game.objects.entities.AttackTypes;
-import com.retronova.game.objects.entities.Effect;
 import com.retronova.game.objects.entities.EffectApplicator;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.*;
@@ -18,7 +14,7 @@ public class Arrow extends Utility {
     private final EffectApplicator action;
 
     public Arrow(double x, double y, double angle, EffectApplicator action) {
-        super(-1, x, y, 0);
+        super(x, y, 0);
         this.angle = angle;
         this.action = action;
         loadSprites("arrow");

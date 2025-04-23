@@ -2,12 +2,14 @@
   "entities": [
     {
       "name": "Seller",
-      "position": "Random",
+      "x": 18,
+      "y": 13,
       "values": []
     },
     {
       "name": "GumMachine",
-      "position": "Random",
+      "x": 12,
+      "y": 13,
       "values": ["Command..."]
     },
     {

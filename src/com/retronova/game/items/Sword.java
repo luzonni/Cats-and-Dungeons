@@ -29,7 +29,8 @@ public class Sword extends Item {
 
 
     Sword(int id) {
-        super(id, "Sword", "sword_new2");
+        super(id, "Sword", "sword");
+        setIndexSprite(Engine.RAND.nextInt(25));
         this.damage = 35;
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));
@@ -77,8 +78,6 @@ public class Sword extends Item {
         double y = player.getY() + player.getHeight()/1.5d - Game.C.getY();
         renderSword((int)x, (int)y, g);
         drawAttackEffect(g);
-//        g.setColor(Color.red);
-//        g.drawRect(this.boundsAttack.x - Game.C.getX(), this.boundsAttack.y - Game.C.getY(), this.boundsAttack.width, this.boundsAttack.height);
     }
 
     private void renderSword(int x, int y, Graphics2D g) {

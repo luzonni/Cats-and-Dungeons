@@ -1,9 +1,21 @@
 {
   "entities": [
     {
-      "id": 12,
+      "name": "Seller",
+      "x": 18,
+      "y": 13,
+      "values": []
+    },
+    {
+      "name": "GumMachine",
       "x": 15,
-      "y": 19,
+      "y": 6,
+      "values": []
+    },
+    {
+      "name": "TrapDoor",
+      "x": 15,
+      "y": 16,
       "values": ["NEXT ARENA"]
     }
   ]

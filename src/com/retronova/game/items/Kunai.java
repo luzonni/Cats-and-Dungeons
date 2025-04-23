@@ -1,74 +1,52 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.graphics.SpriteSheet;
-import com.retronova.engine.sound.Sound;
-import com.retronova.engine.sound.Sounds;
+import com.retronova.engine.graphics.Rotate;
+import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.Game;
-import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
+import com.retronova.game.objects.entities.utilities.KunaiThrown;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Kunai extends Item {
 
-    private final BufferedImage kunaiSprite;
-    private final double damage = 25;
-    private double xOffset, yOffset;
-    private double x, y, dx, dy;
-    private boolean thrown = false;
-    private final int speed = 12;
-    private Enemy target;
+    private double angle;
+    private final double damage = 2;
+    private int countAttack;
 
     public Kunai(int id) {
         super(id, "Kunai", "kunai");
-        kunaiSprite = new SpriteSheet("sprites/items", "kunai", Configs.GameScale()).getSHEET();
-        addSpecifications("Throwable", "Player damage + "+this.damage, "medium speed");
-        this.xOffset = 10;
-        this.yOffset = 0;
+        addSpecifications("Throwable", "Player damage + " + this.damage, "medium speed");
     }
 
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-
-        if (!thrown) {
-            this.x = player.getX() + xOffset;
-            this.y = player.getY() + yOffset;
-
-            target = player.getNearest(5, Enemy.class);
-            if (target != null) {
-                thrown = true;
-                double angle = Math.atan2(target.getY() - y, target.getX() - x);
-                dx = Math.cos(angle) * speed;
-                dy = Math.sin(angle) * speed;
-                // Sound.play(Sounds.Throw); ME LEMBRA DE POR O SOM AQUI POR FAVOR, TEM QUE ACHAR
-            }
-        } else {
-            x += dx;
-            y += dy;
-
-            if (target != null && target.colliding(new Rectangle((int)x, (int)y, Configs.GameScale()*2, Configs.GameScale()*2))) {
-                target.strike(AttackTypes.Throw, this.damage + player.getDamage());
-                target.getPhysical().addForce("knockback", 12, target.getAngle(player));
-                resetKunai();
+        Enemy target = player.getNearest(player.getRange(), Enemy.class);
+        if(target != null) {
+            this.angle = target.getAngle(player);
+            countAttack++;
+            if(countAttack >= 60) {
+                countAttack = 0;
+                double currentDamage = player.getDamage() + this.damage;
+                KunaiThrown kunai = new KunaiThrown(player.getX(), player.getY(), currentDamage, this.angle);
+                Game.getMap().put(kunai);
             }
         }
     }
 
-    private void resetKunai() {
-        thrown = false;
-        target = null;
-        this.xOffset = 10;
-        this.yOffset = 0;
-    }
-
     @Override
     public void render(Graphics2D g) {
-        int drawX = (int)x - Game.C.getX();
-        int drawY = (int)y - Game.C.getY();
-        g.drawImage(kunaiSprite, drawX, drawY, null);
+        Player player = Game.getPlayer();
+        double middleX = player.getX() + player.getWidth()/2d;
+        double middleY = player.getY() + player.getHeight()/2d;
+        BufferedImage sprite = getSprite();
+        Point spriteRotatePosition = new Point((int)(2.5*Configs.GameScale()), (int)(13.5*Configs.GameScale()));
+        double drawX = (middleX - spriteRotatePosition.x) + Math.cos(this.angle) * player.getWidth()/2d;
+        double drawY = (middleY - spriteRotatePosition.y) + Math.sin(this.angle) * player.getHeight()/2d;
+        Rotate.draw(sprite, (int)drawX - Game.C.getX(), (int)drawY - Game.C.getY(), this.angle + Math.PI/4, spriteRotatePosition, g);
     }
 }

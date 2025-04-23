@@ -12,7 +12,7 @@ public class Xp extends Utility {
     private double speed;
 
     public Xp(double x, double y) {
-        super(-1, x, y, 0.5d);
+        super(x, y, 0.5d);
         loadSprites("xp");
     }
 
