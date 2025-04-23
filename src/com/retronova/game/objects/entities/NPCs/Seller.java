@@ -25,14 +25,16 @@ public class Seller extends NPC {
                     Item.build(ItemIDs.Watermelon.ordinal(), 12),
                     Item.build(ItemIDs.GasBomb.ordinal()),
                     Item.build(ItemIDs.BloodyAxe.ordinal()),
-                    Item.build(ItemIDs.MagneticOrb.ordinal(), 15)
+                    Item.build(ItemIDs.MagneticOrb.ordinal(), 15),
+                    Item.build(ItemIDs.BowEletric.ordinal()),
+                    Item.build(ItemIDs.SwordFire.ordinal())
 
             },
             {Item.build(ItemIDs.Silk.ordinal()), Item.build(ItemIDs.Bomb.ordinal()), Item.build(ItemIDs.Sword.ordinal())},
     };
 
     public static final int[][] prices = {
-            {11, 12, 16, 7, 2, 12, 1, 5, 3, 2, 7, 20, 30},
+            {11, 12, 16, 7, 2, 12, 1, 5, 3, 2, 7, 20, 30, 10,8},
             {6, 3, 10}
     };
 

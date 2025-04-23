@@ -16,6 +16,8 @@ public enum ItemIDs {
     ClawBlades,
     GasBomb,
     BloodyAxe,
-    MagneticOrb
+    MagneticOrb,
+    BowEletric,
+    SwordFire
 
 }

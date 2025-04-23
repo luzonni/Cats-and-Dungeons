@@ -77,6 +77,12 @@ public abstract class Item {
             case MagneticOrb -> {
                 return new MagneticOrb(id);
             }
+            case BowEletric -> {
+                return new BowEletric(id);
+            }
+            case SwordFire -> {
+                return new SwordFire(id);
+            }
         }
         throw new NotFound("Item not found");
     }
