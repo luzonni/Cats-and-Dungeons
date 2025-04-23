@@ -68,6 +68,9 @@ public abstract class Item {
             case ClawBlades -> {
                 return new ClawBlades(id);
             }
+            case GasBomb -> {
+                return new GasBomb(id);
+            }
         }
         throw new NotFound("Item not found");
     }
