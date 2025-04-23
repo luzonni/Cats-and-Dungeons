@@ -13,6 +13,7 @@ public enum ItemIDs {
     Watermelon,
     Wand,
     Kunai,
-    ClawBlades
+    ClawBlades,
+    GasBomb
 
 }

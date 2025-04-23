@@ -101,6 +101,9 @@ public class Physical {
         int vy = (int)Math.round(vec.getVecY());
         this.orientation = new int[] {(int)Math.signum(vx), (int)Math.signum(vy)};
     }
+    public void cleanForce(){
+        vectors.clear();
+    }
 
     boolean moveSystem(double vectorX, double vectorY){
         if(entity instanceof Furniture)
