@@ -32,11 +32,11 @@ public class Xp extends Utility {
             getSheet().plusIndex();
         }
         Player player = Game.getPlayer();
-        if(player.getDistance(this) < GameObject.SIZE()/3d) {
+        if(player.colliding(this)) {
             player.plusXp(getWeight());
             disappear();
         }
-        if(player.getDistance(this) < GameObject.SIZE()*5) {
+        if(player.getDistance(this) < player.getRangeOfColect()) {
             if(speed < 15d) {
                 speed += 0.15d;
             }

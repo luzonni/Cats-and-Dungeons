@@ -35,7 +35,7 @@ public class Sword extends Item {
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));
         sword_attack = new SpriteSheet("sprites/items", "sword_attack", Configs.GameScale()).getSHEET();
-        addSpecifications("Melee Attack", "Player damage + "+this.damage, "very fast");
+        addSpecifications("Melee Attack", "Player damage + "+ this.damage, "very fast");
     }
 
     @Override

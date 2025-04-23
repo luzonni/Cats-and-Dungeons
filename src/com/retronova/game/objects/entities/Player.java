@@ -12,6 +12,7 @@ import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.items.ItemIDs;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.particles.Volatile;
 import com.retronova.game.objects.particles.Word;
@@ -77,6 +78,7 @@ public class Player extends Entity {
     private int countAnim;
 
     private final double luck;
+    private double rangeOfColect;
 
     private int countDash;
     private boolean dash;
@@ -90,6 +92,7 @@ public class Player extends Entity {
         super(0, 0, 0, 0.5);
         this.name = name;
         this.luck = luck;
+        this.rangeOfColect = 5;
         this.inventory = new Inventory(bagSize, hotSize);
         this.passives = new ArrayList<>();
         setWidth(0.85);
@@ -162,6 +165,14 @@ public class Player extends Entity {
             return l;
         }
         return luck;
+    }
+
+    public void setRangeOfColect(double range){
+        this.rangeOfColect = range * GameObject.SIZE();
+    }
+
+    public double getRangeOfColect(){
+        return this.rangeOfColect;
     }
 
     public List<Consumable> getPassives() {

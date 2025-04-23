@@ -71,6 +71,12 @@ public abstract class Item {
             case GasBomb -> {
                 return new GasBomb(id);
             }
+            case BloodyAxe -> {
+                return new BloodyAxe(id);
+            }
+            case MagneticOrb -> {
+                return new MagneticOrb(id);
+            }
         }
         throw new NotFound("Item not found");
     }
