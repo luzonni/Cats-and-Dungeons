@@ -429,12 +429,7 @@ public abstract class Entity extends GameObject {
         }, seconds, repetitions);
     }
 
-    public void EFFECT_STUNNED(double seconds, int repetitions){
-        this.addEffect("stuned", (e) -> {
-            e.getPhysical().setFriction(0.78);
-            e.getPhysical().cleanForce();
-            e.getPhysical().addForce("stuned", 7, Engine.RAND.nextDouble() * Math.PI * 2);
-        }, seconds, repetitions);
+    public void EFFECT_STUNNED(int i, int i1) {
+        //TODO make Stunned effect
     }
-
 }

@@ -92,7 +92,7 @@ public class Player extends Entity {
         super(0, 0, 0, 0.5);
         this.name = name;
         this.luck = luck;
-        this.rangeOfColect = 5;
+        this.setRangeOfColect(5);
         this.inventory = new Inventory(bagSize, hotSize);
         this.passives = new ArrayList<>();
         setWidth(0.85);
