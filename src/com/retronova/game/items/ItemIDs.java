@@ -18,6 +18,7 @@ public enum ItemIDs {
     BloodyAxe,
     MagneticOrb,
     BowEletric,
-    SwordFire
+    SwordFire,
+    DangerousWand
 
 }
