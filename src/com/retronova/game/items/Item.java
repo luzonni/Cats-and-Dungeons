@@ -86,6 +86,9 @@ public abstract class Item {
             case DangerousWand -> {
                 return new DangerousWand(id);
             }
+            case Trident -> {
+                return new Trident(id);
+            }
         }
         throw new NotFound("Item not found");
     }
