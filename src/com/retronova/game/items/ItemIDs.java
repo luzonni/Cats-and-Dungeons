@@ -21,5 +21,6 @@ public enum ItemIDs {
     SwordFire,
     DangerousWand,
     Trident,
+    Sickle,
 
 }

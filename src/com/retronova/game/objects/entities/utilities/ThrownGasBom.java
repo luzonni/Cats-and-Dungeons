@@ -22,7 +22,7 @@ public class ThrownGasBom extends Utility {
     public ThrownGasBom(double x, double y, double damage) {
         super(x, y, 0.7);
         this.damage = damage;
-        loadSprites("bomb");
+        loadSprites("gasbomb");
     }
 
     @Override

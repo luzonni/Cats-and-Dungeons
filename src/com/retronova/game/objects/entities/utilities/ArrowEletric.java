@@ -16,7 +16,7 @@ public class ArrowEletric extends Utility {
         super(x, y, 0);
         this.angle = angle;
         this.action = action;
-        loadSprites("arrow");
+        loadSprites("arroweletric");
         setSpeed(7d);
         this.getPhysical().addForce("shot", getSpeed(), angle);
     }

@@ -3,7 +3,6 @@ package com.retronova.game.items;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
-import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
@@ -21,7 +20,6 @@ public class SwordFire extends Item {
     private double rad;
     private int count;
 
-    private final BufferedImage sword_attack;
     private final double damage;
     private final Rectangle boundsAttack;
 
@@ -32,7 +30,6 @@ public class SwordFire extends Item {
         this.damage = 35;
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));
-        sword_attack = new SpriteSheet("sprites/items", "sword_attack", Configs.GameScale()).getSHEET();
         addSpecifications("Fire Attack", "Player damage + "+ this.damage, "very fast");
     }
 
@@ -78,7 +75,6 @@ public class SwordFire extends Item {
         double x = player.getX() + player.getWidth()/2d - Game.C.getX();
         double y = player.getY() + player.getHeight()/1.5d - Game.C.getY();
         renderSword((int)x, (int)y, g);
-        drawAttackEffect(g);
         Rectangle rec = this.boundsAttack;
         g.setColor(Color.red);
         g.drawRect(rec.x - Game.C.getX(), rec.y - Game.C.getY(), rec.width, rec.height);
@@ -93,14 +89,5 @@ public class SwordFire extends Item {
         y+= (int) (Math.sin(rad) * Configs.GameScale() *4 * side);
         double rotate = (rad - Math.PI/4) + Math.PI/8*side;
         Rotate.draw(sprite, x, y, rotate, pointRotate, g);
-    }
-
-    private void drawAttackEffect(Graphics2D g) {
-        if(Math.abs(rad) > Math.PI/4 && Math.abs(rad) < Math.PI/2) {
-            BufferedImage flipped = SpriteSheet.flip(this.sword_attack,1, side);
-            int x = this.boundsAttack.x + (this.boundsAttack.width - this.sword_attack.getWidth())/2 - Game.C.getX();
-            int y = this.boundsAttack.y + (this.boundsAttack.height - this.sword_attack.getHeight())/2 - Game.C.getY();
-            g.drawImage(flipped, x, y, null);
-        }
     }
 }
