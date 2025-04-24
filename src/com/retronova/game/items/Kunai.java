@@ -8,7 +8,6 @@ import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.game.objects.entities.utilities.KunaiThrown;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class Kunai extends Item {
 

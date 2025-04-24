@@ -12,7 +12,7 @@ import java.util.Map;
 public abstract class Item {
 
     private static final Map<String, BufferedImage[]> sheet;
-    
+
     static {
         sheet = new HashMap<>();
     }
@@ -85,6 +85,12 @@ public abstract class Item {
             }
             case DangerousWand -> {
                 return new DangerousWand(id);
+            }
+            case Trident -> {
+                return new Trident(id);
+            }
+            case Sickle -> {
+                return new Sickle(id);
             }
         }
         throw new NotFound("Item not found");

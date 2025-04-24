@@ -10,7 +10,7 @@ import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
-import com.retronova.game.objects.entities.utilities.Arrow;
+import com.retronova.game.objects.entities.utilities.ArrowEletric;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -24,13 +24,13 @@ public class BowEletric extends Item {
 
     BowEletric(int id) {
         super(id, "BowEletric", "boweletric");
-        addSpecifications("Arrow add poisson", "player damage", "shot slowed");
+        addSpecifications("Arrow add thunder", "player damage", "shot slowed");
     }
 
     @Override
     public void tick() {
-        if(Sheet.SHEETS.containsKey("arrow") && this.arrowSprite == null) {
-            this.arrowSprite = Sheet.SHEETS.get("arrow")[0];
+        if(Sheet.SHEETS.containsKey("arroweletric") && this.arrowSprite == null) {
+            this.arrowSprite = Sheet.SHEETS.get("arroweletric")[0];
         }
         Player player = Game.getPlayer();
         Entity nearest = player.getNearest(player.getRange(), Enemy.class);
@@ -54,7 +54,7 @@ public class BowEletric extends Item {
     private void shot(Player shooter) {
         double x = shooter.getX();
         double y = shooter.getY();
-        Arrow arrow = new Arrow(x, y, angle, (entity) -> {
+        ArrowEletric arrow = new ArrowEletric(x, y, angle, (entity) -> {
             entity.strike(AttackTypes.Piercing, shooter.getDamage());
             entity.getPhysical().addForce("knockback", 2.2, this.angle);
         });

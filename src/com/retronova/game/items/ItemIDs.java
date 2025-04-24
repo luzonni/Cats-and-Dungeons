@@ -19,6 +19,8 @@ public enum ItemIDs {
     MagneticOrb,
     BowEletric,
     SwordFire,
-    DangerousWand
+    DangerousWand,
+    Trident,
+    Sickle,
 
 }
