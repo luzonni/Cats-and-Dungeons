@@ -16,6 +16,7 @@ public class BloodyAxe extends Item {
 
     BloodyAxe(int id) {
         super(id, "Bloody Axe", "bloody_axe");
+        addSpecifications("Life Leech", "Heals a percentage of damage dealt");
     }
 
     @Override
@@ -26,7 +27,7 @@ public class BloodyAxe extends Item {
         if (nearest != null) {
             this.angle = nearest.getAngle(player);
             double damage = player.getDamage();
-            if (player.getNearest(2, Enemy.class) == nearest && nearest.colliding(new Rectangle((int)getX() - 10, (int)getY() - 10, 20, 20))) { // Lógica de ataque próxima (ajuste a hitbox conforme necessário)
+            if (player.getNearest(2, Enemy.class) == nearest && nearest.colliding(new Rectangle((int)getX() - 10, (int)getY() - 10, 20, 20))) {
                 nearest.strike(AttackTypes.Melee, damage);
                 player.setLife(player.getLife() + damage * (0.10));
             }

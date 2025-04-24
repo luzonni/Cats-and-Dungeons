@@ -20,6 +20,7 @@ public class DangerousWand extends Item {
 
     DangerousWand(int id) {
         super(id, "Dangerous Wand", "dangerouswand");
+        addSpecifications("Raw magical energy", "player damage", "shot instant");
         this.boundsAttack = new Rectangle(GameObject.SIZE(), GameObject.SIZE());
         this.spriteRotatePoint = new Point(getSprite().getWidth() / 2, getSprite().getHeight() / 2);
     }

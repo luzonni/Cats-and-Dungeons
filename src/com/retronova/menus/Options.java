@@ -11,6 +11,7 @@ import com.retronova.engine.sound.Sounds;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -18,17 +19,19 @@ import java.io.IOException;
 public class Options implements Activity {
 
     private Rectangle[][] quadrados;
+    private Rectangle[][] botoesAjuste;
     private final Color corTexto = Color.WHITE;
     private final String titulo = "Options";
-    private final String[][] textosBotoes = {
+    private final String[][] textosBaseBotoes = {
             {"Res", "FPS", "Save"},
             {"Text Size", "Margin", "Full Screen"},
             {"Volume", "Music", "Mobs"},
             {null, "Save Changes", "Back"}
     };
+    private String[][] textosBotoes;
 
     private int tempFps = Configs.MaxFrames();
-    private int[] fpsOptions = {30, 60, 120};
+    private final int[] fpsOptions = {30, 60, 120};
     private int fpsIndex = 0;
 
     private boolean tempFullScreen;
@@ -49,6 +52,7 @@ public class Options implements Activity {
     public Options() {
         configFullScreen = Configs.Fullscreen();
         tempFullScreen = configFullScreen;
+        textosBotoes = new String[textosBaseBotoes.length][textosBaseBotoes[0].length];
         inicializarBotoes();
         atualizarTextosBotoes();
 
@@ -61,10 +65,13 @@ public class Options implements Activity {
 
     private void inicializarBotoes() {
         quadrados = new Rectangle[4][3];
+        botoesAjuste = new Rectangle[4][3 * 2];
 
         int larguraBotao = 200;
         int alturaBotao = 50;
+        int larguraBotaoAjuste = 30;
         int espacamento = 80;
+        int espacamentoAjuste = 5;
 
         int larguraTotal = 3 * larguraBotao + 2 * espacamento;
         int alturaTotal = 4 * alturaBotao + 3 * espacamento;
@@ -74,31 +81,69 @@ public class Options implements Activity {
 
         for (int linha = 0; linha < 4; linha++) {
             for (int coluna = 0; coluna < 3; coluna++) {
-                if (textosBotoes[linha][coluna] != null) {
+                if (textosBaseBotoes[linha][coluna] != null) {
                     int x = xInicio + coluna * (larguraBotao + espacamento);
                     int y = yInicio + linha * (alturaBotao + espacamento);
                     quadrados[linha][coluna] = new Rectangle(x, y, larguraBotao, alturaBotao);
+
+                    if (!textosBaseBotoes[linha][coluna].equals("Save") &&
+                            !textosBaseBotoes[linha][coluna].equals("Save Changes") &&
+                            !textosBaseBotoes[linha][coluna].equals("Back")) {
+                        int xMenos = x - larguraBotaoAjuste - espacamentoAjuste;
+                        int xMais = x + larguraBotao + espacamentoAjuste;
+                        botoesAjuste[linha][coluna * 2] = new Rectangle(xMenos, y + (alturaBotao - larguraBotaoAjuste) / 2, larguraBotaoAjuste, larguraBotaoAjuste);
+                        botoesAjuste[linha][coluna * 2 + 1] = new Rectangle(xMais, y + (alturaBotao - larguraBotaoAjuste) / 2, larguraBotaoAjuste, larguraBotaoAjuste);
+                    } else {
+                        botoesAjuste[linha][coluna * 2] = null;
+                        botoesAjuste[linha][coluna * 2 + 1] = null;
+                    }
+                } else {
+                    botoesAjuste[linha][coluna * 2] = null;
+                    botoesAjuste[linha][coluna * 2 + 1] = null;
                 }
             }
         }
     }
 
     private void atualizarTextosBotoes() {
-        String uiScaleText;
-        if (tempUiScale == 2) {
-            uiScaleText = "1";
-        } else if (tempUiScale == 3) {
-            uiScaleText = "2";
-        } else {
-            uiScaleText = String.valueOf(tempUiScale); // Fallback
+        for (int linha = 0; linha < textosBaseBotoes.length; linha++) {
+            for (int coluna = 0; coluna < textosBaseBotoes[0].length; coluna++) {
+                if (textosBaseBotoes[linha][coluna] != null) {
+                    String textoBase = textosBaseBotoes[linha][coluna];
+                    switch (textoBase) {
+                        case "Res":
+                            textosBotoes[linha][coluna] = "Res: " + tempResolution[0] + "x" + tempResolution[1];
+                            break;
+                        case "FPS":
+                            textosBotoes[linha][coluna] = "FPS: " + tempFps;
+                            break;
+                        case "Text Size":
+                            textosBotoes[linha][coluna] = "Text Size: " + tempUiScale;
+                            break;
+                        case "Margin":
+                            textosBotoes[linha][coluna] = "Margin: " + tempMargin;
+                            break;
+                        case "Full Screen":
+                            textosBotoes[linha][coluna] = "Full Screen: " + (tempFullScreen ? "On" : "Off");
+                            break;
+                        case "Volume":
+                            textosBotoes[linha][coluna] = "Volume: " + tempMusicVolume + "% / " + tempMobsVolume + "%";
+                            break;
+                        case "Music":
+                            textosBotoes[linha][coluna] = "Music: " + tempMusicVolume + "%";
+                            break;
+                        case "Mobs":
+                            textosBotoes[linha][coluna] = "Mobs: " + tempMobsVolume + "%";
+                            break;
+                        default:
+                            textosBotoes[linha][coluna] = textoBase;
+                            break;
+                    }
+                } else {
+                    textosBotoes[linha][coluna] = null;
+                }
+            }
         }
-        textosBotoes[1][0] = "Text Size: " + uiScaleText;
-        textosBotoes[0][0] = "Res: " + tempResolution[0] + "x" + tempResolution[1];
-        textosBotoes[0][1] = "FPS: " + tempFps;
-        textosBotoes[1][1] = "Margin: " + tempMargin;
-        textosBotoes[1][2] = "Full Screen: " + (tempFullScreen ? "On" : "Off");
-        textosBotoes[2][1] = "Music: " + tempMusicVolume;
-        textosBotoes[2][2] = "Mobs: " + tempMobsVolume;
     }
 
     @Override
@@ -114,106 +159,84 @@ public class Options implements Activity {
 
         for (int linha = 0; linha < 4; linha++) {
             for (int coluna = 0; coluna < 3; coluna++) {
-                if (quadrados[linha][coluna] != null) {
-                    boolean clickEsquerdo = Mouse.clickOn(Mouse_Button.LEFT, quadrados[linha][coluna]);
-                    boolean clickDireito = Mouse.clickOn(Mouse_Button.RIGHT, quadrados[linha][coluna]);
-
-                    if (clickEsquerdo) {
-                        String textoBotao = textosBotoes[linha][coluna];
-
-                        switch (textoBotao.split(":")[0].trim()) {
+                if (textosBaseBotoes[linha][coluna] != null) {
+                    if (botoesAjuste[linha][coluna * 2] != null && Mouse.clickOn(Mouse_Button.LEFT, botoesAjuste[linha][coluna * 2])) {
+                        Sound.play(Sounds.Button);
+                        switch (textosBaseBotoes[linha][coluna]) {
                             case "Res":
-                                Sound.play(Sounds.Button);
-                                resolutionIndex = (resolutionIndex + 1 + Engine.resolutions.length) % Engine.resolutions.length;
-                                tempResolution = Engine.resolutions[resolutionIndex];
-                                break;
-                            case "FPS":
-                                Sound.play(Sounds.Button);
-                                fpsIndex = (fpsIndex + 1 + fpsOptions.length) % fpsOptions.length;
-                                tempFps = fpsOptions[fpsIndex];
-                                break;
-                            case "Text Size":
-                                Sound.play(Sounds.Button);
-                                tempUiScale = (tempUiScale == 2) ? 3 : 2;
-                                break;
-                            case "Margin":
-                                Sound.play(Sounds.Button);
-                                tempMargin += 5;
-                                if (tempMargin > 20) tempMargin = 20;
-                                break;
-                            case "Full Screen":
-                                Sound.play(Sounds.Button);
-                                tempFullScreen = !tempFullScreen;
-                                break;
-                            case "Volume":
-                                Sound.play(Sounds.Button);
-                                tempMusicVolume = Math.min(100, tempMusicVolume + 10);
-                                tempMobsVolume = Math.min(100, tempMobsVolume + 10);
-                                break;
-                            case "Music":
-                                Sound.play(Sounds.Button);
-                                tempMusicVolume = Math.min(100, tempMusicVolume + 10);
-                                break;
-                            case "Mobs":
-                                Sound.play(Sounds.Button);
-                                tempMobsVolume = Math.min(100, tempMobsVolume + 10);
-                                break;
-                            case "Save Changes":
-                                Sound.play(Sounds.Button);
-                                aplicarConfiguracoes();
-                                Engine.backActivity();
-                                break;
-                            case "Back":
-                                Sound.play(Sounds.Button);
-                                Engine.backActivity();
-                                break;
-                            default:
-                                System.out.println("Botão desconhecido: " + textoBotao);
-                                break;
-                        }
-                        atualizarTextosBotoes();
-                    } else if (clickDireito) {
-                        String textoBotao = textosBotoes[linha][coluna];
-
-                        switch (textoBotao.split(":")[0].trim()) {
-                            case "Res":
-                                Sound.play(Sounds.Button);
                                 resolutionIndex = (resolutionIndex - 1 + Engine.resolutions.length) % Engine.resolutions.length;
                                 tempResolution = Engine.resolutions[resolutionIndex];
                                 break;
                             case "FPS":
-                                Sound.play(Sounds.Button);
                                 fpsIndex = (fpsIndex - 1 + fpsOptions.length) % fpsOptions.length;
                                 tempFps = fpsOptions[fpsIndex];
                                 break;
                             case "Text Size":
-                                Sound.play(Sounds.Button);
                                 tempUiScale = (tempUiScale == 2) ? 3 : 2;
                                 break;
                             case "Margin":
-                                Sound.play(Sounds.Button);
-                                tempMargin -= 5;
-                                if (tempMargin < 0) tempMargin = 0;
+                                tempMargin = Math.max(0, tempMargin - 5);
                                 break;
                             case "Full Screen":
-                                Sound.play(Sounds.Button);
                                 tempFullScreen = !tempFullScreen;
                                 break;
                             case "Volume":
-                                Sound.play(Sounds.Button);
                                 tempMusicVolume = Math.max(0, tempMusicVolume - 10);
                                 tempMobsVolume = Math.max(0, tempMobsVolume - 10);
                                 break;
                             case "Music":
-                                Sound.play(Sounds.Button);
                                 tempMusicVolume = Math.max(0, tempMusicVolume - 10);
                                 break;
                             case "Mobs":
-                                Sound.play(Sounds.Button);
                                 tempMobsVolume = Math.max(0, tempMobsVolume - 10);
                                 break;
                         }
                         atualizarTextosBotoes();
+                    }
+
+                    if (botoesAjuste[linha][coluna * 2 + 1] != null && Mouse.clickOn(Mouse_Button.LEFT, botoesAjuste[linha][coluna * 2 + 1])) {
+                        Sound.play(Sounds.Button);
+                        switch (textosBaseBotoes[linha][coluna]) {
+                            case "Res":
+                                resolutionIndex = (resolutionIndex + 1 + Engine.resolutions.length) % Engine.resolutions.length;
+                                tempResolution = Engine.resolutions[resolutionIndex];
+                                break;
+                            case "FPS":
+                                fpsIndex = (fpsIndex + 1 + fpsOptions.length) % fpsOptions.length;
+                                tempFps = fpsOptions[fpsIndex];
+                                break;
+                            case "Text Size":
+                                tempUiScale = (tempUiScale == 2) ? 3 : 2;
+                                break;
+                            case "Margin":
+                                tempMargin = Math.min(20, tempMargin + 5);
+                                break;
+                            case "Full Screen":
+                                tempFullScreen = !tempFullScreen;
+                                break;
+                            case "Volume":
+                                tempMusicVolume = Math.min(100, tempMusicVolume + 10);
+                                tempMobsVolume = Math.min(100, tempMobsVolume + 10);
+                                break;
+                            case "Music":
+                                tempMusicVolume = Math.min(100, tempMusicVolume + 10);
+                                break;
+                            case "Mobs":
+                                tempMobsVolume = Math.min(100, tempMobsVolume + 10);
+                                break;
+                        }
+                        atualizarTextosBotoes();
+                    }
+
+                    if (quadrados[linha][coluna] != null && Mouse.clickOn(Mouse_Button.LEFT, quadrados[linha][coluna])) {
+                        if (textosBaseBotoes[linha][coluna].equals("Save Changes")) {
+                            Sound.play(Sounds.Button);
+                            aplicarConfiguracoes();
+                            Engine.backActivity();
+                        } else if (textosBaseBotoes[linha][coluna].equals("Back")) {
+                            Sound.play(Sounds.Button);
+                            Engine.backActivity();
+                        }
                     }
                 }
             }
@@ -234,14 +257,6 @@ public class Options implements Activity {
     }
 
     private void atualizarBotaoSelecionado() {
-
-        for (int linha = 0; linha < 4; linha++) {
-            for (int coluna = 0; coluna < 3; coluna++) {
-                if (quadrados[linha][coluna] != null && quadrados[linha][coluna].contains(Mouse.getX(), Mouse.getY())) {
-                    return;
-                }
-            }
-        }
     }
 
     @Override
@@ -250,8 +265,8 @@ public class Options implements Activity {
             g.drawImage(imagemFundo, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
         }
         desenharTitulo(g);
-        desenharTextosTeste(g);
-        desenharBotoes(g);
+        desenharBotoesOpcao(g);
+        desenharBotoesAjuste(g);
     }
 
     private void desenharTitulo(Graphics2D g) {
@@ -264,37 +279,17 @@ public class Options implements Activity {
         g.drawString(titulo, x, y);
     }
 
-    private void desenharTextosTeste(Graphics2D g) {
-        g.setColor(corTexto);
-        g.setFont(FontG.font(FontG.Game, 11 * Configs.UiScale()));
-        FontMetrics fmTeste = g.getFontMetrics();
-
-        String[] titulosTeste = {"General", "Screen", "Sounds"};
-        int[] colunasTeste = {1, 1, 1};
-        int[] linhasTeste = {0, 1, 2};
-
-        for (int i = 0; i < titulosTeste.length; i++) {
-            int coluna = colunasTeste[i];
-            int linha = linhasTeste[i];
-            if (quadrados[linha][coluna] != null) {
-                int x = quadrados[linha][coluna].x + quadrados[linha][coluna].width / 2 - fmTeste.stringWidth(titulosTeste[i]) / 2;
-                int y = quadrados[linha][coluna].y - 20;
-                g.drawString(titulosTeste[i], x, y);
-            }
-        }
-    }
-
-    private void desenharBotoes(Graphics2D g) {
+    private void desenharBotoesOpcao(Graphics2D g) {
         for (int linha = 0; linha < 4; linha++) {
             for (int coluna = 0; coluna < 3; coluna++) {
-                if (quadrados[linha][coluna] != null) {
+                if (quadrados[linha][coluna] != null && textosBotoes[linha][coluna] != null) {
                     Rectangle quadrado = quadrados[linha][coluna];
 
                     int tamanhoFonte = 8 * Configs.UiScale();
                     Font fonteAtual = FontG.font(FontG.Game, tamanhoFonte);
                     FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 
-                    while (fmQuadrados.stringWidth(textosBotoes[linha][coluna]) > quadrado.width - 20) {
+                    while (fmQuadrados.stringWidth(textosBotoes[linha][coluna]) > quadrado.width - 40) {
                         tamanhoFonte--;
                         fonteAtual = FontG.font(FontG.Game, tamanhoFonte);
                         fmQuadrados = g.getFontMetrics(fonteAtual);
@@ -342,6 +337,48 @@ public class Options implements Activity {
                 }
             }
         }
+    }
+
+    private void desenharBotoesAjuste(Graphics2D g) {
+        g.setColor(corTexto);
+        Font fonteAjuste = FontG.font(FontG.Game, 12 * Configs.UiScale());
+        FontMetrics fmAjuste = g.getFontMetrics(fonteAjuste);
+
+        for (int linha = 0; linha < 4; linha++) {
+            for (int coluna = 0; coluna < 3; coluna++) {
+                if (botoesAjuste[linha][coluna * 2] != null) {
+                    Rectangle botaoMenos = botoesAjuste[linha][coluna * 2];
+                    desenharBotaoAjusteIndividual(g, botaoMenos, "-", fonteAjuste, fmAjuste);
+                }
+                if (botoesAjuste[linha][coluna * 2 + 1] != null) {
+                    Rectangle botaoMais = botoesAjuste[linha][coluna * 2 + 1];
+                    desenharBotaoAjusteIndividual(g, botaoMais, "+", fonteAjuste, fmAjuste);
+                }
+            }
+        }
+    }
+
+    private void desenharBotaoAjusteIndividual(Graphics2D g, Rectangle botao, String texto, Font fonte, FontMetrics fm) {
+        int larguraBotao = botao.width;
+        int alturaBotao = botao.height;
+        int x = botao.x;
+        int y = botao.y;
+
+        boolean selecionado = botao.contains(Mouse.getX(), Mouse.getY());
+
+        if (selecionado) {
+            g.setColor(new Color(0x80899B));
+        } else {
+            g.setColor(new Color(0x6B7A8F));
+        }
+        g.fill(new RoundRectangle2D.Double(x, y, larguraBotao, alturaBotao, 10, 10));
+
+        g.setColor(corTexto);
+        g.setFont(fonte);
+        Rectangle2D textoBounds = fm.getStringBounds(texto, g);
+        int textoX = x + (int) ((larguraBotao - textoBounds.getWidth()) / 2);
+        int textoY = y + (int) ((alturaBotao - textoBounds.getHeight()) / 2 + fm.getAscent());
+        g.drawString(texto, textoX, textoY);
     }
 
     @Override

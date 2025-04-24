@@ -19,7 +19,7 @@ public class GasBomb extends Item {
 
     GasBomb(int id) {
         super(id, "GasBomb", "gasbomb");
-        addSpecifications("Explode", "cria uma fumaça de gás", "somente uma por vez");
+        addSpecifications("Explode", "creates a gas cloud", "only one at a time");
     }
 
     @Override

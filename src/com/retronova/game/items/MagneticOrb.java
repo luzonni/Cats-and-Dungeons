@@ -7,6 +7,7 @@ public class MagneticOrb extends Consumable {
 
     MagneticOrb(int id) {
         super(id, "Magnetic Orb", "ima");
+        addSpecifications("Attracts nearby items");
     }
 
     @Override
