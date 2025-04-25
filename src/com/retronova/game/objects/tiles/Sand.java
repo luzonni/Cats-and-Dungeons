@@ -10,6 +10,6 @@ public class Sand extends Tile {
 
     @Override
     public void effect(Entity e) {
-        e.getPhysical().setRoughness(0.6d);
+        e.getPhysical().setDrag(0.3d);
     }
 }

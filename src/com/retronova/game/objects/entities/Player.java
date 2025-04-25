@@ -268,10 +268,8 @@ public class Player extends Entity {
         if (isMoving) {
             double radians = Math.atan2(vertical, horizontal);
             if (dash) {
-                addEffect("dash", (e) -> {
-                    getPhysical().addForce("dash", getSpeed() * valueModifier(Modifiers.Dash), radians);
-                    e.getPhysical().setRoughness(0.1d);
-                }, 0.01d);
+                getPhysical().addForce("dash", getSpeed() * valueModifier(Modifiers.Dash), radians);
+                getPhysical().setDrag(0.6);
                 dash = false;
             }
             getPhysical().addForce("move", getSpeed(), radians);

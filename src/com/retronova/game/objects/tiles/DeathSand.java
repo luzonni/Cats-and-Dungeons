@@ -11,7 +11,7 @@ public class DeathSand extends Tile {
 
     @Override
     public void effect(Entity e) {
-        e.getPhysical().setRoughness(0.76);
+        e.getPhysical().setDrag(0.4);
     }
 
 }

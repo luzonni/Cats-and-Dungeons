@@ -80,14 +80,14 @@ public class Physical {
         for(int i = vectors.size() - 1; i >= 0; i--) {
             Vector v = vectors.get(i);
             double vForce = v.getForce() * (1 - drag);
-            this.drag*= 0.5d;
-            if(drag <= 0.1d)
-                drag = 0;
             v.setForce(vForce - result);
             if(v.getForce() <= 0.1d) {
                 vectors.remove(v);
             }
         }
+        this.drag -= 0.5d*delta;
+        if(drag <= 0.01d)
+            drag = 0;
     }
 
     /**
@@ -97,7 +97,7 @@ public class Physical {
      */
     public void addForce(String name, double force, double radians){
         force *= Configs.GameScale();
-        force *= (1 - roughness);
+        force *= (1 - drag);
         Vector vec = new Vector(name, force, radians);
         if(vectors.contains(vec)) {
             int index = vectors.indexOf(vec);
@@ -153,6 +153,7 @@ public class Physical {
     public void setDrag(double drag) {
         if(drag > 1) {
             this.drag = 1;
+            return;
         }
         this.drag = drag;
     }

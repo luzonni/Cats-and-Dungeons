@@ -3,6 +3,8 @@ package com.retronova.game.objects.entities.utilities;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.EffectApplicator;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.*;
@@ -27,9 +29,11 @@ public class Arrow extends Utility {
         if(getPhysical().crashing()) {
             this.disappear();
         }
-        List<Enemy> entities = Game.getMap().getEntities(Enemy.class);
+        List<Entity> entities = Game.getMap().getEntities();
         for(int i = 0; i < entities.size(); i++) {
-            Enemy entity = entities.get(i);
+            Entity entity = entities.get(i);
+            if(entity instanceof Player || entity == this)
+                continue;
             if(this.colliding(entity)) {
                 action.effect(entity);
                 this.disappear();

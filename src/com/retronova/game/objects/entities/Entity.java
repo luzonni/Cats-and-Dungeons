@@ -431,7 +431,8 @@ public abstract class Entity extends GameObject {
 
     public void EFFECT_STUNNED(int seconds) {
         this.addEffect("stunned", (e) -> {
-            e.getPhysical().setDrag(0.9);
+            e.getPhysical().setDrag(0.6);
+            e.getPhysical().addForce("stunned", e.getSpeed()*2, Engine.RAND.nextDouble()*Math.PI*2);
             System.out.println("Stunned");
         }, seconds);
     }

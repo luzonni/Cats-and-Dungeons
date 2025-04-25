@@ -35,7 +35,6 @@ public class GasBomb extends Item {
             if (nearest != null) {
                 ThrownGasBom bomb = new ThrownGasBom(player.getX(), player.getY(), player.getDamage() * 3);
                 bomb.getPhysical().addForce("throw", 10, nearest.getAngle(player));
-                Game.focus(bomb);
                 Game.getMap().put(bomb);
             }
         }

@@ -20,7 +20,7 @@ public class Zombie extends Enemy {
         super(ID, x, y, 25);
         loadSprites("mousezombie");
         setLife(40);
-        setSpeed(4);
+        setSpeed(1);
         addResistances(AttackTypes.Fire, 0.5);
         setSolid();
     }
