@@ -20,7 +20,7 @@ public class Silk extends Utility {
     private double r;
 
     public Silk(double x, double y, double damage, Entity shooter) {
-        super(x, y, 0.25d);
+        super(x, y, 20);
         setSpeed(7d);
         loadSprites("silk");
         setDamage(damage);

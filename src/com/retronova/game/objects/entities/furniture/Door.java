@@ -5,7 +5,7 @@ public class Door extends Furniture {
     private boolean opened;
 
     public Door(int ID, double x, double y) {
-        super(ID, x, y);
+        super(ID, x, y, 1000);
         loadSprites("door");
     }
 

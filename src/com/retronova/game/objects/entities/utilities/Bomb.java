@@ -33,7 +33,7 @@ public class Bomb extends Utility {
     };
 
     public Bomb(double x, double y, double damage, Entity shooter) {
-        super(x, y, 0.2);
+        super(x, y, 12);
         this.damage = damage;
         this.shooter = shooter;
         setSolid();

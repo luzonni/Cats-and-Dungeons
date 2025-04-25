@@ -9,7 +9,7 @@ public class Coin extends Utility {
     private int count;
 
     public Coin(double x, double y) {
-        super(x, y, 0.2);
+        super(x, y, 5);
         loadSprites("coin");
         setSolid();
         getPhysical().addForce("coinSpawn", 7, Engine.RAND.nextDouble() * Math.PI*2);

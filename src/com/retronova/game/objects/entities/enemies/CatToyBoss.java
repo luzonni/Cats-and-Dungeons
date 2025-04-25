@@ -13,7 +13,7 @@ public class CatToyBoss extends Enemy {
     private int countAnim;
 
     public CatToyBoss(int ID, double x, double y) {
-        super(ID, x, y, 0.4);
+        super(ID, x, y, 150);
         loadSprites("cattoyboss");
         //adicionar resistência
 

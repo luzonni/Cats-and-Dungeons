@@ -13,7 +13,7 @@ public class KingCursedCatBoss extends Enemy {
     private int countAnim;
 
     public KingCursedCatBoss(int ID, double x, double y) {
-        super(ID,x,y, 0.3);
+        super(ID,x,y, 100);
         loadSprites("kingcursedcatboss");
     }
 

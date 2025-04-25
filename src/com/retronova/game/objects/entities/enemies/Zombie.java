@@ -17,10 +17,10 @@ public class Zombie extends Enemy {
     private int cooldown;
 
     public Zombie(int ID, double x, double y) {
-        super(ID, x, y, 0.5);
+        super(ID, x, y, 25);
         loadSprites("mousezombie");
         setLife(40);
-        setSpeed(1);
+        setSpeed(4);
         addResistances(AttackTypes.Fire, 0.5);
         setSolid();
     }

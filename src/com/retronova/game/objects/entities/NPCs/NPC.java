@@ -8,8 +8,8 @@ import com.retronova.game.objects.entities.utilities.Utility;
 public abstract class NPC extends Entity {
 
 
-    protected NPC(int ID, double x, double y, double friction) {
-        super(ID, x, y, friction);
+    protected NPC(int ID, double x, double y, int weight) {
+        super(ID, x, y, weight);
         setSolid();
         setClickable();
     }

@@ -3,10 +3,8 @@ package com.retronova.game.objects.entities.enemies;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.game.objects.GameObject;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.game.objects.entities.AttackTypes;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
@@ -20,11 +18,11 @@ public class MouseSquire extends Enemy {
     private int soundStopDelay = 0;
 
     public MouseSquire(int ID, double x, double y) {
-        super(ID, x, y, 0.4);
+        super(ID, x, y, 25);
         loadSprites("mousesquire");
         setSolid();
         setLife(70);
-        setSpeed(1);
+        setSpeed(3);
         addResistances(AttackTypes.Fire, 0.6);
         addResistances(AttackTypes.Poison, 1);
         addResistances(AttackTypes.Piercing, 0.7);
@@ -50,7 +48,7 @@ public class MouseSquire extends Enemy {
             cooldown = 0;
             player.strike(AttackTypes.Melee, 6);
             player.addEffect("knockback", (e) -> {
-                e.getPhysical().setFriction(0.2);
+                e.getPhysical().setRoughness(0.2);
                 e.getPhysical().addForce("knockback", 8.0d, getPhysical().getAngleForce());
             }, 0.08);
 

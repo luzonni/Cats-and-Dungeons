@@ -1,6 +1,8 @@
 package com.retronova.game.objects.physical;
 
+import com.retronova.engine.Configs;
 import com.retronova.game.map.GameMap;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 
 import java.util.ArrayList;
@@ -8,14 +10,12 @@ import java.util.List;
 
 public class Repulsion implements Runnable {
 
-    private final List<Entity> checked;
     private final GameMap map;
     private final Thread thread;
     private boolean running;
 
     public Repulsion(GameMap map) {
         this.map = map;
-        checked = new ArrayList<>();
         thread = new Thread(this, "Repulsion-Thread");
     }
 
@@ -63,8 +63,11 @@ public class Repulsion implements Runnable {
                 double inside = (e1_radius + e2_radius) - distance;
                 double rx = Math.cos(radians) * inside / 2d;
                 double ry = Math.sin(radians) * inside / 2d;
-                e1.getPhysical().moveSystem(rx * -1, ry * -1);
-                e2.getPhysical().moveSystem(rx, ry);
+                double totalWeight = e1.getPhysical().getWeight() + e2.getPhysical().getWeight();
+                double proportion1 = e2.getPhysical().getWeight() / totalWeight;
+                double proportion2 = e1.getPhysical().getWeight() / totalWeight;
+                e1.getPhysical().moveSystem(-rx * proportion1, -ry * proportion1);
+                e2.getPhysical().moveSystem(rx * proportion2, ry * proportion2);
             }
         }
     }

@@ -23,6 +23,6 @@ public class Void extends Tile {
 
     @Override
     public void effect(Entity e) {
-        e.getPhysical().setFriction(0d);
+        e.getPhysical().setRoughness(0d);
     }
 }

@@ -14,7 +14,7 @@ public class Crate extends Furniture {
     private final int[] loot;
 
     public Crate(int ID, double x, double y, int[] loot) {
-        super(ID, x, y);
+        super(ID, x, y, 10);
         loadSprites("crate");
         this.getSheet().setIndex(Engine.RAND.nextInt(getSheet().size()));
         this.loot = loot;

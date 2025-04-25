@@ -24,8 +24,8 @@ public abstract class Enemy extends Entity {
     private boolean tookDamage;
     private int countTookDamage;
 
-    protected Enemy(int ID, double x, double y, double friction) {
-        super(ID, x, y, friction);
+    protected Enemy(int ID, double x, double y, int weight) {
+        super(ID, x, y, weight);
         addResistances(AttackTypes.Flat, 0);
     }
 

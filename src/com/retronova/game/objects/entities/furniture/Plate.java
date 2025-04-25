@@ -13,7 +13,7 @@ public class Plate extends  Furniture {
     private final Font font;
 
     public Plate(int ID, double x, double y, String content) {
-        super(ID, x, y);
+        super(ID, x, y, 1000);
         loadSprites("plate");
         this.content = content;
         this.font = FontG.font(FontG.Septem, Configs.GameScale()*6);

@@ -6,8 +6,8 @@ import com.retronova.game.objects.entities.Entity;
 
 public abstract class Utility extends Entity {
 
-    protected Utility(double x, double y, double friction) {
-        super(-1, x, y, friction);
+    protected Utility(double x, double y, int weight) {
+        super(-1, x, y, weight);
     }
 
     @Override

@@ -20,7 +20,7 @@ public class ThrownGasBom extends Utility {
     private int countEx;
 
     public ThrownGasBom(double x, double y, double damage) {
-        super(x, y, 0.7);
+        super(x, y, 20);
         this.damage = damage;
         loadSprites("gasbomb");
     }
@@ -44,7 +44,7 @@ public class ThrownGasBom extends Utility {
         for(int i = 0; i < entities.size(); i++) {
             Entity e = entities.get(i);
             if(e.getDistance(this) < range) {
-                e.EFFECT_STUNNED(10, 100);
+                e.EFFECT_STUNNED(10);
             }
         }
         for(int i = 0; i < 120; i++) {

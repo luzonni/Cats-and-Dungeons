@@ -34,7 +34,7 @@ public class GumMachine extends Furniture {
     private int price;
 
     public GumMachine(int ID, double x, double y, String command) {
-        super(ID, x, y);
+        super(ID, x, y, 500);
         loadSprites("gum_machine");
         setClickable();
         this.price = 98;

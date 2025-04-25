@@ -18,7 +18,7 @@ public class Slime extends Enemy {
     private int attackCooldown = 0;
 
     public Slime(int ID, double x, double y) {
-        super(ID, x, y, 0.2);
+        super(ID, x, y, 25);
         loadSprites("slime");
         jumpCoolDown = 0;
         isJumping = false;

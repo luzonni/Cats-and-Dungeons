@@ -16,10 +16,10 @@ public class Skeleton extends Enemy {
     private int cooldown;
 
     public Skeleton(int ID, double x, double y) {
-        super(ID, x, y, 0.5);
+        super(ID, x, y, 25);
         loadSprites("mouseskeleton");
         setLife(60);
-        setSpeed(1);
+        setSpeed(3);
         addResistances(AttackTypes.Fire, 0.5);
         addResistances(AttackTypes.Poison, 0.8);
         addResistances(AttackTypes.Piercing, 1);

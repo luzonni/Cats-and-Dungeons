@@ -17,7 +17,7 @@ public class KunaiThrown extends Utility {
     private final Point spriteRotatePosition;
 
     public KunaiThrown(double x, double y, double damage, double direction) {
-        super(x, y, 0.037d);
+        super(x, y, 2);
         this.spriteRotatePosition = new Point((int)(2.5* Configs.GameScale()), (int)(13.5*Configs.GameScale()));
         this.damage = damage;
         this.direction = direction;

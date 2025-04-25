@@ -1,10 +1,7 @@
 package com.retronova.game.objects.tiles;
 
-import com.retronova.engine.Engine;
-import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Lava extends Tile {
@@ -35,7 +32,7 @@ public class Lava extends Tile {
             strickCount = 0;
             e.EFFECT_FIRE(3, 6);
         }
-        e.getPhysical().setFriction(0.95d);
+        e.getPhysical().setRoughness(0.85d);
     }
 
 }

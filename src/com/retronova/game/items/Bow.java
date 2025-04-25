@@ -56,7 +56,7 @@ public class Bow extends Item {
         double y = shooter.getY();
         Arrow arrow = new Arrow(x, y, angle, (entity) -> {
             entity.strike(AttackTypes.Piercing, shooter.getDamage());
-            entity.getPhysical().addForce("knockback", 2.2, this.angle);
+            entity.getPhysical().addForce("knockback", 12, this.angle);
         });
         Game.getMap().put(arrow);
         Sound.play(Sounds.Bow);

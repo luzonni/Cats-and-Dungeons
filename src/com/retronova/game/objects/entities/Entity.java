@@ -120,11 +120,11 @@ public abstract class Entity extends GameObject {
         throw new EntityNotFound("Entity not found");
     }
 
-    protected Entity(int ID, double x, double y, double friction) {
+    protected Entity(int ID, double x, double y, int weight) {
         super(ID);
         setX(x);
         setY(y);
-        this.physical = new Physical(this, friction);
+        this.physical = new Physical(this, weight);
         this.resistances = new HashMap<>();
         this.modifiers = new HashMap<>();
         this.effects = new ArrayList<>();
@@ -429,7 +429,10 @@ public abstract class Entity extends GameObject {
         }, seconds, repetitions);
     }
 
-    public void EFFECT_STUNNED(int i, int i1) {
-        //TODO make Stunned effect
+    public void EFFECT_STUNNED(int seconds) {
+        this.addEffect("stunned", (e) -> {
+            e.getPhysical().setDrag(0.9);
+            System.out.println("Stunned");
+        }, seconds);
     }
 }

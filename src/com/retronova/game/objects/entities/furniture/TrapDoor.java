@@ -21,7 +21,7 @@ public class TrapDoor extends Furniture {
     private final String command;
 
     public TrapDoor(int ID, double x, double y, String command) {
-        super(ID, x, y);
+        super(ID, x, y, 1000);
         loadSprites("trapdoor");
         this.command = command;
         setClickable();

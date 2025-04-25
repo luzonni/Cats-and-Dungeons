@@ -19,7 +19,7 @@ public class MouseVampire extends Enemy {
     private int soundStopDelay = 0;
 
     public MouseVampire(int ID, double x, double y) {
-        super(ID, x, y, 0.3);
+        super(ID, x, y, 25);
         loadSprites("mousevampire");
         setSolid();
         setLife(60);

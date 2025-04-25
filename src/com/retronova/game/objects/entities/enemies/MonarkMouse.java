@@ -13,7 +13,7 @@ public class MonarkMouse extends Enemy {
     private int countAnim;
 
     public MonarkMouse(int ID, double x, double y) {
-        super(ID, x, y, 0.6);
+        super(ID, x, y, 25);
         loadSprites("monarkmouse");
         //adicionar resistência
         setSolid();

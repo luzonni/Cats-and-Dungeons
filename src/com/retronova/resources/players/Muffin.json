@@ -3,7 +3,7 @@
     "name": "Muffin",
     "life": 80,
     "damage": 10,
-    "speed": 5,
+    "speed": 8,
     "luck": 0.6,
     "attackSpeed": 15,
     "range": 8,

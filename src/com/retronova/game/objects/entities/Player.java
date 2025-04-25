@@ -89,7 +89,7 @@ public class Player extends Entity {
     private final Inventory inventory;
 
     Player(String name, double life, double damage, double speed, double luck, double attackSpeed, double range, int bagSize, int hotSize) {
-        super(0, 0, 0, 0.5);
+        super(0, 0, 0, 30);
         this.name = name;
         this.luck = luck;
         this.setRangeOfColect(5);
@@ -270,7 +270,7 @@ public class Player extends Entity {
             if (dash) {
                 addEffect("dash", (e) -> {
                     getPhysical().addForce("dash", getSpeed() * valueModifier(Modifiers.Dash), radians);
-                    e.getPhysical().setFriction(0.1d);
+                    e.getPhysical().setRoughness(0.1d);
                 }, 0.01d);
                 dash = false;
             }

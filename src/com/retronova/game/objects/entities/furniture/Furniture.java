@@ -6,8 +6,8 @@ import com.retronova.game.objects.entities.Entity;
 
 public abstract class Furniture extends Entity {
 
-    Furniture(int ID, double x, double y) {
-        super(ID, x, y, 1);
+    Furniture(int ID, double x, double y, int weight) {
+        super(ID, x, y, weight);
         setSolid();
     }
 

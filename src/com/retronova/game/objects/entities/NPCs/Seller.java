@@ -40,7 +40,7 @@ public class Seller extends NPC {
     };
 
     public Seller(int ID, double x, double y) {
-        super(ID, x, y, 0.5);
+        super(ID, x, y, 60);
         int index = 0;
         this.store = new Store(stock[index], prices[index]);
         loadSprites("seller");

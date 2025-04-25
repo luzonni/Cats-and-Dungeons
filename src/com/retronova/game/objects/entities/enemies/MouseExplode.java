@@ -19,7 +19,7 @@ public class MouseExplode extends Enemy {
     private int countAnim;
 
     public MouseExplode(int ID, double x, double y) {
-        super(ID,x,y,0.5);
+        super(ID,x,y,25);
         loadSprites("ratexplode");
         setDamage(33);
         setSolid();
