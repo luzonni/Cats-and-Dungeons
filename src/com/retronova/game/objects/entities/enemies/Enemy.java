@@ -93,7 +93,7 @@ public abstract class Enemy extends Entity {
         Xp e = new Xp(getX(), getY());
         e.setWeight(getXpWeight() * Engine.RAND.nextDouble() * luck);
         Game.getMap().put(e);
-        e.getPhysical().addForce("move", 7, Math.PI*2);
+        e.getPhysical().addForce("move", 1, Math.PI*2);
     }
 
     public void renderLife(Graphics2D g) {

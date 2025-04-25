@@ -15,6 +15,7 @@ import java.util.Random;
 public class Engine implements Runnable {
 
     private static String GameTag = "Cats & Dungeons";
+    private static String VERSION = "ALPHA 0.1.1";
 
 
     private static Thread thread;
@@ -153,13 +154,20 @@ public class Engine implements Runnable {
     }
 
     private void render(Graphics2D graphics) {
+        Font font = FontG.font(FontG.Septem, Configs.UiScale()*8);
+        String value = "FPS: " + FRAMES;
+        int padding = Configs.Margin();
+        int wF = FontG.getWidth(value, font);
+        graphics.setFont(font);
+        graphics.setColor(new Color(255, 255, 255, 100));
+        graphics.drawString(VERSION, padding, window.getHeight() - padding);
+        graphics.drawString(value, window.getWidth() - wF - padding, window.getHeight() - padding);
         graphics.dispose();
         BUFFER.show();
     }
 
     @Override
     public void run() {
-        System.out.println("Inicializando Thread MAX FRAMES = " + Configs.MaxFrames());
         long lastTimeHZ = System.nanoTime();
         double amountOfHz = Engine.HZ;
         double ns_HZ = Engine.T / amountOfHz;
