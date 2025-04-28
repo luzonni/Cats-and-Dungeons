@@ -1,5 +1,6 @@
 package com.retronova.game.items;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
@@ -31,7 +32,7 @@ public class DangerousWand extends Item {
         double x = player.getX() + (player.getWidth() / 2) + Math.cos(this.angle) * orbitRadius - this.boundsAttack.width / 2;
         double y = player.getY() + (player.getHeight() / 2) + Math.sin(this.angle) * orbitRadius - this.boundsAttack.height / 2;
         this.boundsAttack.setLocation((int) x, (int) y);
-        this.angle += Math.PI / 16;
+        this.angle += Math.PI / 26;
 
         Enemy nearest = player.getNearest(player.getRange(), Enemy.class);
         if (nearest != null) {
@@ -58,14 +59,20 @@ public class DangerousWand extends Item {
     @Override
     public void render(Graphics2D g) {
         BufferedImage sprite = getSprite();
+        Player player = Game.getPlayer();
+        g.setColor(new Color(0x964B00));
+        g.setStroke(new BasicStroke(Configs.GameScale()));
+        int x1 = (int)player.getX() + (player.getWidth() / 2) - Game.C.getX();
+        int y1 = (int)player.getY() + (int)(player.getHeight() * 0.7) - Game.C.getY();
+        int x2 = boundsAttack.x + boundsAttack.width / 2 - Game.C.getX();
+        int y2 = boundsAttack.y + boundsAttack.height / 2 - Game.C.getY();
+        g.drawLine(x1, y1, x2, y2);
 
         if (sprite != null) {
             int drawX = this.boundsAttack.x - Game.C.getX();
             int drawY = this.boundsAttack.y - Game.C.getY();
-            Rotate.draw(sprite, drawX, drawY, targetAngle + Math.PI / 2, spriteRotatePoint, g);
+            Rotate.draw(sprite, drawX, drawY, this.angle + Math.PI / 4, null, g);
         }
 
-        g.setColor(Color.RED);
-        g.drawRect(this.boundsAttack.x - Game.C.getX(), this.boundsAttack.y - Game.C.getY(), this.boundsAttack.width, this.boundsAttack.height);
     }
 }
