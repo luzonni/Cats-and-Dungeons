@@ -18,6 +18,7 @@ public class DangerousWand extends Item {
     private final double orbitRadius = GameObject.SIZE() * 2;
     private double targetAngle = 0;
     private final Point spriteRotatePoint;
+    private Enemy enemys;
 
     DangerousWand(int id) {
         super(id, "Dangerous Wand", "dangerouswand");
@@ -33,6 +34,10 @@ public class DangerousWand extends Item {
         double y = player.getY() + (player.getHeight() / 2) + Math.sin(this.angle) * orbitRadius - this.boundsAttack.height / 2;
         this.boundsAttack.setLocation((int) x, (int) y);
         this.angle += Math.PI / 26;
+        if(this.angle > Math.PI * 2){
+            this.angle = 0;
+            this.enemys = null;
+        }
 
         Enemy nearest = player.getNearest(player.getRange(), Enemy.class);
         if (nearest != null) {
@@ -49,11 +54,13 @@ public class DangerousWand extends Item {
     private void attack(Player player) {
         List<Enemy> entities = Game.getMap().getEntities(Enemy.class);
         for (Enemy e : entities) {
-            if (e.colliding(this.boundsAttack)) {
+            if (e.colliding(this.boundsAttack) && e != this.enemys) {
+                this.enemys = e;
                 e.strike(AttackTypes.Melee, player.getDamage() * 0.5);
                 break;
             }
         }
+
     }
 
     @Override
