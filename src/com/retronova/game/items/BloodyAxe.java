@@ -1,6 +1,7 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.graphics.Rotate;
+import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Player;
@@ -13,6 +14,7 @@ public class BloodyAxe extends Item {
 
     private double angle = 0;
     private final double itemDistance = 20;
+    private Enemy enemy;
 
     BloodyAxe(int id) {
         super(id, "Bloody Axe", "bloody_axe");
@@ -22,47 +24,46 @@ public class BloodyAxe extends Item {
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        Enemy nearest = player.getNearest(player.getRange(), Enemy.class);
+        this.enemy = player.getNearest(player.getRange() * 0.3, Enemy.class);
 
-        if (nearest != null) {
-            this.angle = nearest.getAngle(player);
-            double damage = player.getDamage();
-            if (player.getNearest(2, Enemy.class) == nearest && nearest.colliding(new Rectangle((int)getX() - 10, (int)getY() - 10, 20, 20))) {
-                nearest.strike(AttackTypes.Melee, damage);
-                player.setLife(player.getLife() + damage * (0.10));
-            }
+        this.angle += Math.PI / 64;
+        if(this.angle > Math.PI / 4){
+            this.angle = 0;
+            attack(player);
         }
+    }
+
+    public void attack(Player player){
+        if(enemy == null){
+            return;
+        }
+        double damage = player.getDamage();
+        enemy.strike(AttackTypes.Piercing, damage);
+        player.setLife(player.getLife() + damage * 0.06);
+
     }
 
     @Override
     public void render(Graphics2D g) {
+        if(enemy == null){
+            return;
+        }
         Player player = Game.getPlayer();
         BufferedImage sprite = getSprite();
 
-        if (sprite != null) {
-            double centerX = player.getX() + player.getWidth() / 2.0;
-            double centerY = player.getY() + player.getHeight() / 2.0;
-
-            double drawX = centerX + Math.cos(angle) * itemDistance - sprite.getWidth() / 2 - Game.C.getX();
-            double drawY = centerY + Math.sin(angle) * itemDistance - sprite.getHeight() / 2 - Game.C.getY();
-
-            Rotate.draw(sprite, (int) drawX, (int) drawY, angle + Math.PI / 4, new Point(sprite.getWidth() / 2, sprite.getHeight() / 2), g);
+        int x = (int)player.getX() - Game.C.getX();
+        int y = (int)player.getY() - Game.C.getY();
+        int side = (Integer.compare((int)enemy.getX(), (int)player.getX())) * player.getWidth();
+        double currentAngle = -this.angle;
+        if(side > 0){
+            sprite = SpriteSheet.flip(sprite, -1 , 1);
+            currentAngle -= Math.PI / 2;
+        }else {
+            currentAngle -= Math.PI / 4;
         }
+
+        Rotate.draw(sprite, x + side, y, currentAngle, null, g);
     }
 
-    public double getX() {
-        Player player = Game.getPlayer();
-        double centerX = player.getX() + player.getWidth() / 2.0;
-        return centerX + Math.cos(angle) * itemDistance;
-    }
 
-    public double getY() {
-        Player player = Game.getPlayer();
-        double centerY = player.getY() + player.getHeight() / 2.0;
-        return centerY + Math.sin(angle) * itemDistance;
-    }
-
-    public double getAngle() {
-        return angle;
-    }
 }
