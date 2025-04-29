@@ -78,7 +78,17 @@ public abstract class Entity extends GameObject {
                 return new MonarkMouse(ID, x, y);
             }
             case Seller -> {
-                return new Seller(ID, x, y);
+                if(values.length != 3) {
+                    break;
+                }
+                JSONArray stock = null;
+                try {
+                    stock = (JSONArray) ((JSONObject) values[2]).get("stock");
+                }catch (ClassCastException ignore) {}
+                if(stock == null && ((String)values[2]).equalsIgnoreCase("FULL")) {
+                    stock = new JSONArray();
+                }
+                return new Seller(ID, x, y, stock);
             }
             case Door -> {
                 return new Door(ID, x, y);

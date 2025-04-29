@@ -22,8 +22,8 @@ public class Store implements Activity {
 
     private final BufferedImage store;
     private final Point positionStore;
-    private final Slot[] slots;
     private int indexSelected = -1;
+    private final Slot[] slots;
     private final int[] prices;
 
     private final Rectangle buttonBuy;

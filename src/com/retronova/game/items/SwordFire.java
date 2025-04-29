@@ -26,7 +26,6 @@ public class SwordFire extends Item {
 
     SwordFire(int id) {
         super(id, "SwordFire", "swordfire");
-        setIndexSprite(Engine.RAND.nextInt(25));
         this.damage = 35;
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));

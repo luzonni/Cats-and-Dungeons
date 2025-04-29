@@ -75,7 +75,9 @@ public abstract class Item {
                 return new BloodyAxe(id);
             }
             case MagneticOrb -> {
-                return new MagneticOrb(id);
+                Consumable consumable = new MagneticOrb(id);
+                consumable.setStack(stack);
+                return consumable;
             }
             case BowEletric -> {
                 return new BowEletric(id);

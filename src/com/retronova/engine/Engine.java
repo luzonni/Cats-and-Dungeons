@@ -219,7 +219,6 @@ public class Engine implements Runnable {
                 }
                 //Show fps
                 if (System.currentTimeMillis() - timer >= 1000) {
-                    Engine.window.getFrame().setTitle(Engine.GameTag + " - Hz: " + Hz + " / Frames: " + frames);
                     Engine.FRAMES = frames;
                     frames = 0;
                     Engine.HERTZ = Hz;

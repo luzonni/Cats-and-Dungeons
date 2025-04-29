@@ -81,9 +81,6 @@ public class Sword extends Item {
         double y = player.getY() + player.getHeight()/1.5d - Game.C.getY();
         renderSword((int)x, (int)y, g);
         drawAttackEffect(g);
-        Rectangle rec = this.boundsAttack;
-        g.setColor(Color.red);
-        g.drawRect(rec.x - Game.C.getX(), rec.y - Game.C.getY(), rec.width, rec.height);
     }
 
     private void renderSword(int x, int y, Graphics2D g) {

@@ -36,7 +36,7 @@ public class Kunai extends Item {
         if(target != null) {
             this.angle = target.getAngle(player);
             countAttack++;
-            if(countAttack >= player.getAttackSpeed()*12) {
+            if(countAttack >= player.getAttackSpeed()*5) {
                 countAttack = 0;
                 double currentDamage = player.getDamage() + this.damage;
                 KunaiThrown kunai = new KunaiThrown(kunaiPosition.getX(), kunaiPosition.getY(), currentDamage, this.angle);
