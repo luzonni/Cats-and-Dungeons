@@ -4,7 +4,17 @@
       "name": "Seller",
       "x": 18,
       "y": 13,
-      "values": []
+      "values": [
+        {
+          "stock": [
+            {
+              "name": "sword",
+              "amount": 1,
+              "price": 22
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "GumMachine",
