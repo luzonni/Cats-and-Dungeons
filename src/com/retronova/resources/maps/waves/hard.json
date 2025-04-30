@@ -1,9 +1,9 @@
 {
   "waves":[
     {
-      "period": 4,
-      "amount" : [4, 6, 8, 12],
-      "enemies": ["Zombie", "Skeleton", "MouseSquire"]
+      "period": 1,
+      "amount" : [1],
+      "enemies": ["KingCursedCatBoss"]
     },
     {
       "period": 6,

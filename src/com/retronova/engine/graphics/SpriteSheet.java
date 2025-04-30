@@ -81,6 +81,18 @@ public class SpriteSheet {
         }
         return SHEET.getSubimage(x, y, size, size);
     }
+    public BufferedImage getSpriteWithIndex(int indexX, int indexY, int size) {
+        if(loss)
+            return SHEET;
+        size *= scale;
+        int x = indexX * size;
+        int y = indexY * size;
+        if(x < 0 || x + size > SHEET.getWidth() || y < 0 || y + size > SHEET.getHeight()) {
+            System.err.println("Erro getBAGULHO" + size);
+            throw new OutOfPixels("the subimage is out of image pixels");
+        }
+        return SHEET.getSubimage(x, y, size, size);
+    }
 
     public BufferedImage[] getSprites(int prefix) {
         int length = this.getWidth() / 16;
@@ -96,7 +108,7 @@ public class SpriteSheet {
     }
 
     public int getHeight() {
-        return this.SHEET.getHeight()/scale;
+        return this.SHEET.getHeight() / scale;
     }
 
     public int getScale() {

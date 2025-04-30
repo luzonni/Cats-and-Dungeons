@@ -63,10 +63,11 @@ public class Sheet<T extends GameObject> {
     private BufferedImage[] loadSprite(String spriteName) {
         String modulo = "sprites/objects/" + gameObject.getSimpleName().toLowerCase();
         SpriteSheet sheet = new SpriteSheet(modulo, spriteName, Configs.GameScale());
-        int length = sheet.getWidth() / 16;
+        int height = sheet.getHeight();
+        int length = sheet.getWidth() / height;
         BufferedImage[] sprites = new BufferedImage[length];
         for(int i = 0; i < length; i++) {
-            sprites[i] = sheet.getSpriteWithIndex(i, 0);
+            sprites[i] = sheet.getSpriteWithIndex(i, 0,height);
         }
         return sprites;
     }

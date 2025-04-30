@@ -2,6 +2,7 @@ package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
@@ -13,39 +14,33 @@ public class KingCursedCatBoss extends Enemy {
     private int countAnim;
 
     public KingCursedCatBoss(int ID, double x, double y) {
-        super(ID,x,y, 100);
+        super(ID,x,y, 80);
+        setWidth(2);
+        setHeight(2);
         loadSprites("kingcursedcatboss");
+        setLife(1100);
+        setSpeed(4);
+        setSolid();
+
     }
 
     @Override
     public void tick() {
-        moveIA();
-        animation();
-
-    }
-
-    public void moveIA() {
         Player player = Game.getPlayer();
-        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        getPhysical().addForce("move", 0.50, radians);
-    }
+        double angle = player.getAngle(this);
+        getPhysical().addForce("Moving",getSpeed(), angle);
 
-    public void animation() {
-        countAnim++;
-        if(countAnim > 10) {
-            countAnim = 0;
-            getSheet().plusIndex();
-        }
     }
 
     @Override
-    public void render(Graphics2D k) {
-        int orientation = getPhysical().getOrientation()[0] * -1;
-        if (orientation == 0) {
-            orientation = -1;
-        }
-        BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
-        renderSprite(sprite, k);
+    public void render(Graphics2D g) {
+        super.render(g);
+        int x = (int)getX() - Game.C.getX();
+        int y = (int)getY() - Game.C.getY();
+        g.setColor(Color.red);
+        g.drawRect(x,y,getWidth(), getHeight());
     }
+
+
 
 }
