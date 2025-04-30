@@ -2,6 +2,7 @@ package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
@@ -13,46 +14,35 @@ public class CatToyBoss extends Enemy {
     private int countAnim;
 
     public CatToyBoss(int ID, double x, double y) {
-        super(ID, x, y, 150);
+        super(ID, x, y, 70);
+        setWidth(2);
+        setHeight(2);
+        setLife(900);
         loadSprites("cattoyboss");
-        //adicionar resistência
+        setSpeed(4);
+        setSolid();
 
     }
 
     @Override
     public void tick() {
-        moveIA();
-        animation();
-        //adicionar dano
-    }
-
-    public void moveIA() {
         Player player = Game.getPlayer();
-        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        getPhysical().addForce("move", 0.30, radians);
-
-    }
-
-    public void animation() {
-        countAnim++;
-        if(countAnim > 10) {
-            countAnim = 0;
-            getSheet().plusIndex();
+        double angle = player.getAngle(this);
+        getPhysical().addForce("Moving",getSpeed(), angle);
+        if(player.colliding(this)){
+            player.strike(AttackTypes.Melee, 30);
+            //TODO Sound.play
+            player.getPhysical().addForce("knockback", 60, getPhysical().getAngleForce());
         }
     }
 
     @Override
-    public void render(Graphics2D c) {
-        int orientation = getPhysical().getOrientation()[0] * -1;
-        if(orientation == 0) {
-            orientation = -1;
-        }
-        BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
-        renderSprite(sprite, c);
+    public void render(Graphics2D g){
+        super.render(g);
+        int x = (int)getX() - Game.C.getX();
+        int y = (int)getY() - Game.C.getY();
+        g.setColor(Color.red);
+        g.drawRect(x,y,getWidth(), getHeight());
     }
 
-    @Override
-    public void dispose() {
-
-    }
 }

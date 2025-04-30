@@ -3,6 +3,7 @@ package com.retronova.game.objects.entities.enemies;
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
@@ -18,7 +19,7 @@ public class KingCursedCatBoss extends Enemy {
         setWidth(2);
         setHeight(2);
         loadSprites("kingcursedcatboss");
-        setLife(1100);
+        setLife(1300);
         setSpeed(4);
         setSolid();
 
@@ -29,6 +30,11 @@ public class KingCursedCatBoss extends Enemy {
         Player player = Game.getPlayer();
         double angle = player.getAngle(this);
         getPhysical().addForce("Moving",getSpeed(), angle);
+        if(player.colliding(this)){
+            player.strike(AttackTypes.Melee, 30);
+            //TODO Sound.play
+            player.getPhysical().addForce("knockback", 20, getPhysical().getAngleForce());
+        }
 
     }
 
