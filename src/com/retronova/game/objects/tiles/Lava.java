@@ -32,7 +32,7 @@ public class Lava extends Tile {
             strickCount = 0;
             e.EFFECT_FIRE(3, 6);
         }
-        e.getPhysical().setRoughness(0.85d);
+        e.getPhysical().setDrag(0.7d);
     }
 
 }
