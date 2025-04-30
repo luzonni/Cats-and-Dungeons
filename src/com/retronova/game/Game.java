@@ -95,6 +95,8 @@ public class Game implements Activity {
         this.map = newMap;
         this.map.addPlayer(player);
         Game.C = new Camera(this.map.getBounds(), 0.25d);
+        Game.C.setX((int)player.getX() + player.getWidth()/2 - Engine.window.getWidth()/2);
+        Game.C.setY((int)player.getY() + player.getHeight()/2 - Engine.window.getHeight()/2);
         Game.C.setFollowed(player);
     }
 
