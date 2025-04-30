@@ -70,7 +70,7 @@ public class Sword extends Item {
         if(enemy.colliding(this.boundsAttack)) {
             enemy.strike(AttackTypes.Melee, this.damage + player.getDamage());
             double r = enemy.getAngle(player);
-            enemy.getPhysical().addForce("knockback", 16, r);
+            enemy.getPhysical().addForce("knockback", 3, r);
         }
         Sound.play(Sounds.Sword);
     }
