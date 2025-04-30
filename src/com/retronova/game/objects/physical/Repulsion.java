@@ -46,7 +46,9 @@ public class Repulsion implements Runnable {
         List<Entity> nears = new ArrayList<>();
         for(int i = 0; i < list.size(); i++) {
             Entity e = list.get(i);
-            if(e.colliding(entity) && e != entity && e.isSolid()) {
+            double total_radius = (e.getWidth() + entity.getWidth()) / 2d;
+            double distance = e.getDistance(entity);
+            if(total_radius > distance && e != entity && e.isSolid()) {
                 nears.add(e);
             }
         }
@@ -54,21 +56,18 @@ public class Repulsion implements Runnable {
     }
 
     void repulsion(Entity e1, Entity e2) {
-        double e1_radius = e1.getWidth() / 2d;
-        double e2_radius = e2.getWidth() / 2d;
-        if(e1.getBounds().intersects(e2.getBounds())) {
-            double radians = Math.atan2((e2.getY() - e1.getY()), (e2.getX() - e1.getX()));
-            double distance = e1.getDistance(e2);
-            if((e1_radius + e2_radius) > distance) {
-                double inside = (e1_radius + e2_radius) - distance;
-                double rx = Math.cos(radians) * inside / 2d;
-                double ry = Math.sin(radians) * inside / 2d;
-                double totalWeight = e1.getPhysical().getWeight() + e2.getPhysical().getWeight();
-                double proportion1 = e2.getPhysical().getWeight() / totalWeight;
-                double proportion2 = e1.getPhysical().getWeight() / totalWeight;
-                e1.getPhysical().moveSystem(-rx * proportion1, -ry * proportion1);
-                e2.getPhysical().moveSystem(rx * proportion2, ry * proportion2);
-            }
+        double total_radius = (e1.getWidth() + e2.getWidth()) / 2d;
+        double radians = Math.atan2((e2.getY() - e1.getY()), (e2.getX() - e1.getX()));
+        double distance = e1.getDistance(e2);
+        if(total_radius > distance) {
+            double inside = total_radius - distance;
+            double rx = Math.cos(radians) * inside;
+            double ry = Math.sin(radians) * inside;
+            double totalWeight = e1.getPhysical().getWeight() + e2.getPhysical().getWeight();
+            double proportion1 = e2.getPhysical().getWeight() / totalWeight;
+            double proportion2 = e1.getPhysical().getWeight() / totalWeight;
+            e1.getPhysical().moveSystem(-rx * proportion1, -ry * proportion1);
+            e2.getPhysical().moveSystem(rx * proportion2, ry * proportion2);
         }
     }
 

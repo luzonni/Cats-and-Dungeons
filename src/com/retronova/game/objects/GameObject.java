@@ -103,7 +103,11 @@ public abstract class GameObject {
     }
 
     public double getDistance(GameObject object) {
-        return Math.sqrt(Math.pow((object.getX() - this.getX()), 2) + Math.pow(object.getY() - this.getY(), 2));
+        double x1 = object.getX() + object.getWidth()/2d;
+        double y1 = object.getY() + object.getHeight()/2d;
+        double x2 = this.getX() + this.getWidth()/2d;
+        double y2 = this.getY() + this.getHeight()/2d;
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
 
     public double getAngle(GameObject obj) {
