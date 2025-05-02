@@ -22,5 +22,6 @@ public enum ItemIDs {
     DangerousWand,
     Trident,
     Sickle,
+    Furball,
 
 }

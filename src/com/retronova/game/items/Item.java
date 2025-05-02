@@ -94,6 +94,9 @@ public abstract class Item {
             case Sickle -> {
                 return new Sickle(id);
             }
+            case Furball -> {
+                return new Furball(id);
+            }
         }
         throw new NotFound("Item not found");
     }
