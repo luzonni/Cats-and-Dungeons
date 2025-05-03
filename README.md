@@ -2,8 +2,7 @@
 
 # 🎮 Roguelike Game  
 
-Um jogo roguelike desenvolvido em **Java**, focado em exploração, sobrevivência e desafios gerados de forma
-procedural.  
+Um jogo roguelike desenvolvido em **Java**, focado em exploração e sobrevivência.
 
 ## 🚀 Tecnologias Utilizadas  
 - **Java** – Para a lógica do jogo e mecânicas.  
@@ -15,6 +14,7 @@ procedural.
 - **Sistema de combate estratégico** ⚔️  
 - **Progressão dinâmica do personagem** 🏆  
 - **Ambiente interativo e desafiador** 🔥
+- **História Divertida** 🎮
 
 ## Personagem
 O jogador poderá escolher entre três variantes de personagens,
