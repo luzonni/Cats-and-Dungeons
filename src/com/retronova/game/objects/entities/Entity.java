@@ -376,7 +376,7 @@ public abstract class Entity extends GameObject {
     public void dropLoot(Item loot) {
         Entity drop = new Drop(getX(), getY(), loot);
         Game.getMap().put(drop);
-        drop.getPhysical().addForce("drop", Engine.RAND.nextInt(10), Engine.RAND.nextDouble(Math.PI*2));
+        drop.getPhysical().addForce("drop", 3 + Engine.RAND.nextInt(3), Engine.RAND.nextDouble(Math.PI*2));
     }
 
     public Physical getPhysical() {
