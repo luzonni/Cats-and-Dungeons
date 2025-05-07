@@ -99,8 +99,8 @@ public abstract class Enemy extends Entity {
     public void renderLife(Graphics2D g) {
         if(getLife() == getLifeSize() || getLife() < 0)
             return;
-        int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() + getHeight() - Game.C.getY() + Configs.GameScale() *2;
+        int x = (int)getX();
+        int y = (int)getY() + getHeight() + Configs.GameScale() *2;
         int w = getWidth();
         int h = Configs.GameScale() * 3;
 

@@ -36,6 +36,6 @@ public class ThrownFurball extends Utility{
 
     @Override
     public void render(Graphics2D g) {
-        Rotate.draw(getSprite(), (int)getX() - Game.C.getX(), (int)getY() - Game.C.getY(), angle, null, g);
+        Rotate.draw(getSprite(), (int)getX(), (int)getY(), angle, null, g);
     }
 }

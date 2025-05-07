@@ -66,12 +66,12 @@ public class ClawBlades extends Item {
     public void render(Graphics2D g) {
         Rectangle rec = this.boundsAttack;
         Player player = Game.getPlayer();
-        double x = player.getX() - Game.C.getX();
-        double y = player.getY() + player.getHeight()/1.5d - Game.C.getY();
+        double x = player.getX();
+        double y = player.getY() + player.getHeight()/1.5d;
         renderBlades((int)x, (int)y, g);
         g.setColor(Color.red);
-        g.drawRect(rec.x - Game.C.getX(), rec.y - Game.C.getY(), rec.width, rec.height);
-        g.drawLine(rec.x + rec.width/2 - Game.C.getX(), rec.y - Game.C.getY(), rec.x + rec.width/2 - Game.C.getX(), rec.y + rec.height - Game.C.getY());
+        g.drawRect(rec.x, rec.y, rec.width, rec.height);
+        g.drawLine(rec.x + rec.width/2, rec.y, rec.x + rec.width/2, rec.y + rec.height);
     }
 
     private void renderBlades(int x, int y, Graphics2D g) {

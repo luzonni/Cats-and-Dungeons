@@ -38,8 +38,8 @@ public class Plate extends  Furniture {
         int hC = FontG.getHeight(content, font);
         int width = wC + padding*2;
         int height = hC + padding*2;
-        int x = (int)getX() + getWidth()/2 - width/2 - Game.C.getX();
-        int y = (int)getY() + Configs.GameScale()*3 - Game.C.getY();
+        int x = (int)getX() + getWidth()/2 - width/2;
+        int y = (int)getY() + Configs.GameScale()*3;
 
         g.setColor(new Color(0x663931));
         g.fillRect(x, y, width, height);

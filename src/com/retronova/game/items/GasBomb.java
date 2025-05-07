@@ -56,8 +56,8 @@ public class GasBomb extends Item {
         BufferedImage sprite = getSprite();
 
         if (sprite != null) {
-            int drawX = (int) (player.getX() + player.getWidth() / 2 + offsetX - Game.C.getX() - sprite.getWidth() / 2);
-            int drawY = (int) (player.getY() + player.getHeight() / 2 + offsetY - Game.C.getY() - sprite.getHeight() / 2);
+            int drawX = (int) (player.getX() + player.getWidth() / 2 + offsetX - sprite.getWidth() / 2);
+            int drawY = (int) (player.getY() + player.getHeight() / 2 + offsetY - sprite.getHeight() / 2);
             g.drawImage(sprite, drawX, drawY, null);
         }
     }

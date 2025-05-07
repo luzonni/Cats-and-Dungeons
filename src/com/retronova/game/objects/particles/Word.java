@@ -32,8 +32,8 @@ public class Word extends Particle {
         String value = this.value;
         int wF = FontG.getWidth(value, font);
         int hF = FontG.getHeight(value, font);
-        int x = (int)getX() - wF/2 - Game.C.getX();
-        int y = (int)getY() - hF/2 - Game.C.getY();
+        int x = (int)getX() - wF/2;
+        int y = (int)getY() - hF/2;
         g.setFont(font);
         g.setColor(Color.black);
         g.drawString(value, x + Configs.GameScale(), y + Configs.GameScale());

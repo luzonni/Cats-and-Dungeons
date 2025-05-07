@@ -69,15 +69,15 @@ public class DangerousWand extends Item {
         Player player = Game.getPlayer();
         g.setColor(new Color(0x964B00));
         g.setStroke(new BasicStroke(Configs.GameScale()));
-        int x1 = (int)player.getX() + (player.getWidth() / 2) - Game.C.getX();
-        int y1 = (int)player.getY() + (int)(player.getHeight() * 0.7) - Game.C.getY();
-        int x2 = boundsAttack.x + boundsAttack.width / 2 - Game.C.getX();
-        int y2 = boundsAttack.y + boundsAttack.height / 2 - Game.C.getY();
+        int x1 = (int)player.getX() + (player.getWidth() / 2);
+        int y1 = (int)player.getY() + (int)(player.getHeight() * 0.7);
+        int x2 = boundsAttack.x + boundsAttack.width / 2;
+        int y2 = boundsAttack.y + boundsAttack.height / 2;
         g.drawLine(x1, y1, x2, y2);
 
         if (sprite != null) {
-            int drawX = this.boundsAttack.x - Game.C.getX();
-            int drawY = this.boundsAttack.y - Game.C.getY();
+            int drawX = this.boundsAttack.x;
+            int drawY = this.boundsAttack.y;
             Rotate.draw(sprite, drawX, drawY, this.angle + Math.PI / 4, null, g);
         }
 

@@ -99,14 +99,13 @@ public class Trident extends Item {
         double attackX = middleX + Math.cos(angle) * offset + horizontalOffset;
         double attackY = middleY + Math.sin(angle) * offset;
 
-        int drawX = (int)(attackX - getSprite().getWidth() / 2 - Game.C.getX());
-        int drawY = (int)(attackY - getSprite().getHeight() / 2 - Game.C.getY());
+        int drawX = (int)(attackX - getSprite().getWidth() / 2);
+        int drawY = (int)(attackY - getSprite().getHeight() / 2);
 
         Rotate.draw(getSprite(), drawX, drawY, angle, null, g);
 
         g.setColor(Color.RED);
-        g.drawRect(boundsAttack.x - Game.C.getX(), boundsAttack.y - Game.C.getY(),
-                boundsAttack.width, boundsAttack.height);
+        g.drawRect(boundsAttack.x, boundsAttack.y, boundsAttack.width, boundsAttack.height);
     }
 
 

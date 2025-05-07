@@ -38,7 +38,7 @@ public class Game implements Activity {
     private int count;
 
     private final Player player;
-    public static Camera C;
+    public Camera C;
 
     private GameMap map;
     private int level;
@@ -95,10 +95,10 @@ public class Game implements Activity {
         }
         this.map = newMap;
         this.map.addPlayer(player);
-        Game.C = new Camera(this.map.getBounds(), 0.25d);
-        Game.C.setX((int)player.getX() + player.getWidth()/2 - Engine.window.getWidth()/2);
-        Game.C.setY((int)player.getY() + player.getHeight()/2 - Engine.window.getHeight()/2);
-        Game.C.setFollowed(player);
+        this.C = new Camera(this.map.getBounds(), 0.25d);
+        this.C.setX((int)player.getX() + player.getWidth()/2 - Engine.window.getWidth()/2);
+        this.C.setY((int)player.getY() + player.getHeight()/2 - Engine.window.getHeight()/2);
+        this.C.setFollowed(player);
     }
 
     @Override
@@ -153,7 +153,11 @@ public class Game implements Activity {
     @Override
     public void render(Graphics2D g) {
         galaxy.render(g);
-        //Render logic
+        renderWorld(g);
+        hud.render(g);
+    }
+
+    private void renderWorld(Graphics2D g) {
         Graphics2D gcam = (Graphics2D) g.create();
         AffineTransform at = new AffineTransform();
         at.translate(-C.getX(), -C.getY());
@@ -161,7 +165,6 @@ public class Game implements Activity {
         renderMap(gcam);
         renderEntities(gcam);
         renderParticles(gcam);
-        hud.render(g);
         gcam.dispose();
     }
 

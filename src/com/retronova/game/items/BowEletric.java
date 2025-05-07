@@ -65,8 +65,8 @@ public class BowEletric extends Item {
     @Override
     public void render(Graphics2D g) {
         Player player = Game.getPlayer();
-        int x = (int) player.getX() + player.getWidth()/2 - Game.C.getX();
-        int y = (int) player.getY() + player.getHeight()/2 - Game.C.getY();
+        int x = (int) player.getX() + player.getWidth()/2;
+        int y = (int) player.getY() + player.getHeight()/2;
         double xx = x - getSprite().getWidth()/2d;
         double yy = y - getSprite().getHeight()/2d;
         Rotate.draw(getSprite(), (int)xx, (int)yy, angle + Math.PI/4, null, g);
@@ -79,6 +79,6 @@ public class BowEletric extends Item {
         }
         double x = player.getX() + Math.cos(angle+Math.PI) * (countShot-3) * Configs.GameScale();
         double y = player.getY() + Math.sin(angle+Math.PI) * (countShot-3) * Configs.GameScale();
-        Rotate.draw(arrowSprite, (int)x - Game.C.getX(), (int)y - Game.C.getY(), angle + Math.PI/4, null, g);
+        Rotate.draw(arrowSprite, (int)x, (int)y, angle + Math.PI/4, null, g);
     }
 }

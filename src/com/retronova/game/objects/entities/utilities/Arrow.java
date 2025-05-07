@@ -43,9 +43,7 @@ public class Arrow extends Utility {
 
     @Override
     public void render(Graphics2D g) {
-        int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() - Game.C.getY();
-        Rotate.draw(getSprite(), x, y, angle + Math.PI/4, null, g);
+        Rotate.draw(getSprite(), (int)getX(), (int)getY(), angle + Math.PI/4, null, g);
     }
 
 }

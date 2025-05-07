@@ -71,12 +71,12 @@ public class SwordFire extends Item {
 
     public void render(Graphics2D g) {
         Player player = Game.getPlayer();
-        double x = player.getX() + player.getWidth()/2d - Game.C.getX();
-        double y = player.getY() + player.getHeight()/1.5d - Game.C.getY();
+        double x = player.getX() + player.getWidth()/2d ;
+        double y = player.getY() + player.getHeight()/1.5d;
         renderSword((int)x, (int)y, g);
         Rectangle rec = this.boundsAttack;
         g.setColor(Color.red);
-        g.drawRect(rec.x - Game.C.getX(), rec.y - Game.C.getY(), rec.width, rec.height);
+        g.drawRect(rec.x, rec.y, rec.width, rec.height);
     }
 
     private void renderSword(int x, int y, Graphics2D g) {

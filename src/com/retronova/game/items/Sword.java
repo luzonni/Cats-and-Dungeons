@@ -77,8 +77,8 @@ public class Sword extends Item {
 
     public void render(Graphics2D g) {
         Player player = Game.getPlayer();
-        double x = player.getX() + player.getWidth()/2d - Game.C.getX();
-        double y = player.getY() + player.getHeight()/1.5d - Game.C.getY();
+        double x = player.getX() + player.getWidth()/2d;
+        double y = player.getY() + player.getHeight()/1.5d;
         renderSword((int)x, (int)y, g);
         drawAttackEffect(g);
     }
@@ -97,8 +97,8 @@ public class Sword extends Item {
     private void drawAttackEffect(Graphics2D g) {
         if(Math.abs(rad) > Math.PI/4 && Math.abs(rad) < Math.PI/2) {
             BufferedImage flipped = SpriteSheet.flip(this.sword_attack,1, side);
-            int x = this.boundsAttack.x + (this.boundsAttack.width - this.sword_attack.getWidth())/2 - Game.C.getX();
-            int y = this.boundsAttack.y + (this.boundsAttack.height - this.sword_attack.getHeight())/2 - Game.C.getY();
+            int x = this.boundsAttack.x + (this.boundsAttack.width - this.sword_attack.getWidth())/2;
+            int y = this.boundsAttack.y + (this.boundsAttack.height - this.sword_attack.getHeight())/2;
             g.drawImage(flipped, x, y, null);
         }
     }

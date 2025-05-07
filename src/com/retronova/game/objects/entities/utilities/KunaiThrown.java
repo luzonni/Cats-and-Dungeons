@@ -41,6 +41,6 @@ public class KunaiThrown extends Utility {
 
     @Override
     public void render(Graphics2D g) {
-        Rotate.draw(getSprite(), (int)getX() - Game.C.getX(), (int)getY() - Game.C.getY(), this.direction + Math.PI/4d, spriteRotatePosition, g);
+        Rotate.draw(getSprite(), (int)getX(), (int)getY(), this.direction + Math.PI/4d, spriteRotatePosition, g);
     }
 }

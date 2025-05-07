@@ -51,6 +51,6 @@ public class Kunai extends Item {
     public void render(Graphics2D g) {
         if(countAttack < 30)
             return;
-        Rotate.draw(getSprite(), kunaiPosition.x - Game.C.getX(), kunaiPosition.y - Game.C.getY(), this.angle + Math.PI/4, spriteRotatePosition, g);
+        Rotate.draw(getSprite(), kunaiPosition.x, kunaiPosition.y, this.angle + Math.PI/4, spriteRotatePosition, g);
     }
 }

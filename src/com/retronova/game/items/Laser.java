@@ -67,8 +67,8 @@ public class Laser extends Item {
     @Override
     public void render(Graphics2D g) {
         Player player = Game.getPlayer();
-        int x = (int) player.getX() + player.getWidth() / 2 - Game.C.getX();
-        int y = (int) player.getY() + player.getHeight() / 2 - Game.C.getY();
+        int x = (int) player.getX() + player.getWidth() / 2;
+        int y = (int) player.getY() + player.getHeight() / 2;
         double xx = x - getSprite().getWidth() / 2d + itemOffsetX;
         double yy = y - getSprite().getHeight() / 2d + itemOffsetY;
         Rotate.draw(getSprite(), (int) xx, (int) yy, angle + Math.PI / 4, null, g);

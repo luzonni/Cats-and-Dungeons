@@ -51,8 +51,8 @@ public class BloodyAxe extends Item {
         Player player = Game.getPlayer();
         BufferedImage sprite = getSprite();
 
-        int x = (int)player.getX() - Game.C.getX();
-        int y = (int)player.getY() - Game.C.getY();
+        int x = (int)player.getX();
+        int y = (int)player.getY();
         int side = (Integer.compare((int)enemy.getX(), (int)player.getX())) * player.getWidth();
         double currentAngle = -this.angle;
         if(side > 0){

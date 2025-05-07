@@ -50,8 +50,8 @@ public class Drop extends Utility {
 
     @Override
     public void render(Graphics2D g) {
-        int x = (int) getX() - Game.C.getX();
-        int y = (int)getY() - Game.C.getY();
+        int x = (int) getX();
+        int y = (int)getY();
         BufferedImage sprite = getSprite();
         BufferedImage itemSprite = item.getSprite();
         Rotate.draw(sprite, x, y, backR, null, g);

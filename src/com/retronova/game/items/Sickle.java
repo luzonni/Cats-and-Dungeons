@@ -80,15 +80,14 @@ public class Sickle extends Item {
         double offsetX = Math.cos(rotationAngle) * radius;
         double offsetY = Math.sin(rotationAngle) * radius;
 
-        int drawX = (int)(playerCenterX + offsetX - getSprite().getWidth() / 2 - Game.C.getX());
-        int drawY = (int)(playerCenterY + offsetY - getSprite().getHeight() / 2 - Game.C.getY());
+        int drawX = (int)(playerCenterX + offsetX - getSprite().getWidth() / 2d);
+        int drawY = (int)(playerCenterY + offsetY - getSprite().getHeight() / 2d);
 
         Rotate.draw(getSprite(), drawX, drawY, rotationAngle + Math.PI / 2, null, g);
 
         if (attacking) {
             g.setColor(Color.GREEN);
-            g.drawRect(boundsAttack.x - Game.C.getX(), boundsAttack.y - Game.C.getY(),
-                    boundsAttack.width, boundsAttack.height);
+            g.drawRect(boundsAttack.x, boundsAttack.y, boundsAttack.width, boundsAttack.height);
         }
     }
 

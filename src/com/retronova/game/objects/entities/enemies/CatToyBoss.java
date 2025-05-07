@@ -39,8 +39,8 @@ public class CatToyBoss extends Enemy {
     @Override
     public void render(Graphics2D g){
         super.render(g);
-        int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() - Game.C.getY();
+        int x = (int)getX();
+        int y = (int)getY();
         g.setColor(Color.red);
         g.drawRect(x,y,getWidth(), getHeight());
     }

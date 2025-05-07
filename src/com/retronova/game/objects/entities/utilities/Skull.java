@@ -52,8 +52,6 @@ public class Skull extends Utility {
 
     @Override
     public void render(Graphics2D g) {
-        int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() - Game.C.getY();
-        Rotate.draw(sprite, x, y, r, null, g);
+        Rotate.draw(sprite, (int)getX(), (int)getY(), r, null, g);
     }
 }

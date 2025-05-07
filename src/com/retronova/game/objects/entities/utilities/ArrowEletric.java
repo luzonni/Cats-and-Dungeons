@@ -38,8 +38,8 @@ public class ArrowEletric extends Utility {
 
     @Override
     public void render(Graphics2D g) {
-        int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() - Game.C.getY();
+        int x = (int)getX();
+        int y = (int)getY();
         Rotate.draw(getSprite(), x, y, angle + Math.PI/4, null, g);
     }
 }

@@ -49,15 +49,14 @@ public class Silk extends Utility {
             fading -=0.015f;
             if(fading <= 0.1) {
                 this.disappear();
-                return;
             }
         }
     }
 
     @Override
     public void render(Graphics2D g) {
-        int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() - Game.C.getY();
+        int x = (int)getX();
+        int y = (int)getY();
         renderLine(g);
         BufferedImage sp = Alpha.getImage(getSprite(), fading);
         Rotate.draw(sp, x, y, r, null, g);
@@ -66,12 +65,12 @@ public class Silk extends Utility {
     private void renderLine(Graphics2D g) {
         g.setStroke(new BasicStroke(Configs.GameScale()));
         g.setColor(new Color(243, 113, 153));
-        int x = (int)getX() + getWidth()/2 - Game.C.getX();
-        int y = (int)getY() + getHeight()/2 - Game.C.getY();
+        int x = (int)getX() + getWidth()/2;
+        int y = (int)getY() + getHeight()/2;
         for(int i = visited.size()-1; i >= 0; i--) {
             Entity v = visited.get(i);
-            int xx = (int) v.getX() + v.getWidth()/2 - Game.C.getX();
-            int yy = (int) v.getY() + v.getHeight()/2 - Game.C.getY();
+            int xx = (int) v.getX() + v.getWidth()/2;
+            int yy = (int) v.getY() + v.getHeight()/2;
             g.drawLine(xx, yy, x, y);
             x = xx;
             y = yy;

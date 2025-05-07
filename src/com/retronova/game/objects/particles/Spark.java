@@ -28,10 +28,8 @@ public class Spark extends Particle {
 
     @Override
     public void render(Graphics2D g) {
-        int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() - Game.C.getY();
         int size = Configs.GameScale();
         g.setColor(new Color(255, 0,0, 255 - (int)(255 * (count/getSeconds()))));
-        g.fillRect(x, y, size, size);
+        g.fillRect((int)getX(), (int)getY(), size, size);
     }
 }

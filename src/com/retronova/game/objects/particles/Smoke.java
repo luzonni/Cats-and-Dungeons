@@ -34,8 +34,8 @@ public class Smoke extends Particle {
     @Override
     public void render(Graphics2D g) {
         float t = 1f - count/(float)getSeconds();
-        int x = (int)getX() - Game.C.getX();
-        int y = (int)getY() - Game.C.getY();
+        int x = (int)getX();
+        int y = (int)getY();
         Alpha.draw(getSprite(), x, y, t, g);
     }
 }
