@@ -59,7 +59,7 @@ public class GumMachine extends Furniture {
     public void tick() {
         Player player = Game.getPlayer();
         if (player.getDistance(this) <= GameObject.SIZE() * 3) {
-            if (Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
+            if (Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds())) {
                 Game.getInter().put("gum", this.gumInterface, true);
                 Game.getInter().open("gum");
             }

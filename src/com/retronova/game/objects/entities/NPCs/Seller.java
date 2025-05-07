@@ -72,7 +72,7 @@ public class Seller extends NPC {
         Player player = Game.getPlayer();
         countAnim++;
         if (player.getDistance(this) <= GameObject.SIZE() * 3) {
-            if (Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
+            if (Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds())) {
                 Game.getInter().put("store", this.store, true);
                 Game.getInter().open("store");
             }

@@ -27,7 +27,7 @@ public class Plate extends  Furniture {
     @Override
     public void render(Graphics2D g) {
         super.render(g);
-        if(Mouse.onMap(this.getBounds(), Game.C)) {
+        if(Mouse.onMap(this.getBounds())) {
             renderMessage(g);
         }
     }

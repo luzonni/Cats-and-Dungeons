@@ -1,6 +1,7 @@
 package com.retronova.game.map;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.objects.GameObject;
 
 import java.awt.*;
@@ -16,6 +17,7 @@ public class Camera {
     public Camera(Rectangle bounds, double speed) {
         this.bounds = bounds;
         this.speed = speed;
+        Mouse.setCamera(this);
     }
 
     public int getX() {

@@ -24,7 +24,7 @@ public class Crate extends Furniture {
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        if(player.getDistance(this) < GameObject.SIZE()*3 && Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
+        if(player.getDistance(this) < GameObject.SIZE()*3 && Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds())) {
             for(int id : loot) {
                 dropLoot(Item.build(id));
             }

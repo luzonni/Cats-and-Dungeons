@@ -220,7 +220,7 @@ public abstract class Entity extends GameObject {
         if (getLife() <= 0) {
             die();
         }
-        if(clickable() && Mouse.onMap(this.getBounds(), Game.C)) {
+        if(clickable() && Mouse.onMap(this.getBounds())) {
             Engine.window.pointing();
         }
     }
@@ -367,8 +367,8 @@ public abstract class Entity extends GameObject {
      * Esta função serve apenas para retirar uma entidade do mara, sem nenhum tipo de efeito.
      */
     public void disappear() {
-        if(Game.C.getFollowed() == this) {
-            Game.C.setFollowed(Game.getPlayer());
+        if(Game.getCam().getFollowed() == this) {
+            Game.getCam().setFollowed(Game.getPlayer());
         }
         Game.getMap().remove(this);
     }

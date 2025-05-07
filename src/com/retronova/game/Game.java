@@ -201,8 +201,12 @@ public class Game implements Activity {
         inter.dispose();
     }
 
+    public static Camera getCam() {
+        return getGame().C;
+    }
+
     public static void focus(GameObject obj) {
-        Game.C.setFollowed(obj);
+        getGame().C.setFollowed(obj);
     }
 
     public static void restart() {

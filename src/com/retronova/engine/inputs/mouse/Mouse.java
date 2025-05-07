@@ -1,7 +1,5 @@
 package com.retronova.engine.inputs.mouse;
 
-import com.retronova.engine.Engine;
-import com.retronova.engine.Window;
 import com.retronova.game.map.Camera;
 
 import java.awt.*;
@@ -9,14 +7,16 @@ import java.awt.event.*;
 
 public class Mouse implements MouseListener, MouseMotionListener, MouseWheelListener {
 
+    protected static Camera cam;
+
     protected static int xMouse, yMouse;
     protected static int xClicked, yClicked;
 
-    protected static boolean pressingLeft, pressingRight, pressingScrool;
-    protected static boolean clickLeftOn, clickRightOn, clickScroolOn;
-    protected static boolean clickLeft, clickRight, clickScrool;
+    protected static boolean pressingLeft, pressingRight, pressingScroll;
+    protected static boolean clickLeftOn, clickRightOn, clickScrollOn;
+    protected static boolean clickLeft, clickRight, clickScroll;
 
-    protected static int scroolSide = 0;
+    protected static int scrollSide = 0;
     protected static boolean scrollChanged = false;
 
     public static boolean on(Rectangle rec) {
@@ -24,6 +24,10 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
             return true;
         }
         return false;
+    }
+
+    public static void setCamera(Camera cam) {
+        Mouse.cam = cam;
     }
 
     public static boolean on(int x, int y, int width, int height) {
@@ -46,30 +50,27 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
                 return true;
             }
         if (button.equals(Mouse_Button.SCROOL))
-            if (rec.contains(xClicked, yClicked) && clickScroolOn) {
-                clickScroolOn = false;
+            if (rec.contains(xClicked, yClicked) && clickScrollOn) {
+                clickScrollOn = false;
                 return true;
             }
         return false;
     }
 
-    public static boolean pressingOn(Mouse_Button button, Rectangle rec) {
-        if(button.equals(Mouse_Button.LEFT))
-            if(rec.contains(xMouse, yMouse) && pressingLeft) {
-                return true;
-            }
-        if(button.equals(Mouse_Button.RIGHT))
-            if(rec.contains(xMouse, yMouse) && pressingRight)  {
-                return true;
-            }
-        if(button.equals(Mouse_Button.SCROOL))
-            if(rec.contains(xMouse, yMouse) && pressingScrool) {
-                return true;
-            }
+    public static boolean isPressed(Mouse_Button button, Rectangle rec) {
+        if (button.equals(Mouse_Button.LEFT)) {
+            return pressingLeft && rec.contains(xMouse, yMouse);
+        }
+        if (button.equals(Mouse_Button.RIGHT)) {
+            return pressingRight && rec.contains(xMouse, yMouse);
+        }
+        if (button.equals(Mouse_Button.SCROOL)) {
+            return pressingScroll && rec.contains(xMouse, yMouse);
+        }
         return false;
     }
 
-    public static boolean clickOnMap(Mouse_Button button, Rectangle rec, Camera cam) {
+    public static boolean clickOnMap(Mouse_Button button, Rectangle rec) {
         if(button.equals(Mouse_Button.LEFT))
             if(rec.contains(xClicked + cam.getX(), yClicked + cam.getY()) && clickLeftOn) {
                 clickLeftOn = false;
@@ -81,14 +82,14 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
                 return true;
             }
         if(button.equals(Mouse_Button.SCROOL))
-            if(rec.contains(xClicked + cam.getX(), yClicked + cam.getY()) && clickScroolOn) {
-                clickScroolOn = false;
+            if(rec.contains(xClicked + cam.getX(), yClicked + cam.getY()) && clickScrollOn) {
+                clickScrollOn = false;
                 return true;
             }
         return false;
     }
 
-    public static boolean pressingOnMap(Mouse_Button button, Rectangle rec, Camera cam) {
+    public static boolean pressingOnMap(Mouse_Button button, Rectangle rec) {
         if(button.equals(Mouse_Button.LEFT))
             if(rec.contains(xMouse + cam.getX(), yMouse + cam.getY()) && pressingLeft) {
                 return true;
@@ -98,7 +99,7 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
                 return true;
             }
         if(button.equals(Mouse_Button.SCROOL))
-            if(rec.contains(xMouse + cam.getX(), yMouse + cam.getY()) && pressingScrool) {
+            if(rec.contains(xMouse + cam.getX(), yMouse + cam.getY()) && pressingScroll) {
                 return true;
             }
         return false;
@@ -113,8 +114,8 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
             clickRight = false;
             return true;
         }
-        if(button.equals(Mouse_Button.SCROOL) && clickScrool) {
-            clickScrool = false;
+        if(button.equals(Mouse_Button.SCROOL) && clickScroll) {
+            clickScroll = false;
             return true;
         }
         return false;
@@ -126,7 +127,7 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         if(button.equals(Mouse_Button.RIGHT))
             return pressingRight;
         if(button.equals(Mouse_Button.SCROOL))
-            return pressingScrool;
+            return pressingScroll;
         return false;
     }
 
@@ -149,12 +150,12 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
     public static int Scroll() {
         if(scrollChanged) {
             scrollChanged = false;
-            return scroolSide;
+            return scrollSide;
         }
         return 0;
     }
 
-    public static boolean onMap(Rectangle bounds, Camera cam) {
+    public static boolean onMap(Rectangle bounds) {
         return bounds.contains(xMouse + cam.getX(), yMouse + cam.getY());
     }
 
@@ -174,9 +175,9 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
             pressingRight = true;
         }
         if(e.getButton() == MouseEvent.BUTTON2) {
-            clickScrool = true;
-            clickScroolOn = true;
-            pressingScrool = true;
+            clickScroll = true;
+            clickScrollOn = true;
+            pressingScroll = true;
         }
         //Sets
         xClicked = e.getX();
@@ -197,9 +198,9 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
             pressingRight = false;
         }
         if(e.getButton() == MouseEvent.BUTTON2) {
-            clickScrool = false;
-            clickScroolOn = false;
-            pressingScrool = false;
+            clickScroll = false;
+            clickScrollOn = false;
+            pressingScroll = false;
         }
     }
 
@@ -235,20 +236,7 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
     public void mouseWheelMoved(MouseWheelEvent e) {
         //Set's
         scrollChanged = true;
-        scroolSide = e.getWheelRotation();
-    }
-
-    public static boolean isPressed(Mouse_Button button, Rectangle rec) {
-        if (button.equals(Mouse_Button.LEFT)) {
-            return pressingLeft && rec.contains(xMouse, yMouse);
-        }
-        if (button.equals(Mouse_Button.RIGHT)) {
-            return pressingRight && rec.contains(xMouse, yMouse);
-        }
-        if (button.equals(Mouse_Button.SCROOL)) {
-            return pressingScrool && rec.contains(xMouse, yMouse);
-        }
-        return false;
+        scrollSide = e.getWheelRotation();
     }
 
 }

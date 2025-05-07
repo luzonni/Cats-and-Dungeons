@@ -25,7 +25,7 @@ public class Drop extends Utility {
 
     @Override
     public void tick() {
-        if(Mouse.clickOnMap(Mouse_Button.LEFT, getBounds(), Game.C)) {
+        if(Mouse.clickOnMap(Mouse_Button.LEFT, getBounds())) {
             Game.getPlayer().getInventory().give(this.item);
             disappear();
         }

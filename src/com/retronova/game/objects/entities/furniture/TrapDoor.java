@@ -39,7 +39,7 @@ public class TrapDoor extends Furniture {
                     indexSprite++;
                 }
             }
-            if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds(), Game.C)) {
+            if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds())) {
                 if(!command.equals("None")) {
                     getCommand();
                 }else {
