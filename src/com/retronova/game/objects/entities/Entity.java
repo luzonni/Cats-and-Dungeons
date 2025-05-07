@@ -126,6 +126,9 @@ public abstract class Entity extends GameObject {
                 }
                 return new GumMachine(ID, x, y, content);
             }
+            case CryingCat -> {
+                return new CryingCat(ID, x, y);
+            }
         }
         throw new EntityNotFound("Entity not found");
     }

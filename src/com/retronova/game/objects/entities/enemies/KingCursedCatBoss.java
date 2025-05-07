@@ -11,7 +11,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class KingCursedCatBoss extends Enemy {
-
     private int countAnim;
 
     public KingCursedCatBoss(int ID, double x, double y) {

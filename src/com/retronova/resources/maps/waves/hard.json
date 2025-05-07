@@ -2,8 +2,8 @@
   "waves":[
     {
       "period": 1,
-      "amount" : [2],
-      "enemies": ["KingCursedCatBoss","CatToyBoss"]
+      "amount" : [3],
+      "enemies": ["KingCursedCatBoss","CatToyBoss","CryingCat"]
     },
     {
       "period": 6,
