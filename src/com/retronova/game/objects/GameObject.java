@@ -121,8 +121,8 @@ public abstract class GameObject {
     public static Comparator<GameObject> Depth = Comparator.comparingInt(GameObject::getDepth);
 
     public void renderSprite(BufferedImage sprite, Graphics2D g) {
-        int x = ((int)getX() + (getWidth() - sprite.getWidth())/2) - Game.C.getX();
-        int y = ((int)getY() - (sprite.getHeight()) + getHeight()) - Game.C.getY();
+        int x = ((int)getX() + (getWidth() - sprite.getWidth())/2);
+        int y = ((int)getY() - (sprite.getHeight()) + getHeight());
         g.drawImage(sprite, x, y,null);
     }
 

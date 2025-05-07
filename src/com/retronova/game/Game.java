@@ -25,6 +25,7 @@ import com.retronova.menus.GameOver;
 import com.retronova.menus.Pause;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.util.List;
 
 public class Game implements Activity {
@@ -153,10 +154,15 @@ public class Game implements Activity {
     public void render(Graphics2D g) {
         galaxy.render(g);
         //Render logic
-        renderMap(g);
-        renderEntities(g);
-        renderParticles(g);
+        Graphics2D gcam = (Graphics2D) g.create();
+        AffineTransform at = new AffineTransform();
+        at.translate(-C.getX(), -C.getY());
+        gcam.setTransform(at);
+        renderMap(gcam);
+        renderEntities(gcam);
+        renderParticles(gcam);
         hud.render(g);
+        gcam.dispose();
     }
 
     private void renderMap(Graphics2D g) {
