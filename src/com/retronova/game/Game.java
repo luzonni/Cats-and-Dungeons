@@ -5,6 +5,7 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.engine.graphics.Galaxy;
+import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.interfaces.Inter;
 import com.retronova.game.interfaces.shared.Status;
@@ -38,7 +39,7 @@ public class Game implements Activity {
     private int count;
 
     private final Player player;
-    public Camera C;
+    public Camera gCam;
 
     private GameMap map;
     private int level;
@@ -95,10 +96,11 @@ public class Game implements Activity {
         }
         this.map = newMap;
         this.map.addPlayer(player);
-        this.C = new Camera(this.map.getBounds(), 0.25d);
-        this.C.setX((int)player.getX() + player.getWidth()/2 - Engine.window.getWidth()/2);
-        this.C.setY((int)player.getY() + player.getHeight()/2 - Engine.window.getHeight()/2);
-        this.C.setFollowed(player);
+        this.gCam = new Camera(this.map.getBounds(), 0.25d);
+        Mouse.setCamera(this.gCam);
+        this.gCam.setX((int)player.getX() + player.getWidth()/2 - Engine.window.getWidth()/2);
+        this.gCam.setY((int)player.getY() + player.getHeight()/2 - Engine.window.getHeight()/2);
+        this.gCam.setFollowed(player);
     }
 
     @Override
@@ -147,7 +149,7 @@ public class Game implements Activity {
         synchronized (this.map.getRepulsion()) {
             this.map.getRepulsion().notify();
         }
-        C.tick();
+        gCam.tick();
     }
 
     @Override
@@ -160,7 +162,7 @@ public class Game implements Activity {
     private void renderWorld(Graphics2D g) {
         Graphics2D gcam = (Graphics2D) g.create();
         AffineTransform at = new AffineTransform();
-        at.translate(-C.getX(), -C.getY());
+        at.translate(-gCam.getX(), -gCam.getY());
         gcam.setTransform(at);
         renderMap(gcam);
         renderEntities(gcam);
@@ -202,11 +204,11 @@ public class Game implements Activity {
     }
 
     public static Camera getCam() {
-        return getGame().C;
+        return getGame().gCam;
     }
 
     public static void focus(GameObject obj) {
-        getGame().C.setFollowed(obj);
+        getGame().gCam.setFollowed(obj);
     }
 
     public static void restart() {

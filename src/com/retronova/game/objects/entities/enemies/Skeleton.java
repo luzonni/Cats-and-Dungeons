@@ -22,7 +22,7 @@ public class Skeleton extends Enemy {
         setSpeed(3);
         addResistances(AttackTypes.Fire, 0.5);
         addResistances(AttackTypes.Poison, 0.8);
-        addResistances(AttackTypes.Piercing, 1);
+        addResistances(AttackTypes.Piercing, 0.9);
         setSolid();
     }
 

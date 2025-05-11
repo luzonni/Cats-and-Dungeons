@@ -13,7 +13,6 @@ import java.awt.image.BufferedImage;
 public class BloodyAxe extends Item {
 
     private double angle = 0;
-    private final double itemDistance = 20;
     private Enemy enemy;
 
     BloodyAxe(int id) {

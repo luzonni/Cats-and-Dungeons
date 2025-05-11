@@ -17,7 +17,6 @@ public class Camera {
     public Camera(Rectangle bounds, double speed) {
         this.bounds = bounds;
         this.speed = speed;
-        Mouse.setCamera(this);
     }
 
     public int getX() {
