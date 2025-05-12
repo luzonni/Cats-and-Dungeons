@@ -4,6 +4,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.Game;
+import com.retronova.game.map.GameMap;
 
 import java.awt.*;
 
@@ -27,7 +28,7 @@ public class Plate extends  Furniture {
     @Override
     public void render(Graphics2D g) {
         super.render(g);
-        if(Mouse.onMap(this.getBounds())) {
+        if(GameMap.mouseOnRect(this.getBounds())) {
             renderMessage(g);
         }
     }

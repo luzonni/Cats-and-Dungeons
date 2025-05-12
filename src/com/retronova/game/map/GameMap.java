@@ -2,7 +2,10 @@ package com.retronova.game.map;
 
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.EntityNotFound;
+import com.retronova.engine.inputs.mouse.Mouse;
+import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.io.Resources;
+import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.EntityIDs;
@@ -219,6 +222,22 @@ public abstract class GameMap {
 
     public void dispose() {
         this.repulsion.dispose();
+    }
+
+
+    public static boolean mouseOnRect(Rectangle bounds) {
+        int x = Mouse.getX() + Game.getCam().getX();
+        int y = Mouse.getY() + Game.getCam().getY();
+        return bounds.contains(x, y);
+    }
+
+
+    public static boolean clickOnRect(Mouse_Button button, Rectangle rec) {
+        return Mouse.click(button) && mouseOnRect(rec);
+    }
+
+    public static boolean pressingOnRect(Mouse_Button button, Rectangle rec) {
+        return Mouse.pressing(button) && mouseOnRect(rec);
     }
 
 }

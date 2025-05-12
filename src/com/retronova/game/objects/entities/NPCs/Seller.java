@@ -7,6 +7,7 @@ import com.retronova.game.Game;
 import com.retronova.game.interfaces.Store;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
+import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.particles.Particle;
@@ -72,7 +73,7 @@ public class Seller extends NPC {
         Player player = Game.getPlayer();
         countAnim++;
         if (player.getDistance(this) <= GameObject.SIZE() * 3) {
-            if (Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds())) {
+            if (GameMap.clickOnRect(Mouse_Button.LEFT, this.getBounds())) {
                 Game.getInter().put("store", this.store, true);
                 Game.getInter().open("store");
             }

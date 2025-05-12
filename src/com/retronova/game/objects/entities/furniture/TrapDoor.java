@@ -5,6 +5,7 @@ import com.retronova.engine.exceptions.TrapDoorCommandException;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
+import com.retronova.game.map.GameMap;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.GameObject;
@@ -39,7 +40,7 @@ public class TrapDoor extends Furniture {
                     indexSprite++;
                 }
             }
-            if(Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds())) {
+            if(GameMap.clickOnRect(Mouse_Button.LEFT, this.getBounds())) {
                 if(!command.equals("None")) {
                     getCommand();
                 }else {

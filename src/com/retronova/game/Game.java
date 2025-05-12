@@ -39,7 +39,7 @@ public class Game implements Activity {
     private int count;
 
     private final Player player;
-    public Camera gCam;
+    private Camera gCam;
 
     private GameMap map;
     private int level;
@@ -97,7 +97,6 @@ public class Game implements Activity {
         this.map = newMap;
         this.map.addPlayer(player);
         this.gCam = new Camera(this.map.getBounds(), 0.25d);
-        Mouse.setCamera(this.gCam);
         this.gCam.setX((int)player.getX() + player.getWidth()/2 - Engine.window.getWidth()/2);
         this.gCam.setY((int)player.getY() + player.getHeight()/2 - Engine.window.getHeight()/2);
         this.gCam.setFollowed(player);

@@ -8,6 +8,7 @@ import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
+import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.NPCs.Seller;
@@ -223,7 +224,7 @@ public abstract class Entity extends GameObject {
         if (getLife() <= 0) {
             die();
         }
-        if(clickable() && Mouse.onMap(this.getBounds())) {
+        if(clickable() && GameMap.mouseOnRect(this.getBounds())) {
             Engine.window.pointing();
         }
     }

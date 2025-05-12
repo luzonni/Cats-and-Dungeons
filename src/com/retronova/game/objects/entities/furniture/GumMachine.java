@@ -6,6 +6,7 @@ import com.retronova.game.Game;
 import com.retronova.game.interfaces.GumInterface;
 import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
+import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.particles.Particle;
@@ -59,7 +60,7 @@ public class GumMachine extends Furniture {
     public void tick() {
         Player player = Game.getPlayer();
         if (player.getDistance(this) <= GameObject.SIZE() * 3) {
-            if (Mouse.clickOnMap(Mouse_Button.LEFT, this.getBounds())) {
+            if (GameMap.clickOnRect(Mouse_Button.LEFT, this.getBounds())) {
                 Game.getInter().put("gum", this.gumInterface, true);
                 Game.getInter().open("gum");
             }

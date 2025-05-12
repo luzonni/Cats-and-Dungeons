@@ -5,6 +5,7 @@ import com.retronova.game.Game;
 import com.retronova.game.items.Item;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
 
 import java.awt.*;
@@ -25,7 +26,7 @@ public class Drop extends Utility {
 
     @Override
     public void tick() {
-        if(Mouse.clickOnMap(Mouse_Button.LEFT, getBounds())) {
+        if(GameMap.clickOnRect(Mouse_Button.LEFT, getBounds())) {
             Game.getPlayer().getInventory().give(this.item);
             disappear();
         }
