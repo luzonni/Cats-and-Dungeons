@@ -112,11 +112,8 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         return 0;
     }
 
-    //Interface Methods
-
     @Override
     public synchronized void mousePressed(MouseEvent e) {
-        //Default
         if(e.getButton() == MouseEvent.BUTTON1) {
             clickLeft = true;
             clickLeftOn = true;

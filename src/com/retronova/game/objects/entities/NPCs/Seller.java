@@ -25,7 +25,6 @@ public class Seller extends NPC {
 
     public Seller(int ID, double x, double y, JSONArray stock) {
         super(ID, x, y, 60);
-        System.out.println("Stock: " + stock.toJSONString());
         loadStock(stock);
         this.store = new Store(this.stock, this.prices);
         loadSprites("seller");

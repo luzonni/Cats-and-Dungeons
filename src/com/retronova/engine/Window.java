@@ -51,7 +51,7 @@ public class Window extends Canvas {
     private void createOpenGl(boolean bool) {
         if(bool)
             try {
-                System.setProperty("sun.java2d.opengl", "True");
+                System.setProperty("sun.java2d.opengl", "true");
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 System.out.println("OpenGL Pipeline enabled: " + oglEnabled);
             } catch (Exception ignore) { }
@@ -67,7 +67,6 @@ public class Window extends Canvas {
         if(Configs.Fullscreen()) {
             String os = System.getProperty("os.name").toLowerCase();
             if (os.contains("windows 11")) {
-                System.out.println(os);
                 setPreferredSize(toolkit.getScreenSize());
                 frame.setMinimumSize(toolkit.getScreenSize());
             } else if(os.contains("nix") || os.contains("nux") || os.contains("aix")) {
@@ -79,7 +78,6 @@ public class Window extends Canvas {
             }
         }else {
             Dimension dim = new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]);
-            System.out.println(toolkit.getScreenSize().getWidth() + " Para " + dim.getWidth()) ;
             if(toolkit.getScreenSize().getWidth() >= dim.getWidth()) {
                 setPreferredSize(dim);
                 frame.setMinimumSize(dim);

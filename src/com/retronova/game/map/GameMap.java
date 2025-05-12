@@ -105,7 +105,6 @@ public abstract class GameMap {
             for(int j = 0; j < entityIDs.length; j++) {
                 if(entityIDs[j].name().equalsIgnoreCase(name)) {
                     id = entityIDs[j].ordinal();
-                    System.out.println(id);
                     break;
                 }
             }
@@ -233,11 +232,11 @@ public abstract class GameMap {
 
 
     public static boolean clickOnRect(Mouse_Button button, Rectangle rec) {
-        return Mouse.click(button) && mouseOnRect(rec);
+        return mouseOnRect(rec) && Mouse.click(button);
     }
 
     public static boolean pressingOnRect(Mouse_Button button, Rectangle rec) {
-        return Mouse.pressing(button) && mouseOnRect(rec);
+        return mouseOnRect(rec) && Mouse.pressing(button);
     }
 
 }
