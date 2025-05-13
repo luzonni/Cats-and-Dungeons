@@ -16,15 +16,12 @@ public class DangerousWand extends Item {
     private final Rectangle boundsAttack;
     private double angle;
     private final double orbitRadius = GameObject.SIZE() * 2;
-    private double targetAngle = 0;
-    private final Point spriteRotatePoint;
     private Enemy enemys;
 
     DangerousWand(int id) {
         super(id, "Dangerous Wand", "dangerouswand");
         addSpecifications("Raw magical energy", "player damage", "shot instant");
         this.boundsAttack = new Rectangle(GameObject.SIZE(), GameObject.SIZE());
-        this.spriteRotatePoint = new Point(getSprite().getWidth() / 2, getSprite().getHeight() / 2);
     }
 
     @Override
@@ -38,16 +35,6 @@ public class DangerousWand extends Item {
             this.angle = 0;
             this.enemys = null;
         }
-
-        Enemy nearest = player.getNearest(player.getRange(), Enemy.class);
-        if (nearest != null) {
-            double wandCenterX = this.boundsAttack.x + this.boundsAttack.width / 2;
-            double wandCenterY = this.boundsAttack.y + this.boundsAttack.height / 2;
-            double enemyCenterX = nearest.getX() + nearest.getWidth() / 2;
-            double enemyCenterY = nearest.getY() + nearest.getHeight() / 2;
-            this.targetAngle = Math.atan2(enemyCenterY - wandCenterY, enemyCenterX - wandCenterX);
-        }
-
         this.attack(player);
     }
 

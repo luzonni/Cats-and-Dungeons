@@ -60,7 +60,7 @@ public abstract class GameObject {
         return this.depth;
     }
 
-    protected Sheet getSheet() {
+    protected Sheet<? extends GameObject> getSheet() {
         return this.sheet;
     }
 
