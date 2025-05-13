@@ -135,4 +135,12 @@ public abstract class GameObject {
         sheet.dispose();
     }
 
+    public void renderBounds(Graphics2D g) {
+        g.setColor(Color.orange);
+        g.setStroke(new BasicStroke(Configs.GameScale()/2));
+        g.drawRect((int)this.getX(), (int)this.getY(), this.getWidth(), this.getHeight());
+        g.setColor(new Color(255, 255, 255, 100));
+        g.fillRect((int)this.getX(), (int)this.getY(), this.getWidth(), this.getHeight());
+    }
+
 }

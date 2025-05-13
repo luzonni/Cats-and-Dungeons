@@ -1,6 +1,7 @@
 package com.retronova.game;
 
 import com.retronova.engine.Activity;
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
@@ -59,6 +60,15 @@ public class Game implements Activity {
         this.changeMap(map);
         this.hud = new HUD(player);
         this.galaxy = new Galaxy();
+        Debugging.init();
+    }
+
+    public static Camera getCam() {
+        return getGame().gCam;
+    }
+
+    public static void focus(GameObject obj) {
+        getGame().gCam.setFollowed(obj);
     }
 
     public int getLevel() {
@@ -115,6 +125,18 @@ public class Game implements Activity {
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause());
         }
+        if(KeyBoard.KeyPressed("F3")) {
+            Debugging.toggleRunning();
+        }
+        if(KeyBoard.KeyPressed("F4")) {
+            Debugging.showEntityHitBox = !Debugging.showEntityHitBox;
+        }
+        if(KeyBoard.KeyPressed("F5")) {
+            Debugging.showTileBox = !Debugging.showTileBox;
+        }
+        if(KeyBoard.KeyPressed("F6")) {
+            Debugging.showParticleHitBox = !Debugging.showParticleHitBox;
+        }
         if(KeyBoard.KeyPressed("E")) {
             inter.open();
         }
@@ -156,6 +178,8 @@ public class Game implements Activity {
         galaxy.render(g);
         renderWorld(g);
         hud.render(g);
+        if(Debugging.running)
+            Debugging.render(g);
     }
 
     private void renderWorld(Graphics2D g) {
@@ -166,15 +190,24 @@ public class Game implements Activity {
         renderMap(gcam);
         renderEntities(gcam);
         renderParticles(gcam);
-        gcam.setColor(Color.red);
-        gcam.drawRect(gCam.getX() + Mouse.getX(), gCam.getY() + Mouse.getY(), 10, 10);
+        if(Debugging.running) {
+            int size = Configs.GameScale()*2;
+            gcam.setColor(Color.red);
+            gcam.fillOval(gCam.getX() + Mouse.getX() - size/2, gCam.getY() + Mouse.getY() - size/2, size, size);
+        }
         gcam.dispose();
     }
 
     private void renderMap(Graphics2D g) {
         Tile[] map = this.map.getMap();
         for(int i = 0; i < map.length; i++) {
-            map[i].render(g);
+            Tile tile = map[i];
+            if(tile.getBounds().intersects(gCam.getBounds())) {
+                map[i].render(g);
+                if(Debugging.showTileBox) {
+                    map[i].renderBounds(i, g);
+                }
+            }
         }
     }
 
@@ -186,6 +219,9 @@ public class Game implements Activity {
             if(entity instanceof Enemy enemy) {
                 enemy.renderLife(g);
             }
+            if(Debugging.showEntityHitBox) {
+                entity.renderBounds(g);
+            }
         }
     }
 
@@ -194,6 +230,9 @@ public class Game implements Activity {
         for(int i = 0; i < particles.size(); i++) {
             Particle p = particles.get(i);
             p.render(g);
+            if(Debugging.showParticleHitBox) {
+                p.renderBounds(g);
+            }
         }
     }
 
@@ -202,14 +241,6 @@ public class Game implements Activity {
         System.out.println("Dispose Game");
         map.dispose();
         inter.dispose();
-    }
-
-    public static Camera getCam() {
-        return getGame().gCam;
-    }
-
-    public static void focus(GameObject obj) {
-        getGame().gCam.setFollowed(obj);
     }
 
     public static void restart() {

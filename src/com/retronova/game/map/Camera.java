@@ -26,6 +26,10 @@ public class Camera {
         return (int)this.y;
     }
 
+    public Rectangle getBounds() {
+        return this.bounds;
+    }
+
     public void setX(int newX) {
         this.x = newX;
     }
