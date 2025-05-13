@@ -1,7 +1,6 @@
 package com.retronova.game.objects;
 
 import com.retronova.engine.Configs;
-import com.retronova.game.Game;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

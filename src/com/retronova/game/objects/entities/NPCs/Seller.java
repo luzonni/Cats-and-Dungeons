@@ -1,7 +1,6 @@
 package com.retronova.game.objects.entities.NPCs;
 
 import com.retronova.engine.Engine;
-import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
 import com.retronova.game.interfaces.Store;

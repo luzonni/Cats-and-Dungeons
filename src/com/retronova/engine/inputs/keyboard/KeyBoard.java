@@ -7,7 +7,6 @@ public class KeyBoard implements KeyListener {
 
     //Instances
     private static boolean BlockWithWriting;
-    private static boolean pressKeyboard;
     private static boolean PressedChar;
     private static char LastKeyChar;
     public static Key[] Keys = {

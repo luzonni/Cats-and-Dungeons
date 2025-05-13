@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class DrawSprite {
+    //Java(268435844)
 
     public static BufferedImage draw(BufferedImage sprite, Color color) {
         int width = sprite.getWidth();

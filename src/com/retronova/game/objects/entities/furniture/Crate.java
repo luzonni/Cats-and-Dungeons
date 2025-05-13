@@ -1,8 +1,6 @@
 package com.retronova.game.objects.entities.furniture;
 
 import com.retronova.engine.Engine;
-import com.retronova.engine.inputs.keyboard.KeyBoard;
-import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;

@@ -7,8 +7,6 @@ import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
 
-import java.lang.reflect.Modifier;
-
 public class Acorn extends Consumable {
 
     Acorn(int id) {

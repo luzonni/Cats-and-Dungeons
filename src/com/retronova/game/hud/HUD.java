@@ -5,8 +5,6 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontG;
 import com.retronova.game.Game;
-import com.retronova.game.map.arena.Arena;
-import com.retronova.game.map.arena.Waves;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.engine.graphics.SpriteSheet;
 

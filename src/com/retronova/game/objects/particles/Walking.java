@@ -1,7 +1,5 @@
 package com.retronova.game.objects.particles;
 
-import com.retronova.engine.sound.Sound;
-import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 
 import java.awt.*;

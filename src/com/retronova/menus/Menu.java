@@ -10,10 +10,8 @@ import com.retronova.engine.sound.Sounds;
 import com.retronova.menus.shared.Button;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.imageio.ImageIO;
 
 public class Menu implements Activity {
 

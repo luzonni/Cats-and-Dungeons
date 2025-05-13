@@ -1,18 +1,13 @@
 package com.retronova.game.objects.entities.furniture;
 
-import com.retronova.engine.Configs;
 import com.retronova.engine.exceptions.TrapDoorCommandException;
-import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
-
-import java.awt.*;
 
 public class TrapDoor extends Furniture {
 

@@ -24,21 +24,12 @@ public class Window extends Canvas {
 
     private final String name;
     private boolean pointing;
-    private Thread thread;
     private JFrame frame;
     private final Toolkit toolkit;
-    private int C_W, C_H;
-    boolean oglEnabled = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
-            .getDefaultScreenDevice()
-            .getDefaultConfiguration()
-            .getImageCapabilities()
-            .isAccelerated();
-
 
     public Window(String name) {
         this.name = name;
         this.toolkit = Toolkit.getDefaultToolkit();
-        createOpenGl(true);
         initFrame();
         Mouse m = new Mouse();
         KeyBoard k = new KeyBoard();
@@ -46,15 +37,6 @@ public class Window extends Canvas {
         addMouseMotionListener(m);
         addMouseWheelListener(m);
         addKeyListener(k);
-    }
-
-    private void createOpenGl(boolean bool) {
-        if(bool)
-            try {
-                System.setProperty("sun.java2d.opengl", "true");
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                System.out.println("OpenGL Pipeline enabled: " + oglEnabled);
-            } catch (Exception ignore) { }
     }
 
     public void initFrame(){
@@ -93,18 +75,31 @@ public class Window extends Canvas {
             setCursor(DEFAULT_CURSOR);
             frame.setIconImage(icon.getSHEET());
         }catch(Exception ignore) { }
-
-        createOpenGl(true);
-
+        createOpenGl();
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-//        showAccelerators();
+        showAccelerators();
+    }
+
+    private void createOpenGl() {
+        try {
+            System.setProperty("sun.java2d.opengl", "true");
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     private void showAccelerators() {
+        boolean oglEnabled = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice()
+                .getDefaultConfiguration()
+                .getImageCapabilities()
+                .isAccelerated();
         System.out.println("OpenGL: " + System.getProperty("sun.java2d.opengl")); // "true" se OpenGL estiver ativado
         System.out.println("DirectX: " + System.getProperty("sun.java2d.d3d"));   // "true" se Direct3D estiver ativado
+        System.out.println("OpenGL Pipeline enabled: " + oglEnabled);
     }
 
     public void pointing() {
@@ -161,15 +156,6 @@ public class Window extends Canvas {
     public int getHeight() {
         Component c = frame.getComponent(0);
         return c.getHeight();
-    }
-
-    public boolean isResizing() {
-        int W = getWidth();
-        int H = getHeight();
-        if(W != C_W || H != C_H) {
-            return true;
-        }
-        return false;
     }
 
     public Dimension getScreenSize() {

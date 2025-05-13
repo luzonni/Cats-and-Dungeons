@@ -2,12 +2,9 @@ package com.retronova.game.objects.tiles;
 
 import com.retronova.game.objects.entities.Entity;
 
-import java.awt.image.BufferedImage;
 
 public class Lava extends Tile {
 
-    private static BufferedImage[] sprite;
-    private int indexSprite;
     private int count;
     private int strickCount;
 

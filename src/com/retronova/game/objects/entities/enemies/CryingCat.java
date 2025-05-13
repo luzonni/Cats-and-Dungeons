@@ -7,7 +7,6 @@ import com.retronova.game.objects.entities.Player;
 import java.awt.*;
 
 public class CryingCat extends Enemy{
-    private int countAnim;
 
     public CryingCat(int ID, double x, double y) {
         super(ID, x, y, 75);

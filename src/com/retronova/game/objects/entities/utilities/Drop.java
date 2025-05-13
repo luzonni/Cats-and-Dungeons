@@ -3,11 +3,8 @@ package com.retronova.game.objects.entities.utilities;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.items.Item;
-import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.map.GameMap;
-import com.retronova.game.objects.entities.Entity;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 

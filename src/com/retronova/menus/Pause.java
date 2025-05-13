@@ -23,7 +23,6 @@ public class Pause implements Activity {
     private final Color corTexto = Color.WHITE;
     private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Geral", "Quit"};
     private int quadradoSeta = -1;
-    private Game game;
     private int botaoPressionado = -1;
 
     private boolean confirmando = false;
@@ -38,8 +37,7 @@ public class Pause implements Activity {
         RESTART, MENU, QUIT
     }
 
-    public Pause(Game game) {
-        this.game = game;
+    public Pause() {
         telacheia();
     }
 

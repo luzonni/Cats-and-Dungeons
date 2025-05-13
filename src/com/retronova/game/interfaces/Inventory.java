@@ -17,7 +17,6 @@ import java.awt.image.BufferedImage;
 
 public class Inventory implements Activity {
 
-    private char[] numbers = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
     private final Slot insurer;
     private final Slot[] hotbar;
     private int lengthHotbar;

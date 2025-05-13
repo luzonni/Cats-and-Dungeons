@@ -1,27 +1,22 @@
 package com.retronova.game.objects.entities.utilities;
 
-import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.Smoke;
-import com.retronova.game.objects.particles.Spark;
-
 import java.util.List;
 
 
 public class ThrownGasBom extends Utility {
-    private final double damage;
+
     private int count;
     private int countEx;
 
     public ThrownGasBom(double x, double y, double damage) {
         super(x, y, 20);
-        this.damage = damage;
         loadSprites("gasbomb");
     }
 

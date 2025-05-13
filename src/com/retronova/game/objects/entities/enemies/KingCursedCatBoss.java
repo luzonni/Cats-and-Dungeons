@@ -1,17 +1,12 @@
 package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.game.Game;
-import com.retronova.engine.graphics.SpriteSheet;
-import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.AttackTypes;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class KingCursedCatBoss extends Enemy {
-    private int countAnim;
 
     public KingCursedCatBoss(int ID, double x, double y) {
         super(ID,x,y, 80);

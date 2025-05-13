@@ -5,8 +5,6 @@ import com.retronova.game.Game;
 import com.retronova.game.objects.entities.EffectApplicator;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.game.objects.entities.enemies.Enemy;
-
 import java.awt.*;
 import java.util.List;
 

@@ -3,7 +3,6 @@ package com.retronova.game.objects.entities.NPCs;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
-import com.retronova.game.objects.entities.utilities.Utility;
 
 public abstract class NPC extends Entity {
 

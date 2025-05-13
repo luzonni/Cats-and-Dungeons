@@ -2,7 +2,6 @@ package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.EntityNotFound;
-import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
@@ -100,7 +99,6 @@ public abstract class Entity extends GameObject {
             }
             case Crate -> {
                 JSONArray loot = ((JSONArray)((JSONObject) values[2]).get("loot"));
-                System.out.println(loot.toJSONString());
                 ItemIDs[] ids = ItemIDs.values();
                 int[] lootIds = new int[loot.size()];
                 for(int i = 0; i < lootIds.length; i++) {
@@ -130,6 +128,7 @@ public abstract class Entity extends GameObject {
             case CryingCat -> {
                 return new CryingCat(ID, x, y);
             }
+            default -> throw new IllegalArgumentException("Unexpected value: " + entityId);
         }
         throw new EntityNotFound("Entity not found");
     }

@@ -5,7 +5,6 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.engine.graphics.Galaxy;
-import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.interfaces.Inter;
 import com.retronova.game.interfaces.shared.Status;
@@ -83,7 +82,7 @@ public class Game implements Activity {
 
     private void gameOver() {
         Engine.backActivity();
-        Engine.heapActivity(new GameOver(player));
+        Engine.heapActivity(new GameOver());
     }
 
     public void changeMap(GameMap newMap) {
@@ -113,7 +112,7 @@ public class Game implements Activity {
         hud.tick();
         galaxy.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
-            Engine.pause(new Pause(this));
+            Engine.pause(new Pause());
         }
         if(KeyBoard.KeyPressed("E")) {
             inter.open();

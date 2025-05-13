@@ -7,22 +7,19 @@ import com.retronova.engine.graphics.FontG;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
-import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 
 public class GameOver implements Activity {
 
-    private final Player player;
     private final Font gameOverFont = FontG.font(FontG.Game, 48 * Configs.UiScale());
     private final Font escFont = FontG.font(FontG.Game, 15 * Configs.UiScale());
     private long lastBlinkTime = 0;
     private boolean isTextVisible = true;
 
-    public GameOver(Player player) {
+    public GameOver() {
         Sound.stopAll();
         Sound.play(Musics.GameOver, true);
-        this.player = player;
     }
 
     @Override

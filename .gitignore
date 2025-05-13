@@ -1,5 +1,6 @@
 out/
 .idea
+.vscode
 config.json
 Modules.iml
 Cats-and-Dungeons.iml

@@ -1,8 +1,6 @@
 package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.game.Game;
-import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 public class Xp extends Utility {

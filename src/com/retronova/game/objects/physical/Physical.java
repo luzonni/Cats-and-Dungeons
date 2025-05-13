@@ -4,7 +4,6 @@ import com.retronova.engine.Configs;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
-import com.retronova.game.objects.entities.furniture.Furniture;
 
 import java.util.ArrayList;
 import java.util.List;

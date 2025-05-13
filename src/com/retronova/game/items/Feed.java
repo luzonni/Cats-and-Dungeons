@@ -1,15 +1,11 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.Engine;
-import com.retronova.engine.inputs.mouse.Mouse;
-import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
-
-import java.awt.*;
 
 public class Feed extends Consumable {
 

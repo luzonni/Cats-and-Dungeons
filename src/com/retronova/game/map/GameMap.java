@@ -27,7 +27,6 @@ import java.util.List;
 
 public abstract class GameMap {
 
-    private final String name;
     private int length;
     private Rectangle bounds;
 
@@ -39,7 +38,6 @@ public abstract class GameMap {
     private final Repulsion repulsion;
 
     public GameMap(String mapName) {
-        this.name = mapName;
         this.entities = new ArrayList<>();
         this.particles = new ArrayList<>();
         loadMap(mapName);
@@ -229,7 +227,6 @@ public abstract class GameMap {
         int y = Mouse.getY() + Game.getCam().getY();
         return bounds.contains(x, y);
     }
-
 
     public static boolean clickOnRect(Mouse_Button button, Rectangle rec) {
         return mouseOnRect(rec) && Mouse.click(button);

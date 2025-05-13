@@ -2,7 +2,6 @@ package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteSheet;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;

@@ -1,8 +1,6 @@
 package com.retronova.game.objects.physical;
 
-import com.retronova.engine.Configs;
 import com.retronova.game.map.GameMap;
-import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 
 import java.util.ArrayList;

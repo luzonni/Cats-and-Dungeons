@@ -4,7 +4,6 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
-import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 
 import java.util.Random;
@@ -14,14 +13,12 @@ public class Slime extends Enemy {
     private int countAnim;
     private Random random;
     private int jumpCoolDown;
-    private boolean isJumping;
     private int attackCooldown = 0;
 
     public Slime(int ID, double x, double y) {
         super(ID, x, y, 25);
         loadSprites("slime");
         jumpCoolDown = 0;
-        isJumping = false;
         random = new Random();
         setSolid();
         setSpeed(6);

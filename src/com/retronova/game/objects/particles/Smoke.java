@@ -8,23 +8,17 @@ import java.awt.*;
 
 public class Smoke extends Particle {
 
-    private final double dir;
-    private double r;
     private int count;
 
     public Smoke(double x, double y, double seconds, double dir) {
         super(x, y, seconds);
         loadSprites("smoke");
-        this.dir = dir;
         if(Engine.RAND.nextBoolean())
             getSheet().plusIndex();
     }
 
     @Override
     public void tick() {
-        r += Math.toRadians(2);
-//        setX(getX() + Math.cos(dir) * 0.5d * Configs.SCALE);
-//        setY(getY() + Math.sin(dir) * 0.5d * Configs.SCALE);
         count++;
         if(count >= getSeconds()) {
             Game.getMap().remove(this);
