@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
