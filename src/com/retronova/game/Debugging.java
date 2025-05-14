@@ -13,7 +13,6 @@ import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 
 import oshi.SystemInfo;
-import oshi.hardware.GlobalMemory;
 
 public class Debugging {
 

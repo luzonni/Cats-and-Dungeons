@@ -1,12 +1,10 @@
 package com.retronova.game;
 
 import com.retronova.engine.Activity;
-import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.engine.graphics.Galaxy;
-import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.interfaces.Inter;
 import com.retronova.game.interfaces.shared.Status;
