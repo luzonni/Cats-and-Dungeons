@@ -172,8 +172,18 @@ public class Game implements Activity {
     private void renderWorld(Graphics2D g) {
         Graphics2D cam = (Graphics2D) g.create();
         AffineTransform at = new AffineTransform();
-        //at.setToScale(gCam.getZoom(), gCam.getZoom());
+
+
+        int screenWidth = g.getDeviceConfiguration().getBounds().width;
+        int screenHeight = g.getDeviceConfiguration().getBounds().height;
+        int frameWidth = Engine.window.getWidth();
+        int frameHeight = Engine.window.getHeight();
+        System.out.println(screenWidth - frameWidth);
+        at.translate((screenWidth - frameWidth)/2d, (screenHeight - frameHeight)/2d);
+        at.scale(gCam.getZoom(), gCam.getZoom());
         at.translate(-gCam.getX(), -gCam.getY());
+
+
         cam.setTransform(at);
         renderMap(cam);
         renderEntities(cam);
