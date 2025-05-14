@@ -122,20 +122,9 @@ public class Game implements Activity {
         }
         hud.tick();
         galaxy.tick();
+        Debugging.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause());
-        }
-        if(KeyBoard.KeyPressed("F3")) {
-            Debugging.toggleRunning();
-        }
-        if(KeyBoard.KeyPressed("F4")) {
-            Debugging.showEntityHitBox = !Debugging.showEntityHitBox;
-        }
-        if(KeyBoard.KeyPressed("F5")) {
-            Debugging.showTileBox = !Debugging.showTileBox;
-        }
-        if(KeyBoard.KeyPressed("F6")) {
-            Debugging.showParticleHitBox = !Debugging.showParticleHitBox;
         }
         if(KeyBoard.KeyPressed("E")) {
             inter.open();
@@ -190,10 +179,8 @@ public class Game implements Activity {
         renderMap(gcam);
         renderEntities(gcam);
         renderParticles(gcam);
-        if(Debugging.running) {
-            int size = Configs.GameScale()*2;
-            gcam.setColor(Color.red);
-            gcam.fillOval(gCam.getX() + Mouse.getX() - size/2, gCam.getY() + Mouse.getY() - size/2, size, size);
+        if(Debugging.showMouseSets) {
+            Debugging.mouse(gcam);
         }
         gcam.dispose();
     }

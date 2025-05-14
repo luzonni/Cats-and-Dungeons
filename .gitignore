@@ -4,3 +4,5 @@ out/
 config.json
 Modules.iml
 Cats-and-Dungeons.iml
+app.manifest
+Cats-and-Dungeons.jar
