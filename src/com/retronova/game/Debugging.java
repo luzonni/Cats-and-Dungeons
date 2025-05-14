@@ -16,7 +16,7 @@ import oshi.SystemInfo;
 
 public class Debugging {
 
-    public static boolean running = true;
+    public static boolean running = false;
 
     private static SystemInfo systemInfo;
 

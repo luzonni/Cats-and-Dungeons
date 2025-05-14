@@ -172,7 +172,7 @@ public class Game implements Activity {
     private void renderWorld(Graphics2D g) {
         Graphics2D gcam = (Graphics2D) g.create();
         AffineTransform at = new AffineTransform();
-        at.translate(-gCam.getX(), -gCam.getY());
+        //at.translate(-gCam.getX(), -gCam.getY());
         gcam.setTransform(at);
         renderMap(gcam);
         renderEntities(gcam);
