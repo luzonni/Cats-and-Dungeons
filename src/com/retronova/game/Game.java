@@ -170,17 +170,18 @@ public class Game implements Activity {
     }
 
     private void renderWorld(Graphics2D g) {
-        Graphics2D gcam = (Graphics2D) g.create();
+        Graphics2D cam = (Graphics2D) g.create();
         AffineTransform at = new AffineTransform();
-        //at.translate(-gCam.getX(), -gCam.getY());
-        gcam.setTransform(at);
-        renderMap(gcam);
-        renderEntities(gcam);
-        renderParticles(gcam);
+        //at.setToScale(gCam.getZoom(), gCam.getZoom());
+        at.translate(-gCam.getX(), -gCam.getY());
+        cam.setTransform(at);
+        renderMap(cam);
+        renderEntities(cam);
+        renderParticles(cam);
         if(Debugging.showMouseSets) {
-            Debugging.mouse(gcam);
+            Debugging.mouse(cam);
         }
-        gcam.dispose();
+        cam.dispose();
     }
 
     private void renderMap(Graphics2D g) {

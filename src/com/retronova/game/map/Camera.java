@@ -1,21 +1,34 @@
 package com.retronova.game.map;
 
 import com.retronova.engine.Engine;
+import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.objects.GameObject;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 
 public class Camera {
 
+    private AffineTransform at;
     private GameObject followed;
     private final Rectangle bounds;
     private final double speed;
-
+    private double zoom;
     private double x, y;
 
     public Camera(Rectangle bounds, double speed) {
         this.bounds = bounds;
         this.speed = speed;
+        this.zoom = 1d;
+        this.at = new AffineTransform();
+    }
+
+    public AffineTransform getAt() {
+        return this.at;
+    }
+
+    public double getZoom() {
+        return this.zoom;
     }
 
     public int getX() {
@@ -41,6 +54,12 @@ public class Camera {
     public void tick() {
         if(followed != null)
             follow();
+        if(KeyBoard.KeyPressed("P")) {
+            this.zoom+=0.25d;
+        }else if(KeyBoard.KeyPressed("O")) {
+            this.zoom-=0.25d;
+        }
+        System.out.println(this.zoom);
     }
 
     public void setFollowed(GameObject followed) {
