@@ -2,12 +2,11 @@ package com.retronova;
 
 import com.retronova.engine.Engine;
 
+import javax.swing.*;
+
 public class Main {
     public static void main(String[] args) {
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("win")) {
-            DPIFix.fixDPI();
-        }
-        new Engine();
+        DPIFix.fixDPI();
+        SwingUtilities.invokeLater(Engine::new);
     }
 }

@@ -10,7 +10,7 @@ public class DPIFix {
 
     public static void fixDPI() {
         String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("win")) {
+        if (os.contains("unix")) {
             try {
                 User32 user32 = Native.load("user32", User32.class);
                 boolean result = user32.SetProcessDPIAware();
