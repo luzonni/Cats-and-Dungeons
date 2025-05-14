@@ -173,13 +173,6 @@ public class Game implements Activity {
         Graphics2D cam = (Graphics2D) g.create();
         AffineTransform at = new AffineTransform();
 
-
-        int screenWidth = g.getDeviceConfiguration().getBounds().width;
-        int screenHeight = g.getDeviceConfiguration().getBounds().height;
-        int frameWidth = Engine.window.getWidth();
-        int frameHeight = Engine.window.getHeight();
-        System.out.println(screenWidth - frameWidth);
-        at.translate((screenWidth - frameWidth)/2d, (screenHeight - frameHeight)/2d);
         at.scale(gCam.getZoom(), gCam.getZoom());
         at.translate(-gCam.getX(), -gCam.getY());
 

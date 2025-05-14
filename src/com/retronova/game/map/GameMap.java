@@ -227,9 +227,23 @@ public abstract class GameMap {
 
     public static boolean mouseOnRect(Rectangle bounds) {
         Camera cam = Game.getCam();
-        int x = Mouse.getX() + cam.getX();
-        int y = Mouse.getY() + cam.getY();
-        return bounds.contains(x, y);
+        int mouseX = Mouse.getX();
+        int mouseY = Mouse.getY();
+
+        Point2D.Float screenPoint = new Point2D.Float(mouseX, mouseY);
+        Point2D.Float worldPoint = new Point2D.Float();
+
+        try {
+            AffineTransform at = new AffineTransform();
+            at.scale(cam.getZoom(), cam.getZoom());
+            at.translate(-cam.getX(), -cam.getY());
+            AffineTransform inverse = at.createInverse(); // Inverso da transformação usada no render
+            inverse.transform(screenPoint, worldPoint);
+        } catch (NoninvertibleTransformException ex) {
+            ex.printStackTrace();
+        }
+
+        return bounds.contains(worldPoint.x, worldPoint.y);
     }
 
     public static boolean clickOnRect(Mouse_Button button, Rectangle rec) {
