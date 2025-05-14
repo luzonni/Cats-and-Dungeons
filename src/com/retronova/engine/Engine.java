@@ -1,8 +1,11 @@
 package com.retronova.engine;
 
 import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.graphics.FontG;
+import com.retronova.game.Debugging;
+import com.retronova.game.Game;
 import com.retronova.menus.Loading;
 import com.retronova.menus.Menu;
 
@@ -159,6 +162,19 @@ public class Engine implements Runnable {
         graphics.setFont(font);
         graphics.setColor(new Color(255, 255, 255, 100));
         graphics.drawString(VERSION, padding, window.getHeight() - padding);
+
+
+        int s = 5;
+        int size = s*2;
+        int size2 = s*6;
+        int x = Mouse.getX();
+        int y = Mouse.getY();
+        graphics.setStroke(new BasicStroke(s));
+        graphics.setColor(Color.red);
+        graphics.fillOval(x - size/2, y - size/2, size, size);
+        graphics.setColor(Color.red);
+        graphics.drawOval(x - size2/2, y - size2/2, size2, size2);
+
         graphics.dispose();
         BUFFER.show();
     }

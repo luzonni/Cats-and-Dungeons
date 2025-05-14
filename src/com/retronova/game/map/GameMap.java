@@ -20,6 +20,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
@@ -223,8 +226,9 @@ public abstract class GameMap {
 
 
     public static boolean mouseOnRect(Rectangle bounds) {
-        int x = Mouse.getX() + Game.getCam().getX();
-        int y = Mouse.getY() + Game.getCam().getY();
+        Camera cam = Game.getCam();
+        int x = Mouse.getX() + cam.getX();
+        int y = Mouse.getY() + cam.getY();
         return bounds.contains(x, y);
     }
 

@@ -16,7 +16,7 @@ import oshi.SystemInfo;
 
 public class Debugging {
 
-    public static boolean running = true;
+    public static boolean running = false;
 
     private static SystemInfo systemInfo;
 
@@ -41,7 +41,7 @@ public class Debugging {
             infos[i] = "INFO";
         }
         infos[0] = Engine.GameTag + " - " + Engine.VERSION;
-        infos[10] = "Processador: " + systemInfo.getHardware().getProcessor().getProcessorIdentifier().getName();
+        // infos[10] = "Processador: " + systemInfo.getHardware().getProcessor().getProcessorIdentifier().getName();
         infos[9] = "Arquitetura: " + System.getProperty("os.arch");
         long memoria = systemInfo.getHardware().getMemory().getTotal();
         infos[12] = "GraphicsCard" + systemInfo.getHardware().getGraphicsCards().get(0).getName();
