@@ -23,7 +23,6 @@ public class Debugging {
     public static boolean showEntityHitBox = false;
     public static boolean showParticleHitBox = false;
     public static boolean showTileBox = false;
-    public static boolean showMouseSets = false;
 
     private static Point position;
     private static Font font;
@@ -60,9 +59,6 @@ public class Debugging {
         }
         if(KeyBoard.KeyPressed("F6")) {
             Debugging.showParticleHitBox = !Debugging.showParticleHitBox;
-        }
-        if(KeyBoard.KeyPressed("F7")) {
-            Debugging.showMouseSets = !Debugging.showMouseSets;
         }
 
 
@@ -117,18 +113,6 @@ public class Debugging {
         g.drawString(text, x + padding*2, y + hF + padding);
         g.setColor(Color.WHITE);
         g.drawString(text, x + padding, y + hF);
-    }
-
-    public static void mouse(Graphics2D g) {
-        int size = Configs.GameScale()*2;
-        int size2 = Configs.GameScale()*6;
-        int x = Game.getCam().getX() + Mouse.getX();
-        int y = Game.getCam().getY() + Mouse.getY();
-        g.setStroke(new BasicStroke(Configs.GameScale()));
-        g.setColor(Color.MAGENTA);
-        g.fillOval(x - size/2, y - size/2, size, size);
-        g.setColor(Color.WHITE);
-        g.drawOval(x - size2/2, y - size2/2, size2, size2);
     }
 
 }

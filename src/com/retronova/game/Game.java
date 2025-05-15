@@ -175,9 +175,6 @@ public class Game implements Activity {
         renderMap(cam);
         renderEntities(cam);
         renderParticles(cam);
-        if(Debugging.showMouseSets) {
-            Debugging.mouse(cam);
-        }
         cam.dispose();
     }
 
