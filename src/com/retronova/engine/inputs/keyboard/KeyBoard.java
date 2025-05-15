@@ -21,7 +21,7 @@ public class KeyBoard implements KeyListener {
             new Key("K", KeyEvent.VK_K, true),
             new Key("P", KeyEvent.VK_P, true),
             new Key("O", KeyEvent.VK_O, true),
-            new Key("+", KeyEvent.VK_PLUS, true),
+            new Key("=", KeyEvent.VK_EQUALS, true),
             new Key("-", KeyEvent.VK_MINUS, true),
             new Key("Shift", KeyEvent.VK_SHIFT, false),
             new Key("Ctrl", KeyEvent.VK_CONTROL, false),

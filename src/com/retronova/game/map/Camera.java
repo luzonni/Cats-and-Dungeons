@@ -2,6 +2,7 @@ package com.retronova.game.map;
 
 import com.retronova.engine.Engine;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 
@@ -66,12 +67,11 @@ public class Camera {
     public void tick() {
         if(followed != null)
             follow();
-        if(KeyBoard.KeyPressed("P") && this.zoom < 3f) {
+        if((KeyBoard.KeyPressing("Ctrl") && KeyBoard.KeyPressed("=")) && this.zoom < 3f) {
             this.zoom = Math.round((this.zoom + 0.2) * 10f) / 10f;
-        }else if(KeyBoard.KeyPressed("O") && this.zoom > 1f) {
+        }else if(KeyBoard.KeyPressing("Ctrl") && KeyBoard.KeyPressed("-") && this.zoom > 1f) {
             this.zoom = Math.round((this.zoom - 0.2) * 10f) / 10f;
         }
-        System.out.println(zoom);
     }
 
     public void setFollowed(GameObject followed) {
