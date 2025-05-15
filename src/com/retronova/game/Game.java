@@ -1,6 +1,7 @@
 package com.retronova.game;
 
 import com.retronova.engine.Activity;
+import com.retronova.engine.Debugging;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
@@ -25,7 +26,6 @@ import com.retronova.menus.GameOver;
 import com.retronova.menus.Pause;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
 import java.util.List;
 
 public class Game implements Activity {
@@ -58,7 +58,6 @@ public class Game implements Activity {
         this.changeMap(map);
         this.hud = new HUD(player);
         this.galaxy = new Galaxy();
-        Debugging.init();
     }
 
     public static Camera getCam() {
@@ -120,7 +119,6 @@ public class Game implements Activity {
         }
         hud.tick();
         galaxy.tick();
-        Debugging.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause());
         }
@@ -158,6 +156,13 @@ public class Game implements Activity {
             this.map.getRepulsion().notify();
         }
         gCam.tick();
+
+        if(Debugging.running) {
+            int entitiesSize = Game.getMap().getEntities().size();
+            Debugging.setInfo("Amount of entities", String.valueOf(entitiesSize));
+            int particlesSize = Game.getMap().getParticles().size();
+            Debugging.setInfo("Amount of particles", String.valueOf(particlesSize));
+        }
     }
 
     @Override
@@ -165,8 +170,6 @@ public class Game implements Activity {
         galaxy.render(g);
         renderWorld(g);
         hud.render(g);
-        if(Debugging.running)
-            Debugging.render(g);
     }
 
     private void renderWorld(Graphics2D g) {

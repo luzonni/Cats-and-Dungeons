@@ -1,11 +1,8 @@
 package com.retronova.engine;
 
 import com.retronova.engine.inputs.keyboard.KeyBoard;
-import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.graphics.FontG;
-import com.retronova.game.Debugging;
-import com.retronova.game.Game;
 import com.retronova.menus.Loading;
 import com.retronova.menus.Menu;
 
@@ -50,6 +47,7 @@ public class Engine implements Runnable {
         Engine.window = new Window(GameTag);
         heapActivity(new Menu());
         start();
+        Debugging.init();
     }
 
     //Sempre usar essa função para mudar de Activity! Nunca usar a variável direto.
@@ -154,6 +152,10 @@ public class Engine implements Runnable {
 
     private void tick() {
         window.tick();
+        Debugging.tick();
+        Debugging.setInfo("Ticks", String.valueOf(Engine.HERTZ));
+        Debugging.setInfo("Frames", String.valueOf(Engine.FRAMES));
+        Debugging.setInfo("Screen Size", "[" + Engine.window.getWidth() + " / " + Engine.window.getHeight() + "]");
     }
 
     private void render(Graphics2D graphics) {
@@ -162,6 +164,8 @@ public class Engine implements Runnable {
         graphics.setFont(font);
         graphics.setColor(new Color(255, 255, 255, 100));
         graphics.drawString(VERSION, padding, window.getHeight() - padding);
+        if(Debugging.running)
+            Debugging.render(graphics);
         graphics.dispose();
         BUFFER.show();
     }

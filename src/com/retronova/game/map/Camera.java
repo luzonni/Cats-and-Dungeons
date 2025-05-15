@@ -16,12 +16,14 @@ public class Camera {
     private final Rectangle bounds;
     private final double speed;
     private float zoom;
+    private float currentZoom;
     private double x, y;
 
     public Camera(Rectangle bounds, double speed) {
         this.bounds = bounds;
         this.speed = speed;
         this.zoom = 1f;
+        this.currentZoom = 1f;
     }
 
     public static AffineTransform getAt() {
@@ -31,17 +33,13 @@ public class Camera {
         int screenHeight = Engine.window.getHeight();
         int camX = cam.getX() + screenWidth/2;
         int camY = cam.getY() + screenHeight/2;
-        double zoom = cam.getZoom();
+        double zoom = cam.currentZoom;
         double centerX = camX + screenWidth / 2.0 / zoom;
         double centerY = camY + screenHeight / 2.0 / zoom;
         at.translate(screenWidth / 2.0, screenHeight / 2.0);
         at.scale(zoom, zoom);
         at.translate(-centerX + (screenWidth/2d)/zoom, -centerY + (screenHeight/2d)/zoom);
         return at;
-    }
-
-    public double getZoom() {
-        return this.zoom;
     }
 
     public int getX() {
@@ -72,6 +70,8 @@ public class Camera {
         }else if(KeyBoard.KeyPressing("Ctrl") && KeyBoard.KeyPressed("-") && this.zoom > 1f) {
             this.zoom = Math.round((this.zoom - 0.2) * 10f) / 10f;
         }
+        float def = (zoom - this.currentZoom ) / 2f;
+        this.currentZoom += Math.round(def * 100f) / 100f;
     }
 
     public void setFollowed(GameObject followed) {
