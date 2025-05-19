@@ -10,12 +10,22 @@ public class Word extends Particle {
 
     private final String value;
     private final Font font;
+    private final Rectangle boundsFont;
     private int count;
 
     public Word(String value, double x, double y, double seconds) {
         super(x, y, seconds);
         this.value = value;
         this.font = FontG.font(FontG.Septem, Configs.GameScale() * 8);
+        int wF = FontG.getWidth(value, font);
+        int hF = FontG.getHeight(value, font);
+        boundsFont = new Rectangle(wF, hF);
+        setX(getX() - boundsFont.width/2d);
+        setY(getY() - boundsFont.height/2d);
+        double scaleW = (double) boundsFont.width / getWidth();
+        double scaleH = (double) boundsFont.height / getHeight();
+        setWidth(scaleW);
+        setHeight(scaleH);
     }
 
     @Override
@@ -30,10 +40,8 @@ public class Word extends Particle {
     @Override
     public void render(Graphics2D g) {
         String value = this.value;
-        int wF = FontG.getWidth(value, font);
-        int hF = FontG.getHeight(value, font);
-        int x = (int)getX() - wF/2;
-        int y = (int)getY() - hF/2;
+        int x = (int)getX();
+        int y = (int)getY() + boundsFont.height;
         g.setFont(font);
         g.setColor(Color.black);
         g.drawString(value, x + Configs.GameScale(), y + Configs.GameScale());
