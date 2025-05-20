@@ -30,7 +30,7 @@ public class Loading implements Activity, Runnable {
         this.stack = stack;
         this.next = next;
         this.action = action;
-        finish = false;
+        this.finish = false;
         this.start = false;
         this.spriteLoad = new SpriteSheet("icons", "loading", Configs.UiScale() *2).getSHEET();
     }
