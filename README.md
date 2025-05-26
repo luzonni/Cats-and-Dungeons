@@ -67,4 +67,7 @@ Os itens são voláteis e poderão sempre ser perdidos caso o jogador seja derro
 - Jose Francisco
 - Jose Nogueira
 
+### Documento PRD
+https://1drv.ms/w/c/c48d086d91293c36/EUd1CRhXAlRMs13bkpAg2qIBFBFy7Ttzm244rH9gDyEhtQ?e=7l7BbQ
+
 
