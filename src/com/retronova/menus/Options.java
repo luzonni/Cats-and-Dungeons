@@ -3,7 +3,7 @@ package com.retronova.menus;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
@@ -271,7 +271,7 @@ public class Options implements Activity {
 
     private void desenharTitulo(Graphics2D g) {
         g.setColor(corTexto);
-        g.setFont(FontG.font(FontG.Game, 15 * Configs.UiScale()));
+        g.setFont(FontHandler.font(FontHandler.Game, 15 * Configs.UiScale()));
         FontMetrics fmTitulo = g.getFontMetrics();
 
         int x = Engine.window.getWidth() / 2 - fmTitulo.stringWidth(titulo) / 2;
@@ -286,12 +286,12 @@ public class Options implements Activity {
                     Rectangle quadrado = quadrados[linha][coluna];
 
                     int tamanhoFonte = 8 * Configs.UiScale();
-                    Font fonteAtual = FontG.font(FontG.Game, tamanhoFonte);
+                    Font fonteAtual = FontHandler.font(FontHandler.Game, tamanhoFonte);
                     FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 
                     while (fmQuadrados.stringWidth(textosBotoes[linha][coluna]) > quadrado.width - 40) {
                         tamanhoFonte--;
-                        fonteAtual = FontG.font(FontG.Game, tamanhoFonte);
+                        fonteAtual = FontHandler.font(FontHandler.Game, tamanhoFonte);
                         fmQuadrados = g.getFontMetrics(fonteAtual);
                     }
 
@@ -341,7 +341,7 @@ public class Options implements Activity {
 
     private void desenharBotoesAjuste(Graphics2D g) {
         g.setColor(corTexto);
-        Font fonteAjuste = FontG.font(FontG.Game, 12 * Configs.UiScale());
+        Font fonteAjuste = FontHandler.font(FontHandler.Game, 12 * Configs.UiScale());
         FontMetrics fmAjuste = g.getFontMetrics(fonteAjuste);
 
         for (int linha = 0; linha < 4; linha++) {

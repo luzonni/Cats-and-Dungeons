@@ -4,8 +4,8 @@ import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.StoreException;
-import com.retronova.engine.graphics.FontG;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
@@ -34,7 +34,7 @@ public class Store implements Activity {
             throw new StoreException("A quantidade de items não bate com a quantidade de preços");
         }
         this.prices = prices;
-        this.store = new SpriteSheet("ui", "store", Configs.HudScale()).getSHEET();
+        this.store = new SpriteHandler("ui", "store", Configs.HudScale()).getSHEET();
         this.slots = new Slot[21];
         this.positionStore = new Point();
         this.buttonBuy = new Rectangle(23 * Configs.HudScale(), 14 * Configs.HudScale());
@@ -121,7 +121,7 @@ public class Store implements Activity {
             return;
         int x = positionStore.x + 18 * Configs.HudScale();
         int y = positionStore.y + 82 * Configs.HudScale();
-        Font font = FontG.font(FontG.Game,Configs.HudScale() * 8);
+        Font font = FontHandler.font(FontHandler.Game,Configs.HudScale() * 8);
         String value = prices[indexSelected] + "/" + Game.getPlayer().getMoney();
         g.setFont(font);
         g.setColor(Color.black);

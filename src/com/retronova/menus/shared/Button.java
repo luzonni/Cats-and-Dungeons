@@ -1,7 +1,7 @@
 package com.retronova.menus.shared;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 
@@ -60,12 +60,12 @@ public class Button {
         g.fill(new RoundRectangle2D.Double(x, y, largura, altura, 25, 25));
 
         int fontSize = 8 * Configs.UiScale();
-        Font fonte = FontG.font(FontG.Game, fontSize);
+        Font fonte = FontHandler.font(FontHandler.Game, fontSize);
         FontMetrics fm = g.getFontMetrics(fonte);
 
         while (fm.stringWidth(text) > bounds.width - 20) {
             fontSize--;
-            fonte = FontG.font(FontG.Game, fontSize);
+            fonte = FontHandler.font(FontHandler.Game, fontSize);
             fm = g.getFontMetrics(fonte);
         }
 

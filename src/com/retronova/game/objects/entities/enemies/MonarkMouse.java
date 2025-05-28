@@ -1,7 +1,7 @@
 package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.game.Game;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
@@ -43,7 +43,7 @@ public class MonarkMouse extends Enemy {
         if (orientation == 0) {
             orientation = -1;
         }
-        BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
+        BufferedImage sprite = SpriteHandler.flip(getSprite(), 1, orientation);
         renderSprite(sprite, d);
     }
 

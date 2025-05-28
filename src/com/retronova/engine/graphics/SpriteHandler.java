@@ -10,17 +10,17 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 
-public class SpriteSheet {
+public class SpriteHandler {
 
     private final BufferedImage SHEET;
     private final boolean loss;
     private final int scale;
 
     public static BufferedImage getSprite(String module, String sprite, int scale) {
-        return new SpriteSheet(module, sprite, scale).getSHEET();
+        return new SpriteHandler(module, sprite, scale).getSHEET();
     }
 
-    public SpriteSheet(String module, String sprite, int scale) {
+    public SpriteHandler(String module, String sprite, int scale) {
         this.scale = scale;
         boolean loss;
         BufferedImage sheet;

@@ -1,7 +1,7 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.graphics.Rotate;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Player;
@@ -55,7 +55,7 @@ public class BloodyAxe extends Item {
         int side = (Integer.compare((int)enemy.getX(), (int)player.getX())) * player.getWidth();
         double currentAngle = -this.angle;
         if(side > 0){
-            sprite = SpriteSheet.flip(sprite, -1 , 1);
+            sprite = SpriteHandler.flip(sprite, -1 , 1);
             currentAngle -= Math.PI / 2;
         }else {
             currentAngle -= Math.PI / 4;

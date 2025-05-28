@@ -6,7 +6,7 @@ import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.io.InputStream;
 
-public abstract class FontG {
+public abstract class FontHandler {
 
     public static final int Game = 0;
     public static final int Septem = 1;

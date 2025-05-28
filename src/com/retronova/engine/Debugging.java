@@ -1,6 +1,6 @@
 package com.retronova.engine;
 
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import oshi.SystemInfo;
 
@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class Debugging {
 
-    public static boolean running = true;
+    public static boolean running = false;
 
     public static boolean showEntityHitBox = false;
     public static boolean showParticleHitBox = false;
@@ -23,7 +23,7 @@ public class Debugging {
     private static Map<String, String> infos;
 
     public static void init() {
-        font = FontG.font(FontG.Septem, Configs.UiScale()*8);
+        font = FontHandler.font(FontHandler.Septem, Configs.UiScale()*8);
         position = new Point(10, 10);
         background = new Color(100, 100, 100, 180);
         infos = new LinkedHashMap<>();
@@ -74,7 +74,7 @@ public class Debugging {
             String key = keys[i];
             String text = key + " : " + infos.get(key);
             int x = position.x;
-            int y = position.y + (int)(FontG.getHeight(text, font)*1.5)*i;
+            int y = position.y + (int)(FontHandler.getHeight(text, font)*1.5)*i;
             renderInfo(text, x, y, g);
         }
         g.dispose();
@@ -83,8 +83,8 @@ public class Debugging {
     private static void renderInfo(String text, int x, int y, Graphics2D g) {
         int padding = Configs.UiScale();
         g.setColor(background);
-        int wF = FontG.getWidth(text, font);
-        int hF = FontG.getHeight(text, font);
+        int wF = FontHandler.getWidth(text, font);
+        int hF = FontHandler.getHeight(text, font);
         g.fillRect(x, y, wF + padding*2, hF + padding*2);
         g.setFont(font);
         g.setColor(Color.BLACK);

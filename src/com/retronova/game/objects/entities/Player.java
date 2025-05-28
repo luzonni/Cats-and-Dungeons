@@ -9,7 +9,7 @@ import com.retronova.game.Game;
 import com.retronova.game.interfaces.Inventory;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.GameObject;
@@ -287,7 +287,7 @@ public class Player extends Entity {
     public void render(Graphics2D g) {
         BufferedImage sprite = getSprite();
         if(getPhysical().getOrientation()[0] == -1)
-            sprite = SpriteSheet.flip(sprite, 1, -1);
+            sprite = SpriteHandler.flip(sprite, 1, -1);
         renderSprite(sprite, g);
         drawItem(g);
     }

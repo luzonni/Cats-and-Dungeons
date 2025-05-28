@@ -7,7 +7,7 @@ import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -18,7 +18,7 @@ import java.awt.geom.RoundRectangle2D;
 public class Pause implements Activity {
 
     private Rectangle[] quadrados;
-    private final Font fonteTitulo = FontG.font(FontG.Game, 15 * Configs.UiScale());
+    private final Font fonteTitulo = FontHandler.font(FontHandler.Game, 15 * Configs.UiScale());
     private final Color corFundo = new Color(50, 50, 50, 150);
     private final Color corTexto = Color.WHITE;
     private final String[] quadradosNomes = {"Continue", "Restart", "Options", "Main Geral", "Quit"};
@@ -29,8 +29,8 @@ public class Pause implements Activity {
     private ConfirmacaoTipo tipoConfirmacao = null;
     private final Rectangle botaoSim = new Rectangle();
     private final Rectangle botaoNao = new Rectangle();
-    private final Font fonteConfirmacaoMensagem = FontG.font(FontG.Game, 10 * Configs.UiScale());
-    private final Font fonteBotaoConfirmacao = FontG.font(FontG.Game, 8 * Configs.UiScale());
+    private final Font fonteConfirmacaoMensagem = FontHandler.font(FontHandler.Game, 10 * Configs.UiScale());
+    private final Font fonteBotaoConfirmacao = FontHandler.font(FontHandler.Game, 8 * Configs.UiScale());
     private final Color corPopup = new Color(0x6B7A8F);
 
     private enum ConfirmacaoTipo {
@@ -178,12 +178,12 @@ public class Pause implements Activity {
     private void desenharBotoes(Graphics2D g) {
         for (int i = 0; i < quadrados.length; i++) {
             int tamanhoFonte = 8 * Configs.UiScale();
-            Font fonteAtual = FontG.font(FontG.Game, tamanhoFonte);
+            Font fonteAtual = FontHandler.font(FontHandler.Game, tamanhoFonte);
             FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
 
             while (fmQuadrados.stringWidth(quadradosNomes[i]) > quadrados[i].width - 20) {
                 tamanhoFonte--;
-                fonteAtual = FontG.font(FontG.Game, tamanhoFonte);
+                fonteAtual = FontHandler.font(FontHandler.Game, tamanhoFonte);
                 fmQuadrados = g.getFontMetrics(fonteAtual);
             }
 

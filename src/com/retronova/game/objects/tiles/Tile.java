@@ -6,7 +6,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.Entity;
@@ -17,7 +17,7 @@ public abstract class Tile extends GameObject {
     private static Color colorDebugTile;
 
     static {
-        fontDebugTile = FontG.font(FontG.Septem, Configs.GameScale()*6);
+        fontDebugTile = FontHandler.font(FontHandler.Septem, Configs.GameScale()*6);
         colorDebugTile = new Color(252, 127, 3);
     }
 
@@ -87,8 +87,8 @@ public abstract class Tile extends GameObject {
         g.setStroke(new BasicStroke(Configs.GameScale()/2));
         g.drawRect((int)this.getX() + padding, (int)this.getY() + padding, this.getWidth() - padding*2, this.getHeight() - padding*2);
         String text = String.valueOf(index);
-        int wF = FontG.getWidth(text, fontDebugTile);
-        int hF = FontG.getHeight(text, fontDebugTile);
+        int wF = FontHandler.getWidth(text, fontDebugTile);
+        int hF = FontHandler.getHeight(text, fontDebugTile);
         int x = (int)this.getX() + this.getWidth()/2 - wF/2;
         int y = (int)this.getY() + this.getHeight()/2 + hF/2;
         g.setFont(fontDebugTile);

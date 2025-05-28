@@ -2,10 +2,10 @@ package com.retronova.game.interfaces;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.DrawString;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.mouse.Mouse;
 
 import java.awt.*;
@@ -21,10 +21,10 @@ public class Slot {
 
     public Slot(int x, int y) {
         this.item = null;
-        this.sprite = new SpriteSheet("ui", "slot", Configs.HudScale()).getSHEET();
+        this.sprite = new SpriteHandler("ui", "slot", Configs.HudScale()).getSHEET();
         this.bounds = new Rectangle(x, y, this.sprite.getWidth(), this.sprite.getHeight());
         info = new InfoBox();
-        this.fontStack = FontG.font(FontG.Septem, Configs.HudScale() * 8);
+        this.fontStack = FontHandler.font(FontHandler.Septem, Configs.HudScale() * 8);
     }
 
     public void setPosition(int x, int y) {
@@ -96,8 +96,8 @@ public class Slot {
         g.drawImage(item.getSprite(), x, y, width, height, null);
         if(item instanceof Consumable consumable) {
             String stack = String.valueOf(consumable.getStack());
-            int wf = FontG.getWidth(stack, fontStack);
-            int hf = FontG.getHeight(stack, fontStack);
+            int wf = FontHandler.getWidth(stack, fontStack);
+            int hf = FontHandler.getHeight(stack, fontStack);
             DrawString.draw(stack, fontStack, x + width - wf - Configs.HudScale(), y + height - hf - Configs.HudScale(), g);
         }
     }

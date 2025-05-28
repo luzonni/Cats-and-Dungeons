@@ -5,7 +5,7 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.particles.Particle;
@@ -72,7 +72,7 @@ public class MouseExplode extends Enemy {
         int orientation = getPhysical().getOrientation()[0] * -1;
         if(orientation == 0)
             orientation = -1;
-        BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
+        BufferedImage sprite = SpriteHandler.flip(getSprite(), 1, orientation);
         renderSprite(sprite, d);
     }
 

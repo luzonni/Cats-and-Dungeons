@@ -3,7 +3,7 @@ package com.retronova.menus;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
@@ -12,8 +12,8 @@ import java.awt.*;
 
 public class GameOver implements Activity {
 
-    private final Font gameOverFont = FontG.font(FontG.Game, 48 * Configs.UiScale());
-    private final Font escFont = FontG.font(FontG.Game, 15 * Configs.UiScale());
+    private final Font gameOverFont = FontHandler.font(FontHandler.Game, 48 * Configs.UiScale());
+    private final Font escFont = FontHandler.font(FontHandler.Game, 15 * Configs.UiScale());
     private long lastBlinkTime = 0;
     private boolean isTextVisible = true;
 

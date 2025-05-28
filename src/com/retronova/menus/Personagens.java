@@ -9,8 +9,8 @@ import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.engine.graphics.FontG;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 
@@ -47,11 +47,11 @@ public class Personagens implements Activity {
     private final Color corTexto = Color.WHITE;
 
 
-    private final Font fonteTitulo = FontG.font(FontG.Game, 22 * Configs.UiScale());
-    private final Font fonteGatos = FontG.font(FontG.Game,7 * Configs.UiScale());
-    private final Font fonteBotoes = FontG.font(FontG.Game,8 * Configs.UiScale());
-    private final Font fonteInfoPersonagens = FontG.font(FontG.Game,5 * Configs.UiScale());
-    private final Font fonteLore = FontG.font(FontG.Game,6 * Configs.UiScale());
+    private final Font fonteTitulo = FontHandler.font(FontHandler.Game, 22 * Configs.UiScale());
+    private final Font fonteGatos = FontHandler.font(FontHandler.Game,7 * Configs.UiScale());
+    private final Font fonteBotoes = FontHandler.font(FontHandler.Game,8 * Configs.UiScale());
+    private final Font fonteInfoPersonagens = FontHandler.font(FontHandler.Game,5 * Configs.UiScale());
+    private final Font fonteLore = FontHandler.font(FontHandler.Game,6 * Configs.UiScale());
 
 
     public Personagens() {
@@ -68,7 +68,7 @@ public class Personagens implements Activity {
 
         String[] gatos = {"cinzento", "mago", "sortudo"};
         for (String nome : gatos) {
-            BufferedImage imagem = new SpriteSheet("objects/player", nome, Configs.UiScale()).getSHEET();
+            BufferedImage imagem = new SpriteHandler("objects/player", nome, Configs.UiScale()).getSHEET();
             imagens.add(imagem);
         }
 

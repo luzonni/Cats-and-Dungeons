@@ -1,7 +1,7 @@
 package com.retronova.game.objects;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -62,7 +62,7 @@ public class Sheet<T extends GameObject> {
 
     private BufferedImage[] loadSprite(String spriteName) {
         String modulo = "sprites/objects/" + gameObject.getSimpleName().toLowerCase();
-        SpriteSheet sheet = new SpriteSheet(modulo, spriteName, Configs.GameScale());
+        SpriteHandler sheet = new SpriteHandler(modulo, spriteName, Configs.GameScale());
         int height = sheet.getHeight();
         int length = sheet.getWidth() / height;
         BufferedImage[] sprites = new BufferedImage[length];

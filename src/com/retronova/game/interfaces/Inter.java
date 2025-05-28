@@ -3,16 +3,14 @@ package com.retronova.game.interfaces;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class Inter implements Activity {
 
@@ -23,7 +21,7 @@ public class Inter implements Activity {
     private String index;
 
     public Inter() {
-        this.inter = new HashMap<>();
+        this.inter = new TreeMap<>();
         this.temp = new ArrayList<>();
         this.index = "";
     }
@@ -132,7 +130,7 @@ public class Inter implements Activity {
     }
 
     private void renderTabs(Graphics2D g) {
-        Font font = FontG.font(FontG.Game,Configs.HudScale()*6);
+        Font font = FontHandler.font(FontHandler.Game,Configs.HudScale()*6);
         g.setFont(font);
         g.setStroke(new BasicStroke(Configs.HudScale()*2));
         for(int i = 0; i < tabs.length; i++) {
@@ -143,8 +141,8 @@ public class Inter implements Activity {
             g.drawRect(rec.x, rec.y, rec.width, rec.height);
             g.setColor(new Color(0x872341));
             g.fillRect(rec.x, rec.y, rec.width, rec.height);
-            int wf = FontG.getWidth(name, font);
-            int hf = FontG.getHeight(name, font);
+            int wf = FontHandler.getWidth(name, font);
+            int hf = FontHandler.getHeight(name, font);
             g.setColor(new Color(0x09122c));
             g.drawString(name, rec.x + rec.width/2 - wf/2 + Configs.HudScale(), rec.y + rec.height/2 + hf/2 + Configs.HudScale());
             Color c = index.equals(name) ? Color.white : new Color(0xe17564);

@@ -2,7 +2,7 @@ package com.retronova.game.items;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.exceptions.NotFound;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -112,7 +112,7 @@ public abstract class Item {
         this.id = id;
         this.name = name;
         if(!sheet.containsKey(sprite)) {
-            SpriteSheet sheet = new SpriteSheet("sprites/items", sprite, Configs.GameScale());
+            SpriteHandler sheet = new SpriteHandler("sprites/items", sprite, Configs.GameScale());
             int length = sheet.getWidth() / 16;
             this.sprite = new BufferedImage[length];
             for (int i = 0; i < length; i++) {

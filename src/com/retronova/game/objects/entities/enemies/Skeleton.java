@@ -1,7 +1,7 @@
 package com.retronova.game.objects.entities.enemies;
 
 import com.retronova.game.Game;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Player;
@@ -56,7 +56,7 @@ public class Skeleton extends Enemy {
         int orientation = getPhysical().getOrientation()[0] * -1;
         if (orientation == 0)
             orientation = -1;
-        BufferedImage sprite = SpriteSheet.flip(getSprite(), 1, orientation);
+        BufferedImage sprite = SpriteHandler.flip(getSprite(), 1, orientation);
         renderSprite(sprite, g);
     }
 }

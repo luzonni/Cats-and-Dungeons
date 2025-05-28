@@ -2,8 +2,8 @@ package com.retronova.game.hud;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.graphics.FontG;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.Game;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.objects.entities.enemies.Enemy;
@@ -18,7 +18,7 @@ public class WaveDisplay {
     private int amountOfEnemies;
 
     WaveDisplay() {
-        this.clock = new SpriteSheet("ui", "clock", Configs.HudScale()).getSHEET();
+        this.clock = new SpriteHandler("ui", "clock", Configs.HudScale()).getSHEET();
         this.position = new Point();
     }
 
@@ -51,7 +51,7 @@ public class WaveDisplay {
     }
 
     private void renderValues(int x, int y, Graphics2D g) {
-        Font font = FontG.font(FontG.Septem, Configs.HudScale()*6);
+        Font font = FontHandler.font(FontHandler.Septem, Configs.HudScale()*6);
         g.setFont(font);
 
         int xLevel = x + 25 * Configs.HudScale();

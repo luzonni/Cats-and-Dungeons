@@ -7,7 +7,7 @@ import com.retronova.engine.exceptions.InventoryOutsOfBounds;
 import com.retronova.game.Game;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -37,7 +37,7 @@ public class Inventory implements Activity {
         this.insurer = new Slot(0, 0);
         this.bag = new Slot[15];
         this.hotbar = new Slot[5];
-        this.inventory = new SpriteSheet("ui", "inventory", Configs.HudScale()).getSHEET();
+        this.inventory = new SpriteHandler("ui", "inventory", Configs.HudScale()).getSHEET();
         refreshPositions();
     }
 

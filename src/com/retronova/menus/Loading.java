@@ -4,9 +4,9 @@ import com.retronova.engine.ActionBack;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Rotate;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -32,7 +32,7 @@ public class Loading implements Activity, Runnable {
         this.action = action;
         this.finish = false;
         this.start = false;
-        this.spriteLoad = new SpriteSheet("icons", "loading", Configs.UiScale() *2).getSHEET();
+        this.spriteLoad = new SpriteHandler("icons", "loading", Configs.UiScale() *2).getSHEET();
     }
 
     @Override
@@ -56,11 +56,11 @@ public class Loading implements Activity, Runnable {
         Rotate.draw(spriteLoad, x, y, rotating, null, g);
 
         int padding = Configs.Margin();
-        Font font = FontG.font(FontG.Game,Configs.UiScale() * 12);
+        Font font = FontHandler.font(FontHandler.Game,Configs.UiScale() * 12);
         String value = "Loading...";
         g.setColor(Color.white);
         g.setFont(font);
-        int wF = FontG.getWidth(value, font);
+        int wF = FontHandler.getWidth(value, font);
         g.drawString(value, Engine.window.getWidth() - wF - padding, Engine.window.getHeight() - padding);
     }
 

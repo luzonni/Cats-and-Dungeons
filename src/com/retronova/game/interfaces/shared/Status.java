@@ -4,8 +4,8 @@ import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.DrawString;
-import com.retronova.engine.graphics.FontG;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
@@ -24,8 +24,8 @@ public class Status implements Activity {
 
     public Status(Player player) {
         this.player = player;
-        this.status = new SpriteSheet("ui","status", Configs.HudScale()).getSHEET();
-        this.font = FontG.font(FontG.Septem,Configs.HudScale() * 8);
+        this.status = new SpriteHandler("ui","status", Configs.HudScale()).getSHEET();
+        this.font = FontHandler.font(FontHandler.Septem,Configs.HudScale() * 8);
         this.frame = new Frame(player, 52 * Configs.HudScale(), 68 * Configs.HudScale());
         this.points = new HashMap<>();
         refreshPositions();

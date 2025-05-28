@@ -5,7 +5,6 @@ import com.retronova.engine.exceptions.EntityNotFound;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.io.Resources;
-import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.EntityIDs;
@@ -14,7 +13,7 @@ import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.physical.Repulsion;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.TileIDs;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.objects.tiles.Void;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -55,7 +54,7 @@ public abstract class GameMap {
     }
 
     private void loadMap(String mapName) {
-        BufferedImage mapImage = new SpriteSheet("maps", mapName, 1).getSHEET();
+        BufferedImage mapImage = new SpriteHandler("maps", mapName, 1).getSHEET();
         int width = mapImage.getWidth();
         int height = mapImage.getHeight();
         this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());

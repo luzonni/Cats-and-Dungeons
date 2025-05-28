@@ -3,11 +3,11 @@ package com.retronova.game.hud;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.DrawString;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.interfaces.Slot;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 
@@ -26,10 +26,10 @@ class Hotbar {
 
     public Hotbar(Player player) {
         this.player = player;
-        SpriteSheet sheet = new SpriteSheet("ui", "hotbar", Configs.HudScale());
+        SpriteHandler sheet = new SpriteHandler("ui", "hotbar", Configs.HudScale());
         int sheetSize = sheet.getWidth()/16;
         this.sprites = new BufferedImage[sheetSize];
-        this.fontStack = FontG.font(FontG.Septem, Configs.HudScale() * 8);
+        this.fontStack = FontHandler.font(FontHandler.Septem, Configs.HudScale() * 8);
         for(int i = 0; i < sheetSize; i++) {
             this.sprites[i] = sheet.getSpriteWithIndex(i, 0);
         }
@@ -113,8 +113,8 @@ class Hotbar {
                     if(consumable.getStack() <= 1)
                         continue;
                     String stack = String.valueOf(consumable.getStack());
-                    int wf = FontG.getWidth(stack, fontStack);
-                    int hf = FontG.getHeight(stack, fontStack);
+                    int wf = FontHandler.getWidth(stack, fontStack);
+                    int hf = FontHandler.getHeight(stack, fontStack);
                     DrawString.draw(stack, fontStack, x + bounds[i].width - wf - 2 * Configs.HudScale(), y + bounds[i].height - hf - 2 * Configs.HudScale(), g);
                 }
             }

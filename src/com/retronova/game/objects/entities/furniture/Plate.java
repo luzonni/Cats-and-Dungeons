@@ -1,7 +1,7 @@
 package com.retronova.game.objects.entities.furniture;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.map.GameMap;
 
 import java.awt.*;
@@ -15,7 +15,7 @@ public class Plate extends  Furniture {
         super(ID, x, y, 1000);
         loadSprites("plate");
         this.content = content;
-        this.font = FontG.font(FontG.Septem, Configs.GameScale()*6);
+        this.font = FontHandler.font(FontHandler.Septem, Configs.GameScale()*6);
     }
 
     @Override
@@ -33,8 +33,8 @@ public class Plate extends  Furniture {
 
     private void renderMessage(Graphics2D g) {
         int padding = Configs.GameScale() * 2;
-        int wC = FontG.getWidth(content, font);
-        int hC = FontG.getHeight(content, font);
+        int wC = FontHandler.getWidth(content, font);
+        int hC = FontHandler.getHeight(content, font);
         int width = wC + padding*2;
         int height = hC + padding*2;
         int x = (int)getX() + getWidth()/2 - width/2;

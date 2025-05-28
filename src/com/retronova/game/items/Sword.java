@@ -3,7 +3,7 @@ package com.retronova.game.items;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
@@ -32,7 +32,7 @@ public class Sword extends Item {
         this.damage = 35;
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));
-        sword_attack = new SpriteSheet("sprites/items", "sword_attack", Configs.GameScale()).getSHEET();
+        sword_attack = new SpriteHandler("sprites/items", "sword_attack", Configs.GameScale()).getSHEET();
         addSpecifications("Melee Attack", "Player damage + "+ this.damage, "very fast");
     }
 
@@ -94,7 +94,7 @@ public class Sword extends Item {
 
     private void drawAttackEffect(Graphics2D g) {
         if(Math.abs(rad) > Math.PI/4 && Math.abs(rad) < Math.PI/2) {
-            BufferedImage flipped = SpriteSheet.flip(this.sword_attack,1, side);
+            BufferedImage flipped = SpriteHandler.flip(this.sword_attack,1, side);
             int x = this.boundsAttack.x + (this.boundsAttack.width - this.sword_attack.getWidth())/2;
             int y = this.boundsAttack.y + (this.boundsAttack.height - this.sword_attack.getHeight())/2;
             g.drawImage(flipped, x, y, null);

@@ -1,7 +1,7 @@
 package com.retronova.game.interfaces;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.items.Item;
 
@@ -17,8 +17,8 @@ public class InfoBox {
 
     public InfoBox() {
         this.padding = Configs.HudScale() * 5;
-        this.fontTitle = FontG.font(FontG.Septem,Configs.HudScale() * 10);
-        this.fontSpecs = FontG.font(FontG.Septem,Configs.HudScale() * 8);
+        this.fontTitle = FontHandler.font(FontHandler.Septem,Configs.HudScale() * 10);
+        this.fontSpecs = FontHandler.font(FontHandler.Septem,Configs.HudScale() * 8);
     }
 
     public void setValues(Item item) {
@@ -32,14 +32,14 @@ public class InfoBox {
         for (int j = 1; j < values.length; j++) {
             values[j] = "- " + item.getSpecifications()[j - 1];
         }
-        int height = padding*2 + FontG.getHeight(values[0], fontTitle);
-        int lastWidth = padding*2 + FontG.getWidth(values[0], fontTitle);
+        int height = padding*2 + FontHandler.getHeight(values[0], fontTitle);
+        int lastWidth = padding*2 + FontHandler.getWidth(values[0], fontTitle);
         for(int i = 1; i < values.length; i++) {
-            int currentWidth = padding*2 + FontG.getWidth(values[i], fontSpecs);
+            int currentWidth = padding*2 + FontHandler.getWidth(values[i], fontSpecs);
             if(currentWidth > lastWidth) {
                 lastWidth = currentWidth;
             }
-            height += FontG.getHeight(values[i], fontSpecs) + padding;
+            height += FontHandler.getHeight(values[i], fontSpecs) + padding;
         }
         this.bounds = new Rectangle(lastWidth, height);
         this.values = values;
@@ -65,13 +65,13 @@ public class InfoBox {
         g.drawRect(x, y, this.bounds.width, this.bounds.height);
         g.setFont(fontTitle);
         g.setColor(Color.black);
-        g.drawString(values[0], x + padding + Configs.HudScale(), y + FontG.getHeight(values[0], fontTitle)  + padding + Configs.HudScale());
+        g.drawString(values[0], x + padding + Configs.HudScale(), y + FontHandler.getHeight(values[0], fontTitle)  + padding + Configs.HudScale());
         g.setColor(Color.white);
-        g.drawString(values[0], x + padding, y + FontG.getHeight(values[0], fontTitle)  + padding);
+        g.drawString(values[0], x + padding, y + FontHandler.getHeight(values[0], fontTitle)  + padding);
         g.setFont(fontSpecs);
-        int lastY = y + FontG.getHeight(values[0], fontTitle) + padding;
+        int lastY = y + FontHandler.getHeight(values[0], fontTitle) + padding;
         for(int i = 1; i < values.length; i++) {
-            lastY += FontG.getHeight(values[i-1], fontSpecs) + padding;
+            lastY += FontHandler.getHeight(values[i-1], fontSpecs) + padding;
             g.setColor(Color.black);
             g.drawString(values[i], x + padding + Configs.HudScale(), lastY + Configs.HudScale());
             g.setColor(Color.white);

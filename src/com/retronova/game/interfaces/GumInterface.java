@@ -3,8 +3,8 @@ package com.retronova.game.interfaces;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.graphics.FontG;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
@@ -38,13 +38,13 @@ public class GumInterface implements Activity {
     public GumInterface(GumMachine gum, Item[] awards) {
         this.gum = gum;
         int s = Configs.HudScale();
-        this.gumInterface = SpriteSheet.getSprite("ui","bum_ui", s);
-        SpriteSheet sheet = new SpriteSheet("ui", "button_bum", s);
+        this.gumInterface = SpriteHandler.getSprite("ui","bum_ui", s);
+        SpriteHandler sheet = new SpriteHandler("ui", "button_bum", s);
         this.buttonSprite = new BufferedImage[]{sheet.getSpriteWithIndex(0, 0), sheet.getSpriteWithIndex(1, 0)};
         int x = Engine.window.getWidth()/2 - this.gumInterface.getWidth()/2;
         int y = Engine.window.getHeight()/2 - this.gumInterface.getHeight()/2;
         this.pricePosition = new Point(x + 16*s, y + 77*s);
-        this.font = FontG.font(FontG.Septem, Configs.HudScale()*8);
+        this.font = FontHandler.font(FontHandler.Septem, Configs.HudScale()*8);
         this.ui_position = new Point(x, y);
         this.slot = new Slot(x + 50*s, y + 62*s);
         this.button = new Rectangle(x + 76*s, y + 70*s, 16*s, 16*s);
@@ -102,7 +102,7 @@ public class GumInterface implements Activity {
         gumPanel.render(g);
         g.drawImage(this.gumInterface, this.ui_position.x, this.ui_position.y, null);
         slot.render(g);
-        BufferedImage buttonSprite = SpriteSheet.flip(this.buttonSprite[indexButton], this.gumPanel.opened() ? -1 : 1, 1);
+        BufferedImage buttonSprite = SpriteHandler.flip(this.buttonSprite[indexButton], this.gumPanel.opened() ? -1 : 1, 1);
         g.drawImage(buttonSprite, this.button.x, this.button.y, null);
         renderPrice(g);
     }

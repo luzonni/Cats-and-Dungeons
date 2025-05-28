@@ -1,7 +1,7 @@
 package com.retronova.game.interfaces.shared;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.interfaces.InfoBox;
 import com.retronova.game.items.Consumable;
@@ -25,8 +25,8 @@ class Frame {
         this.player = player;
         this.bounds = new Rectangle(width, height);
         this.frame = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        this.fontName = FontG.font(FontG.Septem, Configs.HudScale() * 8);
-        this.fontStack = FontG.font(FontG.Septem, Configs.HudScale() * 6);
+        this.fontName = FontHandler.font(FontHandler.Septem, Configs.HudScale() * 8);
+        this.fontStack = FontHandler.font(FontHandler.Septem, Configs.HudScale() * 6);
         this.info = new InfoBox();
     }
 
@@ -75,13 +75,13 @@ class Frame {
         int size = rec.height - 4;
         g.drawImage(icon, rec.x, rec.y, size, size, null);
         g.setFont(fontName);
-        int hf = FontG.getHeight(name, fontName);
+        int hf = FontHandler.getHeight(name, fontName);
         g.setColor(Color.black);
         g.drawString(name, rec.x + size + Configs.HudScale()*2 + Configs.HudScale()/2, rec.y + (rec.height/2 + hf/2) + Configs.HudScale()/2);
         g.setColor(Color.white);
         g.drawString(name, rec.x + size + Configs.HudScale()*2, rec.y + (rec.height/2 + hf/2));
         String stack = passive.getStack()+"x";
-        int hfs = FontG.getHeight(stack, fontStack);
+        int hfs = FontHandler.getHeight(stack, fontStack);
         g.setFont(fontStack);
         g.setColor(Color.black);
         g.drawString(stack, rec.x + Configs.HudScale()/2, rec.y + rec.height - hfs/2 + Configs.HudScale()/2);

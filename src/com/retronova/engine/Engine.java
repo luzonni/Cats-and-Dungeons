@@ -2,7 +2,7 @@ package com.retronova.engine;
 
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.sound.Sound;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.menus.Loading;
 import com.retronova.menus.Menu;
 
@@ -42,7 +42,7 @@ public class Engine implements Runnable {
         stackActivities = new ArrayList<>();
         Configs.init();
         Configs.load();
-        FontG.addFont("game", "septem");
+        FontHandler.addFont("game", "septem");
         Sound.load();
         Engine.window = new Window(GameTag);
         heapActivity(new Menu());
@@ -159,7 +159,7 @@ public class Engine implements Runnable {
     }
 
     private void render(Graphics2D graphics) {
-        Font font = FontG.font(FontG.Septem, Configs.UiScale()*8);
+        Font font = FontHandler.font(FontHandler.Septem, Configs.UiScale()*8);
         int padding = Configs.Margin();
         graphics.setFont(font);
         graphics.setColor(new Color(255, 255, 255, 100));

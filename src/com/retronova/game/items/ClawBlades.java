@@ -2,7 +2,7 @@ package com.retronova.game.items;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.Rotate;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.AttackTypes;
@@ -79,7 +79,7 @@ public class ClawBlades extends Item {
         Point pointRotate = new Point(3 * Configs.GameScale(), 12 * Configs.GameScale());
         if(side == -1) {
             pointRotate.setLocation( 13 * Configs.GameScale(), 12 * Configs.GameScale());
-            sprite = SpriteSheet.flip(sprite, 1, -1);
+            sprite = SpriteHandler.flip(sprite, 1, -1);
         }
         y -= pointRotate.y;
         x+= (int) (Math.cos(rad) * Configs.GameScale() * 8 * side);

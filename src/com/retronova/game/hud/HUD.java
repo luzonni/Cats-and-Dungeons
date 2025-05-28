@@ -3,10 +3,10 @@ package com.retronova.game.hud;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -30,8 +30,8 @@ public class HUD implements Activity {
     public HUD(Player player) {
         this.hotbar = new Hotbar(player);
         this.waveDisplay = new WaveDisplay();
-        SpriteSheet sheetBust = new SpriteSheet("ui","bust", Configs.HudScale());
-        SpriteSheet sheetBottle = new SpriteSheet("ui","lifebottle", Configs.HudScale());
+        SpriteHandler sheetBust = new SpriteHandler("ui","bust", Configs.HudScale());
+        SpriteHandler sheetBottle = new SpriteHandler("ui","lifebottle", Configs.HudScale());
         int indexBust = 0;
         for(int i = 0; i < Player.TEMPLATES.length; i++) {
             if(player.getName().equals(Player.TEMPLATES[i].getName())) {
@@ -127,10 +127,10 @@ public class HUD implements Activity {
         int size = Configs.HudScale() * 15;
         int x = Engine.window.getWidth() - size - Configs.Margin();
         int y = Configs.Margin();
-        Font font = FontG.font(FontG.Game,Configs.HudScale() * 8);
+        Font font = FontHandler.font(FontHandler.Game,Configs.HudScale() * 8);
         String value = "" + player.getLevel();
-        int wf = FontG.getWidth(value, font);
-        int hf = FontG.getHeight(value, font);
+        int wf = FontHandler.getWidth(value, font);
+        int hf = FontHandler.getHeight(value, font);
         g2.setStroke(new BasicStroke(Configs.HudScale()));
         g2.setFont(font);
         g2.setColor(new Color(20, 64, 96));

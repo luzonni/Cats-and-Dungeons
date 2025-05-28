@@ -1,6 +1,6 @@
 package com.retronova.engine;
 
-import com.retronova.engine.graphics.SpriteSheet;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 
@@ -18,8 +18,8 @@ public class Window extends Canvas {
     public static final BufferedImage POINTER_CURSOR;
 
     static {
-        DEFAULT_CURSOR = new SpriteSheet("ui","cursor", 3).getSHEET();
-        POINTER_CURSOR = new SpriteSheet("ui", "cursor_hover", 3).getSHEET();
+        DEFAULT_CURSOR = new SpriteHandler("ui","cursor", 3).getSHEET();
+        POINTER_CURSOR = new SpriteHandler("ui", "cursor_hover", 3).getSHEET();
     }
 
     private final String name;
@@ -71,7 +71,7 @@ public class Window extends Canvas {
         }
 
         try {
-            SpriteSheet icon = new SpriteSheet("ui","icon", 3);
+            SpriteHandler icon = new SpriteHandler("ui","icon", 3);
             setCursor(DEFAULT_CURSOR);
             frame.setIconImage(icon.getSHEET());
         }catch(Exception ignore) { }

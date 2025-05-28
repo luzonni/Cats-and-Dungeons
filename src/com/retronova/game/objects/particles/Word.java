@@ -1,7 +1,7 @@
 package com.retronova.game.objects.particles;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.graphics.FontG;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.Game;
 
 import java.awt.*;
@@ -16,9 +16,9 @@ public class Word extends Particle {
     public Word(String value, double x, double y, double seconds) {
         super(x, y, seconds);
         this.value = value;
-        this.font = FontG.font(FontG.Septem, Configs.GameScale() * 8);
-        int wF = FontG.getWidth(value, font);
-        int hF = FontG.getHeight(value, font);
+        this.font = FontHandler.font(FontHandler.Septem, Configs.GameScale() * 8);
+        int wF = FontHandler.getWidth(value, font);
+        int hF = FontHandler.getHeight(value, font);
         boundsFont = new Rectangle(wF, hF);
         setX(getX() - boundsFont.width/2d);
         setY(getY() - boundsFont.height/2d);
