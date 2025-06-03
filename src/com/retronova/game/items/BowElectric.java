@@ -5,33 +5,31 @@ import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.game.objects.entities.utilities.ArrowEletric;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class BowEletric extends Item {
+public class BowElectric extends Item {
 
     private double angle = 0;
     private int count;
     private int countShot;
     private BufferedImage arrowSprite;
 
-    BowEletric(int id) {
+    BowElectric(int id) {
         super(id, "BowEletric", "boweletric");
         addSpecifications("Arrow add thunder", "player damage", "shot slowed");
     }
 
     @Override
     public void tick() {
-        if(Sheet.SHEETS.containsKey("arroweletric") && this.arrowSprite == null) {
-            this.arrowSprite = Sheet.SHEETS.get("arroweletric")[0];
-        }
+        this.arrowSprite = SpriteSheet.getSprite("sprites/objects/utility.arrow").getImage(0);
         Player player = Game.getPlayer();
         Entity nearest = player.getNearest(player.getRange(), Enemy.class);
         if(nearest != null){

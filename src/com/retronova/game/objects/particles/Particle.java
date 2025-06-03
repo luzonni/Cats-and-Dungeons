@@ -1,7 +1,7 @@
 package com.retronova.game.objects.particles;
 
 import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.Sheet;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 import java.awt.*;
 
@@ -18,7 +18,7 @@ public abstract class Particle extends GameObject {
 
     @Override
     public void loadSprites(String... sprites) {
-        this.setSheet(new Sheet<>(Particle.class, sprites));
+        this.setSheet(new SpriteSheet("sprites/objects/particle", sprites));
     }
 
     protected double getSeconds() {

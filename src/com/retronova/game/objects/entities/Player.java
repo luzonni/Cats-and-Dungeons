@@ -13,11 +13,11 @@ import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.particles.Volatile;
 import com.retronova.game.objects.particles.Word;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -109,7 +109,7 @@ public class Player extends Entity {
 
     @Override
     public void loadSprites(String... sprites) {
-        setSheet(new Sheet<>(Player.class, sprites));
+        setSheet(new SpriteSheet("sprites/objects/player", sprites));
     }
 
     public String getName() {
@@ -236,7 +236,7 @@ public class Player extends Entity {
     private void updateMovement() {
         if (!(Engine.getACTIVITY() instanceof Game))
             return;
-        getSheet().setType(getPhysical().isMoving() ? 1 : 0);
+        getSheet().setState(getPhysical().isMoving() ? 1 : 0);
         int vertical = 0;
         int horizontal = 0;
         boolean isMoving = false;

@@ -9,7 +9,6 @@ import com.retronova.game.items.Item;
 import com.retronova.game.items.ItemIDs;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.NPCs.Seller;
 import com.retronova.game.objects.entities.enemies.*;
 import com.retronova.game.objects.entities.furniture.*;
@@ -19,6 +18,7 @@ import com.retronova.game.objects.particles.Volatile;
 import com.retronova.game.objects.physical.Physical;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -153,7 +153,7 @@ public abstract class Entity extends GameObject {
 
     @Override
     public void loadSprites(String... sprites) {
-        setSheet(new Sheet<>(Entity.class, sprites));
+        setSheet(new SpriteSheet("entity", sprites));
     }
 
     protected void addResistances(AttackTypes attack, double resistance) {

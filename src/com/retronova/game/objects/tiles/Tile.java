@@ -8,8 +8,8 @@ import java.awt.Graphics2D;
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.Entity;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 public abstract class Tile extends GameObject {
 
@@ -69,7 +69,7 @@ public abstract class Tile extends GameObject {
 
     @Override
     public void loadSprites(String... sprites) {
-        setSheet(new Sheet<>(Tile.class, sprites));
+        setSheet(new SpriteSheet("sprites/objects/tile", sprites));
     }
 
     public abstract void effect(Entity e);

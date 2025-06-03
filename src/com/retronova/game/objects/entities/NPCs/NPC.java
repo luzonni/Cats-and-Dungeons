@@ -1,8 +1,8 @@
 package com.retronova.game.objects.entities.NPCs;
 
-import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 public abstract class NPC extends Entity {
 
@@ -15,7 +15,7 @@ public abstract class NPC extends Entity {
 
     @Override
     public void loadSprites(String... sprites) {
-        setSheet(new Sheet<>(NPC.class, sprites));
+        setSheet(new SpriteSheet("sprites/objects/npc", sprites));
     }
 
     @Override

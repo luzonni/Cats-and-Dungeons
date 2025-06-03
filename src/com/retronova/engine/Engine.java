@@ -5,6 +5,7 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.menus.Loading;
 import com.retronova.menus.Menu;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
@@ -44,6 +45,7 @@ public class Engine implements Runnable {
         Configs.load();
         FontHandler.addFont("game", "septem");
         Sound.load();
+        SpriteSheet.load(Engine.resPath, Configs.GameScale());
         Engine.window = new Window(GameTag);
         heapActivity(new Menu());
         start();

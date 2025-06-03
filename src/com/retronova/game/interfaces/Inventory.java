@@ -26,7 +26,7 @@ public class Inventory implements Activity {
     private Item itemHand;
 
     private Point inventoryPosition;
-    private BufferedImage inventory;
+    private final BufferedImage inventory;
 
     public Inventory(int lengthBag, int lengthHotbar) {
         if(lengthBag > 15 || lengthHotbar > 5) {

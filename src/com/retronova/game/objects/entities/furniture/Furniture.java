@@ -1,8 +1,8 @@
 package com.retronova.game.objects.entities.furniture;
 
-import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 public abstract class Furniture extends Entity {
 
@@ -13,7 +13,7 @@ public abstract class Furniture extends Entity {
 
     @Override
     public void loadSprites(String... sprites) {
-        setSheet(new Sheet<>(Furniture.class, sprites));
+        setSheet(new SpriteSheet("sprites/objects/furniture", sprites));
     }
 
     @Override

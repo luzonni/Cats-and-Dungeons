@@ -80,7 +80,7 @@ public abstract class Item {
                 return consumable;
             }
             case BowEletric -> {
-                return new BowEletric(id);
+                return new BowElectric(id);
             }
             case SwordFire -> {
                 return new SwordFire(id);

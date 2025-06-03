@@ -8,6 +8,8 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.menus.shared.Button;
+import studio.retrozoni.sheeter.SpriteSheet;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ public class Menu implements Activity {
         Sound.stopAll();
         Sound.play(Musics.Menu, true);
 
-        imagemFundo = new SpriteHandler("icons", "Gato", 1).getSHEET();
+        imagemFundo = SpriteSheet.getImage("icons.Gato");
     }
 
     private void inicializarBotoes() {

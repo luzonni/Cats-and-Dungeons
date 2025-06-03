@@ -1,6 +1,7 @@
 package com.retronova.game.objects;
 
 import com.retronova.engine.Configs;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -8,7 +9,7 @@ import java.util.Comparator;
 
 public abstract class GameObject {
 
-    protected Sheet<? extends GameObject> sheet;
+    protected SpriteSheet sheet;
 
     private int depth;
     private boolean groundObject;
@@ -28,7 +29,7 @@ public abstract class GameObject {
 
     public abstract void loadSprites(String... sprites);
 
-    protected <T extends GameObject> void setSheet(Sheet<T> sheet) {
+    protected void setSheet(SpriteSheet sheet) {
         this.sheet = sheet;
     }
 
@@ -60,7 +61,7 @@ public abstract class GameObject {
         return this.depth;
     }
 
-    protected Sheet<? extends GameObject> getSheet() {
+    protected SpriteSheet getSheet() {
         return this.sheet;
     }
 
@@ -132,7 +133,7 @@ public abstract class GameObject {
     }
 
     public void dispose() {
-        sheet.dispose();
+
     }
 
     public void renderBounds(Graphics2D g) {

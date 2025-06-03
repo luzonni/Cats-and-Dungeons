@@ -5,12 +5,12 @@ import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.game.objects.Sheet;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.enemies.Enemy;
 import com.retronova.game.objects.entities.utilities.Arrow;
+import studio.retrozoni.sheeter.SpriteSheet;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -29,9 +29,7 @@ public class Bow extends Item {
 
     @Override
     public void tick() {
-        if(Sheet.SHEETS.containsKey("arrow") && this.arrowSprite == null) {
-            this.arrowSprite = Sheet.SHEETS.get("arrow")[0];
-        }
+        this.arrowSprite = SpriteSheet.getSprite("sprites/objects/utility.arrow").getImage(0);
         Player player = Game.getPlayer();
         Entity nearest = player.getNearest(player.getRange(), Enemy.class);
         if(nearest != null){
