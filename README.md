@@ -6,68 +6,54 @@ Um jogo roguelike desenvolvido em **Java**, focado em exploração e sobrevivên
 
 ## 🚀 Tecnologias Utilizadas  
 - **Java** – Para a lógica do jogo e mecânicas.  
-- **Biblioteca TinySound** - Para reprodução de sons.
-- **JSON** - Para salvar estados.
+- **Biblioteca TinySound** – Para reprodução de sons.  
+- **JSON** – Para salvar estados.
+
+## 🧠 Técnicas e Algoritmos  
+- **Distância Euclidiana** - Usada para calcular a distância direta entre dois pontos (ex: inimigo e jogador);
+- **Array** – Utilizado para gerenciar o inventário do jogador, com estrutura simples e eficiente para os 9 slots de armazenamento e 2 slots de uso rápido;
+- **Algoritmo A\*** – Empregado para pathfinding, permitindo que os inimigos calculem o melhor caminho até o jogador de forma inteligente e estratégica;
+- **Colisão Retangular (AABB)** – Detecta colisão entre objetos com bounding boxes.
 
 ## 🎲 Características  
 - **Mapas gerados conforme a onda** 🗺️  
 - **Sistema de combate estratégico** ⚔️  
 - **Progressão dinâmica do personagem** 🏆  
-- **Ambiente interativo e desafiador** 🔥
+- **Ambiente interativo e desafiador** 🔥  
 - **História Divertida** 🎮
 
-## Personagem
-O jogador poderá escolher entre três variantes de personagens,
-cada um com características específicas. 
+## 🧍 Personagem  
+O jogador poderá escolher entre três variantes de personagens, cada um com características específicas.  
 O personagem terá atributos que, com o avanço das ondas de monstros, poderão ser melhorados.
 
-## Atributos
-- Nível do personagem: Conforme o nível de certo personagem, ele poderá aumentar a sorte de aparecer
-certas estruturas, encontrar itens pelo jogo, etc.
-- Habilidades: As habilidades servirão para aumentar características dos personagens, características
-essas que poderão ajudar a avançar nas ondas mais altas, conseguindo assim, facilitar o avanço do jogo.
-- Experiência: A experiência é adquirida conforme as ondas passam. Elas serão usadas para desbloquear e
-melhorar habilidades.
+## 📈 Atributos  
+- **Nível do personagem**: Influencia a sorte, descoberta de estruturas, itens, etc.  
+- **Habilidades**: Melhoram as características do personagem e ajudam a enfrentar ondas mais difíceis.  
+- **Experiência**: Ganha-se com o tempo e é usada para desbloquear e melhorar habilidades.
 
+## 🎯 Objetivos  
+O foco do jogo é sobreviver ao maior número de ondas de monstros.  
+A cada pausa entre ondas, o jogador poderá usar coletáveis para comprar ou trocar itens numa loja.  
+Estruturas interativas trarão novos desafios, recompensas e caminhos.
 
-## Objetivos
-O foco do jogo é avançar nas ondas de monstros que aparecerão no mapa, quanto mais longe você
-conseguir chegar, mais difícil o jogo se torna e mais ‘upgrades’ serão disponibilizados ao jogador.
-As ondas terão pausas, onde o jogador poderá, a partir de coletáveis, comprar ou trocar itens num
-pequeno sistema de loja. Durante o jogo, também será possível encontrar durante as ondas, itens, baús
-ou outros tipos de formas para trocar os seus equipamentos.
+## 🏰 Estruturas  
+Surgirão aleatoriamente em ondas mais avançadas, oferecendo novos mapas com desafios, puzzles e chefes.  
+São fontes de itens raros e progressão.
 
-Dentro do mapa, aparecerão estruturas em que o jogador poderá interagir para adquirir novos itens.
-O jogador poderá entrar em estruturas, onde terá desafios como ‘Puzzles’ ou 'Bosses' para conseguir itens
-especiais. Estruturas como calabouços, escotilhas ou casas de anões poderão aparecer durante as waves, 
-dependendo da sorte do jogador.
+## 🎒 Inventário  
+- 9 slots para armazenamento  
+- 2 slots de uso rápido  
+- Inventário volátil: morte implica na perda de itens, habilidades e nível.
 
-## Estruturas
-As estruturas poderão aparecer de forma aleatória em ondas mais avançadas, as mesmas terão objetivo de
-permitir o carregamento de novos mapas, onde terão novos desafios, quebra-cabeças, monstros ou até 
-mesmos chefes. Com objetivo de possibilitar a coleta de itens raros para avançar na progressão do jogo.
+## 🧪 Itens  
+Itens aparecem em locais específicos, exigem habilidades ou níveis para uso, e são sempre voláteis ao ser derrotado.
 
-## Inventário
-O jogador terá um pequeno inventário, onde guardará os seus itens. Um total de 9 slots para armazenamento
-e mais 2 slots para uso. 
-
-O inventário do jogador é volátil, assim, os itens que conseguir durante o avanço das ondas poderão ser perdidos
-caso o jogador perca. Isso também servirá para habilidades e nível.
-
-## Itens
-Os itens poderão ser encontrados durante o jogo, alguns serão coletáveis apenas em lugares específicos, e 
-alguns só poderão ser usados se certas habilidades ou nível do personagem for adequado.
-
-Os itens são voláteis e poderão sempre ser perdidos caso o jogador seja derrotado.
-
-### Equipe: 
-- Lucas Zonzini
-- Caio Renato
-- Caio Gabriel
-- Jose Francisco
+## 👥 Equipe  
+- Lucas Zonzini  
+- Caio Renato  
+- Caio Gabriel  
+- Jose Francisco  
 - Jose Nogueira
 
-### Documento PRD
-https://1drv.ms/w/c/c48d086d91293c36/EUd1CRhXAlRMs13bkpAg2qIBFBFy7Ttzm244rH9gDyEhtQ?e=7l7BbQ
-
-
+## 📄 Documento PRD  
+[Link para o PRD](https://1drv.ms/w/c/c48d086d91293c36/EUd1CRhXAlRMs13bkpAg2qIBFBFy7Ttzm244rH9gDyEhtQ?e=7l7BbQ)
