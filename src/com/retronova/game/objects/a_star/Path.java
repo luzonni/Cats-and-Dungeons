@@ -81,7 +81,8 @@ public class Path implements Runnable {
 			Point middle = new Point((int) entity.getBounds().getCenterX(), (int) entity.getBounds().getCenterY());
 			this.aStar = new A_Star(middle, end, range);
 		} catch (RuntimeException e) {
-			System.out.println("Erro!");
+			System.err.println("A* something is wrong!");
+			e.printStackTrace();
 		}
 	}
 
