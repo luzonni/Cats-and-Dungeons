@@ -61,7 +61,8 @@ public class Zombie extends Enemy {
             orientation = -1;
         BufferedImage sprite = SpriteHandler.flip(getSprite(), 1, orientation);
         renderSprite(sprite, g);
-        this.path.render(g);
+        //Debug dos caminhos
+        //this.path.render(g);
     }
 
 }
