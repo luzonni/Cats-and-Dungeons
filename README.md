@@ -24,7 +24,7 @@ Um jogo roguelike desenvolvido em **Java**, focado em exploração e sobrevivên
 - **História Divertida** 🎮
 
 ## 🧍 Personagem
-O jogador poderá escolher entre três variantes de personagens, cada um com características específicas.  
+- O jogador poderá escolher entre três variantes de personagens, cada um com características específicas.  
 O personagem terá atributos que, com o avanço das ondas de monstros, poderão ser melhorados.
 
 ## 📈 Atributos
