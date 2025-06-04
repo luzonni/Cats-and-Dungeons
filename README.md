@@ -10,12 +10,12 @@ Um jogo roguelike desenvolvido em **Java**, focado em exploração e sobrevivên
 - **JSON** – Para salvar estados.
 
 ## 🧠 Técnicas e Algoritmos
-- **Distância Euclidiana** - Usada para calcular a distância direta entre dois pontos (ex: inimigo e jogador);
-- **Array** – Utilizado para gerenciar o inventário do jogador, com estrutura simples e eficiente para os 20 slots de armazenamento com 5 de uso rápido;
-- **Algoritmo A\*** – Empregado para path-finding, permitindo que os inimigos calculem o melhor caminho até o jogador de forma inteligente e estratégica;
-- **Colisão Retangular (AABB)** – Detecta colisão entre objetos com bounding boxes.
-- **Física Vetorial** - Uso de vetores para movimentação das entidades.
-- **Física Avançada** - Uso de peso, força e fricção para deixar tudo mais interessante!
+- **Distância Euclidiana** - Usada para calcular a distância direta entre dois pontos (ex: inimigo e jogador), essencial para lógica de perseguição e detecção de proximidade;
+- **Array** – Utilizado para gerenciar o inventário do jogador, com estrutura simples e eficiente para os 20 slots de armazenamento com 5 de uso rápido; permite inserções e consultas rápidas;
+- **Algoritmo A\*** – Empregado para pathfinding, permitindo que os inimigos calculem o melhor caminho até o jogador de forma inteligente e estratégica, considerando obstáculos e terrenos;
+- **Colisão Retangular (AABB)** – Detecta colisão entre objetos com axis-aligned bounding boxes, ideal para ambientes 2D por sua simplicidade e baixo custo computacional;
+- **Física Vetorial** - Utiliza vetores para representar e atualizar movimento e direção das entidades no espaço, garantindo movimentação fluida e reações realistas;
+- **Física Avançada** - Incorpora conceitos de peso, força e fricção para simular interações físicas mais convincentes, como aceleração, quedas e deslizamentos, elevando a imersão no gameplay.
 
 ## 🎲 Características
 - **Sistema de combate estratégico** ⚔️
