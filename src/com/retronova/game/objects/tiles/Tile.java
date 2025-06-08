@@ -4,13 +4,11 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.util.Set;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
-import studio.retrozoni.sheeter.SpriteHolder;
 import studio.retrozoni.sheeter.SpriteSheet;
 
 public abstract class Tile extends GameObject {
@@ -54,7 +52,7 @@ public abstract class Tile extends GameObject {
                 return new Sand(ID, x, y, solid);
             }
             default -> {
-                return new Void(-1, x, y, solid);
+                return new Void(TileIDs.Void.ordinal(), x, y, solid);
             }
         }
     }

@@ -65,7 +65,7 @@ public abstract class GameMap {
         try {
             jsonObject = Resources.getJsonFile("maps", mapName);
         } catch (IOException ignore) {
-            System.err.println("Arquivo: " + mapName);
+            System.err.println("Arquivo não encontrado: " + mapName);
         }
         if(jsonObject != null && !jsonObject.isEmpty()) {
             loadEntities(width, height, jsonObject);
