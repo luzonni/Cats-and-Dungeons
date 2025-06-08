@@ -4,23 +4,24 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.util.Set;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
+import studio.retrozoni.sheeter.SpriteHolder;
 import studio.retrozoni.sheeter.SpriteSheet;
 
 public abstract class Tile extends GameObject {
 
-    private static Font fontDebugTile;
-    private static Color colorDebugTile;
+    private static final Font fontDebugTile;
+    private static final Color colorDebugTile;
 
     static {
         fontDebugTile = FontHandler.font(FontHandler.Septem, Configs.GameScale()*6);
         colorDebugTile = new Color(252, 127, 3);
     }
-
 
     public static Tile build(int ID, Object... values) {
         TileIDs mapping = TileIDs.values()[ID];
