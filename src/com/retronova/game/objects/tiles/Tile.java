@@ -78,12 +78,11 @@ public abstract class Tile extends GameObject {
 
     }
 
-
     public void renderBounds(int index, Graphics2D graphics) {
         Graphics2D g = (Graphics2D)graphics.create();
         int padding = Configs.GameScale();
         g.setColor(colorDebugTile);
-        g.setStroke(new BasicStroke(Configs.GameScale()/2));
+        g.setStroke(new BasicStroke(Configs.GameScale()/2f));
         g.drawRect((int)this.getX() + padding, (int)this.getY() + padding, this.getWidth() - padding*2, this.getHeight() - padding*2);
         String text = String.valueOf(index);
         int wF = FontHandler.getWidth(text, fontDebugTile);
