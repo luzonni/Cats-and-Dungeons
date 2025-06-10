@@ -22,6 +22,14 @@
       ]
     },
     {
+      "name": "Seller",
+      "x": 18,
+      "y": 13,
+      "values": [
+        "FULL"
+      ]
+    },
+    {
       "name": "GumMachine",
       "x": 12,
       "y": 13,
