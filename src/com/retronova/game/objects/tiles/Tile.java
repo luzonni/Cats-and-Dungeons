@@ -13,14 +13,13 @@ import studio.retrozoni.sheeter.SpriteSheet;
 
 public abstract class Tile extends GameObject {
 
-    private static Font fontDebugTile;
-    private static Color colorDebugTile;
+    private static final Font fontDebugTile;
+    private static final Color colorDebugTile;
 
     static {
         fontDebugTile = FontHandler.font(FontHandler.Septem, Configs.GameScale()*6);
         colorDebugTile = new Color(252, 127, 3);
     }
-
 
     public static Tile build(int ID, Object... values) {
         TileIDs mapping = TileIDs.values()[ID];
@@ -53,7 +52,7 @@ public abstract class Tile extends GameObject {
                 return new Sand(ID, x, y, solid);
             }
             default -> {
-                return new Void(-1, x, y, solid);
+                return new Void(TileIDs.Void.ordinal(), x, y, solid);
             }
         }
     }
@@ -79,12 +78,11 @@ public abstract class Tile extends GameObject {
 
     }
 
-
     public void renderBounds(int index, Graphics2D graphics) {
         Graphics2D g = (Graphics2D)graphics.create();
         int padding = Configs.GameScale();
         g.setColor(colorDebugTile);
-        g.setStroke(new BasicStroke(Configs.GameScale()/2));
+        g.setStroke(new BasicStroke(Configs.GameScale()/2f));
         g.drawRect((int)this.getX() + padding, (int)this.getY() + padding, this.getWidth() - padding*2, this.getHeight() - padding*2);
         String text = String.valueOf(index);
         int wF = FontHandler.getWidth(text, fontDebugTile);

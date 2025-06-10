@@ -65,7 +65,7 @@ public abstract class GameMap {
         try {
             jsonObject = Resources.getJsonFile("maps", mapName);
         } catch (IOException ignore) {
-            System.err.println("Arquivo: " + mapName);
+            System.err.println("Arquivo não encontrado: " + mapName);
         }
         if(jsonObject != null && !jsonObject.isEmpty()) {
             loadEntities(width, height, jsonObject);
@@ -76,13 +76,15 @@ public abstract class GameMap {
         Tile[] map = new Tile[width * height];
         TileIDs[] values = TileIDs.values();
         for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+            line : for (int x = 0; x < width; x++) {
                 int index = x + y * width;
                 for (TileIDs value : values) {
                     if (value.getColor() == rgb[index]) {
                         map[index] = Tile.build(value.ordinal(), x, y);
+                        continue line;
                     }
                 }
+                map[index] = Tile.build(TileIDs.Void.ordinal(), x, y);
             }
         }
         return map;

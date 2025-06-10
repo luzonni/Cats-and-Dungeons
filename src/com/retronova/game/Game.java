@@ -144,9 +144,7 @@ public class Game implements Activity {
             p.tick();
             p.setDepth();
         }
-        Tile[] map = this.map.getMap();
-        for(int i = 0; i < map.length; i++) {
-            Tile tile = map[i];
+        for (Tile tile : this.map.getMap()) {
             tile.tick();
         }
         if(!this.map.getEntities().contains(player)) {
