@@ -16,7 +16,7 @@ import java.util.Random;
 public class Engine implements Runnable {
 
     public static String GameTag = "Cats & Dungeons";
-    public static String VERSION = "ALPHA 0.1.2";
+    public static String VERSION = "ALPHA 0.1.3";
 
 
     private static Thread thread;
