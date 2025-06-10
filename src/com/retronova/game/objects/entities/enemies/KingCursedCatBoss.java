@@ -9,14 +9,13 @@ import java.awt.*;
 public class KingCursedCatBoss extends Enemy {
 
     public KingCursedCatBoss(int ID, double x, double y) {
-        super(ID,x,y, 80);
+        super(ID, x, y, 80);
         setWidth(2);
         setHeight(2);
         loadSprites("kingcursedcatboss");
         setLife(1300);
         setSpeed(4);
         setSolid();
-
     }
 
     @Override

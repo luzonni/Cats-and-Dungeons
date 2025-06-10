@@ -2,13 +2,13 @@
   "waves": [
     {
       "period": 2,
-      "amount": [1, 1],
+      "amount": [5, 5],
       "enemies": ["Zombie"]
     },
     {
-      "period": 3,
-      "amount": [6, 7, 7],
-      "enemies": ["Zombie", "Slime"]
+      "period": 1,
+      "amount": [1],
+      "enemies": ["CatToyBoss"]
     },
     {
       "period": 3,

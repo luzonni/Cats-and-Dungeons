@@ -155,6 +155,7 @@ public class Waves implements Runnable {
             listAppend = spawner(enemies);
         }catch (Exception e) {
             System.err.println("Erro em waves...");
+            e.printStackTrace();
         }
     }
 }

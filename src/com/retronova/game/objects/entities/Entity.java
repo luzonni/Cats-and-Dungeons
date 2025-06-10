@@ -69,7 +69,7 @@ public abstract class Entity extends GameObject {
                 return new MouseVampire(ID, x, y);
             }
             case CatToyBoss -> {
-                return new CatToyBoss(ID,x,y);
+                return new CatToyBoss(ID, x, y);
             }
             case KingCursedCatBoss -> {
                 return new KingCursedCatBoss(ID, x,y);
