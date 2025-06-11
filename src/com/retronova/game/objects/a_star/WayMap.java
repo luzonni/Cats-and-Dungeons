@@ -1,66 +1,48 @@
 package com.retronova.game.objects.a_star;
 
-import com.retronova.game.Game;
-import com.retronova.game.objects.tiles.Tile;
-
 class WayMap {
 	
 	private final Node[] nodes;
 	private final int X, Y;
 	private final int LENGTH;
-	private final Node start_Node;
-	private final Node goal_Node;
+	final Node start, goal;
 	
-	public WayMap(Node start, Node end, int range) throws RuntimeException {
-		this.start_Node = start;
-		this.goal_Node = end;
-		this.LENGTH = range*2;
-		nodes = new Node[(int)Math.pow(LENGTH, 2)];
+	public WayMap(Node start, Node end, int range, CheckerNode checker) throws RuntimeException {
+		this.start = start;
+		this.goal = end;
+		this.LENGTH = range * 2;
+		this.nodes = new Node[(int)Math.pow(LENGTH, 2)];
+
 		this.X = start.x - range;
 		this.Y = start.y - range;
+
 		int xD = Math.abs(start.x - end.x);
 		int yD = Math.abs(start.y - end.y);
 		if(xD >= range || yD >= range)
 			throw new RuntimeException("The end node not in range");
-		buildMap(range);
-		setNode(X, Y, start_Node);
-		if(getNode(goal_Node.x, goal_Node.y).isSolid())
+
+		buildMap(range, checker);
+		setNode(X, Y, this.start);
+
+		if(getNode(goal.x, goal.y).isSolid())
 			throw new RuntimeException("The goal_Node is solid");
-		setNode(goal_Node.x, goal_Node.y, goal_Node);
+		setNode(goal.x, goal.y, goal);
 	}
 	
-	private void buildMap(int range) {
-		int X = start_Node.x;
-		int Y = start_Node.y;
-		for(int yy = Y-range; yy < Y+range; yy++)
-			for(int xx = X-range; xx < X+range; xx++) {
-				Tile curTile;
-				Node node = new Node(xx,  yy);
-				try {
-					curTile = Game.getMap().getTile(xx, yy);
-					node.setSolid(curTile.isSolid());
-				} catch (RuntimeException e) {
-					node.setSolid(true);
-				}
-				//Colliding path with entity
-//				if(!node.isSolid() || curTile != null)
-//					for(int i = 0; i < Space.OBJECTS.size(); i++) {
-//						Objects o = Space.OBJECTS.get(i);
-//						if(o instanceof Entity || o instanceof Tile)
-//							continue;
-//						if(o.isCollider() && o.getHitBox().getBounds().intersects(curTile.getBounds())) {
-//							node.setSolid(true);
-//						}
-//					}
+	private void buildMap(int range, CheckerNode checkerNode) {
+		for(int y = start.y - range; y < start.y + range; y++) {
+			for (int x = start.x - range; x < start.x + range; x++) {
+				Node node = new Node(x, y);
+				node.setSolid(checkerNode.check(x, y));
 				getCost(node);
-				setNode(xx, yy, node);
+				setNode(x, y, node);
 			}
-		
+		}
 	}
 	
 	private void getCost(Node node) {
-		node.G_Cost = getDistance(node, start_Node);
-		node.H_Cost = getDistance(node, goal_Node);
+		node.G_Cost = getDistance(node, start);
+		node.H_Cost = getDistance(node, goal);
 		node.F_Cost = node.G_Cost + node.H_Cost;
 	}
 	

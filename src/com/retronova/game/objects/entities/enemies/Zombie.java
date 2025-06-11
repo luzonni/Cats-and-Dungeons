@@ -4,27 +4,49 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteHandler;
-import com.retronova.game.objects.a_star.Path;
+import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.a_star.CheckerNode;
+import com.retronova.game.objects.a_star.PathFinder;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.tiles.Tile;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Zombie extends Enemy {
 
-    private Path path;
+    private PathFinder path;
     private int countAnim;
     private int cooldown;
+
+    /*
+        CheckerNode é o observador de tiles para saber se ele é acessivel ou não
+        caso o tile n for acessivel, retorne true (solido), caso contra, false (não solido)
+
+        caso o tile n seja encontrado pelo mapa, retona true (solido / não acessivel)
+
+        *caso queira verifificar se existe uma entidade por cima do tile que é solida.
+    */
+    public static CheckerNode cN = (x, y) -> {
+        try {
+            Tile tile = Game.getMap().getTile(x, y);
+            return tile.isSolid();
+        } catch (RuntimeException e) {
+            return true;
+        }
+    };
 
     public Zombie(int ID, double x, double y) {
         super(ID, x, y, 25);
         loadSprites("mousezombie");
         setLife(40);
         setSpeed(1);
+        setWidth(0.5);
+        setHeight(0.8);
         addResistances(AttackTypes.Fire, 0.5);
         setSolid();
-        this.path = new Path();
+        this.path = new PathFinder(cN);
     }
 
     public void tick() {
@@ -47,11 +69,24 @@ public class Zombie extends Enemy {
 
     private void moveIA() {
         Player player = Game.getPlayer();
-        if(System.currentTimeMillis()/1000 % 2 == 0) {
-            Point target = new Point((int)player.getX() + getWidth()/2, (int)player.getY() + getHeight()/2);
-            path.buildPath(this, target, 25);
+
+        if(path.isEmpty()) {
+            Point start = this.getBounds().getLocation();
+            Point goal = new Point((int)player.getX() + getWidth()/2, (int)player.getY() + getHeight()/2);
+            int rangeTiles = 25;
+            path.buildPath(start, goal, rangeTiles);
         }
-        path.follow();
+
+        Point last = path.getFollow();
+        if(last == null)
+            return;
+        Point target = new Point(last.x * GameObject.SIZE() + Tile.SIZE()/2, last.y * GameObject.SIZE() + Tile.SIZE()/2);
+        Point self = new Point((int)getBounds().getCenterX(), (int)getBounds().getCenterY());
+        double r = Math.atan2((target.y - self.y), (target.x - self.x));
+        getPhysical().addForce("a_star", getSpeed(), r);
+        if(getBounds().intersects(new Rectangle(target.x, target.y, Tile.SIZE(), Tile.SIZE()))) {
+            path.arrived();
+        }
     }
 
     @Override
@@ -61,8 +96,6 @@ public class Zombie extends Enemy {
             orientation = -1;
         BufferedImage sprite = SpriteHandler.flip(getSprite(), 1, orientation);
         renderSprite(sprite, g);
-        //Debug dos caminhos
-        //this.path.render(g);
     }
 
 }
