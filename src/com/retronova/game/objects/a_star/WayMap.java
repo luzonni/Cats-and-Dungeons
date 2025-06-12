@@ -1,5 +1,8 @@
 package com.retronova.game.objects.a_star;
 
+import com.retronova.game.objects.a_star.exceptions.OutOfRange;
+import com.retronova.game.objects.a_star.exceptions.SolidNode;
+
 class WayMap {
 	
 	private final Node[] nodes;
@@ -19,13 +22,13 @@ class WayMap {
 		int xD = Math.abs(start.x - end.x);
 		int yD = Math.abs(start.y - end.y);
 		if(xD >= range || yD >= range)
-			throw new RuntimeException("The end node not in range");
+			throw new OutOfRange("The end node not in range");
 
 		buildMap(range, checker);
 		setNode(X, Y, this.start);
 
 		if(getNode(goal.x, goal.y).isSolid())
-			throw new RuntimeException("The goal_Node is solid");
+			throw new SolidNode("The goal_Node is solid");
 		setNode(goal.x, goal.y, goal);
 	}
 	

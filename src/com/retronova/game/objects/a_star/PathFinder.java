@@ -1,5 +1,7 @@
 package com.retronova.game.objects.a_star;
 
+import com.retronova.game.objects.a_star.exceptions.OutOfRange;
+
 import java.awt.*;
 import java.util.List;
 
@@ -51,6 +53,9 @@ public class PathFinder implements Runnable {
 			A_Star aStar = new A_Star(wayMap);
 			this.path = aStar.getPath();
 		} catch (RuntimeException e) {
+			if(e instanceof OutOfRange) {
+				return;
+			}
 			System.err.println("A* something is wrong!");
 			e.printStackTrace();
 		}

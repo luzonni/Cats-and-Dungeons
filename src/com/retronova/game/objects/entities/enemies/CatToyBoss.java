@@ -16,7 +16,6 @@ public class CatToyBoss extends Enemy {
         loadSprites("cattoyboss");
         setSpeed(4);
         setSolid();
-
     }
 
     @Override
