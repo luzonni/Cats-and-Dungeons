@@ -43,6 +43,8 @@ public class Physical {
     public void moment(){
         calcFriction();
         Vector vector = calcResultant();
+        if(this.crashing)
+            this.vectors.clear();
         if(vector == null) {
             isMoving = false;
             return;
