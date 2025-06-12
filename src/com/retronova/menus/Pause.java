@@ -29,8 +29,8 @@ public class Pause implements Activity {
     private ConfirmacaoTipo tipoConfirmacao = null;
     private final Rectangle botaoSim = new Rectangle();
     private final Rectangle botaoNao = new Rectangle();
-    private final Font fonteConfirmacaoMensagem = FontHandler.font(FontHandler.Game, 10 * Configs.UiScale());
-    private final Font fonteBotaoConfirmacao = FontHandler.font(FontHandler.Game, 8 * Configs.UiScale());
+    private final Font fonteConfirmacaoMensagem = FontHandler.font(FontHandler.Game, 8 * Configs.UiScale());
+    private final Font fonteBotaoConfirmacao = FontHandler.font(FontHandler.Game, 9 * Configs.UiScale());
     private final Color corPopup = new Color(0x6B7A8F);
 
     private enum ConfirmacaoTipo {

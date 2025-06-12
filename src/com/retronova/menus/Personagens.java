@@ -52,6 +52,7 @@ public class Personagens implements Activity {
     private final Font fonteBotoes = FontHandler.font(FontHandler.Game,8 * Configs.UiScale());
     private final Font fonteInfoPersonagens = FontHandler.font(FontHandler.Game,5 * Configs.UiScale());
     private final Font fonteLore = FontHandler.font(FontHandler.Game,6 * Configs.UiScale());
+    private final Font fonteInstrucoes = FontHandler.font(FontHandler.Game, 6 * Configs.UiScale());
 
 
     public Personagens() {
@@ -172,6 +173,16 @@ public class Personagens implements Activity {
         }
     }
 
+    private void desenharInstrucoes(Graphics2D g) {
+        String instrucao = "(Click left to choose the character and right to view his information)";
+        g.setFont(fonteInstrucoes);
+        g.setColor(corTexto);
+        FontMetrics fmInstrucoes = g.getFontMetrics();
+        int x = (Engine.window.getWidth() - fmInstrucoes.stringWidth(instrucao)) / 2;
+        int y = 50 + g.getFontMetrics(fonteTitulo).getAscent() + 50;
+        g.drawString(instrucao, x, y);
+    }
+
     @Override
     public void render(Graphics2D g) {
         if (imagemFundo != null) {
@@ -179,6 +190,7 @@ public class Personagens implements Activity {
         }
         atualizarPosicoes();
         desenharTitulo(g);
+        desenharInstrucoes(g);
         desenharSelecao(g);
         desenharBotoes(g);
         desenharLore(g);
