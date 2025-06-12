@@ -11,24 +11,36 @@ import com.retronova.engine.sound.Sounds;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Options implements Activity {
 
-    private Rectangle[][] quadrados;
-    private Rectangle[][] botoesAjuste;
-    private final Color corTexto = Color.WHITE;
-    private final String titulo = "Options";
-    private final String[][] textosBaseBotoes = {
+    private Rectangle[][] squares;
+
+    private Rectangle sliderMusicBar;
+    private Rectangle sliderMusicThumb;
+    private Rectangle sliderSfxBar;
+    private Rectangle sliderSfxThumb;
+
+    private boolean isMusicThumbDragging = false;
+    private boolean isSfxThumbDragging = false;
+
+    private final Color textColor = Color.WHITE;
+    private final String title = "Options";
+    private final String[][] baseButtonTexts = {
             {"Res", "FPS", "Save"},
             {"Text Size", "Margin", "Full Screen"},
-            {"Volume", "Music", "Mobs"},
+            {"Volume", "Music", "SFX"},
             {null, "Save Changes", "Back"}
     };
-    private String[][] textosBotoes;
+    private String[][] buttonTexts;
+
+    private Map<String, String> tooltipDescriptions;
+    private String activeTooltipText = null;
 
     private int tempFps = Configs.MaxFrames();
     private final int[] fpsOptions = {30, 60, 120};
@@ -41,106 +53,136 @@ public class Options implements Activity {
     private int[] tempResolution = Engine.resolutions[resolutionIndex];
 
     private int tempUiScale = Configs.UiScale();
+    private final int[] uiScaleOptions = {2, 3};
+    private int uiScaleIndex = 0;
 
     private int tempMargin = Configs.Margin();
 
     private int tempMusicVolume = Configs.Music();
-    private int tempMobsVolume = Configs.Volum();
+    private int tempSfxVolume = Configs.Volum();
 
-    private BufferedImage imagemFundo;
+    private BufferedImage backgroundImage;
 
     public Options() {
         configFullScreen = Configs.Fullscreen();
         tempFullScreen = configFullScreen;
-        textosBotoes = new String[textosBaseBotoes.length][textosBaseBotoes[0].length];
-        inicializarBotoes();
-        atualizarTextosBotoes();
+
+        for (int i = 0; i < fpsOptions.length; i++) {
+            if (fpsOptions[i] == tempFps) {
+                fpsIndex = i;
+                break;
+            }
+        }
+        for (int i = 0; i < uiScaleOptions.length; i++) {
+            if (uiScaleOptions[i] == tempUiScale) {
+                uiScaleIndex = i;
+                break;
+            }
+        }
+
+        buttonTexts = new String[baseButtonTexts.length][baseButtonTexts[0].length];
+        initializeTooltips();
+        initializeButtons();
+        updateButtonTexts();
 
         try {
-            imagemFundo = ImageIO.read(getClass().getResource("/com/retronova/resources/icons/Gato_fundo.png"));
+            backgroundImage = ImageIO.read(getClass().getResource("/com/retronova/resources/icons/Gato_fundo.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void inicializarBotoes() {
-        quadrados = new Rectangle[4][3];
-        botoesAjuste = new Rectangle[4][3 * 2];
+    private void initializeTooltips() {
+        tooltipDescriptions = new HashMap<>();
+        tooltipDescriptions.put("Res", "Sets the game window resolution. Click to cycle.");
+        tooltipDescriptions.put("FPS", "Controls the game's frame rate limit (FPS). Click to cycle.");
+        tooltipDescriptions.put("Save", "Saves the current game progress (if applicable).");
+        tooltipDescriptions.put("Text Size", "Adjusts the size of texts in the interface. Click to cycle.");
+        tooltipDescriptions.put("Margin", "Adjusts the spacing of the interface margins.");
+        tooltipDescriptions.put("Full Screen", "Toggles between full screen and windowed mode.");
+        tooltipDescriptions.put("Volume", "Controls the master volume for all game sounds. Click to toggle.");
+        tooltipDescriptions.put("Music", "Adjusts the volume of in-game music.");
+        tooltipDescriptions.put("SFX", "Adjusts the volume of sound effects (e.g., footsteps, actions, entities).");
+        tooltipDescriptions.put("Save Changes", "Saves all current settings and applies them to the game.");
+        tooltipDescriptions.put("Back", "Discards changes and returns to the game.");
+    }
 
-        int larguraBotao = 200;
-        int alturaBotao = 50;
-        int larguraBotaoAjuste = 30;
-        int espacamento = 80;
-        int espacamentoAjuste = 5;
+    private void initializeButtons() {
+        squares = new Rectangle[4][3];
 
-        int larguraTotal = 3 * larguraBotao + 2 * espacamento;
-        int alturaTotal = 4 * alturaBotao + 3 * espacamento;
+        int buttonWidth = 200;
+        int buttonHeight = 50;
+        int spacing = 80;
 
-        int xInicio = Engine.window.getWidth() / 2 - larguraTotal / 2;
-        int yInicio = Engine.window.getHeight() / 2 - alturaTotal / 2 + 50;
+        int totalWidth = 3 * buttonWidth + 2 * spacing;
+        int totalHeight = 4 * buttonHeight + 3 * spacing;
 
-        for (int linha = 0; linha < 4; linha++) {
-            for (int coluna = 0; coluna < 3; coluna++) {
-                if (textosBaseBotoes[linha][coluna] != null) {
-                    int x = xInicio + coluna * (larguraBotao + espacamento);
-                    int y = yInicio + linha * (alturaBotao + espacamento);
-                    quadrados[linha][coluna] = new Rectangle(x, y, larguraBotao, alturaBotao);
+        int xStart = Engine.window.getWidth() / 2 - totalWidth / 2;
+        int yStart = Engine.window.getHeight() / 2 - totalHeight / 2 + 50;
 
-                    if (!textosBaseBotoes[linha][coluna].equals("Save") &&
-                            !textosBaseBotoes[linha][coluna].equals("Save Changes") &&
-                            !textosBaseBotoes[linha][coluna].equals("Back")) {
-                        int xMenos = x - larguraBotaoAjuste - espacamentoAjuste;
-                        int xMais = x + larguraBotao + espacamentoAjuste;
-                        botoesAjuste[linha][coluna * 2] = new Rectangle(xMenos, y + (alturaBotao - larguraBotaoAjuste) / 2, larguraBotaoAjuste, larguraBotaoAjuste);
-                        botoesAjuste[linha][coluna * 2 + 1] = new Rectangle(xMais, y + (alturaBotao - larguraBotaoAjuste) / 2, larguraBotaoAjuste, larguraBotaoAjuste);
-                    } else {
-                        botoesAjuste[linha][coluna * 2] = null;
-                        botoesAjuste[linha][coluna * 2 + 1] = null;
+        for (int row = 0; row < 4; row++) {
+            for (int col = 0; col < 3; col++) {
+                if (baseButtonTexts[row][col] != null) {
+                    int x = xStart + col * (buttonWidth + spacing);
+                    int y = yStart + row * (buttonHeight + spacing);
+                    squares[row][col] = new Rectangle(x, y, buttonWidth, buttonHeight);
+
+                    if (baseButtonTexts[row][col].equals("Music")) {
+                        sliderMusicBar = new Rectangle(x, y, buttonWidth, buttonHeight);
+                        int thumbWidth = 20;
+                        int thumbHeight = buttonHeight;
+                        int thumbX = x + (int) (sliderMusicBar.width * (tempMusicVolume / 100.0)) - (thumbWidth / 2);
+                        thumbX = Math.max(x, Math.min(x + buttonWidth - thumbWidth, thumbX));
+                        sliderMusicThumb = new Rectangle(thumbX, y, thumbWidth, thumbHeight);
+                    } else if (baseButtonTexts[row][col].equals("SFX")) {
+                        sliderSfxBar = new Rectangle(x, y, buttonWidth, buttonHeight);
+                        int thumbWidth = 20;
+                        int thumbHeight = buttonHeight;
+                        int thumbX = x + (int) (sliderSfxBar.width * (tempSfxVolume / 100.0)) - (thumbWidth / 2);
+                        thumbX = Math.max(x, Math.min(x + buttonWidth - thumbWidth, thumbX));
+                        sliderSfxThumb = new Rectangle(thumbX, y, thumbWidth, thumbHeight);
                     }
-                } else {
-                    botoesAjuste[linha][coluna * 2] = null;
-                    botoesAjuste[linha][coluna * 2 + 1] = null;
                 }
             }
         }
     }
 
-    private void atualizarTextosBotoes() {
-        for (int linha = 0; linha < textosBaseBotoes.length; linha++) {
-            for (int coluna = 0; coluna < textosBaseBotoes[0].length; coluna++) {
-                if (textosBaseBotoes[linha][coluna] != null) {
-                    String textoBase = textosBaseBotoes[linha][coluna];
-                    switch (textoBase) {
+    private void updateButtonTexts() {
+        for (int row = 0; row < baseButtonTexts.length; row++) {
+            for (int col = 0; col < baseButtonTexts[0].length; col++) {
+                if (baseButtonTexts[row][col] != null) {
+                    String baseText = baseButtonTexts[row][col];
+                    switch (baseText) {
                         case "Res":
-                            textosBotoes[linha][coluna] = "Res: " + tempResolution[0] + "x" + tempResolution[1];
+                            buttonTexts[row][col] = "Res: " + tempResolution[0] + "x" + tempResolution[1];
                             break;
                         case "FPS":
-                            textosBotoes[linha][coluna] = "FPS: " + tempFps;
+                            buttonTexts[row][col] = "FPS: " + tempFps;
                             break;
                         case "Text Size":
-                            textosBotoes[linha][coluna] = "Text Size: " + tempUiScale;
+                            buttonTexts[row][col] = "Text Size: " + tempUiScale;
                             break;
                         case "Margin":
-                            textosBotoes[linha][coluna] = "Margin: " + tempMargin;
+                            buttonTexts[row][col] = "Margin: " + tempMargin;
                             break;
                         case "Full Screen":
-                            textosBotoes[linha][coluna] = "Full Screen: " + (tempFullScreen ? "On" : "Off");
+                            buttonTexts[row][col] = "Full Screen: " + (tempFullScreen ? "On" : "Off");
                             break;
                         case "Volume":
-                            textosBotoes[linha][coluna] = "Volume: " + tempMusicVolume + "% / " + tempMobsVolume + "%";
+                            buttonTexts[row][col] = "Volume: " + tempMusicVolume + "% / " + tempSfxVolume + "%";
                             break;
                         case "Music":
-                            textosBotoes[linha][coluna] = "Music: " + tempMusicVolume + "%";
+                            buttonTexts[row][col] = "Music: " + tempMusicVolume + "%";
                             break;
-                        case "Mobs":
-                            textosBotoes[linha][coluna] = "Mobs: " + tempMobsVolume + "%";
+                        case "SFX":
+                            buttonTexts[row][col] = "SFX: " + tempSfxVolume + "%";
                             break;
                         default:
-                            textosBotoes[linha][coluna] = textoBase;
+                            buttonTexts[row][col] = baseText;
                             break;
                     }
                 } else {
-                    textosBotoes[linha][coluna] = null;
+                    buttonTexts[row][col] = null;
                 }
             }
         }
@@ -148,94 +190,157 @@ public class Options implements Activity {
 
     @Override
     public void tick() {
-        inicializarBotoes();
-        atualizarBotaoSelecionado();
+        initializeButtons();
+        activeTooltipText = null;
 
         if (Configs.Fullscreen() != configFullScreen) {
             tempFullScreen = Configs.Fullscreen();
             configFullScreen = Configs.Fullscreen();
-            atualizarTextosBotoes();
+            updateButtonTexts();
         }
 
-        for (int linha = 0; linha < 4; linha++) {
-            for (int coluna = 0; coluna < 3; coluna++) {
-                if (textosBaseBotoes[linha][coluna] != null) {
-                    if (botoesAjuste[linha][coluna * 2] != null && Mouse.clickOn(Mouse_Button.LEFT, botoesAjuste[linha][coluna * 2])) {
-                        Sound.play(Sounds.Button);
-                        switch (textosBaseBotoes[linha][coluna]) {
-                            case "Res":
-                                resolutionIndex = (resolutionIndex - 1 + Engine.resolutions.length) % Engine.resolutions.length;
-                                tempResolution = Engine.resolutions[resolutionIndex];
-                                break;
-                            case "FPS":
-                                fpsIndex = (fpsIndex - 1 + fpsOptions.length) % fpsOptions.length;
-                                tempFps = fpsOptions[fpsIndex];
-                                break;
-                            case "Text Size":
-                                tempUiScale = (tempUiScale == 2) ? 3 : 2;
-                                break;
-                            case "Margin":
-                                tempMargin = Math.max(0, tempMargin - 5);
-                                break;
-                            case "Full Screen":
-                                tempFullScreen = !tempFullScreen;
-                                break;
-                            case "Volume":
-                                tempMusicVolume = Math.max(0, tempMusicVolume - 10);
-                                tempMobsVolume = Math.max(0, tempMobsVolume - 10);
-                                break;
-                            case "Music":
-                                tempMusicVolume = Math.max(0, tempMusicVolume - 10);
-                                break;
-                            case "Mobs":
-                                tempMobsVolume = Math.max(0, tempMobsVolume - 10);
-                                break;
-                        }
-                        atualizarTextosBotoes();
+        if (sliderMusicThumb != null && sliderMusicBar != null) {
+            if (Mouse.pressing(Mouse_Button.LEFT) && (sliderMusicThumb.contains(Mouse.getX(), Mouse.getY()) || isMusicThumbDragging)) {
+                isMusicThumbDragging = true;
+                int mouseX = Mouse.getX();
+                int newThumbX = mouseX - sliderMusicThumb.width / 2;
+
+                int minX = sliderMusicBar.x;
+                int maxX = sliderMusicBar.x + sliderMusicBar.width - sliderMusicThumb.width;
+                newThumbX = Math.max(minX, Math.min(maxX, newThumbX));
+
+                sliderMusicThumb.x = newThumbX;
+
+                double percentage = (double) (sliderMusicThumb.x - sliderMusicBar.x) / (sliderMusicBar.width - sliderMusicThumb.width);
+                tempMusicVolume = (int) (percentage * 100);
+                tempMusicVolume = Math.max(0, Math.min(100, tempMusicVolume));
+                updateButtonTexts();
+            } else {
+                isMusicThumbDragging = false;
+
+                if (sliderMusicBar.contains(Mouse.getX(), Mouse.getY()) && Mouse.clickOn(Mouse_Button.LEFT, sliderMusicBar)) {
+                    Sound.play(Sounds.Button);
+                    int mouseX = Mouse.getX();
+                    double percentage = (double) (mouseX - sliderMusicBar.x) / sliderMusicBar.width;
+                    tempMusicVolume = (int) (percentage * 100);
+                    tempMusicVolume = Math.max(0, Math.min(100, tempMusicVolume));
+
+                    int thumbX = sliderMusicBar.x + (int) (sliderMusicBar.width * (tempMusicVolume / 100.0)) - (sliderMusicThumb.width / 2);
+                    thumbX = Math.max(sliderMusicBar.x, Math.min(sliderMusicBar.x + sliderMusicBar.width - sliderMusicThumb.width, thumbX));
+                    sliderMusicThumb.x = thumbX;
+
+                    updateButtonTexts();
+                }
+            }
+            if (sliderMusicBar.contains(Mouse.getX(), Mouse.getY())) {
+                activeTooltipText = tooltipDescriptions.get("Music");
+            }
+        }
+
+        if (sliderSfxThumb != null && sliderSfxBar != null) {
+            if (Mouse.pressing(Mouse_Button.LEFT) && (sliderSfxThumb.contains(Mouse.getX(), Mouse.getY()) || isSfxThumbDragging)) {
+                isSfxThumbDragging = true;
+                int mouseX = Mouse.getX();
+                int newThumbX = mouseX - sliderSfxThumb.width / 2;
+
+                int minX = sliderSfxBar.x;
+                int maxX = sliderSfxBar.x + sliderSfxBar.width - sliderSfxThumb.width;
+                newThumbX = Math.max(minX, Math.min(maxX, newThumbX));
+
+                sliderSfxThumb.x = newThumbX;
+
+                double percentage = (double) (sliderSfxThumb.x - sliderSfxBar.x) / (sliderSfxBar.width - sliderSfxThumb.width);
+                tempSfxVolume = (int) (percentage * 100);
+                tempSfxVolume = Math.max(0, Math.min(100, tempSfxVolume));
+                updateButtonTexts();
+            } else {
+                isSfxThumbDragging = false;
+
+                if (sliderSfxBar.contains(Mouse.getX(), Mouse.getY()) && Mouse.clickOn(Mouse_Button.LEFT, sliderSfxBar)) {
+                    Sound.play(Sounds.Button);
+                    int mouseX = Mouse.getX();
+                    double percentage = (double) (mouseX - sliderSfxBar.x) / sliderSfxBar.width;
+                    tempSfxVolume = (int) (percentage * 100);
+                    tempSfxVolume = Math.max(0, Math.min(100, tempSfxVolume));
+
+                    int thumbX = sliderSfxBar.x + (int) (sliderSfxBar.width * (tempSfxVolume / 100.0)) - (sliderSfxThumb.width / 2);
+                    thumbX = Math.max(sliderSfxBar.x, Math.min(sliderSfxBar.x + sliderSfxBar.width - sliderSfxThumb.width, thumbX));
+                    sliderSfxThumb.x = thumbX;
+
+                    updateButtonTexts();
+                }
+            }
+            if (sliderSfxBar.contains(Mouse.getX(), Mouse.getY())) {
+                activeTooltipText = tooltipDescriptions.get("SFX");
+            }
+        }
+
+        for (int row = 0; row < 4; row++) {
+            for (int col = 0; col < 3; col++) {
+                if (baseButtonTexts[row][col] != null) {
+                    String baseText = baseButtonTexts[row][col];
+
+                    if (baseText.equals("Music") || baseText.equals("SFX")) {
+                        continue;
                     }
 
-                    if (botoesAjuste[linha][coluna * 2 + 1] != null && Mouse.clickOn(Mouse_Button.LEFT, botoesAjuste[linha][coluna * 2 + 1])) {
-                        Sound.play(Sounds.Button);
-                        switch (textosBaseBotoes[linha][coluna]) {
-                            case "Res":
-                                resolutionIndex = (resolutionIndex + 1 + Engine.resolutions.length) % Engine.resolutions.length;
-                                tempResolution = Engine.resolutions[resolutionIndex];
-                                break;
-                            case "FPS":
-                                fpsIndex = (fpsIndex + 1 + fpsOptions.length) % fpsOptions.length;
-                                tempFps = fpsOptions[fpsIndex];
-                                break;
-                            case "Text Size":
-                                tempUiScale = (tempUiScale == 2) ? 3 : 2;
-                                break;
-                            case "Margin":
-                                tempMargin = Math.min(20, tempMargin + 5);
-                                break;
-                            case "Full Screen":
-                                tempFullScreen = !tempFullScreen;
-                                break;
-                            case "Volume":
-                                tempMusicVolume = Math.min(100, tempMusicVolume + 10);
-                                tempMobsVolume = Math.min(100, tempMobsVolume + 10);
-                                break;
-                            case "Music":
-                                tempMusicVolume = Math.min(100, tempMusicVolume + 10);
-                                break;
-                            case "Mobs":
-                                tempMobsVolume = Math.min(100, tempMobsVolume + 10);
-                                break;
+                    if (squares[row][col] != null) {
+                        if (squares[row][col].contains(Mouse.getX(), Mouse.getY())) {
+                            activeTooltipText = tooltipDescriptions.get(baseText);
                         }
-                        atualizarTextosBotoes();
-                    }
 
-                    if (quadrados[linha][coluna] != null && Mouse.clickOn(Mouse_Button.LEFT, quadrados[linha][coluna])) {
-                        if (textosBaseBotoes[linha][coluna].equals("Save Changes")) {
+                        if (Mouse.clickOn(Mouse_Button.LEFT, squares[row][col])) {
                             Sound.play(Sounds.Button);
-                            aplicarConfiguracoes();
-                            Engine.backActivity();
-                        } else if (textosBaseBotoes[linha][coluna].equals("Back")) {
-                            Sound.play(Sounds.Button);
-                            Engine.backActivity();
+
+                            switch (baseText) {
+                                case "Res":
+                                    resolutionIndex = (resolutionIndex + 1) % Engine.resolutions.length;
+                                    tempResolution = Engine.resolutions[resolutionIndex];
+                                    break;
+                                case "FPS":
+                                    fpsIndex = (fpsIndex + 1) % fpsOptions.length;
+                                    tempFps = fpsOptions[fpsIndex];
+                                    break;
+                                case "Text Size":
+                                    uiScaleIndex = (uiScaleIndex + 1) % uiScaleOptions.length;
+                                    tempUiScale = uiScaleOptions[uiScaleIndex];
+                                    break;
+                                case "Margin":
+                                    tempMargin = (tempMargin + 5) % 25;
+                                    break;
+                                case "Full Screen":
+                                    tempFullScreen = !tempFullScreen;
+                                    break;
+                                case "Volume":
+                                    if (tempMusicVolume == 0 && tempSfxVolume == 0) {
+                                        tempMusicVolume = 50;
+                                        tempSfxVolume = 50;
+                                    } else if (tempMusicVolume == 50 && tempSfxVolume == 50) {
+                                        tempMusicVolume = 100;
+                                        tempSfxVolume = 100;
+                                    } else {
+                                        tempMusicVolume = 0;
+                                        tempSfxVolume = 0;
+                                    }
+                                    if (sliderMusicThumb != null && sliderMusicBar != null) {
+                                        int thumbX = sliderMusicBar.x + (int) (sliderMusicBar.width * (tempMusicVolume / 100.0)) - (sliderMusicThumb.width / 2);
+                                        thumbX = Math.max(sliderMusicBar.x, Math.min(sliderMusicBar.x + sliderMusicBar.width - sliderMusicThumb.width, thumbX));
+                                    }
+                                    if (sliderSfxThumb != null && sliderSfxBar != null) {
+                                        int thumbX = sliderSfxBar.x + (int) (sliderSfxBar.width * (tempSfxVolume / 100.0)) - (sliderSfxThumb.width / 2);
+                                        thumbX = Math.max(sliderSfxBar.x, Math.min(sliderSfxBar.x + sliderSfxBar.width - sliderSfxThumb.width, thumbX));
+                                        sliderSfxThumb.x = thumbX;
+                                    }
+                                    break;
+                                case "Save Changes":
+                                    applySettings();
+                                    Engine.backActivity();
+                                    break;
+                                case "Back":
+                                    Engine.backActivity();
+                                    break;
+                            }
+                            updateButtonTexts();
                         }
                     }
                 }
@@ -243,12 +348,12 @@ public class Options implements Activity {
         }
     }
 
-    private void aplicarConfiguracoes() {
+    private void applySettings() {
         Configs.setMaxFrames(tempFps);
         Configs.setFullscreen(tempFullScreen);
         Configs.setUiScale(tempUiScale);
         Configs.setMusic(tempMusicVolume);
-        Configs.setVolum(tempMobsVolume);
+        Configs.setVolum(tempSfxVolume);
         Configs.setMargin(tempMargin);
         Configs.setIndexResolution(resolutionIndex);
         Engine.window.resetWindow();
@@ -256,129 +361,170 @@ public class Options implements Activity {
         Configs.update();
     }
 
-    private void atualizarBotaoSelecionado() {
-    }
-
     @Override
     public void render(Graphics2D g) {
-        if (imagemFundo != null) {
-            g.drawImage(imagemFundo, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
         }
-        desenharTitulo(g);
-        desenharBotoesOpcao(g);
-        desenharBotoesAjuste(g);
+        drawTitle(g);
+        drawOptionButtons(g);
+        drawSliders(g);
+
+        if (activeTooltipText != null) {
+            drawTooltip(g, activeTooltipText, Mouse.getX(), Mouse.getY());
+        }
     }
 
-    private void desenharTitulo(Graphics2D g) {
-        g.setColor(corTexto);
+    private void drawTitle(Graphics2D g) {
+        g.setColor(textColor);
         g.setFont(FontHandler.font(FontHandler.Game, 15 * Configs.UiScale()));
-        FontMetrics fmTitulo = g.getFontMetrics();
+        FontMetrics fmTitle = g.getFontMetrics();
 
-        int x = Engine.window.getWidth() / 2 - fmTitulo.stringWidth(titulo) / 2;
+        int x = Engine.window.getWidth() / 2 - fmTitle.stringWidth(title) / 2;
         int y = 80;
-        g.drawString(titulo, x, y);
+        g.drawString(title, x, y);
     }
 
-    private void desenharBotoesOpcao(Graphics2D g) {
-        for (int linha = 0; linha < 4; linha++) {
-            for (int coluna = 0; coluna < 3; coluna++) {
-                if (quadrados[linha][coluna] != null && textosBotoes[linha][coluna] != null) {
-                    Rectangle quadrado = quadrados[linha][coluna];
-
-                    int tamanhoFonte = 8 * Configs.UiScale();
-                    Font fonteAtual = FontHandler.font(FontHandler.Game, tamanhoFonte);
-                    FontMetrics fmQuadrados = g.getFontMetrics(fonteAtual);
-
-                    while (fmQuadrados.stringWidth(textosBotoes[linha][coluna]) > quadrado.width - 40) {
-                        tamanhoFonte--;
-                        fonteAtual = FontHandler.font(FontHandler.Game, tamanhoFonte);
-                        fmQuadrados = g.getFontMetrics(fonteAtual);
+    private void drawOptionButtons(Graphics2D g) {
+        for (int row = 0; row < 4; row++) {
+            for (int col = 0; col < 3; col++) {
+                if (squares[row][col] != null && buttonTexts[row][col] != null) {
+                    String baseText = baseButtonTexts[row][col];
+                    if (baseText.equals("Music") || baseText.equals("SFX")) {
+                        continue;
                     }
 
-                    int larguraBotao = quadrado.width;
-                    int alturaBotao = quadrado.height;
-                    int x = quadrado.x;
-                    int y = quadrado.y;
+                    Rectangle square = squares[row][col];
 
-                    boolean selecionado = quadrado.contains(Mouse.getX(), Mouse.getY());
+                    int fontSize = 8 * Configs.UiScale();
+                    Font currentFont = FontHandler.font(FontHandler.Game, fontSize);
+                    FontMetrics fmSquares = g.getFontMetrics(currentFont);
 
-                    if (selecionado) {
-                        larguraBotao = (int) (quadrado.width * 1.1);
-                        alturaBotao = (int) (quadrado.height * 1.1);
-                        x = quadrado.x - (larguraBotao - quadrado.width) / 2;
-                        y = quadrado.y - (alturaBotao - quadrado.height) / 2;
+                    while (fmSquares.stringWidth(buttonTexts[row][col]) > square.width - 40) {
+                        fontSize--;
+                        currentFont = FontHandler.font(FontHandler.Game, fontSize);
+                        fmSquares = g.getFontMetrics(currentFont);
+                    }
+
+                    int buttonWidth = square.width;
+                    int buttonHeight = square.height;
+                    int x = square.x;
+                    int y = square.y;
+
+                    boolean selected = square.contains(Mouse.getX(), Mouse.getY());
+
+                    if (selected) {
+                        buttonWidth = (int) (square.width * 1.1);
+                        buttonHeight = (int) (square.height * 1.1);
+                        x = square.x - (buttonWidth - square.width) / 2;
+                        y = square.y - (buttonHeight - square.height) / 2;
                     }
 
                     g.setColor(new Color(0x4A5364));
-                    g.fillRect(x, y + alturaBotao - 5, larguraBotao, 5);
+                    g.fillRect(x, y + buttonHeight - 5, buttonWidth, 5);
 
                     g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
                     g.setColor(new Color(0x000000));
-                    RoundRectangle2D shadowRect = new RoundRectangle2D.Double(x + 2, y + 2, larguraBotao, alturaBotao, 20, 20);
+                    RoundRectangle2D shadowRect = new RoundRectangle2D.Double(x + 2, y + 2, buttonWidth, buttonHeight, 20, 20);
                     g.fill(shadowRect);
                     g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
-                    RoundRectangle2D arredondar = new RoundRectangle2D.Double(x, y, larguraBotao, alturaBotao, 25, 25);
+                    RoundRectangle2D roundedRect = new RoundRectangle2D.Double(x, y, buttonWidth, buttonHeight, 25, 25);
                     g.setColor(new Color(0x6B7A8F));
-                    g.fill(arredondar);
+                    g.fill(roundedRect);
 
                     GradientPaint lightTop = new GradientPaint(
                             x, y, new Color(255, 255, 255, 60),
-                            x, y + alturaBotao / 2, new Color(255, 255, 255, 0)
+                            x, y + buttonHeight / 2, new Color(255, 255, 255, 0)
                     );
                     g.setPaint(lightTop);
-                    g.fill(new RoundRectangle2D.Double(x, y, larguraBotao, alturaBotao, 25, 25));
+                    g.fill(new RoundRectangle2D.Double(x, y, buttonWidth, buttonHeight, 25, 25));
 
-                    g.setColor(corTexto);
-                    g.setFont(fonteAtual);
+                    g.setColor(textColor);
+                    g.setFont(currentFont);
                     g.drawString(
-                            textosBotoes[linha][coluna], x + (larguraBotao - fmQuadrados.stringWidth(textosBotoes[linha][coluna])) / 2,
-                            y + (alturaBotao - fmQuadrados.getHeight()) / 2 + fmQuadrados.getAscent());
+                            buttonTexts[row][col], x + (buttonWidth - fmSquares.stringWidth(buttonTexts[row][col])) / 2,
+                            y + (buttonHeight - fmSquares.getHeight()) / 2 + fmSquares.getAscent());
                 }
             }
         }
     }
 
-    private void desenharBotoesAjuste(Graphics2D g) {
-        g.setColor(corTexto);
-        Font fonteAjuste = FontHandler.font(FontHandler.Game, 12 * Configs.UiScale());
-        FontMetrics fmAjuste = g.getFontMetrics(fonteAjuste);
+    private void drawSliders(Graphics2D g) {
+        if (sliderMusicBar != null && sliderMusicThumb != null) {
+            g.setColor(new Color(0x4A5364));
+            g.fill(new RoundRectangle2D.Double(sliderMusicBar.x, sliderMusicBar.y, sliderMusicBar.width, sliderMusicBar.height, 10, 10));
 
-        for (int linha = 0; linha < 4; linha++) {
-            for (int coluna = 0; coluna < 3; coluna++) {
-                if (botoesAjuste[linha][coluna * 2] != null) {
-                    Rectangle botaoMenos = botoesAjuste[linha][coluna * 2];
-                    desenharBotaoAjusteIndividual(g, botaoMenos, "-", fonteAjuste, fmAjuste);
-                }
-                if (botoesAjuste[linha][coluna * 2 + 1] != null) {
-                    Rectangle botaoMais = botoesAjuste[linha][coluna * 2 + 1];
-                    desenharBotaoAjusteIndividual(g, botaoMais, "+", fonteAjuste, fmAjuste);
-                }
-            }
-        }
-    }
-
-    private void desenharBotaoAjusteIndividual(Graphics2D g, Rectangle botao, String texto, Font fonte, FontMetrics fm) {
-        int larguraBotao = botao.width;
-        int alturaBotao = botao.height;
-        int x = botao.x;
-        int y = botao.y;
-
-        boolean selecionado = botao.contains(Mouse.getX(), Mouse.getY());
-
-        if (selecionado) {
-            g.setColor(new Color(0x80899B));
-        } else {
             g.setColor(new Color(0x6B7A8F));
-        }
-        g.fill(new RoundRectangle2D.Double(x, y, larguraBotao, alturaBotao, 10, 10));
+            if (sliderMusicThumb.contains(Mouse.getX(), Mouse.getY()) || isMusicThumbDragging) {
+                g.setColor(new Color(0x80899B));
+            }
+            g.fill(new RoundRectangle2D.Double(sliderMusicThumb.x, sliderMusicThumb.y, sliderMusicThumb.width, sliderMusicThumb.height, 8, 8));
 
-        g.setColor(corTexto);
-        g.setFont(fonte);
-        Rectangle2D textoBounds = fm.getStringBounds(texto, g);
-        int textoX = x + (int) ((larguraBotao - textoBounds.getWidth()) / 2);
-        int textoY = y + (int) ((alturaBotao - textoBounds.getHeight()) / 2 + fm.getAscent());
-        g.drawString(texto, textoX, textoY);
+            g.setColor(textColor);
+            g.setFont(FontHandler.font(FontHandler.Game, 8 * Configs.UiScale()));
+            String text = "Music: " + tempMusicVolume + "%";
+            FontMetrics fm = g.getFontMetrics();
+            int textX = sliderMusicBar.x + (sliderMusicBar.width - fm.stringWidth(text)) / 2;
+            int textY = sliderMusicBar.y + (sliderMusicBar.height - fm.getHeight()) / 2 + fm.getAscent();
+            g.drawString(text, textX, textY);
+        }
+
+        if (sliderSfxBar != null && sliderSfxThumb != null) {
+            g.setColor(new Color(0x4A5364));
+            g.fill(new RoundRectangle2D.Double(sliderSfxBar.x, sliderSfxBar.y, sliderSfxBar.width, sliderSfxBar.height, 10, 10));
+
+            g.setColor(new Color(0x6B7A8F));
+            if (sliderSfxThumb.contains(Mouse.getX(), Mouse.getY()) || isSfxThumbDragging) {
+                g.setColor(new Color(0x80899B));
+            }
+            g.fill(new RoundRectangle2D.Double(sliderSfxThumb.x, sliderSfxThumb.y, sliderSfxThumb.width, sliderSfxThumb.height, 8, 8));
+
+            g.setColor(textColor);
+            g.setFont(FontHandler.font(FontHandler.Game, 8 * Configs.UiScale()));
+            String text = "SFX: " + tempSfxVolume + "%";
+            FontMetrics fm = g.getFontMetrics();
+            int textX = sliderSfxBar.x + (sliderSfxBar.width - fm.stringWidth(text)) / 2;
+            int textY = sliderSfxBar.y + (sliderSfxBar.height - fm.getHeight()) / 2 + fm.getAscent();
+            g.drawString(text, textX, textY);
+        }
+    }
+
+    private void drawTooltip(Graphics2D g, String text, int mouseX, int mouseY) {
+        int padding = 10;
+        int borderRadius = 10;
+        Color bgColor = new Color(30, 30, 30, 200);
+        Color textColor = Color.WHITE;
+        Font font = FontHandler.font(FontHandler.Game, 7 * Configs.UiScale());
+
+        g.setFont(font);
+        FontMetrics fm = g.getFontMetrics(font);
+
+        int textWidth = fm.stringWidth(text);
+        int textHeight = fm.getHeight();
+
+        int panelWidth = textWidth + padding * 2;
+        int panelHeight = textHeight + padding * 2;
+
+        int tooltipX = mouseX + 15;
+        int tooltipY = mouseY + 15;
+
+        if (tooltipX + panelWidth > Engine.window.getWidth()) {
+            tooltipX = Engine.window.getWidth() - panelWidth - 5;
+        }
+        if (tooltipY + panelHeight > Engine.window.getHeight()) {
+            tooltipY = mouseY - panelHeight - 5;
+            if (tooltipY < 0) tooltipY = 5;
+        }
+
+        g.setColor(bgColor);
+        g.fill(new RoundRectangle2D.Double(tooltipX, tooltipY, panelWidth, panelHeight, borderRadius, borderRadius));
+
+        g.setColor(new Color(100, 100, 100, 200));
+        g.draw(new RoundRectangle2D.Double(tooltipX, tooltipY, panelWidth, panelHeight, borderRadius, borderRadius));
+
+        g.setColor(textColor);
+        g.drawString(text, tooltipX + padding, tooltipY + padding + fm.getAscent());
     }
 
     @Override
