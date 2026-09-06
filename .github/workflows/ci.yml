@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [main, alpha]
+  pull_request:
+    branches: [main, alpha]
+  workflow_dispatch:
+
+# Um push novo cancela a execução anterior do mesmo branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build e testes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # Cacheia o Gradle User Home entre execuções. É mais eficiente que o cache
+      # do setup-java e já entende o wrapper.
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew build --stacktrace
+
+      # O jogo é uma aplicação Swing: qualquer teste que toque em AWT precisa de
+      # display. O runner não tem, então roda headless.
+      - name: Testes
+        run: ./gradlew test
+        env:
+          JAVA_TOOL_OPTIONS: -Djava.awt.headless=true
+
+      - name: Publicar relatório de testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes
+          path: build/reports/tests/test/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  assets:
+    name: Assets de UI em dia
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # Os PNGs de UI são gerados por tools/GenUiAssets.java e versionados.
+      # Se alguém mexer no gerador e esquecer de regerar, os dois divergem em
+      # silêncio — este passo quebra o build quando isso acontece.
+      - name: Regerar e comparar
+        run: |
+          java tools/GenUiAssets.java
+          if ! git diff --quiet -- src/main/resources/com/retronova/resources/ui; then
+            echo "::error::Os PNGs de UI estão fora de sincronia com tools/GenUiAssets.java."
+            echo "Rode 'java tools/GenUiAssets.java' e faça commit do resultado."
+            git diff --stat -- src/main/resources/com/retronova/resources/ui
+            exit 1
+          fi
+          echo "Assets de UI conferem com o gerador."
+
+  distribuicao:
+    name: Fat-jar
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Gerar jar executável
+        run: ./gradlew fatJar
+
+      - name: Publicar artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: cats-and-dungeons-jar
+          path: build/libs/*-all.jar
+          retention-days: 14

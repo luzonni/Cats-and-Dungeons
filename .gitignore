@@ -1,8 +1,35 @@
+# Build
+build/
 out/
-.idea
-.vscode
+bin/
+*.class
+*.jar
+!libs/*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Gradle
+.gradle/
+gradle-app.setting
+
+# Preferências locais do jogador, geradas em tempo de execução
 config.json
-Modules.iml
-Cats-and-Dungeons.iml
-app.manifest
-Cats-and-Dungeons.jar
+config.json.tmp
+config.json.bak
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Documentação
+documentation/
