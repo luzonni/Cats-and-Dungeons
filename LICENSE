@@ -1,21 +1,78 @@
-MIT License
+Copyright (c) 2025-2026 Lucas Zonzini, Caio Renato, Caio Gabriel e Jose Francisco.
+Todos os direitos reservados.
+All rights reserved.
 
-Copyright (c) 2025 Zonni
+================================================================================
+PORTUGUÊS
+================================================================================
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Este software e todo o material que o acompanha — incluindo, sem limitação, o
+código-fonte, os sprites, as músicas, os efeitos sonoros, as fontes, os mapas,
+o design de personagens, os textos e a identidade visual (coletivamente, "a
+Obra") — são propriedade exclusiva dos detentores dos direitos autorais acima
+identificados e estão protegidos pela Lei nº 9.610/1998 (Lei de Direitos
+Autorais) e pela Lei nº 9.609/1998 (Lei do Software), bem como por tratados
+internacionais.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+O código-fonte estar visível publicamente NÃO concede qualquer licença de uso.
+Nenhum direito é concedido por implicação, preclusão ou qualquer outra via.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+É EXPRESSAMENTE PROIBIDO, sem autorização prévia e por escrito dos detentores
+dos direitos autorais:
+
+  1. Copiar, reproduzir ou armazenar a Obra, no todo ou em parte;
+  2. Modificar, adaptar, traduzir ou criar obras derivadas;
+  3. Distribuir, publicar, sublicenciar, vender, alugar ou emprestar a Obra;
+  4. Executar a Obra em contexto comercial ou público;
+  5. Aplicar engenharia reversa, descompilar ou desmontar os binários;
+  6. Reutilizar qualquer asset — arte, áudio, fonte ou texto — em outro projeto;
+  7. Remover ou alterar avisos de autoria e de direitos autorais.
+
+É PERMITIDO, sem necessidade de autorização:
+
+  1. Visualizar e ler o código-fonte para fins de estudo pessoal;
+  2. Clonar o repositório localmente para avaliação, sem redistribuição;
+  3. Citar trechos curtos, com atribuição, para fins de crítica, comentário,
+     ensino ou pesquisa, nos limites do artigo 46 da Lei nº 9.610/1998.
+
+Bibliotecas de terceiros incluídas ou referenciadas por este projeto permanecem
+sob suas próprias licenças, que não são afetadas por este documento. Consulte
+docs/TERCEIROS.md para a relação completa.
+
+Para solicitar autorização de uso, entre em contato com os detentores dos
+direitos autorais.
+
+A OBRA É FORNECIDA "COMO ESTÁ", SEM GARANTIA DE QUALQUER NATUREZA, EXPRESSA OU
+IMPLÍCITA. EM NENHUMA HIPÓTESE OS AUTORES SERÃO RESPONSABILIZADOS POR QUALQUER
+REIVINDICAÇÃO, DANO OU OUTRA RESPONSABILIDADE DECORRENTE DA OBRA OU DE SEU USO.
+
+================================================================================
+ENGLISH
+================================================================================
+
+This software and all accompanying material — including, without limitation,
+source code, sprites, music, sound effects, fonts, maps, character design, text
+and visual identity (collectively, "the Work") — are the exclusive property of
+the copyright holders identified above and are protected by Brazilian Law
+9.610/1998 and Law 9.609/1998, as well as by international treaties.
+
+Public visibility of the source code does NOT grant any license to use it. No
+rights are granted by implication, estoppel, or otherwise.
+
+Without prior written permission from the copyright holders, you MAY NOT copy,
+reproduce, modify, adapt, translate, create derivative works from, distribute,
+publish, sublicense, sell, rent, lend, publicly perform, reverse engineer,
+decompile or disassemble the Work, nor reuse any of its assets in another
+project, nor remove or alter any authorship or copyright notice.
+
+You MAY view and read the source code for personal study, clone the repository
+locally for evaluation without redistribution, and quote short excerpts with
+attribution for criticism, comment, teaching or research.
+
+Third-party libraries included in or referenced by this project remain under
+their own licenses, which are unaffected by this document. See
+docs/TERCEIROS.md for the full list.
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY ARISING FROM THE WORK OR THE USE OF THE WORK.
