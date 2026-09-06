@@ -1,0 +1,75 @@
+{
+  "entities": [
+    {
+      "name": "Seller",
+      "x": 18,
+      "y": 13,
+      "values": [
+        {
+          "stock": [
+            {
+              "name": "sword",
+              "amount": 1,
+              "price": 10
+            },
+            {
+              "name": "feed",
+              "amount": 10,
+              "price": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Seller",
+      "x": 18,
+      "y": 13,
+      "values": [
+        "FULL"
+      ]
+    },
+    {
+      "name": "GumMachine",
+      "x": 12,
+      "y": 13,
+      "values": ["Command..."]
+    },
+    {
+      "name": "TrapDoor",
+      "x": 12,
+      "y": 19,
+      "values": ["LOAD ARENA EASY"]
+    },
+    {
+      "name": "TrapDoor",
+      "x": 15,
+      "y": 19,
+      "values": ["LOAD ARENA NORMAL"]
+    },
+    {
+      "name": "TrapDoor",
+      "x": 18,
+      "y": 19,
+      "values": ["LOAD ARENA HARD"]
+    },
+    {
+      "name": "Plate",
+      "x": 12,
+      "y": 18,
+      "values": ["ARENA EASY"]
+    },
+    {
+      "name": "Plate",
+      "x": 15,
+      "y": 18,
+      "values": ["ARENA NORMAL"]
+    },
+    {
+      "name": "Plate",
+      "x": 18,
+      "y": 18,
+      "values": ["ARENA HARD"]
+    }
+  ]
+}

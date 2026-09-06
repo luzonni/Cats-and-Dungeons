@@ -1,0 +1,104 @@
+{
+  "waves": [
+    {
+      "period": 2,
+      "amount": [5, 5],
+      "enemies": ["Zombie"]
+    },
+    {
+      "period": 1,
+      "amount": [1],
+      "enemies": ["CatToyBoss"]
+    },
+    {
+      "period": 3,
+      "amount": [7, 8, 8],
+      "enemies": ["Zombie", "Slime", "Skeleton"]
+    },
+    {
+      "period": 4,
+      "amount": [8, 9, 9, 9],
+      "enemies": ["Skeleton", "Slime"]
+    },
+    {
+      "period": 4,
+      "amount": [9, 9, 10, 10],
+      "enemies": ["Skeleton", "Slime", "Zombie"]
+    },
+    {
+      "period": 4,
+      "amount": [9, 10, 10, 11],
+      "enemies": ["Skeleton", "MouseSquire"]
+    },
+    {
+      "period": 5,
+      "amount": [10, 10, 11, 11, 12],
+      "enemies": ["MouseSquire", "Zombie", "Slime"]
+    },
+    {
+      "period": 5,
+      "amount": [10, 11, 11, 12, 12],
+      "enemies": ["MouseSquire", "MouseVampire"]
+    },
+    {
+      "period": 5,
+      "amount": [11, 11, 12, 12, 13],
+      "enemies": ["MouseVampire", "Skeleton"]
+    },
+    {
+      "period": 6,
+      "amount": [11, 12, 12, 13, 13, 14],
+      "enemies": ["MouseVampire", "MouseExplode"]
+    },
+    {
+      "period": 6,
+      "amount": [12, 12, 13, 13, 14, 14],
+      "enemies": ["MouseExplode", "Skeleton"]
+    },
+    {
+      "period": 6,
+      "amount": [12, 13, 13, 14, 14, 15],
+      "enemies": ["MouseExplode", "MouseSquire"]
+    },
+    {
+      "period": 7,
+      "amount": [12, 13, 13, 14, 14, 15, 15],
+      "enemies": ["MouseExplode", "MonarkMouse"]
+    },
+    {
+      "period": 7,
+      "amount": [13, 13, 14, 14, 15, 15, 16],
+      "enemies": ["MonarkMouse", "MouseVampire"]
+    },
+    {
+      "period": 7,
+      "amount": [13, 14, 14, 15, 15, 16, 16],
+      "enemies": ["MonarkMouse", "MouseExplode", "Skeleton"]
+    },
+    {
+      "period": 8,
+      "amount": [10, 11, 11, 12, 12, 13, 13, 13],
+      "enemies": ["MonarkMouse", "MouseVampire", "MouseSquire"]
+    },
+    {
+      "period": 8,
+      "amount": [9, 10, 10, 11, 11, 12, 12, 12],
+      "enemies": ["MonarkMouse", "MouseExplode"]
+    },
+    {
+      "period": 8,
+      "amount": [8, 9, 9, 10, 10, 11, 11, 11],
+      "enemies": ["MonarkMouse", "MouseVampire", "Skeleton"]
+    },
+    {
+      "period": 9,
+      "amount": [7, 8, 8, 9, 9, 10, 10, 10, 10],
+      "enemies": ["MonarkMouse", "MouseExplode", "MouseSquire"]
+    },
+    {
+      "period": 10,
+      "amount": [6, 7, 7, 8, 8, 9, 9, 9, 9, 9],
+      "enemies": ["MonarkMouse", "MouseExplode", "Skeleton", "MouseVampire"]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "entities": [
+    {
+      "name": "Crate",
+      "x": 33,
+      "y": 44,
+      "chanceToAppear":  1,
+      "values": [{
+        "loot": ["Bowd"]
+      }]
+    }
+  ]
+}
