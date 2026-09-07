@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# Roda a CI inteira antes do push.
+#
+# Existe porque descobrir no GitHub custa caro: o push falha, chega e-mail, e o
+# conserto vira mais um commit de "fix ci". Aqui o erro aparece antes de sair da
+# maquina.
+#
+# Instalacao (uma vez por clone — o git nao versiona .git/hooks):
+#     ./gradlew hooks
+#
+# Para pular num caso pontual:
+#     git push --no-verify
+#
+
+# Acha o java do mesmo jeito que o gradlew acha: JAVA_HOME primeiro, PATH depois.
+# No Git Bash do Windows o java quase nunca esta no PATH, e um hook que morre com
+# "command not found" e pior do que hook nenhum — ele vira uma etapa que todo
+# mundo aprende a pular.
+if [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+  JAVA="$JAVA_HOME/bin/java"
+elif [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java.exe" ]; then
+  JAVA="$JAVA_HOME/bin/java.exe"
+elif command -v java >/dev/null 2>&1; then
+  JAVA=java
+else
+  echo "[pre-push] nao achei o java. Defina JAVA_HOME ou ponha o java no PATH."
+  echo "[pre-push] push cancelado: sem java nao da para rodar a CI local."
+  exit 1
+fi
+
+echo "[pre-push] rodando a CI local (git push --no-verify pula)"
+"$JAVA" tools/CiLocal.java || {
+  echo ""
+  echo "[pre-push] push cancelado: a CI falharia."
+  exit 1
+}

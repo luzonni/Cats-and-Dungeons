@@ -88,6 +88,43 @@ tasks.register<Exec>("genUiAssets") {
     )
 }
 
+/**
+ * A CI inteira, aqui, antes do push.
+ *
+ * Espelha `.github/workflows/ci.yml` — ver tools/CiLocal.java para o que ele faz
+ * além de repetir os comandos de lá.
+ */
+tasks.register<Exec>("ci") {
+    group = "verification"
+    description = "Roda a CI local, a mesma que o hook de pre-push executa"
+    workingDir = rootDir
+    val launcher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    commandLine(
+        launcher.get().executablePath.asFile.absolutePath,
+        "tools/CiLocal.java"
+    )
+}
+
+/**
+ * Aponta o git para os hooks versionados.
+ *
+ * Precisa ser rodado UMA vez por clone: o git não versiona `.git/hooks`, então
+ * um hook só vale para quem o instalou. `core.hooksPath` resolve isso apontando
+ * para uma pasta que está no repositório — assim o time inteiro recebe o mesmo
+ * hook ao clonar, bastando este comando.
+ */
+tasks.register<Exec>("hooks") {
+    group = "verification"
+    description = "Instala os hooks de .githooks (roda a CI local antes de cada push)"
+    workingDir = rootDir
+    commandLine("git", "config", "core.hooksPath", ".githooks")
+    doLast {
+        println("hooks instalados: o push passa a rodar a CI local antes.")
+    }
+}
+
 /** Fat-jar executável, para distribuir sem depender do Gradle. */
 tasks.register<Jar>("fatJar") {
     group = "distribution"
