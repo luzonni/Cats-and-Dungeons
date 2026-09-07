@@ -128,6 +128,59 @@ public abstract class Entity extends GameObject {
             case CryingCat -> {
                 return new CryingCat(ID, x, y);
             }
+            case Pillar -> {
+                return new Pillar(ID, x, y);
+            }
+            case Brazier -> {
+                return new Brazier(ID, x, y);
+            }
+            case Rubble -> {
+                return new Rubble(ID, x, y);
+            }
+            case Gate -> {
+                String destino = (length >= 3) ? (String) values[2] : "None";
+                return new Gate(ID, x, y, destino);
+            }
+            case Lever -> {
+                return new Lever(ID, x, y);
+            }
+            case Barrel -> {
+                return new Barrel(ID, x, y);
+            }
+            case Bones -> {
+                return new Bones(ID, x, y);
+            }
+            case Chain -> {
+                return new Chain(ID, x, y);
+            }
+            case Torch -> {
+                return new Torch(ID, x, y);
+            }
+            // Set dressing. O tapete é o único atravessável: é chão, não móvel.
+            case Shelf -> {
+                return new Decor(ID, x, y, "shelf", true, false);
+            }
+            case Table -> {
+                return new Decor(ID, x, y, "table", true, false);
+            }
+            case Rug -> {
+                return new Decor(ID, x, y, "rug", false, true);
+            }
+            case Chest -> {
+                return new Decor(ID, x, y, "chest", true, false);
+            }
+            case Bed -> {
+                return new Decor(ID, x, y, "bed", true, false);
+            }
+            case Anvil -> {
+                return new Decor(ID, x, y, "anvil", true, false);
+            }
+            // Porta por onde o gato chegou, fechada. Nao bloqueia: quem bloqueia
+            // e a parede em que ela esta encaixada. E objeto de chao pelo mesmo
+            // motivo do portao — o gato nasce colado nela e nao pode sumir atras.
+            case Entrance -> {
+                return new Decor(ID, x, y, "entrance", false, true);
+            }
             default -> throw new IllegalArgumentException("Unexpected value: " + entityId);
         }
         throw new EntityNotFound("Entity not found");

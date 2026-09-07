@@ -5,7 +5,6 @@ import com.retronova.engine.Debugging;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
-import com.retronova.engine.graphics.Galaxy;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.interfaces.Inter;
 import com.retronova.game.interfaces.shared.Status;
@@ -30,7 +29,15 @@ import java.util.List;
 
 public class Game implements Activity {
 
-    private final Galaxy galaxy;
+    /**
+     * Cor por tras do mundo.
+     *
+     * Antes havia um campo de estrelas correndo no fundo, que e leitura de espaco
+     * e nao de masmorra. Agora o que aparece alem das bordas do mapa e rocha nao
+     * iluminada, no mesmo tom do preenchimento que cerca a sala: o jogador nunca
+     * ve o vazio preto, so pedra.
+     */
+    private static final Color ROCHA = new Color(0x0e1218);
 
     private final int indexPlayer;
 
@@ -57,7 +64,6 @@ public class Game implements Activity {
         this.player = player;
         this.changeMap(map);
         this.hud = new HUD(player);
-        this.galaxy = new Galaxy();
     }
 
     public static Camera getCam() {
@@ -117,7 +123,6 @@ public class Game implements Activity {
             seconds++;
         }
         hud.tick();
-        galaxy.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause());
         }
@@ -164,7 +169,8 @@ public class Game implements Activity {
 
     @Override
     public void render(Graphics2D g) {
-        galaxy.render(g);
+        g.setColor(ROCHA);
+        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
         renderWorld(g);
         hud.render(g);
     }
@@ -228,7 +234,9 @@ public class Game implements Activity {
         Game game = getGame();
         GameMap map = new Room("beginning");
         Engine.backActivity();
-        Engine.heapActivity(new Game(game.indexPlayer, map));
+        // Passa pela tela de transicao, como o inicio de partida: reiniciar e
+        // comecar uma corrida nova, e o corte seco fazia parecer um bug.
+        Engine.heapActivity(new Game(game.indexPlayer, map), () -> { });
     }
 
     public static Game getGame() {

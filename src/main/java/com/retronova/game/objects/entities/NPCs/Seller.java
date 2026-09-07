@@ -22,8 +22,13 @@ public class Seller extends NPC {
     public Item[] stock;
     public int[] prices;
 
+    /**
+     * Peso 1000: o Physical ignora deslocamento acima de 500, entao o vendedor
+     * nao sai do lugar. Com o peso antigo (60) o gato empurrava o coitado pela
+     * sala inteira, e a barraca ficava para tras.
+     */
     public Seller(int ID, double x, double y, JSONArray stock) {
-        super(ID, x, y, 60);
+        super(ID, x, y, 1000);
         loadStock(stock);
         this.store = new Store(this.stock, this.prices);
         loadSprites("seller");

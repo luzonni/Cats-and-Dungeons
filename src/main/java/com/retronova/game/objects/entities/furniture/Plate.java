@@ -1,57 +1,105 @@
 package com.retronova.game.objects.entities.furniture;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.Engine;
+import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
+import com.retronova.game.objects.GameObject;
+import com.retronova.menus.Leitura;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
-public class Plate extends  Furniture {
+/**
+ * Placa pregada na parede, com um pedaço da lore.
+ *
+ * O cenário é o primeiro lugar onde a história aparece, antes de qualquer
+ * diálogo — é o que documentation/padroes/ARTE-CENARIO.md chama de contador de
+ * história silencioso. As placas são a versão explícita disso: quem quiser saber
+ * o que aconteceu aqui, para e lê; quem não quiser, passa direto.
+ *
+ * ONDE ELA FICA
+ *
+ * A entidade é colocada NO PRÓPRIO TILE DE PAREDE, sólido, e não no chão à
+ * frente dele. É isso que a faz ler como parede em vez de móvel. Não atrapalha
+ * ninguém: o tile já bloqueava passagem por ser parede, e a placa não acrescenta
+ * colisão nenhuma.
+ *
+ * COMO SE SABE QUE DÁ PRA LER
+ *
+ * Três coisas somadas, porque nenhuma sozinha resolveu: a arte tem moldura,
+ * rebites e sulcos de comprimentos diferentes, que é o desenho universal de
+ * texto; o cursor vira patinha em cima dela; e, com o gato por perto, a tábua
+ * ganha um contorno que pulsa. Sem o contorno a placa era só mais um móvel — dá
+ * para clicar, mas ninguém descobre isso sozinho.
+ */
+public class Plate extends Furniture {
+
+    /** Alcance de leitura, em tiles. O mesmo que o do vendedor. */
+    private static final double ALCANCE = 3;
+
+    private static final Color REALCE = new Color(0xff, 0xd9, 0x8a);
 
     private final String content;
-    private final Font font;
+    private int pulso;
 
     public Plate(int ID, double x, double y, String content) {
-        super(ID, x, y, 1000);
+        // Atravessável: é um objeto de parede, e travar o tile de chão à frente
+        // dela só atrapalharia quem está circulando junto à parede.
+        super(ID, x, y, 1000, false);
         loadSprites("plate");
         this.content = content;
-        this.font = FontHandler.font(FontHandler.Septem, Configs.GameScale()*6);
     }
 
     @Override
     public void tick() {
-
+        pulso++;
+        if (!perto()) {
+            return;
+        }
+        if (GameMap.mouseOnRect(getBounds())) {
+            Engine.window.pointing();
+        }
+        if (GameMap.clickOnRect(Mouse_Button.LEFT, getBounds())) {
+            Leitura.abrir(content);
+        }
     }
 
     @Override
     public void render(Graphics2D g) {
         super.render(g);
-        if(GameMap.mouseOnRect(this.getBounds())) {
-            renderMessage(g);
+        if (!perto()) {
+            return;
         }
+        // Pulso lento, em seno, para o realce respirar em vez de piscar.
+        double onda = (Math.sin(pulso / 22d) + 1) / 2;
+        int alfa = 60 + (int) (onda * 110);
+        Rectangle t = tabua();
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setStroke(new BasicStroke(Math.max(1, Configs.GameScale() / 2f)));
+        g2.setColor(new Color(REALCE.getRed(), REALCE.getGreen(), REALCE.getBlue(), alfa));
+        g2.drawRect(t.x, t.y, t.width, t.height);
+        g2.dispose();
     }
 
-    private void renderMessage(Graphics2D g) {
-        int padding = Configs.GameScale() * 2;
-        int wC = FontHandler.getWidth(content, font);
-        int hC = FontHandler.getHeight(content, font);
-        int width = wC + padding*2;
-        int height = hC + padding*2;
-        int x = (int)getX() + getWidth()/2 - width/2;
-        int y = (int)getY() + Configs.GameScale()*3;
+    private boolean perto() {
+        return Game.getPlayer().getDistance(this) <= GameObject.SIZE() * ALCANCE;
+    }
 
-        g.setColor(new Color(0x663931));
-        g.fillRect(x, y, width, height);
-        g.setColor(new Color(0x000000));
-        g.setStroke(new BasicStroke(Configs.GameScale()));
-        g.drawRect(x, y, width, height);
-        int xT = x + padding;
-        int yT = y + height - hC + padding;
-        g.setFont(this.font);
-        g.setColor(new Color(0x000000));
-        g.drawString(content, xT + Configs.GameScale(), yT + Configs.GameScale());
-        g.setColor(new Color(0xffffff));
-        g.drawString(content, xT, yT);
+    /**
+     * Retangulo da TABUA, que nao e o do tile.
+     *
+     * A arte e menor que a celula e fica recuada dentro dela; contornar os bounds
+     * desenhava o quadro em volta do tile de parede inteiro, e o realce parecia
+     * piscar na alvenaria em vez de na placa. Estes numeros sao os mesmos que
+     * tools/GenKenney.java usa para desenhar a tabua.
+     */
+    private Rectangle tabua() {
+        int e = Configs.GameScale();
+        return new Rectangle((int) getX() + e, (int) getY() + 2 * e, 13 * e, 11 * e);
     }
 
 }

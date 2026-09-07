@@ -98,6 +98,11 @@ public abstract class GameObject {
         this.solid = true;
     }
 
+    /** Nem toda mobília bloqueia passagem: entulho e portais são atravessáveis. */
+    protected void setSolid(boolean solid) {
+        this.solid = solid;
+    }
+
     public boolean isSolid() {
         return this.solid;
     }

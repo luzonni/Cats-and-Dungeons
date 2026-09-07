@@ -19,5 +19,22 @@ public enum EntityIDs {
     Plate,
     GumMachine,
     CryingCat,
-    
+    Pillar,
+    Brazier,
+    Rubble,
+    Gate,
+    Lever,
+    Barrel,
+    Bones,
+    Chain,
+    Torch,
+    // Mobília decorativa da antecâmara, toda atendida por Decor.
+    Shelf,
+    Table,
+    Rug,
+    Chest,
+    Bed,
+    Anvil,
+    Entrance,
+
 }

@@ -27,11 +27,13 @@ public class Kunai extends Item {
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        double middleX = player.getX() + player.getWidth()/2d;
-        double middleY = player.getY() + player.getHeight()/2d;
-        double drawX = (middleX - spriteRotatePosition.x) + Math.cos(this.angle) * player.getWidth()/2d;
-        double drawY = (middleY - spriteRotatePosition.y) + Math.sin(this.angle) * player.getHeight()/2d;
-        this.kunaiPosition.setLocation(drawX, drawY);
+        // A kunai fica NA PATA, e nao orbitando o corpo. O ponto de rotacao dela
+        // e a argola do cabo, no canto de baixo do sprite; encostar essa argola na
+        // pata e o que faz a arma parecer segura em vez de flutuando ao lado. O
+        // arremesso tambem sai dai, que e de onde a mao a soltaria.
+        Point mao = player.getMao();
+        this.kunaiPosition.setLocation(mao.x - spriteRotatePosition.x,
+                mao.y - spriteRotatePosition.y);
         Enemy target = player.getNearest(player.getRange(), Enemy.class);
         if(target != null) {
             this.angle = target.getAngle(player);
@@ -49,8 +51,6 @@ public class Kunai extends Item {
 
     @Override
     public void render(Graphics2D g) {
-        if(countAttack < 30)
-            return;
         Rotate.draw(getSprite(), kunaiPosition.x, kunaiPosition.y, this.angle + Math.PI/4, spriteRotatePosition, g);
     }
 }

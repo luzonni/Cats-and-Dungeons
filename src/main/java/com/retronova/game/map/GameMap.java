@@ -39,6 +39,15 @@ public abstract class GameMap {
 
     private final Repulsion repulsion;
 
+    /**
+     * Onde o jogador nasce, em tiles. null cai no centro do mapa.
+     *
+     * Vem do JSON porque o centro nao serve para toda sala: na antecamara o gato
+     * chega pela porta ao norte, e nascer no meio do salao apagava a unica pista
+     * de como ele entrou ali.
+     */
+    private Point nascimento;
+
     public GameMap(String mapName) {
         this.entities = new ArrayList<>();
         this.particles = new ArrayList<>();
@@ -49,6 +58,11 @@ public abstract class GameMap {
 
     public void addPlayer(Player player) {
         put(player);
+        if(this.nascimento != null) {
+            player.setX(this.nascimento.x * (double) GameObject.SIZE());
+            player.setY(this.nascimento.y * (double) GameObject.SIZE());
+            return;
+        }
         player.setX(getBounds().getWidth()/2);
         player.setY(getBounds().getHeight()/2);
     }
@@ -68,6 +82,7 @@ public abstract class GameMap {
             System.err.println("Arquivo não encontrado: " + mapName);
         }
         if(jsonObject != null && !jsonObject.isEmpty()) {
+            this.nascimento = lerNascimento(jsonObject);
             loadEntities(width, height, jsonObject);
         }
     }
@@ -88,6 +103,21 @@ public abstract class GameMap {
             }
         }
         return map;
+    }
+
+    /** Le {@code "spawn": {"x": .., "y": ..}}, se o mapa declarar um. */
+    private Point lerNascimento(JSONObject jsonObject) {
+        Object bruto = jsonObject.get("spawn");
+        if(!(bruto instanceof JSONObject spawn)) {
+            return null;
+        }
+        Object x = spawn.get("x");
+        Object y = spawn.get("y");
+        if(!(x instanceof Number) || !(y instanceof Number)) {
+            System.err.println("spawn sem x/y numericos; usando o centro do mapa.");
+            return null;
+        }
+        return new Point(((Number) x).intValue(), ((Number) y).intValue());
     }
 
     private void loadEntities(int width, int height, JSONObject jsonObject) {

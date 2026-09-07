@@ -1,75 +1,83 @@
 {
+  "spawn": { "x": 20, "y": 6 },
+
   "entities": [
+    { "name": "Entrance", "x": 20, "y": 4,  "values": [] },
+    { "name": "Gate", "x": 20, "y": 29, "values": ["LOAD ARENA EASY"] },
+    { "name": "Lever", "x": 22, "y": 27, "values": [] },
+
+    { "name": "Pillar", "x": 10, "y": 12, "values": [] },
+    { "name": "Pillar", "x": 10, "y": 18, "values": [] },
+    { "name": "Pillar", "x": 10, "y": 24, "values": [] },
+    { "name": "Pillar", "x": 29, "y": 12, "values": [] },
+    { "name": "Pillar", "x": 29, "y": 18, "values": [] },
+    { "name": "Pillar", "x": 29, "y": 24, "values": [] },
+    { "name": "Pillar", "x": 16, "y": 10, "values": [] },
+    { "name": "Pillar", "x": 24, "y": 10, "values": [] },
+
+    { "name": "Brazier", "x": 17, "y": 26, "values": [] },
+    { "name": "Brazier", "x": 23, "y": 26, "values": [] },
+    { "name": "Brazier", "x": 13, "y": 19, "values": [] },
+
+    { "name": "Torch", "x": 13, "y": 9,  "values": [] },
+    { "name": "Torch", "x": 27, "y": 9,  "values": [] },
+    { "name": "Torch", "x": 9,  "y": 14, "values": [] },
+    { "name": "Torch", "x": 9,  "y": 22, "values": [] },
+    { "name": "Torch", "x": 30, "y": 14, "values": [] },
+    { "name": "Torch", "x": 30, "y": 22, "values": [] },
+
+    { "name": "Bed",    "x": 12, "y": 16, "values": [] },
+    { "name": "Rug",    "x": 13, "y": 17, "values": [] },
+    { "name": "Chest",  "x": 14, "y": 16, "values": [] },
+    { "name": "Table",  "x": 14, "y": 17, "values": [] },
+    { "name": "Shelf",  "x": 11, "y": 14, "values": [] },
+    { "name": "Barrel", "x": 11, "y": 21, "values": [] },
+    { "name": "Barrel", "x": 12, "y": 21, "values": [] },
+
+    { "name": "Shelf",  "x": 16, "y": 15, "values": [] },
+    { "name": "Chest",  "x": 16, "y": 16, "values": [] },
+    { "name": "Shelf",  "x": 16, "y": 17, "values": [] },
+    { "name": "Barrel", "x": 18, "y": 15, "values": [] },
+    { "name": "Table",  "x": 18, "y": 16, "values": [] },
+    { "name": "Barrel", "x": 18, "y": 17, "values": [] },
+
+    { "name": "Anvil",  "x": 25, "y": 16, "values": [] },
+    { "name": "Table",  "x": 25, "y": 17, "values": [] },
+    { "name": "Shelf",  "x": 26, "y": 15, "values": [] },
+    { "name": "Chest",  "x": 27, "y": 20, "values": [] },
+
+    { "name": "Barrel", "x": 29, "y": 20, "values": [] },
+    { "name": "Barrel", "x": 28, "y": 21, "values": [] },
+    { "name": "Barrel", "x": 15, "y": 12, "values": [] },
+
+    { "name": "Plate", "x": 15, "y": 8,  "values": ["The three of us came down together. I am the only one writing this."] },
+    { "name": "Plate", "x": 26, "y": 8,  "values": ["Rest here. The stone above still holds. Nothing below does."] },
+    { "name": "Plate", "x": 8,  "y": 19, "values": ["Count the floors. On the third one, do not trust a familiar voice."] },
+    { "name": "Plate", "x": 31, "y": 16, "values": ["The merchant was here before the dungeon was. Nobody asks him about it."] },
+
+    { "name": "Bones", "x": 15, "y": 23, "values": [] },
+    { "name": "Bones", "x": 26, "y": 13, "values": [] },
+
+    { "name": "Rubble", "x": 10, "y": 27, "values": [] },
+    { "name": "Rubble", "x": 29, "y": 27, "values": [] },
+    { "name": "Rubble", "x": 26, "y": 11, "values": [] },
+    { "name": "Rubble", "x": 25, "y": 21, "values": [] },
+    { "name": "Rubble", "x": 16, "y": 25, "values": [] },
+    { "name": "Rubble", "x": 27, "y": 25, "values": [] },
+    { "name": "Rubble", "x": 13, "y": 11, "values": [] },
+
     {
       "name": "Seller",
-      "x": 18,
-      "y": 13,
+      "x": 17,
+      "y": 16,
       "values": [
         {
           "stock": [
-            {
-              "name": "sword",
-              "amount": 1,
-              "price": 10
-            },
-            {
-              "name": "feed",
-              "amount": 10,
-              "price": 10
-            }
+            { "name": "sword", "amount": 1, "price": 10 },
+            { "name": "feed", "amount": 10, "price": 10 }
           ]
         }
       ]
-    },
-    {
-      "name": "Seller",
-      "x": 18,
-      "y": 13,
-      "values": [
-        "FULL"
-      ]
-    },
-    {
-      "name": "GumMachine",
-      "x": 12,
-      "y": 13,
-      "values": ["Command..."]
-    },
-    {
-      "name": "TrapDoor",
-      "x": 12,
-      "y": 19,
-      "values": ["LOAD ARENA EASY"]
-    },
-    {
-      "name": "TrapDoor",
-      "x": 15,
-      "y": 19,
-      "values": ["LOAD ARENA NORMAL"]
-    },
-    {
-      "name": "TrapDoor",
-      "x": 18,
-      "y": 19,
-      "values": ["LOAD ARENA HARD"]
-    },
-    {
-      "name": "Plate",
-      "x": 12,
-      "y": 18,
-      "values": ["ARENA EASY"]
-    },
-    {
-      "name": "Plate",
-      "x": 15,
-      "y": 18,
-      "values": ["ARENA NORMAL"]
-    },
-    {
-      "name": "Plate",
-      "x": 18,
-      "y": 18,
-      "values": ["ARENA HARD"]
     }
   ]
 }

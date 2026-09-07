@@ -1,7 +1,7 @@
 package com.retronova.game.map;
 
+import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
-import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
@@ -22,8 +22,8 @@ public class Camera {
     public Camera(Rectangle bounds, double speed) {
         this.bounds = bounds;
         this.speed = speed;
-        this.zoom = 1f;
-        this.currentZoom = 1f;
+        this.zoom = Configs.Zoom() / 100f;
+        this.currentZoom = this.zoom;
     }
 
     public static AffineTransform getAt() {
@@ -65,13 +65,15 @@ public class Camera {
     public void tick() {
         if(followed != null)
             follow();
-        if((KeyBoard.KeyPressing("Ctrl") && KeyBoard.KeyPressed("=")) && this.zoom < 3f) {
-            this.zoom = Math.round((this.zoom + 0.2) * 10f) / 10f;
-        }else if(KeyBoard.KeyPressing("Ctrl") && KeyBoard.KeyPressed("-") && this.zoom > 1f) {
-            this.zoom = Math.round((this.zoom - 0.2) * 10f) / 10f;
+        // A aproximacao vem das opcoes, e nao mais de Ctrl+= / Ctrl+-. O atalho
+        // era ajuste de desenvolvimento, sem persistencia e sem limite util; com
+        // uma opcao de verdade ele so brigaria com ela por quem manda no zoom.
+        this.zoom = Configs.Zoom() / 100f;
+        float def = (zoom - this.currentZoom) / 8f;
+        this.currentZoom += def;
+        if(Math.abs(zoom - currentZoom) < 0.001f) {
+            this.currentZoom = zoom;
         }
-        float def = (zoom - this.currentZoom ) / 2f;
-        this.currentZoom += Math.round(def * 100f) / 100f;
     }
 
     public void setFollowed(GameObject followed) {
