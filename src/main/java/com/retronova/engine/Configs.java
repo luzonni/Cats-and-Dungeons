@@ -42,6 +42,7 @@ public class Configs {
         DEFAULTS.put("UISCALE", 0);        // 0 = automática, ver autoUiScale()
         DEFAULTS.put("HUDSCALE", 4);
         DEFAULTS.put("MARGIN", 20);
+        DEFAULTS.put("ZOOM", 130);        // por cento; ver Zoom()
         DEFAULTS.put("NeatGraphics", false);
         DEFAULTS.put("VOLUM", 20);
         DEFAULTS.put("MUSIC", 20);
@@ -232,6 +233,23 @@ public class Configs {
     public static void setUiScale(int uiScale) {
         VALUES.put("UISCALE", uiScale);
         update();
+    }
+
+    /**
+     * Aproximacao da camera, em por cento.
+     *
+     * Cem por cento e a distancia antiga, em que o salao inteiro cabia na tela e
+     * nao sobrava nada para explorar. O padrao e 130: perto o bastante para o
+     * gato ser o centro da cena, longe o bastante para ainda se enxergar o que
+     * vem pela frente. A faixa e curta de proposito — passar disso deixa de ser
+     * escolha de conforto e vira outro jogo.
+     */
+    public static int Zoom() {
+        return inteiro("ZOOM");
+    }
+
+    public static void setZoom(int zoom) {
+        VALUES.put("ZOOM", zoom);
     }
 
     public static int HudScale() {

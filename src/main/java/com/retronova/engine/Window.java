@@ -3,6 +3,7 @@ package com.retronova.engine;
 import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
+import com.retronova.engine.sound.Sound;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +27,8 @@ public class Window extends Canvas {
 
     private final String name;
     private boolean pointing;
+    /** Ultimo estado de foco visto, para so agir na troca. */
+    private boolean focada = true;
     private JFrame frame;
     private final Toolkit toolkit;
 
@@ -162,11 +165,37 @@ public class Window extends Canvas {
 
     void tick() {
         refreshSize();      // uma leitura do AWT por tick, em vez de dezenas por quadro
+        conferirFoco();
         if(pointing) {
             pointing = false;
             Engine.window.setCursor(Window.POINTER_CURSOR, new Point(6*3, 3));
         }else {
             Engine.window.setCursor(Window.DEFAULT_CURSOR);
+        }
+    }
+
+    /**
+     * Cala o som quando a janela sai de foco, e devolve quando volta.
+     *
+     * E consulta por tick, e nao WindowFocusListener, de proposito: o listener so
+     * dispara em TROCA de foco, e o caso que mais incomodava era a janela que
+     * nasce atras de tudo — o processo sobe, a musica comeca e ninguem nunca
+     * clicou nela, entao nenhuma troca aconteceria para o listener ouvir.
+     * Consultando, o primeiro tick ja pega o estado real.
+     */
+    private void conferirFoco() {
+        if(frame == null) {
+            return;
+        }
+        boolean agora = frame.isFocused();
+        if(agora == focada) {
+            return;
+        }
+        focada = agora;
+        if(agora) {
+            Sound.retomar();
+        }else {
+            Sound.silenciar();
         }
     }
 

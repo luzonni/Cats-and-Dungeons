@@ -78,6 +78,22 @@ public class Sound {
 		musics.get(music.resource()).play(loop, (double) Configs.Music() / 100d);
 	}
 
+	/**
+	 * Toca a faixa so se ela ja nao estiver tocando.
+	 *
+	 * Existe porque as arenas agora se encadeiam: com um play() direto, cada
+	 * arena vencida rebobinava a trilha de combate para o comeco, o que denuncia
+	 * a troca de mapa em vez de esconder.
+	 */
+	public static void keepPlaying(Musics music, boolean loop) {
+		if(!musics.containsKey(music.resource()))
+			throw new RuntimeException("sound not exists");
+		Music m = musics.get(music.resource());
+		if(!m.playing()) {
+			m.play(loop, (double) Configs.Music() / 100d);
+		}
+	}
+
 	public static void play(Musics music, boolean loop, double pan) {
 		if(!musics.containsKey(music.resource()))
 			throw new RuntimeException("sound not exists");
@@ -110,6 +126,50 @@ public class Sound {
 				music.stop();
 			}
 		}
+	}
+
+	/** Faixas que estavam tocando quando a janela perdeu o foco. */
+	private static final java.util.List<Musics> pausadas = new java.util.ArrayList<>();
+
+	/**
+	 * Cala o jogo enquanto a janela nao esta em foco.
+	 *
+	 * A musica seguia tocando com o jogo minimizado, ou mesmo antes de alguem ter
+	 * clicado nele uma unica vez: o processo sobe, a trilha comeca, e quem esta
+	 * em outra janela nao tem como saber de onde vem o som.
+	 *
+	 * As musicas sao PAUSADAS, e nao paradas, para voltarem de onde estavam. O
+	 * volume global vai a zero junto porque efeitos disparados nesse meio tempo
+	 * nao passam por essa lista.
+	 */
+	public static synchronized void silenciar() {
+		if(musics == null) {
+			return;
+		}
+		pausadas.clear();
+		for(Musics name : Musics.values()) {
+			Music music = musics.get(name.resource());
+			if(music != null && music.playing()) {
+				music.pause();
+				pausadas.add(name);
+			}
+		}
+		TinySound.setGlobalVolume(0d);
+	}
+
+	/** Devolve o som quando a janela volta ao foco. */
+	public static synchronized void retomar() {
+		TinySound.setGlobalVolume(1d);
+		if(musics == null) {
+			return;
+		}
+		for(Musics name : pausadas) {
+			Music music = musics.get(name.resource());
+			if(music != null) {
+				music.resume();
+			}
+		}
+		pausadas.clear();
 	}
 
 	public static void stopAll() {

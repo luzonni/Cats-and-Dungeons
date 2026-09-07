@@ -192,11 +192,10 @@ public class Engine implements Runnable {
     }
 
     private void render(Graphics2D graphics) {
-        Font font = FontHandler.font(FontHandler.Septem, Configs.UiScale()*8);
-        int padding = Configs.Margin();
-        graphics.setFont(font);
-        graphics.setColor(new Color(255, 255, 255, 100));
-        graphics.drawString(VERSION, padding, window.getHeight() - padding);
+        //A versao NAO e carimbada aqui. Ela nao muda durante a partida, entao
+        //ficava ocupando a tela o jogo inteiro sem informar nada; o lugar dela e
+        //a tela inicial, como faz a maioria dos jogos, e o overlay de depuracao
+        //(F3) para quem precisa dela com o jogo rodando.
         if(Debugging.running)
             Debugging.render(graphics);
         graphics.dispose();
