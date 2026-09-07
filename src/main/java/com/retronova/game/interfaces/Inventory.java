@@ -7,7 +7,7 @@ import com.retronova.engine.exceptions.InventoryOutsOfBounds;
 import com.retronova.game.Game;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
-import com.retronova.engine.graphics.SpriteHandler;
+import com.retronova.engine.graphics.UiSprite;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -26,7 +26,9 @@ public class Inventory implements Activity {
     private Item itemHand;
 
     private Point inventoryPosition;
-    private final BufferedImage inventory;
+    /** Escala do HUD com que as posicoes atuais foram calculadas. */
+    private int escalaAplicada = -1;
+    private final UiSprite inventory;
 
     public Inventory(int lengthBag, int lengthHotbar) {
         if(lengthBag > 15 || lengthHotbar > 5) {
@@ -37,58 +39,56 @@ public class Inventory implements Activity {
         this.insurer = new Slot(0, 0);
         this.bag = new Slot[15];
         this.hotbar = new Slot[5];
-        this.inventory = new SpriteHandler("ui", "inventory", Configs.HudScale()).getSHEET();
+        this.inventory = new UiSprite("ui", "inventory");
         refreshPositions();
     }
 
+    /**
+     * Recoloca a moldura e os slots.
+     *
+     * Reage a DOIS gatilhos, e nao so a um: a janela mudou de tamanho, ou a
+     * escala do HUD mudou. Antes so o primeiro era observado, entao mexer no
+     * "HUD size" em Options deixava a moldura no tamanho velho e os slots nas
+     * coordenadas novas — o inventario inteiro fora do lugar.
+     */
     public void refreshPositions() {
-        int X = Engine.window.getWidth()/2 - inventory.getWidth()/2;
-        int Y = Engine.window.getHeight()/2 - inventory.getHeight()/2;
-        int xh = Configs.HudScale() * 6;
-        int yh = Configs.HudScale() * 70;
-        int xi = Configs.HudScale() * 6;
-        int yi = Configs.HudScale() * 6;
-        if(this.inventoryPosition == null) {
+        int s = Configs.HudScale();
+        int X = Engine.window.getWidth() / 2 - inventory.largura() / 2;
+        int Y = Engine.window.getHeight() / 2 - inventory.altura() / 2;
+
+        boolean primeiraVez = this.inventoryPosition == null;
+        boolean mudouPosicao = primeiraVez
+                || this.inventoryPosition.x != X || this.inventoryPosition.y != Y;
+        if (!mudouPosicao && s == this.escalaAplicada) {
+            return;
+        }
+        this.escalaAplicada = s;
+        if (primeiraVez) {
             this.inventoryPosition = new Point(X, Y);
-            xh += inventoryPosition.x;
-            yh += inventoryPosition.y;
-            xi += inventoryPosition.x;
-            yi += inventoryPosition.y;
-            for (int i = 0; i < hotbar.length; i++) {
-                int w = 16 * Configs.HudScale();
-                this.hotbar[i] = new Slot(xh + i * w, yh);
-            }
-            for(int yy = 0; yy < 3; yy++) {
-                for(int xx = 0; xx < 5; xx++) {
-                    int index = xx + yy * 5;
-                    int w = 16 * Configs.HudScale();
-                    int h = 16 * Configs.HudScale();
-                    int xxx = xi + (xx * w);
-                    int yyy = yi + (yy * h);
-                    bag[index] = new Slot(xxx, yyy);
-                }
-            }
-            return;
+        } else {
+            this.inventoryPosition.setLocation(X, Y);
         }
-        if(this.inventoryPosition.x == X && this.inventoryPosition.y == Y)
-            return;
-        this.inventoryPosition.setLocation(X, Y);
-        xh += inventoryPosition.x;
-        yh += inventoryPosition.y;
-        xi += inventoryPosition.x;
-        yi += inventoryPosition.y;
+
+        int w = 16 * s;
+        int xh = X + 6 * s, yh = Y + 70 * s;
+        int xi = X + 6 * s, yi = Y + 6 * s;
         for (int i = 0; i < hotbar.length; i++) {
-            int w = 16 * Configs.HudScale();
-            this.hotbar[i].setPosition(xh + i * w, yh);
+            if (hotbar[i] == null) {
+                hotbar[i] = new Slot(xh + i * w, yh);
+            } else {
+                hotbar[i].setPosition(xh + i * w, yh);
+            }
         }
-        for(int yy = 0; yy < 3; yy++) {
-            for(int xx = 0; xx < 5; xx++) {
+        for (int yy = 0; yy < 3; yy++) {
+            for (int xx = 0; xx < 5; xx++) {
                 int index = xx + yy * 5;
-                int w = 16 * Configs.HudScale();
-                int h = 16 * Configs.HudScale();
-                int xxx = xi + (xx * w);
-                int yyy = yi + (yy * h);
-                bag[index].setPosition(xxx, yyy);
+                int px = xi + xx * w;
+                int py = yi + yy * w;
+                if (bag[index] == null) {
+                    bag[index] = new Slot(px, py);
+                } else {
+                    bag[index].setPosition(px, py);
+                }
             }
         }
     }
@@ -221,7 +221,7 @@ public class Inventory implements Activity {
     }
 
     private void renderInventory(Graphics2D g) {
-        g.drawImage(this.inventory, inventoryPosition.x, inventoryPosition.y, null);
+        g.drawImage(this.inventory.imagem(), inventoryPosition.x, inventoryPosition.y, null);
         for(int i = 0; i < lengthBag; i++) {
             bag[i].render(g);
         }

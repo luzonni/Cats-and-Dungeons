@@ -5,7 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.DrawString;
 import com.retronova.engine.graphics.FontHandler;
-import com.retronova.engine.graphics.SpriteHandler;
+import com.retronova.engine.graphics.UiSprite;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
@@ -15,18 +15,16 @@ import java.util.HashMap;
 public class Status implements Activity {
 
     private final Player player;
-    private final BufferedImage status;
+    private final UiSprite status;
 
     private final HashMap<String, Point> points;
-    private final Font font;
 
     private final Frame frame;
 
     public Status(Player player) {
         this.player = player;
-        this.status = new SpriteHandler("ui","status", Configs.HudScale()).getSHEET();
-        this.font = FontHandler.font(FontHandler.Septem,Configs.HudScale() * 8);
-        this.frame = new Frame(player, 52 * Configs.HudScale(), 68 * Configs.HudScale());
+        this.status = new UiSprite("ui", "status");
+        this.frame = new Frame(player);
         this.points = new HashMap<>();
         refreshPositions();
     }
@@ -39,8 +37,8 @@ public class Status implements Activity {
     }
 
     private void refreshPositions() {
-        int x = Engine.window.getWidth()/2 - status.getWidth()/2;
-        int y = Engine.window.getHeight()/2 - status.getHeight()/2;
+        int x = Engine.window.getWidth()/2 - status.largura()/2;
+        int y = Engine.window.getHeight()/2 - status.altura()/2;
         int s = Configs.HudScale();
         setLocation("main", x, y);
         setLocation("player", x + 8*s, y + 8*s);
@@ -62,7 +60,7 @@ public class Status implements Activity {
 
     @Override
     public void render(Graphics2D g) {
-        g.drawImage(status, points.get("main").x, points.get("main").y, null);
+        g.drawImage(status.imagem(), points.get("main").x, points.get("main").y, null);
         g.drawImage(player.getSprite(0), points.get("player").x, points.get("player").y, 16 * Configs.HudScale(), 16 * Configs.HudScale(), Engine.window);
         renderString((int)player.getLife()+"/"+(int)player.getLifeSize(), points.get("life"), g);
         renderString((int)(player.getLuck()*100d)+"%", points.get("luck"), g);
@@ -75,7 +73,7 @@ public class Status implements Activity {
     }
 
     private void renderString(String value, Point p, Graphics2D g){
-        DrawString.draw(value, font, p, g);
+        DrawString.draw(value, UiSprite.fonte(FontHandler.Septem, 8f), p, g);
     }
 
     @Override

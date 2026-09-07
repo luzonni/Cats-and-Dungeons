@@ -86,7 +86,13 @@ public class OptionRow {
 
     public static OptionRow stepper(String label, IntSupplier get, IntConsumer set,
                                     int min, int max, int step) {
-        return new OptionRow(label, Kind.STEPPER, get, set, min, max, step, null, "");
+        return stepper(label, get, set, min, max, step, "");
+    }
+
+    /** Stepper com unidade ao lado do numero — "%", "px", e por ai. */
+    public static OptionRow stepper(String label, IntSupplier get, IntConsumer set,
+                                    int min, int max, int step, String sufixo) {
+        return new OptionRow(label, Kind.STEPPER, get, set, min, max, step, null, sufixo);
     }
 
     public static OptionRow cycle(String label, IntSupplier get, IntConsumer set, String[] rotulos) {
@@ -277,7 +283,9 @@ public class OptionRow {
             }
             desenharValor(g, fonte, get.getAsInt() + sufixo, cx + barraW + 4 * s, cw - barraW - 4 * s, baseTexto);
         } else {
-            String texto = (kind == Kind.CYCLE) ? rotulos[get.getAsInt()] : String.valueOf(get.getAsInt());
+            String texto = (kind == Kind.CYCLE)
+                    ? rotulos[get.getAsInt()]
+                    : get.getAsInt() + sufixo;
             desenharValor(g, fonte, texto, cx, cw, baseTexto);
         }
     }

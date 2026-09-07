@@ -1,17 +1,28 @@
 {
+  "profile": {
+    "voice": "CatFinn",
+    "role": "Fortune",
+    "lore": "Wears the bell of a beckoning cat. Says luck is not given, it is owed.",
+    "color": "0x7E2A30"
+  },
   "values": {
-    "name": "Muffin",
-    "life": 1000,
-    "damage": 12,
-    "speed": 3.5,
+    "name": "Finn",
+    "life": 55,
+    "damage": 9,
+    "speed": 4.0,
     "luck": 0.9,
-    "attackSpeed": 1,
-    "range": 50,
+    "attackSpeed": 18,
+    "range": 9,
     "bagSize": 5,
     "hotBarSize": 5
   },
   "inventory": [
-    ["Kunai"],
-    ["Acorn", 5]
+    [
+      "Bow"
+    ],
+    [
+      "Acorn",
+      5
+    ]
   ]
 }

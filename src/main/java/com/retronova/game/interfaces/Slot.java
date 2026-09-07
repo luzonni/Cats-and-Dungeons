@@ -5,30 +5,30 @@ import com.retronova.engine.graphics.DrawString;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
-import com.retronova.engine.graphics.SpriteHandler;
+import com.retronova.engine.graphics.UiSprite;
 import com.retronova.engine.inputs.mouse.Mouse;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class Slot {
 
-    private final Font fontStack;
     private final InfoBox info;
-    private final BufferedImage sprite;
+    private final UiSprite sprite;
     private final Rectangle bounds;
     private Item item;
 
     public Slot(int x, int y) {
         this.item = null;
-        this.sprite = new SpriteHandler("ui", "slot", Configs.HudScale()).getSHEET();
-        this.bounds = new Rectangle(x, y, this.sprite.getWidth(), this.sprite.getHeight());
+        this.sprite = new UiSprite("ui", "slot");
+        this.bounds = new Rectangle(x, y, sprite.largura(), sprite.altura());
         info = new InfoBox();
-        this.fontStack = FontHandler.font(FontHandler.Septem, Configs.HudScale() * 8);
     }
 
     public void setPosition(int x, int y) {
         this.bounds.setLocation(x, y);
+        // O tamanho acompanha a escala do HUD: sem isto, mudar "HUD size" movia
+        // os slots mas mantinha a area de clique do tamanho antigo.
+        this.bounds.setSize(sprite.largura(), sprite.altura());
     }
 
     public Item item() {
@@ -76,7 +76,7 @@ public class Slot {
     }
 
     public void render(Graphics2D g) {
-        g.drawImage(sprite, bounds.x, bounds.y, null);
+        g.drawImage(sprite.imagem(), bounds.x, bounds.y, null);
         renderItem(g);
     }
 
@@ -96,6 +96,7 @@ public class Slot {
         g.drawImage(item.getSprite(), x, y, width, height, null);
         if(item instanceof Consumable consumable) {
             String stack = String.valueOf(consumable.getStack());
+            Font fontStack = UiSprite.fonte(FontHandler.Septem, 8f);
             int wf = FontHandler.getWidth(stack, fontStack);
             int hf = FontHandler.getHeight(stack, fontStack);
             DrawString.draw(stack, fontStack, x + width - wf - Configs.HudScale(), y + height - hf - Configs.HudScale(), g);

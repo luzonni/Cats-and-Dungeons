@@ -55,15 +55,36 @@ public class Options implements Activity {
     private final Button voltar;
 
     private BufferedImage imagemFundo;
+    /** Quando aberta por cima do jogo, não desenha fundo próprio. */
+    private final boolean sobreposta;
+    private final Runnable aoFechar;
+
+    /**
+     * Abre as opções por cima da cena atual, sem trocar de Activity.
+     *
+     * Empilhar as opções a partir da pausa trocava a tela e trazia junto o fundo
+     * da tela inicial, dando a impressão de que o jogador tinha saído da partida.
+     *
+     * @param aoFechar o que fazer no Back, no lugar de desempilhar a Activity
+     */
+    public static Options sobreposta(Runnable aoFechar) {
+        return new Options(true, aoFechar);
+    }
 
     public Options() {
+        this(false, null);
+    }
+
+    private Options(boolean sobreposta, Runnable aoFechar) {
+        this.sobreposta = sobreposta;
+        this.aoFechar = aoFechar;
         montarLinhas();
         this.abasRect = new Rectangle[abas.length];
         for (int i = 0; i < abasRect.length; i++) {
             abasRect[i] = new Rectangle();
         }
         this.aplicar = new Button(0, 0, 0, 0, "Apply", b -> aplicarPendentes()).primary();
-        this.voltar = new Button(0, 0, 0, 0, "Back", b -> Engine.backActivity());
+        this.voltar = new Button(0, 0, 0, 0, "Back", b -> fechar());
 
         try {
             imagemFundo = ImageIO.read(getClass().getResource(
@@ -98,6 +119,8 @@ public class Options implements Activity {
         video.add(OptionRow.toggle("Smooth graphics",
                 () -> Configs.isNeatGraphics() ? 1 : 0, v -> Configs.setNeatGraphics(v != 0))
                 .desc("Antialiasing and smooth filtering. Softens the pixel art; off keeps the sharp look."));
+        video.add(OptionRow.stepper("Camera zoom", Configs::Zoom, Configs::setZoom, 100, 160, 10, "%")
+                .desc("Quao perto a camera fica do gato. Mais perto, mais imersao; mais longe, mais campo de visao."));
         video.add(OptionRow.toggle("Vignette",
                 () -> Configs.Vignette() ? 1 : 0, v -> Configs.setVignette(v != 0))
                 .desc("Darkens the corners of the screen during gameplay, to focus the eye on the center."));
@@ -156,6 +179,15 @@ public class Options implements Activity {
         Configs.setIndexResolution(pendResolucao);
         Configs.setFullscreen(pendTelaCheia != 0);
         Engine.window.resetWindow();
+    }
+
+    /** Volta para quem abriu: a pausa, quando sobreposta; a pilha, quando não. */
+    private void fechar() {
+        if (aoFechar != null) {
+            aoFechar.run();
+        } else {
+            Engine.backActivity();
+        }
     }
 
     private List<OptionRow> atuais() {
@@ -226,7 +258,7 @@ public class Options implements Activity {
         posicionar();
 
         if (KeyBoard.KeyPressed("Escape")) {
-            Engine.backActivity();
+            fechar();
             return;
         }
         trocarAbaPeloMouse();
@@ -288,7 +320,8 @@ public class Options implements Activity {
 
     @Override
     public void render(Graphics2D g) {
-        if (imagemFundo != null) {
+        //Sobreposta, o cenário do jogo é o fundo; só o véu escurece atrás.
+        if (!sobreposta && imagemFundo != null) {
             g.drawImage(imagemFundo, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
         }
         g.setColor(Palette.VEIL);

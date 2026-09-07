@@ -1,4 +1,10 @@
 {
+  "profile": {
+    "voice": "CatMuffin",
+    "role": "Ranger",
+    "lore": "Kept the map of the upper floors. Says the fourth brother is still breathing.",
+    "color": "0x2E6F5E"
+  },
   "values": {
     "name": "Muffin",
     "life": 80,
@@ -11,7 +17,12 @@
     "hotBarSize": 4
   },
   "inventory": [
-    ["Bow"],
-    ["CatNip", 2]
+    [
+      "Sword"
+    ],
+    [
+      "CatNip",
+      2
+    ]
   ]
 }

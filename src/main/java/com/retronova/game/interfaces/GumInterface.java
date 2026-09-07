@@ -1,5 +1,6 @@
 package com.retronova.game.interfaces;
 
+import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
@@ -80,7 +81,7 @@ public class GumInterface implements Activity {
                     gumPanel.openAward();
                     player.setMoney(player.getMoney() - gum.getPrice());
                 }else {
-                    this.priceColor = new Color(0xe17564);
+                    this.priceColor = Palette.WARN;
                 }
             }
         }else {
@@ -111,7 +112,7 @@ public class GumInterface implements Activity {
         int x = this.pricePosition.x;
         int y = this.pricePosition.y;
         g.setFont(font);
-        g.setColor(new Color(0x872341));
+        g.setColor(Palette.DEEP);
         g.drawString("$"+gum.getPrice(), x + Configs.HudScale(), y + Configs.HudScale());
         g.setColor(priceColor);
         g.drawString("$"+gum.getPrice(), x, y);

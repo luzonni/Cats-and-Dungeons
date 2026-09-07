@@ -23,19 +23,38 @@ class Hotbar {
     private char[] numbers = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
     private Font fontStack;
+    /** Escala do HUD com que os sprites atuais foram recortados. */
+    private int escalaAplicada = -1;
 
     public Hotbar(Player player) {
         this.player = player;
-        SpriteHandler sheet = new SpriteHandler("ui", "hotbar", Configs.HudScale());
-        int sheetSize = sheet.getWidth()/16;
+        recriar();
+    }
+
+    /**
+     * Refatia a folha na escala corrente.
+     *
+     * Os quadros sao recortados de uma folha ja escalada, entao nao basta trocar
+     * a imagem: e preciso refazer os recortes. Sem isto, mudar "HUD size" mantinha
+     * a hotbar no tamanho antigo enquanto o resto da interface crescia.
+     */
+    private void recriar() {
+        int s = Configs.HudScale();
+        this.escalaAplicada = s;
+        SpriteHandler sheet = new SpriteHandler("ui", "hotbar", s);
+        int sheetSize = sheet.getWidth() / 16;
         this.sprites = new BufferedImage[sheetSize];
-        this.fontStack = FontHandler.font(FontHandler.Septem, Configs.HudScale() * 8);
-        for(int i = 0; i < sheetSize; i++) {
+        this.fontStack = FontHandler.font(FontHandler.Septem, s * 8);
+        for (int i = 0; i < sheetSize; i++) {
             this.sprites[i] = sheet.getSpriteWithIndex(i, 0);
         }
+        this.bounds = null;      // as posicoes sao remontadas com o tamanho novo
     }
 
     private void refreshPositions() {
+        if (escalaAplicada != Configs.HudScale()) {
+            recriar();
+        }
         int hotbarWidth = this.sprites[0].getWidth() * 5;
         int x = Engine.window.getWidth()/2 - hotbarWidth/2;
         int y = Engine.window.getHeight() - this.sprites[0].getHeight() - Configs.Margin();

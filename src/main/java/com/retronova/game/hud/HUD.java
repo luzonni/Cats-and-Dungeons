@@ -14,10 +14,10 @@ import java.awt.image.BufferedImage;
 
 public class HUD implements Activity {
 
-    private final BufferedImage frameBust;
-    private final BufferedImage chains;
-    private final BufferedImage bust;
-    private final BufferedImage[] bottle;
+    private BufferedImage frameBust;
+    private BufferedImage chains;
+    private BufferedImage bust;
+    private BufferedImage[] bottle;
     private int indexBottle;
 
     private int count;
@@ -27,20 +27,37 @@ public class HUD implements Activity {
     private final Hotbar hotbar;
     private final WaveDisplay waveDisplay;
 
+    private final Player player;
+    /** Escala do HUD com que os sprites atuais foram recortados. */
+    private int escalaAplicada = -1;
+
     public HUD(Player player) {
+        this.player = player;
         this.hotbar = new Hotbar(player);
         this.waveDisplay = new WaveDisplay();
-        SpriteHandler sheetBust = new SpriteHandler("ui","bust", Configs.HudScale());
-        SpriteHandler sheetBottle = new SpriteHandler("ui","lifebottle", Configs.HudScale());
+        recriar();
+    }
+
+    /**
+     * Refatia busto e frascos na escala corrente.
+     *
+     * Como na hotbar, sao recortes de folhas ja escaladas: trocar so a imagem nao
+     * resolve, tem de refazer os recortes quando "HUD size" muda.
+     */
+    private void recriar() {
+        int s = Configs.HudScale();
+        this.escalaAplicada = s;
+        SpriteHandler sheetBust = new SpriteHandler("ui", "bust", s);
+        SpriteHandler sheetBottle = new SpriteHandler("ui", "lifebottle", s);
         int indexBust = 0;
-        for(int i = 0; i < Player.TEMPLATES.length; i++) {
-            if(player.getName().equals(Player.TEMPLATES[i].getName())) {
+        for (int i = 0; i < Player.TEMPLATES.length; i++) {
+            if (player.getName().equals(Player.TEMPLATES[i].getName())) {
                 indexBust = i;
             }
         }
-        this.bust = sheetBust.getSpriteWithIndex(indexBust ,1);
-        this.frameBust = sheetBust.getSpriteWithIndex(1,0);
-        this.chains = sheetBust.getSpriteWithIndex(0,0);
+        this.bust = sheetBust.getSpriteWithIndex(indexBust, 1);
+        this.frameBust = sheetBust.getSpriteWithIndex(1, 0);
+        this.chains = sheetBust.getSpriteWithIndex(0, 0);
         this.bottle = sheetBottle.getSprites(0);
     }
 
@@ -69,6 +86,9 @@ public class HUD implements Activity {
 
     @Override
     public void tick() {
+        if (escalaAplicada != Configs.HudScale()) {
+            recriar();
+        }
         createVignette();
         hotbar.tick();
         waveDisplay.tick();

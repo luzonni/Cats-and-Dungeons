@@ -1,5 +1,6 @@
 package com.retronova.game.interfaces.shared;
 
+import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
@@ -59,7 +60,7 @@ public class GumPanel {
     }
 
     public void render(Graphics2D g) {
-        g.setColor(new Color(0x09122c));
+        g.setColor(Palette.OUTLINE);
         g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
         for (Silly silly : sillies) {
             silly.render(g);

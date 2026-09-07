@@ -9,9 +9,12 @@ import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -28,16 +31,13 @@ public class Button {
     /** Dimensões nativas de uma célula do sprite. */
     private static final int CELL_W = 24, CELL_H = 22;
 
-    private static NineSlice framePrimary;
-    private static NineSlice frameSecondary;
+    /** Molduras ja carregadas, por nome de sprite. */
+    private static final Map<String, NineSlice> MOLDURAS = new HashMap<>();
 
     /** Moldura 9-slice compartilhada: os cartoes de personagem reusam a mesma. */
     public static NineSlice frame(boolean primary) {
-        if (framePrimary == null) {
-            framePrimary = new NineSlice("button", CELL_W, 8, 8, 12, 6);
-            frameSecondary = new NineSlice("button_dark", CELL_W, 8, 8, 12, 6);
-        }
-        return primary ? framePrimary : frameSecondary;
+        String nome = primary ? "button" : "button_dark";
+        return MOLDURAS.computeIfAbsent(nome, n -> new NineSlice(n, CELL_W, 8, 8, 12, 6));
     }
 
     /** Altura recomendada para que os cantos caiam em escala inteira. */
@@ -58,8 +58,18 @@ public class Button {
     private boolean pressed;
     private boolean focused;
     private boolean primary;
-    private boolean meow;
+    /** Som proprio ao acionar. Nulo usa o clique padrao. */
+    private Sounds vozDoClique;
     private boolean hoveredBefore;
+    /**
+     * Quanto o realce de passagem ja entrou, de 0 a 1.
+     *
+     * Anima em vez de ligar e desligar: o salto entre dois tamanhos le como
+     * falha de desenho, e a rampa curta e o que faz o botao parecer responder ao
+     * ponteiro em vez de trocar de sprite.
+     */
+    private float realce;
+    private static final float VELOCIDADE_REALCE = 0.2f;
 
     public Button(int x, int y, int width, int height, String text, Consumer<Button> onClick) {
         this.bounds = new Rectangle(x, y, width, height);
@@ -73,9 +83,14 @@ public class Button {
         return this;
     }
 
-    /** Faz o botão miar ao ser acionado. Reservado a um botão por tela. */
-    public Button meow() {
-        this.meow = true;
+    /**
+     * Troca o som de acionamento por uma voz. Reservado a um botão por tela.
+     *
+     * Recebe qual voz em vez de assumir uma: na seleção de personagem o botão de
+     * embarcar mia com o gato ESCOLHIDO, e isso muda a cada clique na fileira.
+     */
+    public Button meow(Sounds voz) {
+        this.vozDoClique = voz;
         return this;
     }
 
@@ -84,18 +99,24 @@ public class Button {
         pressed = Mouse.isPressed(Mouse_Button.LEFT, bounds);
 
         if (hovered && !hoveredBefore) {
-            Sound.play(Sounds.Button);       // blip discreto ao passar por cima
+            Sound.play(Sounds.Hover);        // tique discreto ao passar por cima
         }
         hoveredBefore = hovered;
 
         if (Mouse.clickOn(Mouse_Button.LEFT, bounds)) {
             activate();
         }
+
+        float alvo = (hovered || focused) ? 1f : 0f;
+        if (realce != alvo) {
+            realce += Math.signum(alvo - realce) * VELOCIDADE_REALCE;
+            realce = Math.max(0f, Math.min(1f, realce));
+        }
     }
 
     /** Dispara a ação. Separado do clique para servir também ao teclado. */
     public void activate() {
-        Sound.play(meow ? Sounds.Cat : Sounds.Button);
+        Sound.play(vozDoClique != null ? vozDoClique : Sounds.Button);
         if (onClick != null) {
             onClick.accept(this);
         }
@@ -104,28 +125,70 @@ public class Button {
     public void render(Graphics2D g2) {
         int scale = Configs.UiScale();
         int state = pressed ? 2 : (hovered || focused ? 1 : 0);
+        Rectangle r = realcado(scale);
 
-        frame(primary).draw(g2, state, bounds.x, bounds.y, bounds.width, bounds.height, scale);
+        desenharBrilho(g2, r, scale);
+        frame(primary).draw(g2, state, r.x, r.y, r.width, r.height, scale);
 
         if (focused && !pressed) {
-            desenharAnelDeFoco(g2, scale);
+            desenharAnelDeFoco(g2, r, scale);
         }
-        desenharTexto(g2, scale, state == 2);
+        desenharTexto(g2, r, scale, state == 2);
     }
 
-    /** Contorno externo indicando o foco de teclado. */
-    private void desenharAnelDeFoco(Graphics2D g2, int scale) {
+    /**
+     * Retangulo do botao com o crescimento do realce.
+     *
+     * Cresce a partir do centro, no maximo um tile de escala em cada eixo. Mais
+     * que isso e o botao passa a empurrar visualmente os vizinhos, e a fileira de
+     * botoes parece instavel a cada passagem do mouse.
+     */
+    private Rectangle realcado(int scale) {
+        if (realce <= 0f) {
+            return bounds;
+        }
+        int cresce = Math.round(realce * scale * 2);
+        return new Rectangle(bounds.x - cresce, bounds.y - cresce / 2,
+                bounds.width + cresce * 2, bounds.height + cresce);
+    }
+
+    /**
+     * Halo por tras do botao em foco.
+     *
+     * Sao poucos retangulos concentricos com alfa decrescente, e nao um gradiente:
+     * o resultado e o mesmo nesta escala e nao custa criar uma pintura por quadro
+     * para cada botao da tela.
+     */
+    private void desenharBrilho(Graphics2D g2, Rectangle r, int scale) {
+        if (realce <= 0.02f) {
+            return;
+        }
         Graphics2D g = (Graphics2D) g2.create();
-        g.setColor(Palette.LIGHT);
-        int topo = bounds.y + (EAR_H - 1) * scale;
-        int altura = bounds.height - (EAR_H - 1) * scale;
-        for (int i = 1; i <= scale; i++) {
-            g.drawRect(bounds.x - i, topo - i, bounds.width + i * 2 - 1, altura + i * 2 - 1);
+        int camadas = 4;
+        for (int i = camadas; i >= 1; i--) {
+            int margem = i * scale;
+            int alfa = (int) (26 * realce * (1f - (i - 1) / (float) camadas));
+            g.setColor(new Color(Palette.ACCENT.getRed(), Palette.ACCENT.getGreen(),
+                    Palette.ACCENT.getBlue(), alfa));
+            g.fillRect(r.x - margem, r.y + (EAR_H - 1) * scale - margem,
+                    r.width + margem * 2, r.height - (EAR_H - 1) * scale + margem * 2);
         }
         g.dispose();
     }
 
-    private void desenharTexto(Graphics2D g2, int scale, boolean afundado) {
+    /** Contorno externo indicando o foco de teclado. */
+    private void desenharAnelDeFoco(Graphics2D g2, Rectangle r, int scale) {
+        Graphics2D g = (Graphics2D) g2.create();
+        g.setColor(Palette.ACCENT);
+        int topo = r.y + (EAR_H - 1) * scale;
+        int altura = r.height - (EAR_H - 1) * scale;
+        for (int i = 1; i <= scale; i++) {
+            g.drawRect(r.x - i, topo - i, r.width + i * 2 - 1, altura + i * 2 - 1);
+        }
+        g.dispose();
+    }
+
+    private void desenharTexto(Graphics2D g2, Rectangle bounds, int scale, boolean afundado) {
         Graphics2D g = (Graphics2D) g2.create();
 
         // O texto vive no corpo, abaixo da faixa de orelhas.

@@ -1,5 +1,6 @@
 package com.retronova.game.interfaces;
 
+import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
@@ -136,16 +137,16 @@ public class Inter implements Activity {
         for(int i = 0; i < tabs.length; i++) {
             Rectangle rec = tabs[i];
             String name = keys()[i];
-            Color border = index.equals(name) ? new Color(0xe17564) : new Color(0x09122c);
+            Color border = index.equals(name) ? Palette.ACCENT : Palette.OUTLINE;
             g.setColor(border);
             g.drawRect(rec.x, rec.y, rec.width, rec.height);
-            g.setColor(new Color(0x872341));
+            g.setColor(Palette.DEEP);
             g.fillRect(rec.x, rec.y, rec.width, rec.height);
             int wf = FontHandler.getWidth(name, font);
             int hf = FontHandler.getHeight(name, font);
-            g.setColor(new Color(0x09122c));
+            g.setColor(Palette.OUTLINE);
             g.drawString(name, rec.x + rec.width/2 - wf/2 + Configs.HudScale(), rec.y + rec.height/2 + hf/2 + Configs.HudScale());
-            Color c = index.equals(name) ? Color.white : new Color(0xe17564);
+            Color c = index.equals(name) ? Palette.TEXT : Palette.LIGHT;
             g.setColor(c);
             g.drawString(name, rec.x + rec.width/2 - wf/2, rec.y + rec.height/2 + hf/2);
         }

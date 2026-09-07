@@ -1,9 +1,15 @@
 {
+  "profile": {
+    "voice": "CatAzrael",
+    "role": "Duelist",
+    "lore": "Went down first, came back alone, and has not said a word about it since.",
+    "color": "0x6A3D8F"
+  },
   "values": {
     "name": "Azrael",
     "life": 60,
-    "damage": 10,
-    "speed": 3.5,
+    "damage": 14,
+    "speed": 3.2,
     "luck": 0.4,
     "attackSpeed": 12,
     "range": 11,
@@ -11,7 +17,12 @@
     "hotBarSize": 4
   },
   "inventory": [
-    ["Sword"],
-    ["Feed", 4]
+    [
+      "Wand"
+    ],
+    [
+      "Feed",
+      4
+    ]
   ]
 }

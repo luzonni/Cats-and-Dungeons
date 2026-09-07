@@ -5,7 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.StoreException;
 import com.retronova.engine.graphics.FontHandler;
-import com.retronova.engine.graphics.SpriteHandler;
+import com.retronova.engine.graphics.UiSprite;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
@@ -20,7 +20,7 @@ import java.awt.image.BufferedImage;
 
 public class Store implements Activity {
 
-    private final BufferedImage store;
+    private final UiSprite store;
     private final Point positionStore;
     private int indexSelected = -1;
     private final Slot[] slots;
@@ -34,7 +34,7 @@ public class Store implements Activity {
             throw new StoreException("A quantidade de items não bate com a quantidade de preços");
         }
         this.prices = prices;
-        this.store = new SpriteHandler("ui", "store", Configs.HudScale()).getSHEET();
+        this.store = new UiSprite("ui", "store");
         this.slots = new Slot[21];
         this.positionStore = new Point();
         this.buttonBuy = new Rectangle(23 * Configs.HudScale(), 14 * Configs.HudScale());
@@ -54,7 +54,7 @@ public class Store implements Activity {
     private void refreshPosition() {
         int w = Engine.window.getWidth();
         int h = Engine.window.getHeight();
-        this.positionStore.setLocation(w/2 - store.getWidth()/2, h/2 - store.getHeight()/2);
+        this.positionStore.setLocation(w/2 - store.largura()/2, h/2 - store.altura()/2);
         this.buttonBuy.setLocation(positionStore.x + 95 * Configs.HudScale(), positionStore.y + 72 * Configs.HudScale());
         for(int y = 0; y < 3; y++)
             for(int x = 0; x < 7; x++) {
@@ -97,7 +97,7 @@ public class Store implements Activity {
     }
 
     private void renderStore(Graphics2D g) {
-        g.drawImage(store, positionStore.x, positionStore.y - 16 * Configs.HudScale(), null);
+        g.drawImage(store.imagem(), positionStore.x, positionStore.y - 16 * Configs.HudScale(), null);
     }
 
     private void renderSlots(Graphics2D g) {
