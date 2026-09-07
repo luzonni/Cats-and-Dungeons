@@ -69,6 +69,9 @@ registrados de propósito, para não se perderem de novo.
 * **Assets de UI gerados por código:** os sprites de botão e o ícone saem de um
   gerador procedural versionado, e a CI quebra o build se os PNGs saírem de
   sincronia com ele.
+* **Cenário derivado por gerador:** os tiles e props da dungeon saem de um pacote
+  CC0 remapeado por código para a paleta de pedra fria do jogo, em vez de copiados
+  como estão — a arte de fora entra já dentro da identidade visual daqui.
 * **Escala automática:** a interface acompanha o tamanho da janela em múltiplos
   inteiros de uma resolução lógica de 320×180, do 720p ao 4K.
 
@@ -98,9 +101,29 @@ Requer **JDK 21 ou superior**. O Gradle vem embutido no wrapper.
 
 # Regerar os sprites de UI a partir do gerador procedural
 ./gradlew genUiAssets
+
+# Rodar a CI inteira aqui, antes de empurrar
+./gradlew ci
 ```
 
 No Windows, use `gradlew.bat` no lugar de `./gradlew`.
+
+### Antes do primeiro push
+
+```sh
+./gradlew hooks
+```
+
+Isso aponta o git para `.githooks/`, e a partir daí **todo `git push` roda a CI
+local antes** — se ela falhar, o push é cancelado. O comando precisa ser rodado
+uma vez por clone porque o git não versiona `.git/hooks`.
+
+O que a CI local checa, além de repetir os comandos do `ci.yml`: que nenhum
+arquivo de código está escondido pelo `.gitignore` (a CI roda num clone, e o que
+só existe na sua máquina não existe lá) e que nenhum passo novo entrou no
+workflow sem entrar aqui. Ver `tools/CiLocal.java`.
+
+Num caso pontual dá para pular com `git push --no-verify`.
 
 ## Controles
 
@@ -146,8 +169,9 @@ autorização prévia e por escrito dos autores.
 
 Você pode ler o código para estudo pessoal e clonar o repositório para avaliação.
 Veja [`LICENSE`](LICENSE) para os termos completos e
-[`docs/TERCEIROS.md`](docs/TERCEIROS.md) para as bibliotecas de terceiros, que
-seguem as próprias licenças.
+[`docs/TERCEIROS.md`](docs/TERCEIROS.md) para as bibliotecas e a arte de
+terceiros, que seguem as próprias licenças. Parte do cenário deriva do pacote
+[Tiny Dungeon](https://kenney.nl/assets/tiny-dungeon), do Kenney, em CC0.
 
 ---
 
