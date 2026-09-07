@@ -51,6 +51,16 @@ public class CiLocal {
     private static final String CINZA = "[90m";
     private static final String FIM = "[0m";
 
+    /**
+     * Caminhos que TEM de estar marcados como executaveis no indice do git.
+     *
+     * O gradlew e um script de shell: sem o bit, o runner do Linux para com
+     * "Permission denied" e codigo 126, antes de compilar qualquer coisa. Os
+     * hooks tem o mesmo problema — um hook sem o bit simplesmente nao roda em
+     * quem clonar no Linux ou no Mac, e em silencio.
+     */
+    private static final String[] PRECISAM_SER_EXECUTAVEIS = {"gradlew", ".githooks"};
+
     /** Pastas cujo conteudo o build consome. */
     private static final String[] PASTAS_DE_CODIGO = {"src", "tools", "gradle"};
 
@@ -89,6 +99,7 @@ public class CiLocal {
         }
 
         List<Passo> passos = List.of(
+                new Passo("Bit de execucao no indice", false, CiLocal::bitDeExecucao),
                 new Passo("Nenhum fonte ignorado pelo git", false, CiLocal::fontesIgnorados),
                 new Passo("Build", true, () -> gradle("build", "--stacktrace")),
                 // A CI roda os testes com AWT desligado porque o runner nao tem
@@ -137,6 +148,47 @@ public class CiLocal {
     }
 
     // ------------------------------------------------------------------ passos
+
+    /**
+     * Os scripts estao marcados como executaveis NO INDICE do git.
+     *
+     * ESTE PASSO EXISTE POR UM ERRO QUE CHEGOU AO GITHUB, DUAS VEZES. O gradlew
+     * perdeu o bit e a CI parou em "./gradlew: Permission denied", codigo 126 —
+     * antes de compilar coisa alguma.
+     *
+     * E ele nao tem como ser pego repetindo os comandos do ci.yml: no Windows
+     * este programa chama gradlew.bat, e o gradlew de shell nunca e tocado. Pior,
+     * a maquina esta com core.fileMode=false — o normal no Windows —, entao chmod
+     * no Git Bash NAO chega ao indice, e foi assim que a correcao anterior nao
+     * pegou. O que vale e o modo gravado no indice, e e ele que se le aqui.
+     */
+    private static Resultado bitDeExecucao() {
+        List<String> cmd = new ArrayList<>(List.of("git", "ls-files", "-s", "--"));
+        cmd.addAll(List.of(PRECISAM_SER_EXECUTAVEIS));
+        Saida s = rodar(cmd, Map.of());
+        if (s.codigo() != 0) {
+            return Resultado.ruim("git falhou:\n" + s.texto());
+        }
+        List<String> semBit = new ArrayList<>();
+        for (String linha : s.texto().lines().toList()) {
+            if (linha.isBlank()) {
+                continue;
+            }
+            // Formato do ls-files -s: "<modo> <sha> <estagio>\t<caminho>"
+            int tab = linha.indexOf('\t');
+            String caminho = tab < 0 ? linha : linha.substring(tab + 1);
+            if (linha.startsWith("100644")) {
+                semBit.add(caminho);
+            }
+        }
+        if (semBit.isEmpty()) {
+            return Resultado.bom();
+        }
+        return Resultado.ruim("Estes precisam do bit de execucao e nao tem:\n  "
+                + String.join("\n  ", semBit)
+                + "\n\nchmod nao resolve com core.fileMode=false. Rode:\n"
+                + "  git update-index --chmod=+x " + String.join(" ", semBit));
+    }
 
     /**
      * Nenhum arquivo de codigo escondido pelo .gitignore.
@@ -212,6 +264,7 @@ public class CiLocal {
             return Resultado.ruim("nao consegui ler " + yml + ": " + e.getMessage());
         }
         Set<String> aqui = new LinkedHashSet<>();
+        aqui.add(normalizar("Bit de execucao no indice"));
         aqui.add(normalizar("Nenhum fonte ignorado pelo git"));
         aqui.add(normalizar("Build"));
         aqui.add(normalizar("Testes"));
