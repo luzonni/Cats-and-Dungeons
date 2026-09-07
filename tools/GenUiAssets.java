@@ -23,11 +23,14 @@ public class GenUiAssets {
     static final int CELL_W = 24, CELL_H = 22, STATES = 3;
     static final int EAR_H = 5, EAR_W = 7, EAR_TIP = 2, BODY_TOP = 6;
 
-    // Paleta do jogo, a mesma de engine/graphics/Palette.java
-    static final int OUTLINE = 0xFF09122C;
-    static final int DEEP    = 0xFF872341;
-    static final int MAIN    = 0xFFBE3144;
-    static final int LIGHT   = 0xFFE17564;
+    // Paleta do jogo, a mesma de engine/graphics/Palette.java. E uma COPIA, e ja
+    // envelheceu uma vez: quando a paleta do jogo passou do vermelho para as cores
+    // medidas na arte oficial, estes quatro numeros ficaram para tras e a CI
+    // acusou os PNG fora de sincronia. Mexeu la, mexe aqui.
+    static final int OUTLINE = 0xFF211A2B;
+    static final int DEEP    = 0xFF3E4160;
+    static final int MAIN    = 0xFF525779;
+    static final int LIGHT   = 0xFF7E849C;
 
     public static void main(String[] args) throws Exception {
         File dir = new File("src/main/resources/com/retronova/resources/ui");
