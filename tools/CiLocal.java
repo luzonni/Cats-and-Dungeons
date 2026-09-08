@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -64,6 +65,16 @@ public class CiLocal {
     /** Pastas cujo conteudo o build consome. */
     private static final String[] PASTAS_DE_CODIGO = {"src", "tools", "gradle"};
 
+    /**
+     * Caminhos que o git ignora DE PROPOSITO, e que por isso nao sao defeito.
+     *
+     * Sao os pacotes de arte de terceiros: eles nao entram no repositorio por
+     * decisao — o que entra e o PNG derivado — e o gerador que os consome so roda
+     * quando alguem pede. Ficam listados aqui, e nao removidos da checagem, para
+     * a excecao ser DECLARADA: qualquer outra pasta escondida continua sendo erro.
+     */
+    private static final String[] IGNORADOS_DE_PROPOSITO = {"tools/assets/fonte"};
+
     private static final String UI =
             "src/main/resources/com/retronova/resources/ui";
 
@@ -107,6 +118,7 @@ public class CiLocal {
                 // passaria localmente e quebraria la.
                 new Passo("Testes", true, () -> gradleHeadless("test")),
                 new Passo("Regerar e comparar", false, CiLocal::assetsEmDia),
+                new Passo("Ferramentas compilam", false, CiLocal::ferramentasCompilam),
                 new Passo("Gerar jar executavel", true, () -> gradle("fatJar")),
                 new Passo("Espelho do ci.yml", false, CiLocal::espelho));
 
@@ -207,7 +219,9 @@ public class CiLocal {
             return Resultado.ruim("git falhou:\n" + s.texto());
         }
         List<String> escondidos = s.texto().lines().map(String::trim)
-                .filter(l -> !l.isEmpty()).toList();
+                .filter(l -> !l.isEmpty())
+                .filter(l -> !deProposito(l))
+                .toList();
         if (escondidos.isEmpty()) {
             return Resultado.bom();
         }
@@ -216,6 +230,17 @@ public class CiLocal {
         sb.append("\nRode `git check-ignore -v <caminho>` para ver qual regra pegou,\n");
         sb.append("e ancore o padrao (`/build/` em vez de `build`).");
         return Resultado.ruim(sb.toString());
+    }
+
+    /** O caminho esta na lista de exclusoes declaradas? */
+    private static boolean deProposito(String caminho) {
+        String limpo = caminho.replace('\\', '/');
+        for (String permitido : IGNORADOS_DE_PROPOSITO) {
+            if (limpo.equals(permitido) || limpo.startsWith(permitido + "/")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -249,6 +274,43 @@ public class CiLocal {
     }
 
     /**
+     * As ferramentas de tools/ ainda compilam.
+     *
+     * Elas ficam FORA do build do Gradle — sao arquivos soltos, rodados com
+     * `java tools/Coisa.java`. O preco disso e que uma mudanca em src/ que quebre
+     * o editor de pose passa por toda a CI sem ninguem notar, e o defeito so
+     * aparece quando alguem vai usar a ferramenta. Foi o que aconteceu com o
+     * EditorDePose: ele ficou sem compilar e o verde continuou verde.
+     *
+     * So compila; nao executa. Ferramenta que abre janela nao roda em CI.
+     */
+    private static Resultado ferramentasCompilam() {
+        List<String> fontes = new ArrayList<>();
+        File pasta = new File("tools");
+        File[] arquivos = pasta.listFiles((d, nome) -> nome.endsWith(".java"));
+        if (arquivos == null) {
+            return Resultado.ruim("a pasta tools/ sumiu");
+        }
+        Arrays.sort(arquivos);
+        for (File f : arquivos) {
+            fontes.add(f.getPath());
+        }
+        List<String> cmd = new ArrayList<>(List.of(javacBin(), "-nowarn",
+                "-d", "build/tmp/ferramentas"));
+        cmd.addAll(fontes);
+        Saida s = rodar(cmd, Map.of());
+        if (s.codigo() != 0) {
+            return Resultado.ruim("uma ferramenta de tools/ nao compila:\n" + s.texto());
+        }
+        return Resultado.bom();
+    }
+
+    /** O javac do mesmo JDK que esta rodando isto. */
+    private static String javacBin() {
+        return new File(System.getProperty("java.home"), "bin/javac").getPath();
+    }
+
+    /**
      * Todo passo do ci.yml existe aqui.
      *
      * Compara sem acento e sem caixa: o workflow e escrito em portugues com
@@ -269,6 +331,7 @@ public class CiLocal {
         aqui.add(normalizar("Build"));
         aqui.add(normalizar("Testes"));
         aqui.add(normalizar("Regerar e comparar"));
+        aqui.add(normalizar("Ferramentas compilam"));
         aqui.add(normalizar("Gerar jar executavel"));
         aqui.add(normalizar("Espelho do ci.yml"));
 

@@ -66,6 +66,14 @@ tasks.named<JavaExec>("run") {
     // O jogo grava config.json ao lado do executável; sem isto ele iria parar
     // em build/ durante o desenvolvimento.
     workingDir = rootDir
+
+    // `./gradlew run -Pvitrine` liga o modo de revisão de itens: o vendedor
+    // oferece todos, o dinheiro não cai e a prateleira não esvazia. Fica numa
+    // propriedade e não numa constante do código justamente para não haver o que
+    // esquecer ligado. Ver engine/Debugging.java.
+    if (project.hasProperty("vitrine")) {
+        systemProperty("vitrine", "true")
+    }
 }
 
 /**

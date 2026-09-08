@@ -45,6 +45,14 @@ jobs:
         env:
           JAVA_TOOL_OPTIONS: -Djava.awt.headless=true
 
+      # As ferramentas de tools/ ficam fora do build do Gradle: são arquivos
+      # soltos, rodados com `java tools/Coisa.java`. Sem este passo, uma mudança
+      # em src/ que quebre o editor de pose passa por toda a CI em silêncio, e o
+      # defeito só aparece quando alguém vai abrir a ferramenta. Só compila —
+      # ferramenta que abre janela não roda aqui.
+      - name: Ferramentas compilam
+        run: javac -nowarn -d build/tmp/ferramentas tools/*.java
+
       - name: Publicar relatório de testes
         if: always()
         uses: actions/upload-artifact@v4

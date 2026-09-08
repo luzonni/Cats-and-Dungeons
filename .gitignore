@@ -33,3 +33,8 @@ Desktop.ini
 
 # Documentação
 documentation/
+
+# Packs de arte de terceiros, baixados na hora de gerar.
+# Mesma regra do pacote do Kenney: o que entra no repositório é o PNG derivado,
+# não o pacote inteiro. Ver docs/TERCEIROS.md.
+tools/assets/fonte/
