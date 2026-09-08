@@ -21,6 +21,17 @@ public enum Sounds {
 	CatMuffin("cat_muffin"),
 	CatAzrael("cat_azrael"),
 	CatFinn("cat_finn"),
+	/**
+	 * Um gemido de dor por gato, pelo mesmo motivo do miado.
+	 *
+	 * Levar pancada e o som que mais se ouve numa corrida, e era o mesmo arquivo
+	 * para os tres. Sao reamostragens do damage_cat.wav nas MESMAS razoes das
+	 * vozes: assim o gato que mia grave tambem geme grave, e o bicho continua
+	 * sendo o mesmo bicho. Ver tools/GenVozes.java.
+	 */
+	DamageMuffin("damage_muffin"),
+	DamageAzrael("damage_azrael"),
+	DamageFinn("damage_finn"),
 	Crack("crack"),
 	Button("button"),
 	/**

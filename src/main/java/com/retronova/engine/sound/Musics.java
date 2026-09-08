@@ -18,8 +18,66 @@ public enum Musics {
     // Antecamara: "Cave Theme", de Brandon75689, CC0. A faixa anterior era clara
     // e agitada, leitura de espaco e nao de masmorra. Ver docs/TERCEIROS.md.
     Room("dungeon_hall"),
+    /**
+     * As trilhas de arena. A escolha e do jogador, em Options > Audio.
+     *
+     * A original e animada demais para o que o jogo virou: casa com o gato, nao
+     * com a masmorra. Em vez de troca-la e decidir pelos outros, ela ficou como
+     * uma das opcoes — quem gosta continua com ela. Todas sao CC0 e estao
+     * listadas em docs/TERCEIROS.md.
+     */
     Fight("fight"),
+    FightSpooky("fight_spooky"),
+    Fight8Bit("fight_8bit"),
+    FightRpg("fight_rpg"),
+    /**
+     * A trilha de CHEFE, e nao mais uma da lista.
+     *
+     * Ela nao entra no sorteio das arenas comuns de proposito: musica de chefe
+     * que toca o tempo todo deixa de anunciar chefe nenhum. O que a torna
+     * especial e ela nao tocar — quando entra, o jogador ja sabe o que vem.
+     */
+    FightBoss("fight_boss"),
     GameOver("game_over");
+
+    /** As trilhas de arena comum, na ordem do menu. O indice vai no config.json. */
+    public static final Musics[] COMBATE = {Fight, FightSpooky, Fight8Bit, FightRpg};
+
+    /** Os nomes mostrados no menu, na mesma ordem de COMBATE. */
+    public static final String[] COMBATE_NOMES = {"Upbeat", "Spooky", "8-bit", "RPG"};
+
+    /** A trilha de arena escolhida, ou a primeira se o config vier estranho. */
+    public static Musics combate() {
+        int i = com.retronova.engine.Configs.BattleMusic();
+        return COMBATE[i < 0 || i >= COMBATE.length ? 0 : i];
+    }
+
+    /**
+     * Para todas as trilhas de briga, a de chefe inclusive.
+     *
+     * Sao varias e so uma toca por vez, mas quem sai da arena nao sabe qual era —
+     * e trocar de faixa no meio da partida deixaria a antiga tocando para sempre
+     * por baixo da musica da sala.
+     */
+    /** Esta faixa e uma das trilhas de briga? */
+    public static boolean deCombate(Musics m) {
+        if (m == FightBoss) {
+            return true;
+        }
+        for (Musics c : COMBATE) {
+            if (c == m) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void pararCombate() {
+        for (Musics m : COMBATE) {
+            Sound.stop(m);
+        }
+        Sound.stop(FightBoss);
+    }
 
     private final String ResourceName;
 

@@ -153,8 +153,25 @@ public class Engine implements Runnable {
         graphics.setColor(Color.black);
         graphics.fillRect(0, 0, window.getWidth(), window.getHeight());
         if(Configs.isNeatGraphics()) {
+            // BILINEAR, e nao BICUBIC.
+            //
+            // Esta linha era a opcao inteira travando. O jogo desenha cada sprite
+            // JA COM ESCALA — sao centenas de blits ampliados por quadro — e o
+            // bicubico e reamostragem de quatro por quatro pixels feita em
+            // software para cada um deles. Medido nesta maquina, com quatrocentos
+            // sprites por quadro:
+            //
+            //     NEAREST (desligado) ....  5 ms/quadro   200 fps
+            //     BILINEAR ............... 14 ms/quadro    71 fps
+            //     BICUBIC ................ 52 ms/quadro    19 fps
+            //
+            // Dezenove quadros por segundo e o que o jogador descreve como
+            // interface travada. O bilinear suaviza igual para arte deste tamanho,
+            // e as demais dicas de qualidade nao custam nada em cima dele — na
+            // medida, 14,10 contra 14,22 ms. Quem cobrava o preco era so o
+            // bicubico.
             graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             graphics.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -186,8 +203,15 @@ public class Engine implements Runnable {
     private void tick() {
         window.tick();
         Debugging.tick();
-        Debugging.setInfo("Ticks", String.valueOf(Engine.HERTZ));
-        Debugging.setInfo("Frames", String.valueOf(Engine.FRAMES));
+        Debugging.setInfo("Ticks", Engine.HERTZ + " / " + (int) Engine.HZ);
+        // Com o teto ao lado dá para ver de relance se o jogo está entregando o
+        // que foi pedido nas opções — era o que faltava para notar que ele
+        // entregava 125 de 144.
+        Debugging.setInfo("FPS", Engine.FRAMES + " / " + Configs.MaxFrames());
+        Runtime vm = Runtime.getRuntime();
+        long emUso = vm.totalMemory() - vm.freeMemory();
+        Debugging.setInfo("RAM do jogo", Debugging.formatBytes(emUso)
+                + " de " + Debugging.formatBytes(vm.maxMemory()));
         Debugging.setInfo("Screen Size", "[" + Engine.window.getWidth() + " / " + Engine.window.getHeight() + "]");
     }
 
@@ -282,9 +306,15 @@ public class Engine implements Runnable {
                         frames++;
                         desenhou = true;
                     }
-                    //Quadro perdido é quadro perdido: zera em vez de decrementar,
-                    //senão tentaria desenhar o atraso e afundaria mais ainda.
-                    delta_FPS = 0;
+                    //DESCONTA um quadro, não zera. Zerando, a fração que sobrava
+                    //de cada volta era jogada fora e o laço nunca alcançava o
+                    //limite: com o teto em 144 o jogo entregava 125. Só se o
+                    //atraso passar de dois quadros é que ele é abandonado — aí
+                    //sim recuperar seria pior do que perder.
+                    delta_FPS -= 1;
+                    if (delta_FPS > 2) {
+                        delta_FPS = 0;
+                    }
                 }
 
                 //Show fps

@@ -12,6 +12,21 @@ public class Debugging {
 
     public static boolean running = false;
 
+    /**
+     * Vitrine: modo de revisão de itens.
+     *
+     * O vendedor passa a oferecer TODOS os itens do jogo, o dinheiro não cai ao
+     * comprar e a prateleira não esvazia. Serve para olhar cada item na mão do
+     * gato de uma sentada só — sem isso a revisão vira uma partida inteira de
+     * garimpo para ver vinte e um sprites.
+     *
+     * Vem de uma propriedade de sistema, e não de uma constante editada à mão:
+     * assim ninguém esquece ligada. Liga com
+     *
+     *     ./gradlew run -Pvitrine
+     */
+    public static final boolean VITRINE = Boolean.getBoolean("vitrine");
+
     public static boolean showEntityHitBox = false;
     public static boolean showParticleHitBox = false;
     public static boolean showTileBox = false;
@@ -23,6 +38,8 @@ public class Debugging {
     private static Map<String, String> infos;
 
     public static void init() {
+        // A preferência gravada vale desde o primeiro quadro.
+        showEntityHitBox = Configs.Hitboxes();
         font = FontHandler.font(FontHandler.Septem, Configs.UiScale()*8);
         position = new Point(10, 10);
         background = new Color(100, 100, 100, 180);
@@ -52,7 +69,7 @@ public class Debugging {
             Debugging.toggleRunning();
         }
         if(KeyBoard.KeyPressed("F4")) {
-            Debugging.showEntityHitBox = !Debugging.showEntityHitBox;
+            mostrarHitBox(!showEntityHitBox);
         }
         if(KeyBoard.KeyPressed("F5")) {
             Debugging.showTileBox = !Debugging.showTileBox;
@@ -60,6 +77,17 @@ public class Debugging {
         if(KeyBoard.KeyPressed("F6")) {
             Debugging.showParticleHitBox = !Debugging.showParticleHitBox;
         }
+    }
+
+    /**
+     * Liga e desliga as caixas de colisão, gravando a escolha.
+     *
+     * Existe para a tecla e o menu de opções não divergirem: os dois passam por
+     * aqui, então apertar F4 marca a caixinha nas opções e vice-versa.
+     */
+    public static void mostrarHitBox(boolean mostrar) {
+        showEntityHitBox = mostrar;
+        Configs.setHitboxes(mostrar);
     }
 
     public static void toggleRunning() {
@@ -93,7 +121,7 @@ public class Debugging {
         g.drawString(text, x + padding, y + hF);
     }
 
-    private static String formatBytes(long bytes) {
+    static String formatBytes(long bytes) {
         final long GB = 1024 * 1024 * 1024;
         final long MB = 1024 * 1024;
         if (bytes >= GB)

@@ -46,8 +46,10 @@ public class Configs {
         DEFAULTS.put("NeatGraphics", false);
         DEFAULTS.put("VOLUM", 20);
         DEFAULTS.put("MUSIC", 20);
+        DEFAULTS.put("hitboxes", false);
         DEFAULTS.put("MaxFrames", 60);
         DEFAULTS.put("indexResolution", 0);
+        DEFAULTS.put("BATTLEMUSIC", 0);    // indice em Musics.COMBATE
 
         VALUES = new LinkedHashMap<>(DEFAULTS);
         registrarFlushNoEncerramento();
@@ -157,6 +159,21 @@ public class Configs {
 
     private static int inteiro(String chave) {
         return ((Number) VALUES.get(chave)).intValue();
+    }
+
+    /**
+     * Mostrar as caixas de colisão.
+     *
+     * Fica gravado, e não só na tecla, porque quem liga isso está depurando e
+     * costuma reabrir o jogo várias vezes seguidas — reapertar F4 toda vez é
+     * atrito à toa.
+     */
+    public static boolean Hitboxes() {
+        return (boolean) VALUES.get("hitboxes");
+    }
+
+    public static void setHitboxes(boolean mostrar) {
+        VALUES.put("hitboxes", mostrar);
     }
 
     public static boolean Vignette() {
@@ -294,6 +311,16 @@ public class Configs {
 
     public static void setMusic(int MUSIC) {
         VALUES.put("MUSIC", MUSIC);
+        update();
+    }
+
+    /** Qual das trilhas de combate tocar. Ver Musics.COMBATE. */
+    public static int BattleMusic() {
+        return inteiro("BATTLEMUSIC");
+    }
+
+    public static void setBattleMusic(int indice) {
+        VALUES.put("BATTLEMUSIC", indice);
         update();
     }
 
