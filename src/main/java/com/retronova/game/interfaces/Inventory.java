@@ -7,6 +7,8 @@ import com.retronova.engine.exceptions.InventoryOutsOfBounds;
 import com.retronova.game.Game;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
+import com.retronova.engine.graphics.DrawString;
+import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.UiSprite;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -29,6 +31,14 @@ public class Inventory implements Activity {
     /** Escala do HUD com que as posicoes atuais foram calculadas. */
     private int escalaAplicada = -1;
     private final UiSprite inventory;
+    /**
+     * As orelhas de gato, desenhadas ACIMA do painel.
+     *
+     * Vem numa imagem propria em vez de assadas no PNG do painel: o painel tem
+     * tamanho fixo e toda posicao de slot e contada a partir do canto dele, entao
+     * crescer o arquivo empurraria a tela inteira. Ver tools/GenOrelhas.java.
+     */
+    private final UiSprite orelhas;
 
     public Inventory(int lengthBag, int lengthHotbar) {
         if(lengthBag > 15 || lengthHotbar > 5) {
@@ -40,6 +50,7 @@ public class Inventory implements Activity {
         this.bag = new Slot[15];
         this.hotbar = new Slot[5];
         this.inventory = new UiSprite("ui", "inventory");
+        this.orelhas = new UiSprite("ui", "ears_inventory");
         refreshPositions();
     }
 
@@ -155,16 +166,64 @@ public class Inventory implements Activity {
     @Override
     public void tick() {
         refreshPositions();
-        Slot[] slots = merge();
-        for (Slot slot : slots) {
-            interation(slot);
-            if(slot.item() instanceof Consumable consumable) {
-                if(Mouse.on(slot.getBounds()) && KeyBoard.KeyPressed("F")) {
-                    consumable.consume();
-                    slot.take();
-                }
+        // Mochila e hotbar sao percorridas separadas, e nao pela lista juntada:
+        // o Shift precisa saber DE ONDE o item saiu para saber para onde manda-lo.
+        for (int i = 0; i < lengthBag; i++) {
+            cuidarDoSlot(bag[i], true);
+        }
+        for (int i = 0; i < lengthHotbar; i++) {
+            cuidarDoSlot(hotbar[i], false);
+        }
+    }
+
+    private void cuidarDoSlot(Slot slot, boolean naMochila) {
+        // A patinha vira ponteiro em cima de casa clicavel. Casa vazia com a mao
+        // cheia tambem conta: largar o item ali e uma acao.
+        if (Mouse.on(slot.getBounds()) && (!slot.isEmpty() || !insurer.isEmpty())) {
+            Engine.window.pointing();
+        }
+        if (Mouse.on(slot.getBounds()) && !slot.isEmpty()
+                && KeyBoard.KeyPressing("Shift") && Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
+            mandarParaOOutroLado(slot, naMochila);
+            return;
+        }
+        interation(slot);
+        if(slot.item() instanceof Consumable consumable) {
+            if(Mouse.on(slot.getBounds()) && KeyBoard.KeyPressed("F")) {
+                consumable.consume();
+                slot.take();
             }
         }
+    }
+
+    /**
+     * Shift + clique: manda o item para o outro lado do inventario.
+     *
+     * E o gesto que todo mundo ja tem no dedo — Minecraft, Terraria, qualquer
+     * jogo com mochila — e sem ele equipar uma arma exigia tres cliques: pegar,
+     * levar, largar. O destino e a primeira casa que ACEITA o item: uma pilha do
+     * mesmo tipo antes de uma casa vazia, para nao espalhar dez racoes em dez
+     * casas. Sem lugar do outro lado, o item fica onde esta: engolir o clique e
+     * melhor que largar a arma do jogador no chao sem ele pedir.
+     */
+    private void mandarParaOOutroLado(Slot origem, boolean naMochila) {
+        Slot[] destino = naMochila ? hotbar : bag;
+        int quantas = naMochila ? lengthHotbar : lengthBag;
+        Item item = origem.takeAll();
+        for (int i = 0; i < quantas; i++) {
+            Slot casa = destino[i];
+            boolean empilha = !casa.isEmpty() && casa.item().stackable()
+                    && casa.item().getID() == item.getID();
+            if (empilha && casa.put(item)) {
+                return;
+            }
+        }
+        for (int i = 0; i < quantas; i++) {
+            if (destino[i].isEmpty() && destino[i].put(item)) {
+                return;
+            }
+        }
+        origem.put(item);      // nao coube: volta para onde estava
     }
 
     private void interation(Slot slot) {
@@ -221,13 +280,34 @@ public class Inventory implements Activity {
     }
 
     private void renderInventory(Graphics2D g) {
+        g.drawImage(this.orelhas.imagem(), inventoryPosition.x,
+                // Desce uma linha de arte: a tira tem uma linha de costura no
+                // pe justamente para encostar no painel, e sem isso ela ficava
+                // pairando um pixel acima, com a fresta aparecendo no meio.
+                inventoryPosition.y - orelhas.altura() + Configs.HudScale(), null);
         g.drawImage(this.inventory.imagem(), inventoryPosition.x, inventoryPosition.y, null);
         for(int i = 0; i < lengthBag; i++) {
             bag[i].render(g);
         }
         for(int i = 0; i < lengthHotbar; i++) {
             hotbar[i].render(g);
+            numeroDoSlot(hotbar[i], i, g);
         }
+    }
+
+    /**
+     * O numero da tecla, no canto da casa.
+     *
+     * A hotbar sempre respondeu as teclas 1 a 5, mas em lugar nenhum isso estava
+     * escrito: quem nao tentasse por acaso jogava a corrida inteira trocando de
+     * arma pela roda do mouse. Fica no canto de cima e a esquerda, onde nao
+     * disputa com a contagem de pilha, que mora embaixo e a direita.
+     */
+    private void numeroDoSlot(Slot slot, int i, Graphics2D g) {
+        int s = Configs.HudScale();
+        Font fonte = FontHandler.font(FontHandler.Septem, s * 6f);
+        Rectangle b = slot.getBounds();
+        DrawString.draw(String.valueOf(i + 1), fonte, b.x + s, b.y + s, g);
     }
 
     private void renderInsurer(Graphics2D g) {

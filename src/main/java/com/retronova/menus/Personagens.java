@@ -90,16 +90,20 @@ public class Personagens implements Activity {
     private static final float RAIO_FACHO = 0.30f;
 
     /**
-     * Quanto a arte é ampliada além do necessário para cobrir a janela.
+     * Fração de cima da ilustração ocupada pelo letreiro "Cats & Dungeons".
      *
-     * A ilustração cabe na tela quase exata, e então o letreiro "Cats & Dungeons"
-     * aparecia inteiro no alto — o título do jogo dentro da tela de escolher
-     * personagem, o que não faz sentido nenhum. A folga da ampliação é empurrada
-     * quase toda para CIMA, o que joga o letreiro para fora e ainda traz a
-     * multidão mais perto.
+     * Ela é RECORTADA fora, e o que sobra é usado inteiro. A primeira solução foi
+     * outra: ampliar a arte 30% além do necessário e empurrar a folga para cima
+     * até o letreiro sair da tela. Funcionava em janela grande e estragava em
+     * janela pequena — ali a ampliação já é grande por causa do "cobrir", e mais
+     * 30% deixava tudo enorme, com meia dúzia de ratos ocupando a tela toda.
+     *
+     * Recortando, a arte é usada em escala de cobertura pura em qualquer tamanho:
+     * numa janela pequena aparece a mesma proporção de cena que numa grande. Em
+     * janela grande a composição fica praticamente igual à de antes — o que se
+     * via começava justamente na altura deste corte.
      */
-    private static final double ZOOM = 1.3;
-    private static final double VIES_VERTICAL = 0.92;
+    private static final double LETREIRO = 360.0 / 1620.0;
     /**
      * A cabeça, em pixels da grade de 16 do sprite.
      *
@@ -193,7 +197,7 @@ public class Personagens implements Activity {
             retratos[i] = cabeca(nativo(players[i].getSprite(0)));
         }
 
-        this.arteOriginal = new SpriteHandler("icons", "Gato", 1).getSHEET();
+        this.arteOriginal = semLetreiro(new SpriteHandler("icons", "Gato", 1).getSHEET());
         this.jogar = new Button(0, 0, 0, 0, "Embark", b -> iniciar()).primary().meow(players[selecionado].getVoz());
         this.voltar = new Button(0, 0, 0, 0, "Back", b -> Engine.backActivity());
     }
@@ -343,9 +347,10 @@ public class Personagens implements Activity {
         g.setColor(Palette.DARKEST);
         g.fillRect(0, 0, w, h);
 
-        BufferedImage arte = arteNaJanela(w, h);
+        Rectangle caixa = arteOriginal == null ? null : caixaDaArte(w, h);
+        BufferedImage arte = caixa == null ? null : arteNaEscala(caixa.width, caixa.height);
         if (arte != null) {
-            g.drawImage(arte, 0, 0, null);
+            g.drawImage(arte, caixa.x, caixa.y, null);
         }
 
         float t = suavizado();
@@ -429,45 +434,91 @@ public class Personagens implements Activity {
      */
     private Rectangle caixaDaArte(int w, int h) {
         double escala = Math.max(w / (double) arteOriginal.getWidth(),
-                h / (double) arteOriginal.getHeight()) * ZOOM;
+                h / (double) arteOriginal.getHeight());
         int dw = (int) Math.ceil(arteOriginal.getWidth() * escala);
         int dh = (int) Math.ceil(arteOriginal.getHeight() * escala);
-        return new Rectangle(-(dw - w) / 2, -(int) ((dh - h) * VIES_VERTICAL), dw, dh);
+
+        // A ARTE DESLIZA PARA O GATO ACESO CAIR NA METADE LIVRE.
+        //
+        // Antes ela ficava centrada e só a luz se movia, e com o gato do meio a
+        // luz caía atrás do bloco de texto. Em janela grande passava, porque o
+        // bloco tem largura fixa e sobra tela; em janela pequena ele chega a 46%
+        // da largura e come o aceso inteiro.
+        //
+        // Deslizando, o gato escolhido fica sempre no meio do espaço que sobra —
+        // e a luz vai junto, porque ela é posicionada por esta mesma caixa.
+        float t = suavizado();
+        float fx = FOCO[focoAnterior][0] + (FOCO[selecionado][0] - FOCO[focoAnterior][0]) * t;
+        int ox = (int) Math.round(centroDoEspacoLivre(w) - fx * dw);
+        // Sem passar da borda da arte: fundo vazio seria pior que o bloco em cima.
+        ox = Math.max(w - dw, Math.min(0, ox));
+        return new Rectangle(ox, -(dh - h) / 2, dw, dh);
     }
 
-    /** Um ponto em fração da arte, convertido para pixel de tela. */
+    /** Meio da metade da tela que o bloco de texto NAO ocupa. */
+    private double centroDoEspacoLivre(int w) {
+        if (bloco.width <= 0) {
+            return w / 2.0;
+        }
+        boolean blocoNaEsquerda = bloco.x + bloco.width / 2 < w / 2;
+        return blocoNaEsquerda
+                ? (bloco.x + bloco.width + w) / 2.0
+                : bloco.x / 2.0;
+    }
+
+    /**
+     * Um ponto em fração da arte INTEIRA, convertido para pixel de tela.
+     *
+     * As frações de {@link #FOCO} foram medidas na ilustração completa, e é assim
+     * que elas continuam — quem mexer nelas vai conferir contra o arquivo, não
+     * contra um recorte. A conversão para dentro do recorte acontece aqui.
+     */
     private Point2D pontoNaTela(float fx, float fy, int w, int h) {
         if (arteOriginal == null) {
             return new Point2D.Float(w * fx, h * fy);
         }
+        double fyRecorte = (fy - LETREIRO) / (1 - LETREIRO);
         Rectangle c = caixaDaArte(w, h);
-        return new Point2D.Double(c.x + fx * c.width, c.y + fy * c.height);
+        return new Point2D.Double(c.x + fx * c.width, c.y + fyRecorte * c.height);
+    }
+
+    /** Devolve a ilustração sem a faixa do letreiro. Ver {@link #LETREIRO}. */
+    private static BufferedImage semLetreiro(BufferedImage arte) {
+        if (arte == null) {
+            return null;
+        }
+        int corte = (int) Math.round(arte.getHeight() * LETREIRO);
+        if (corte <= 0 || corte >= arte.getHeight()) {
+            return arte;
+        }
+        return arte.getSubimage(0, corte, arte.getWidth(), arte.getHeight() - corte);
     }
 
     /**
-     * A arte no tamanho da janela, redimensionada UMA vez por tamanho.
+     * A arte redimensionada, guardada e refeita só quando o tamanho muda.
      *
      * Escalar 3260 por 1620 a cada quadro custaria mais que o resto da tela
-     * inteira somado, e o resultado seria o mesmo enquanto ninguém mexer na
-     * janela.
+     * inteira somada. O que se guarda é a arte NO TAMANHO EM QUE ELA É DESENHADA
+     * — maior que a janela, porque ela sangra pelos lados —, e não recortada na
+     * janela: o deslize horizontal muda a cada troca de gato, e recortar aqui
+     * obrigaria a refazer a escala a cada quadro da varredura.
      */
-    private BufferedImage arteNaJanela(int w, int h) {
-        if (arteOriginal == null || w <= 0 || h <= 0) {
+    private BufferedImage arteNaEscala(int dw, int dh) {
+        if (arteOriginal == null || dw <= 0 || dh <= 0) {
             return null;
         }
-        if (arteEscalada != null && larguraEscalada == w && alturaEscalada == h) {
+        if (arteEscalada != null && larguraEscalada == dw && alturaEscalada == dh) {
             return arteEscalada;
         }
-        Rectangle c = caixaDaArte(w, h);
-        BufferedImage nova = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        BufferedImage nova = new BufferedImage(dw, dh, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = nova.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(arteOriginal, c.x, c.y, c.width, c.height, null);
+        g.drawImage(arteOriginal, 0, 0, dw, dh, null);
         g.dispose();
         arteEscalada = nova;
-        larguraEscalada = w;
-        alturaEscalada = h;
+        larguraEscalada = dw;
+        alturaEscalada = dh;
         return arteEscalada;
     }
 

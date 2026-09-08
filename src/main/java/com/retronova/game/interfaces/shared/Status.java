@@ -16,14 +16,36 @@ public class Status implements Activity {
 
     private final Player player;
     private final UiSprite status;
+    /**
+     * As orelhas de gato, desenhadas ACIMA do painel.
+     *
+     * Vem numa imagem propria em vez de assadas no PNG do painel: o painel tem
+     * tamanho fixo e toda posicao de slot e contada a partir do canto dele, entao
+     * crescer o arquivo empurraria a tela inteira. Ver tools/GenOrelhas.java.
+     */
+    private final UiSprite orelhas;
 
     private final HashMap<String, Point> points;
+
+    /**
+     * O quadro do retrato. Medido no status.png: o vao interno vai de (9,7) a
+     * (22,26) — quatorze de largura por vinte de altura.
+     *
+     * O gato era desenhado com dezesseis de lado a partir de x=8, ou seja,
+     * cobrindo de 8 a 23: um pixel PARA FORA do vao de cada lado. Era isso que o
+     * fazia parecer que estava saindo da caixa. Doze de lado a partir de (10,11)
+     * deixa uma folga de um pixel de arte nas laterais e centraliza na vertical,
+     * que e o que faz o quadro parecer um quadro em vez de um recorte apertado.
+     */
+    private static final Point RETRATO = new Point(10, 11);
+    private static final int LADO_DO_RETRATO = 12;
 
     private final Frame frame;
 
     public Status(Player player) {
         this.player = player;
         this.status = new UiSprite("ui", "status");
+        this.orelhas = new UiSprite("ui", "ears_status");
         this.frame = new Frame(player);
         this.points = new HashMap<>();
         refreshPositions();
@@ -41,7 +63,7 @@ public class Status implements Activity {
         int y = Engine.window.getHeight()/2 - status.altura()/2;
         int s = Configs.HudScale();
         setLocation("main", x, y);
-        setLocation("player", x + 8*s, y + 8*s);
+        setLocation("player", x + RETRATO.x*s, y + RETRATO.y*s);
         setLocation("life", x + 40*s, y + 7*s);
         setLocation("luck", x + 40*s, y + 20*s);
         setLocation("level", x + 91*s, y + 7*s);
@@ -60,8 +82,15 @@ public class Status implements Activity {
 
     @Override
     public void render(Graphics2D g) {
+        g.drawImage(orelhas.imagem(), points.get("main").x,
+                // Desce uma linha de arte: a tira tem uma linha de costura no
+                // pe justamente para encostar no painel, e sem isso ela ficava
+                // pairando um pixel acima, com a fresta aparecendo no meio.
+                points.get("main").y - orelhas.altura() + Configs.HudScale(), null);
         g.drawImage(status.imagem(), points.get("main").x, points.get("main").y, null);
-        g.drawImage(player.getSprite(0), points.get("player").x, points.get("player").y, 16 * Configs.HudScale(), 16 * Configs.HudScale(), Engine.window);
+        int lado = LADO_DO_RETRATO * Configs.HudScale();
+        g.drawImage(player.getSprite(0), points.get("player").x, points.get("player").y,
+                lado, lado, Engine.window);
         renderString((int)player.getLife()+"/"+(int)player.getLifeSize(), points.get("life"), g);
         renderString((int)(player.getLuck()*100d)+"%", points.get("luck"), g);
         renderString(String.valueOf(player.getLevel()), points.get("level"), g);

@@ -113,6 +113,12 @@ public class Inter implements Activity {
         refreshPositions();
         for(int i = 0; i < tabs.length; i++) {
             Rectangle rec = tabs[i];
+            // As abas — inventario, status, loja — sao o primeiro lugar onde o
+            // jogador tenta clicar, e eram justamente as que nao avisavam que
+            // eram clicaveis. A patinha de ponteiro cobre o mouse aqui.
+            if(Mouse.on(rec)) {
+                Engine.window.pointing();
+            }
             if(Mouse.clickOn(Mouse_Button.LEFT, rec)) {
                 this.index = keys()[i];
             }

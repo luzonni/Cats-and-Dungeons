@@ -10,6 +10,7 @@ import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
+import com.retronova.engine.Debugging;
 import com.retronova.game.Game;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
@@ -19,6 +20,18 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Store implements Activity {
+
+    /**
+     * A grade da loja: sete casas por fileira, uma fileira por FAMÍLIA de arma.
+     *
+     * Eram três fileiras, depois cinco, sete, e agora seis — o painel é esticado
+     * em tools/GenLoja.java e os dois números têm de andar juntos. Seis porque são
+     * seis famílias de ARMA: espadas, machados, arcos, varinhas, lâminas e
+     * diversos. A sétima era a dos consumíveis, que saiu junto com eles. Casas vazias são de propósito: a
+     * lacuna na prateleira dos machados é justamente como se vê, de relance, que
+     * o jogo só tem um machado.
+     */
+    private static final int COLUNAS = 7, FILEIRAS = 6;
 
     private final UiSprite store;
     private final Point positionStore;
@@ -35,7 +48,7 @@ public class Store implements Activity {
         }
         this.prices = prices;
         this.store = new UiSprite("ui", "store");
-        this.slots = new Slot[21];
+        this.slots = new Slot[COLUNAS * FILEIRAS];
         this.positionStore = new Point();
         this.buttonBuy = new Rectangle(23 * Configs.HudScale(), 14 * Configs.HudScale());
         for(int i = 0; i < slots.length; i++) {
@@ -55,10 +68,12 @@ public class Store implements Activity {
         int w = Engine.window.getWidth();
         int h = Engine.window.getHeight();
         this.positionStore.setLocation(w/2 - store.largura()/2, h/2 - store.altura()/2);
-        this.buttonBuy.setLocation(positionStore.x + 95 * Configs.HudScale(), positionStore.y + 72 * Configs.HudScale());
-        for(int y = 0; y < 3; y++)
-            for(int x = 0; x < 7; x++) {
-                Slot slot = this.slots[x+y*7];
+        // O rodapé desceu junto com o painel: duas fileiras a mais de 16 pixels.
+        int rodape = 72 + 16 * (FILEIRAS - 3);
+        this.buttonBuy.setLocation(positionStore.x + 95 * Configs.HudScale(), positionStore.y + rodape * Configs.HudScale());
+        for(int y = 0; y < FILEIRAS; y++)
+            for(int x = 0; x < COLUNAS; x++) {
+                Slot slot = this.slots[x+y*COLUNAS];
                 int xx = positionStore.x + 6 * Configs.HudScale() + x * slot.getBounds().width;
                 int yy = positionStore.y + 6 * Configs.HudScale() + y * slot.getBounds().height;
                 slot.setPosition(xx, yy);
@@ -74,9 +89,26 @@ public class Store implements Activity {
                 break;
             }
         }
+        // Patinha de ponteiro em cima do que da para clicar: as casas com item e
+        // o botao de comprar quando ha algo selecionado e dinheiro para pagar.
+        for (Slot slot : slots) {
+            if (Mouse.on(slot.getBounds()) && !slot.isEmpty()) {
+                Engine.window.pointing();
+                break;
+            }
+        }
         Player player = Game.getPlayer();
+        if (indexSelected != -1 && Mouse.on(buttonBuy)
+                && player.getMoney() >= prices[indexSelected]) {
+            Engine.window.pointing();
+        }
         if(indexSelected != -1 &&  Mouse.clickOn(Mouse_Button.LEFT, buttonBuy) && player.getMoney() >= prices[indexSelected]) {
-            player.getInventory().give(slots[indexSelected].take());
+            // Na vitrine a prateleira não esvazia: dá para pegar o mesmo item
+            // de novo depois de trocar de arma, que é o que uma revisão exige.
+            Item comprado = Debugging.VITRINE
+                    ? Item.build(slots[indexSelected].item().getID(), 1)
+                    : slots[indexSelected].take();
+            player.getInventory().give(comprado);
             player.setMoney(player.getMoney() - prices[indexSelected]);
             if (slots[indexSelected].isEmpty()) {
                 indexSelected = -1;
@@ -120,7 +152,7 @@ public class Store implements Activity {
         if(indexSelected == -1)
             return;
         int x = positionStore.x + 18 * Configs.HudScale();
-        int y = positionStore.y + 82 * Configs.HudScale();
+        int y = positionStore.y + (82 + 16 * (FILEIRAS - 3)) * Configs.HudScale();
         Font font = FontHandler.font(FontHandler.Game,Configs.HudScale() * 8);
         String value = prices[indexSelected] + "/" + Game.getPlayer().getMoney();
         g.setFont(font);

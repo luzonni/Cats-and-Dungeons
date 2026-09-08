@@ -2,12 +2,15 @@ package com.retronova.menus;
 
 import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
+import com.retronova.engine.Debugging;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.engine.sound.Musics;
+import com.retronova.game.Game;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.menus.shared.Button;
@@ -98,6 +101,12 @@ public class Options implements Activity {
         posicionar();
     }
 
+    /** Ha uma previa de musica tocando por cima do que o jogo tocava. */
+    private boolean auditando;
+
+    /** Qual faixa a previa esta tocando agora. */
+    private Musics previa;
+
     private void montarLinhas() {
         String[] resolucoes = new String[Engine.resolutions.length];
         for (int i = 0; i < resolucoes.length; i++) {
@@ -132,6 +141,24 @@ public class Options implements Activity {
         }, 0, 100, 5, "%").desc("Volume of the background music. Applies immediately."));
         audio.add(OptionRow.slider("Sound effects", Configs::Volum, Configs::setVolum, 0, 100, 5, "%")
                 .desc("Volume of hits, footsteps, items and enemies. Menu sounds included."));
+        // Toca a faixa escolhida na hora: escolher musica de ouvido e o unico
+        // jeito que funciona — ler "Spooky" numa lista nao diz nada a ninguem.
+        audio.add(OptionRow.cycle("Battle music", Configs::BattleMusic, v -> {
+            Configs.setBattleMusic(v);
+            if (!auditando) {
+                // O que estava tocando fica PAUSADO, nunca parado: parar rebobina
+                // na TinySound, e faixa rebobinada volta do comeco.
+                Sound.pausarParaAudicao();
+                auditando = true;
+            }
+            Musics escolhida = Musics.combate();
+            if (previa != null && previa != escolhida) {
+                Sound.stop(previa);          // so a previa anterior e cortada
+            }
+            previa = escolhida;
+            Sound.tocarOuRetomar(escolhida);
+        }, Musics.COMBATE_NOMES)
+                .desc("Track for normal arenas. Plays here so you can compare. Boss fights have their own."));
 
         List<OptionRow> ui = new ArrayList<>();
         ui.add(OptionRow.cycle("Text size", Options::indiceEscala,
@@ -139,6 +166,9 @@ public class Options implements Activity {
                 .desc("Scale of menus, buttons and text. Auto follows the window size."));
         ui.add(OptionRow.stepper("HUD size", Configs::HudScale, Configs::setHudScale, 2, 6, 1)
                 .desc("Scale of the in-game interface: life bar, hotbar, inventory and shop."));
+        ui.add(OptionRow.toggle("Show hitboxes",
+                () -> Configs.Hitboxes() ? 1 : 0, v -> Debugging.mostrarHitBox(v != 0))
+                .desc("Draws the collision box over entities. Same as pressing F4 in game."));
         ui.add(OptionRow.stepper("Margin", Configs::Margin, Configs::setMargin, 0, 40, 5)
                 .desc("Distance between the interface and the edges of the screen."));
 
@@ -183,6 +213,15 @@ public class Options implements Activity {
 
     /** Volta para quem abriu: a pausa, quando sobreposta; a pilha, quando não. */
     private void fechar() {
+        // DENTRO DO JOGO a previa nao e cortada: ela vira a musica da partida e
+        // segue tocando sem emenda. Fora do jogo ela e cortada e a musica do menu
+        // volta de onde parou. Nos dois casos nada recomeca do zero — ver
+        // Sound.encerrarAudicao.
+        if (auditando) {
+            Sound.encerrarAudicao(previa, Engine.getACTIVITY() instanceof Game);
+            previa = null;
+            auditando = false;
+        }
         if (aoFechar != null) {
             aoFechar.run();
         } else {

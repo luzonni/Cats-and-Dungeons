@@ -1,5 +1,6 @@
 package com.retronova.game.interfaces;
 
+import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -58,9 +59,12 @@ public class InfoBox {
             return;
         int x = Mouse.getX() + 16;
         int y = Mouse.getY() + 16;
-        g.setColor(new Color(190, 49, 68));
+        // A paleta do jogo, e nao o vermelho antigo. Esta caixa ficou para tras
+        // quando a interface passou para os tons medidos na arte oficial: era o
+        // unico retangulo vermelho que sobrava, e aparecia por cima de tudo.
+        g.setColor(Palette.MAIN);
         g.fillRect(x, y, this.bounds.width, this.bounds.height);
-        g.setColor(new Color(135, 35, 65));
+        g.setColor(Palette.DEEP);
         g.setStroke(new BasicStroke(Configs.HudScale() *2));
         g.drawRect(x, y, this.bounds.width, this.bounds.height);
         g.setFont(fontTitle);

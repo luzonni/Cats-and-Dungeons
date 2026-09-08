@@ -8,6 +8,7 @@ import com.retronova.game.interfaces.Slot;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.engine.graphics.SpriteHandler;
+import com.retronova.engine.graphics.UiSprite;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 
@@ -22,7 +23,18 @@ class Hotbar {
     private int index;
     private char[] numbers = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
+    /**
+     * As orelhas de gato, desenhadas ACIMA do painel.
+     *
+     * Vem numa imagem propria em vez de assadas no PNG do painel: o painel tem
+     * tamanho fixo e toda posicao de slot e contada a partir do canto dele, entao
+     * crescer o arquivo empurraria a tela inteira. Ver tools/GenOrelhas.java.
+     */
+    private UiSprite orelhas;
+
     private Font fontStack;
+    /** Menor que a da pilha: e uma legenda, nao um dado do item. */
+    private Font fontIndice;
     /** Escala do HUD com que os sprites atuais foram recortados. */
     private int escalaAplicada = -1;
 
@@ -44,7 +56,9 @@ class Hotbar {
         SpriteHandler sheet = new SpriteHandler("ui", "hotbar", s);
         int sheetSize = sheet.getWidth() / 16;
         this.sprites = new BufferedImage[sheetSize];
+        this.orelhas = new UiSprite("ui", "ears_hotbar");
         this.fontStack = FontHandler.font(FontHandler.Septem, s * 8);
+        this.fontIndice = FontHandler.font(FontHandler.Septem, s * 6f);
         for (int i = 0; i < sheetSize; i++) {
             this.sprites[i] = sheet.getSpriteWithIndex(i, 0);
         }
@@ -121,9 +135,19 @@ class Hotbar {
         int w = bounds[0].width * bounds.length;
         int ww = bounds[0].width * length;
         int difX = (w - ww)/2;
+        g.drawImage(orelhas.imagem(), bounds[0].x + difX,
+                // Desce uma linha de arte: a tira tem uma linha de costura no
+                // pe justamente para encostar no painel, e sem isso ela ficava
+                // pairando um pixel acima, com a fresta aparecendo no meio.
+                bounds[0].y - orelhas.altura() + Configs.HudScale(), null);
         for(int i = 0; i < length; i++) {
             BufferedImage sprite = index == i ? sprites[1] : sprites[0];
             g.drawImage(sprite, bounds[i].x + difX, bounds[i].y, null);
+            // A tecla que seleciona esta casa. A hotbar sempre respondeu a 1..5,
+            // mas isso nao estava escrito em lugar nenhum.
+            DrawString.draw(String.valueOf(i + 1), fontIndice,
+                    bounds[i].x + difX + Configs.HudScale(),
+                    bounds[i].y + Configs.HudScale(), g);
             if(!items[i].isEmpty()) {
                 int x = bounds[i].x + difX;
                 int y = bounds[i].y;
