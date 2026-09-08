@@ -75,7 +75,9 @@ public class GenTema {
      * paleta de la, que e uma copia da do jogo.
      */
     private static final java.util.Set<String> DE_OUTRO_DONO =
-            java.util.Set.of("button.png", "button_dark.png", "icon.png");
+            java.util.Set.of("button.png", "button_dark.png", "icon.png",
+                    // As orelhas ja saem na paleta final. Ver tools/GenOrelhas.java.
+                    "ears_inventory.png", "ears_status.png", "ears_hotbar.png");
 
     /** Da paleta vermelha/azul para a paleta da arte. */
     private static final Map<Integer, Integer> DE_PARA = new LinkedHashMap<>();

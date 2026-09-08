@@ -52,72 +52,46 @@ public class GenUiAssets {
      * derivá-lo do sprite garante que os dois nunca mais se separem — refez o
      * sprite, roda este gerador de novo.
      */
+    /**
+     * Icone da janela: o gato, e mais nada.
+     *
+     * Era um crachao com so a CABECA recortada dentro dele, e tinha dois
+     * problemas. O gato aparecia deslocado para a esquerda porque o recorte era
+     * fixo nas colunas 2 a 14 — centro na coluna 8 — e o gato redesenhado e
+     * centrado na 7; bastou a arte mudar para o numero envelhecer. E, com a
+     * moldura comendo a borda, sobrava pouquissimo pixel para o bicho: na barra
+     * de tarefas nao dava para ver o que era.
+     *
+     * Agora nao ha recorte nem moldura: o quadro inteiro do sprite vai para um
+     * icone de 32, ampliado por dois. Nada para sair de sincronia com a arte, e o
+     * gato ocupa o icone todo.
+     */
     static void icone(File sprite, File saida) throws Exception {
         if (!sprite.isFile()) {
             System.err.println("icone: sprite não encontrado, pulando: " + sprite);
             return;
         }
         BufferedImage folha = ImageIO.read(sprite);
-        BufferedImage quadro = folha.getSubimage(0, 0, 16, 16);
+        int lado = folha.getHeight();
+        BufferedImage quadro = folha.getSubimage(0, 0, lado, lado);
 
-        // Linhas 0..8 são a cabeça; da 9 em diante começa o verde do lenço.
-        final int CABECA = 9;
-        // Corta a saliência de 1px dos bigodes (x=1 e x=15, presente em só duas
-        // linhas): sem ela a cabeça cabe proporcionalmente maior no crachá, que é
-        // o que dá presença no tamanho de barra de tarefas.
-        final int ESQ = 2, LARG = 13;
-        // Lado ÍMPAR de propósito. A cabeça é simétrica em torno de uma coluna
-        // única, então tem largura ímpar (13); centralizá-la num crachá de lado
-        // par exigiria margem de 1,5px de cada lado, e a divisão inteira jogava
-        // 1px à esquerda e 2px à direita — a folga que aparecia na direita.
-        final int LADO = 17;
-
-        BufferedImage img = new BufferedImage(LADO, LADO, BufferedImage.TYPE_INT_ARGB);
-
-        // Fundo na mesma linguagem dos botões: preenchimento carmesim, contorno
-        // navy e realce claro na primeira linha interna. O navy sozinho puxava
-        // para azul e destoava do resto da interface.
-        boolean[][] crachá = new boolean[LADO][LADO];
-        for (int y = 0; y < LADO; y++) {
-            for (int x = 0; x < LADO; x++) {
-                int distanciaAoCanto = Math.min(x, LADO - 1 - x) + Math.min(y, LADO - 1 - y);
-                crachá[x][y] = distanciaAoCanto >= 2;
-            }
-        }
-        for (int y = 0; y < LADO; y++) {
-            for (int x = 0; x < LADO; x++) {
-                if (crachá[x][y]) {
-                    img.setRGB(x, y, bordaDoCrachá(crachá, x, y) ? OUTLINE : MAIN);
+        // Fator dois, e nao um redimensionamento: em pixel art o unico aumento
+        // que nao borra e o inteiro, e dois e o que cabe no tamanho de icone que
+        // o Windows pede.
+        final int FATOR = 2;
+        BufferedImage img = new BufferedImage(lado * FATOR, lado * FATOR,
+                BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < lado; y++) {
+            for (int x = 0; x < lado; x++) {
+                int argb = quadro.getRGB(x, y);
+                if ((argb >>> 24) == 0) {
+                    continue;
                 }
-            }
-        }
-        for (int x = 0; x < LADO; x++) {
-            if (crachá[x][1] && !bordaDoCrachá(crachá, x, 1)) {
-                img.setRGB(x, 1, LIGHT);
-            }
-        }
-
-        // A cabeça é centralizada contando uma linha extra de queixo (ver abaixo).
-        int esquerda = (LADO - LARG) / 2;
-        int topo = (LADO - (CABECA + 1)) / 2;
-
-        for (int y = 0; y < CABECA; y++) {
-            for (int x = 0; x < LARG; x++) {
-                int argb = quadro.getRGB(ESQ + x, y);
-                if ((argb >>> 24) != 0) {
-                    img.setRGB(esquerda + x, topo + y, argb);
+                for (int dy = 0; dy < FATOR; dy++) {
+                    for (int dx = 0; dx < FATOR; dx++) {
+                        img.setRGB(x * FATOR + dx, y * FATOR + dy, argb);
+                    }
                 }
-            }
-        }
-
-        // No sprite a cabeça não tem contorno inferior — quem fecha o desenho é o
-        // lenço logo abaixo. Recortada sozinha, ela ficava aberta no queixo, com
-        // o pelo cinza vazando no fundo. Fecha-se a linha sob os pixels de pelo.
-        for (int x = 0; x < LARG; x++) {
-            int acima = quadro.getRGB(ESQ + x, CABECA - 1);
-            boolean pelo = (acima >>> 24) != 0 && (acima & 0xFFFFFF) != 0x000000;
-            if (pelo) {
-                img.setRGB(esquerda + x, topo + CABECA, 0xFF000000);
             }
         }
         ImageIO.write(img, "png", saida);

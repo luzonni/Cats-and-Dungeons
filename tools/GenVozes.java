@@ -37,19 +37,62 @@ public class GenVozes {
     private static final String AUDIO =
             "src/main/resources/com/retronova/resources/audio/";
 
-    /** Pico alvo, o mesmo do cat.wav de onde as tres saem. */
-    private static final double PICO_DBFS = -11;
+    /**
+     * Pico alvo. E o pico da PROPRIA origem, medido na hora.
+     *
+     * Fixar -11 dBFS servia enquanto so o cat.wav era processado. Com o gemido
+     * de dano entrando na mesma esteira, um numero fixo levantaria ou abaixaria
+     * uma familia inteira em relacao ao resto do jogo — o gemido tem de ficar no
+     * volume em que ja estava, so com o tom de cada gato.
+     */
+    private static double picoDbfs(double[][] v) {
+        double pico = 0;
+        for (double[] canal : v) {
+            for (double x : canal) {
+                pico = Math.max(pico, Math.abs(x));
+            }
+        }
+        return pico <= 0 ? -11 : 20 * Math.log10(pico);
+    }
 
-    record Voz(String arquivo, double razao) { }
+    record Voz(String sufixo, double razao) { }
 
+    /**
+     * As tres vozes. As mesmas razoes valem para TODO som de gato.
+     *
+     * Se o miado do Azrael fosse grave mas o gemido dele saisse na altura do
+     * Finn, seriam dois bichos: o que amarra a identidade e a razao ser a mesma
+     * em todas as falas do personagem, e nao cada som ter o proprio tempero.
+     */
     private static final Voz[] VOZES = {
-            new Voz("cat_muffin", 0.92),
-            new Voz("cat_azrael", 0.74),
-            new Voz("cat_finn", 1.30),
+            new Voz("muffin", 0.92),
+            new Voz("azrael", 0.74),
+            new Voz("finn", 1.30),
+    };
+
+    /**
+     * De que arquivo sai cada familia de sons, e com que nome ela e gravada.
+     *
+     * O miado veio primeiro; o gemido de dano entrou depois pelo mesmo motivo, e
+     * e o som que mais se ouve numa corrida — levar pancada acontece muito mais
+     * que escolher personagem. Deixar os tres gemendo igual era desperdicar a
+     * unica hora em que a voz do gato aparece durante o jogo.
+     */
+    record Familia(String origem, String prefixo) { }
+
+    private static final Familia[] FAMILIAS = {
+            new Familia("cat.wav", "cat_"),
+            new Familia("damage_cat.wav", "damage_"),
     };
 
     public static void main(String[] a) throws Exception {
-        File origem = new File(AUDIO + "cat.wav");
+        for (Familia f : FAMILIAS) {
+            gerar(f);
+        }
+    }
+
+    private static void gerar(Familia familia) throws Exception {
+        File origem = new File(AUDIO + familia.origem());
         AudioInputStream in = AudioSystem.getAudioInputStream(origem);
         AudioFormat fmt = in.getFormat();
         if (fmt.getSampleSizeInBits() != 16 || fmt.isBigEndian()) {
@@ -69,13 +112,14 @@ public class GenVozes {
             }
         }
 
+        double alvo = picoDbfs(fonte);
         for (Voz v : VOZES) {
             double[][] saida = reamostrar(fonte, v.razao());
-            normalizar(saida, PICO_DBFS);
-            File destino = new File(AUDIO + v.arquivo() + ".wav");
-            gravar(saida, fmt, destino);
-            System.out.printf("  %-16s %.2fx  %+.1f semitons  %.2f s%n",
-                    v.arquivo() + ".wav", v.razao(),
+            normalizar(saida, alvo);
+            String nome = familia.prefixo() + v.sufixo() + ".wav";
+            gravar(saida, fmt, new File(AUDIO + nome));
+            System.out.printf("  %-20s %.2fx  %+.1f semitons  %.2f s%n",
+                    nome, v.razao(),
                     12 * Math.log(v.razao()) / Math.log(2),
                     saida[0].length / fmt.getSampleRate());
         }
