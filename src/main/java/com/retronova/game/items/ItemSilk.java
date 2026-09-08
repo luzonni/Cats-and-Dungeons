@@ -19,19 +19,16 @@ public class ItemSilk extends Item {
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        Enemy nearest = player.getNearest(player.getRange(), Enemy.class);
+        Enemy nearest = alvoVisivel(player, player.getRange());
         if(nearest != null)
             count++;
         if(count > player.getAttackSpeed()*3) {
             count = 0;
-            Silk silk = new Silk(player.getX(), player.getY(), player.getDamage(), player);
+            Silk silk = new Silk(player.getX() + player.getWidth() / 2d,
+                    player.getY() + player.getHeight() / 2d, player.getDamage(), player);
             Game.getMap().put(silk);
         }
     }
 
-    @Override
-    public void render(Graphics2D g) {
-
-    }
 
 }

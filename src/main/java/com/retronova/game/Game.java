@@ -209,6 +209,16 @@ public class Game implements Activity {
                 entity.renderBounds(g);
             }
         }
+        // A linha que a arma usou para decidir se atirava: verde quer dizer "ha
+        // caminho", vermelha quer dizer "nao ha".
+        //
+        // FORA DO LACO e DENTRO DA CONDICAO. Estava nos dois lugares errados: era
+        // redesenhada uma vez por entidade, e aparecia mesmo com as hitboxes
+        // desligadas nas opcoes — ferramenta de depuracao vazando para quem so
+        // queria jogar.
+        if(Debugging.showEntityHitBox) {
+            com.retronova.game.items.Item.renderLinhaDeTiro(g);
+        }
     }
 
     private void renderParticles(Graphics2D g) {

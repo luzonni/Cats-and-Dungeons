@@ -15,19 +15,63 @@ public class BloodyAxe extends Item {
     private double angle = 0;
     private Enemy enemy;
 
+    private final Elemento elemento;
+
     BloodyAxe(int id) {
-        super(id, "Bloody Axe", "bloody_axe");
-        addSpecifications("Life Leech", "Heals a percentage of damage dealt");
+        this(id, Elemento.NENHUM);
+    }
+
+    /**
+     * O machado comum: mesmo golpe, sem o roubo de vida e sem o vermelho.
+     *
+     * Compartilha a classe porque o movimento e o mesmo; o que muda e o efeito, e
+     * um booleano diz melhor isso do que uma subclasse que so apaga um metodo.
+     */
+    static BloodyAxe comum(int id) {
+        BloodyAxe a = new BloodyAxe(id, Elemento.NENHUM, "Axe", "axe");
+        a.roubaVida = false;
+        return a;
+    }
+
+    private boolean roubaVida = true;
+
+    BloodyAxe(int id, Elemento elemento) {
+        this(id, elemento,
+                elemento == Elemento.NENHUM ? "Bloody Axe" : elemento.nome("Axe"),
+                elemento == Elemento.NENHUM ? "bloody_axe" : elemento.sprite("axe"));
+    }
+
+    private BloodyAxe(int id, Elemento elemento, String nome, String sprite) {
+        super(id, nome, sprite);
+        this.elemento = elemento;
+        addSpecifications("Life Leech", "Heals a percentage of damage dealt",
+                elemento == Elemento.NENHUM ? "heavy swing"
+                        : elemento.name().toLowerCase() + " damage");
+    }
+
+    private final Investida investida = Investida.pesada();
+
+    /** A arte desta familia vem dos pacotes, desenhada na diagonal. */
+    @Override
+    protected double grausDaArte() {
+        return 45;
+    }
+
+    @Override
+    protected Porte porte() {
+        return Porte.DUAS_MAOS;
     }
 
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        this.enemy = player.getNearest(player.getRange() * 0.3, Enemy.class);
-
-        this.angle += Math.PI / 64;
-        if(this.angle > Math.PI / 4){
-            this.angle = 0;
+        this.enemy = alvoVisivel(player, player.getRange() * 0.3);
+        if (this.enemy != null) {
+            investida.comecar();
+        }
+        investida.tick();
+        this.atacando = investida.ativa();
+        if (investida.acertaAgora()) {
             attack(player);
         }
     }
@@ -36,32 +80,32 @@ public class BloodyAxe extends Item {
         if(enemy == null){
             return;
         }
-        double damage = player.getDamage();
-        enemy.strike(AttackTypes.Piercing, damage);
-        player.setLife(player.getLife() + damage * 0.06);
-
+        double damage = elemento.dano(player.getDamage());
+        enemy.strike(elemento.ataque(AttackTypes.Piercing), damage);
+        if (roubaVida) {
+            player.setLife(player.getLife() + damage * 0.06);
+        }
     }
 
+    /**
+     * O golpe pesado: recua muito, desce rápido e segue adiante.
+     *
+     * Antes o machado girava sem parar um doze avos de volta por tick e batia a
+     * cada dezesseis — era rápido e leve, o contrário do que um machado deve
+     * parecer. A referência é explícita: arma pesada se vende pelo PREPARO longo
+     * e pela EXTENSÃO longa, não por bater mais.
+     *
+     * O arco vai de vinte graus atrás da pose até cento e quarenta à frente, e o
+     * avanço acompanha — o gato joga o peso do machado para a frente em vez de
+     * apenas girá-lo no lugar.
+     */
     @Override
     public void render(Graphics2D g) {
-        if(enemy == null){
+        if (!atacando) {
+            naMao(g, getSprite());
             return;
         }
-        Player player = Game.getPlayer();
-        BufferedImage sprite = getSprite();
-
-        int x = (int)player.getX();
-        int y = (int)player.getY();
-        int side = (Integer.compare((int)enemy.getX(), (int)player.getX())) * player.getWidth();
-        double currentAngle = -this.angle;
-        if(side > 0){
-            sprite = SpriteHandler.flip(sprite, -1 , 1);
-            currentAngle -= Math.PI / 2;
-        }else {
-            currentAngle -= Math.PI / 4;
-        }
-
-        Rotate.draw(sprite, x + side, y, currentAngle, null, g);
+        naMaoGolpeando(g, getSprite(), investida.avanco());
     }
 
 

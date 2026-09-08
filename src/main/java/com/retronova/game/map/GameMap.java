@@ -186,6 +186,126 @@ public abstract class GameMap {
         return this.map;
     }
 
+    /**
+     * Há parede entre os dois pontos?
+     *
+     * Não existia nada disso, e por isso o arco mirava e atirava através de
+     * alvenaria: ele só perguntava quem era o inimigo mais próximo, e distância
+     * não sabe de parede. A reta é amostrada de meio tile em meio tile, que é
+     * fino o bastante para não passar pela quina de um bloco e barato o bastante
+     * para rodar a cada tiro.
+     */
+    public boolean linhaLivre(double x1, double y1, double x2, double y2) {
+        // Amostra de um TERCO de tile: um passo de meio tile podia pular a quina
+        // de um bloco e dizer que havia caminho onde nao ha.
+        int passo = Math.max(1, GameObject.SIZE() / 3);
+        double distancia = Math.hypot(x2 - x1, y2 - y1);
+        int amostras = (int) Math.max(1, distancia / passo);
+        for (int i = 1; i < amostras; i++) {
+            double t = i / (double) amostras;
+            double x = x1 + (x2 - x1) * t;
+            double y = y1 + (y2 - y1) * t;
+            if (solidoEm(x, y)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Ha bloco solido NESTE PONTO DA TELA?
+     *
+     * Converte para indice de tile aqui, de forma explicita, em vez de passar
+     * pixels para getTile. Aquele metodo tenta primeiro interpretar os numeros
+     * como indice de tile e so cai para pixels quando o indice estoura o vetor —
+     * o que quer dizer que, para coordenadas de pixel pequenas, ele acerta um
+     * tile QUALQUER dentro do vetor e devolve com cara de resposta certa. Era
+     * assim que a linha de visao dizia "esta livre" com uma parede no meio.
+     */
+    /**
+     * Ha caminho para um PROJETIL daqui ate a caixa do alvo?
+     *
+     * Duas diferencas em relacao ao linhaLivre simples, e as duas sairam de
+     * defeito visto jogando:
+     *
+     * 1. O RAIO PARA AO CHEGAR NO ALVO. Amostrar ate o centro do inimigo faz com
+     *    que um inimigo ENCOSTADO na parede seja considerado inalcancavel para
+     *    sempre: a ultima amostra cai no bloco atras dele e a resposta e "nao ha
+     *    caminho". Era isso que travava a arma mirando eternamente num bicho
+     *    colado no muro. Em roguelike a regra e a mesma: a casa do alvo nao
+     *    bloqueia a linha ate o alvo.
+     *
+     * 2. O RAIO TEM LARGURA. O projetil e um quadrado de vinte e quatro pixels,
+     *    nao um fio. Uma linha de espessura zero passa por frestas por onde a
+     *    flecha nao cabe, e ai a arma dispara contra um vao que vai mata-la no
+     *    primeiro tick.
+     *
+     * @param alvo    caixa do inimigo; a partir dela o resto do caminho nao importa
+     * @param largura lado do projetil, em pixels de tela
+     */
+    public boolean caminhoDeTiro(double x1, double y1, java.awt.Rectangle alvo,
+                                 double largura) {
+        // Amostra de um quarto de tile: fino o bastante para nao pular a quina de
+        // um bloco, grosso o bastante para nao custar caro a cada tiro.
+        return caminhoDeTiro(x1, y1, alvo, largura, GameObject.SIZE() / 4d, this::solidoEm);
+    }
+
+    /** Onde ha bloco solido. Existe para o teste poder montar um mapa de mentira. */
+    public interface Solidez {
+        boolean em(double telaX, double telaY);
+    }
+
+    /**
+     * O caminhamento em si.
+     *
+     * Recebe o passo e a solidez de fora em vez de ler o tamanho do tile e o mapa
+     * de variaveis globais: assim a regra pode ser verificada em teste, que e onde
+     * ela precisa estar — foi justamente esta conta que deixou meia duzia de armas
+     * inuteis contra qualquer bicho encostado num muro.
+     *
+     * @param passo distancia entre amostras, em pixels de tela
+     */
+    public static boolean caminhoDeTiro(double x1, double y1, java.awt.Rectangle alvo,
+                                        double largura, double passoDesejado,
+                                        Solidez solido) {
+        double x2 = alvo.getCenterX();
+        double y2 = alvo.getCenterY();
+        double passo = Math.max(1, passoDesejado);
+        double distancia = Math.hypot(x2 - x1, y2 - y1);
+        int amostras = (int) Math.max(1, distancia / passo);
+        double meiaLargura = largura / 2d;
+        for (int i = 1; i < amostras; i++) {
+            double t = i / (double) amostras;
+            double x = x1 + (x2 - x1) * t;
+            double y = y1 + (y2 - y1) * t;
+            if (alvo.contains(x, y)) {
+                return true;                 // chegou: o que vem depois e o alvo
+            }
+            if (solido.em(x, y)
+                    || solido.em(x - meiaLargura, y - meiaLargura)
+                    || solido.em(x + meiaLargura, y - meiaLargura)
+                    || solido.em(x - meiaLargura, y + meiaLargura)
+                    || solido.em(x + meiaLargura, y + meiaLargura)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean solidoEm(double telaX, double telaY) {
+        int tx = (int) Math.floor(telaX / GameObject.SIZE());
+        int ty = (int) Math.floor(telaY / GameObject.SIZE());
+        if (tx < 0 || ty < 0 || tx >= this.length) {
+            return true;                 // fora do mapa conta como bloqueado
+        }
+        int i = tx + ty * this.length;
+        Tile[] tiles = getMap();
+        if (i < 0 || i >= tiles.length) {
+            return true;
+        }
+        return tiles[i].isSolid();
+    }
+
     public Tile getTile(int x, int y) {
         try {
             return getMap()[x + y * length];

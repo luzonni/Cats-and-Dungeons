@@ -8,6 +8,12 @@ import java.awt.*;
 
 public class KingCursedCatBoss extends Enemy {
 
+    @Override
+    public boolean chefe() {
+        return true;
+    }
+
+
     public KingCursedCatBoss(int ID, double x, double y) {
         super(ID, x, y, 80);
         setWidth(2);

@@ -1,46 +1,48 @@
 package com.retronova.game.objects.entities.utilities;
 
-import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
+import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.*;
-import java.util.List;
 
-public class KunaiThrown extends Utility {
-
+public class KunaiThrown extends Projetil {
 
     private final double damage;
     private final double direction;
-    private final Point spriteRotatePosition;
 
-    public KunaiThrown(double x, double y, double damage, double direction) {
-        super(x, y, 2);
-        this.spriteRotatePosition = new Point((int)(2.5* Configs.GameScale()), (int)(13.5*Configs.GameScale()));
+    /** Trava de seguranca, em ticks. */
+    private static final int LIMITE = 60 * 4;
+
+    public KunaiThrown(double centroX, double centroY, double damage, double direction,
+                       Entity dono) {
+        super(centroX, centroY, 0, dono);
         this.damage = damage;
         this.direction = direction;
         loadSprites("kunai");
+        // Peso zero e forca aplicada uma vez: sem atrito, a kunai mantem a
+        // velocidade ate encostar em algo. Com peso 2, como estava, ela perdia
+        // forca no caminho e parava sozinha antes de chegar.
         getPhysical().addForce("moving", 8, this.direction);
     }
 
     @Override
     public void tick() {
-        List<Enemy> enemies = Game.getMap().getEntities(Enemy.class);
-        for(Enemy enemy : enemies) {
-            if(this.colliding(enemy)) {
-                this.disappear();
-                enemy.strike(AttackTypes.Piercing, this.damage);
-            }
+        Enemy alvo = avancar(Enemy.class, LIMITE);
+        if (alvo != null) {
+            alvo.strike(AttackTypes.Piercing, this.damage);
+            disappear();
+            return;
         }
-        if(!getPhysical().isMoving() || getPhysical().crashing()) {
+        if (acabou()) {
             disappear();
         }
     }
 
     @Override
     public void render(Graphics2D g) {
-        Rotate.draw(getSprite(), (int)getX(), (int)getY(), this.direction + Math.PI/4d, spriteRotatePosition, g);
+        Rotate.apontar(getSprite(), meioX(), meioY(), direction, Rotate.PARA_DIREITA, g);
     }
 }

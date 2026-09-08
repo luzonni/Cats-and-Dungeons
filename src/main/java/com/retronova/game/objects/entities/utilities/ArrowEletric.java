@@ -1,19 +1,26 @@
 package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.engine.graphics.Rotate;
-import com.retronova.game.Game;
 import com.retronova.game.objects.entities.EffectApplicator;
-import com.retronova.game.objects.entities.enemies.Enemy;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
-import java.util.List;
 
-public class ArrowEletric extends Utility {
+public class ArrowEletric extends Projetil {
+
     private final double angle;
     private final EffectApplicator action;
 
-    public ArrowEletric(double x, double y, double angle, EffectApplicator action) {
-        super(x, y, 0);
+    private static final int LIMITE = 60 * 4;
+
+    public ArrowEletric(double centroX, double centroY, double angle, EffectApplicator action) {
+        this(centroX, centroY, angle, null, action);
+    }
+
+    public ArrowEletric(double centroX, double centroY, double angle, Entity dono,
+                        EffectApplicator action) {
+        super(centroX, centroY, 0, dono);
         this.angle = angle;
         this.action = action;
         loadSprites("arroweletric");
@@ -23,23 +30,19 @@ public class ArrowEletric extends Utility {
 
     @Override
     public void tick() {
-        if(getPhysical().crashing()) {
-            this.disappear();
+        Entity alvo = avancar(Entity.class, LIMITE);
+        if (alvo != null && !(alvo instanceof Player)) {
+            action.effect(alvo);
+            disappear();
+            return;
         }
-        List<Enemy> entities = Game.getMap().getEntities(Enemy.class);
-        for(int i = 0; i < entities.size(); i++) {
-            Enemy entity = entities.get(i);
-            if(this.colliding(entity)) {
-                action.effect(entity);
-                this.disappear();
-            }
+        if (acabou()) {
+            disappear();
         }
     }
 
     @Override
     public void render(Graphics2D g) {
-        int x = (int)getX();
-        int y = (int)getY();
-        Rotate.draw(getSprite(), x, y, angle + Math.PI/4, null, g);
+        Rotate.apontar(getSprite(), meioX(), meioY(), angle, Rotate.DIAGONAL, g);
     }
 }

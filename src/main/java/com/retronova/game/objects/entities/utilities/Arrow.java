@@ -6,42 +6,65 @@ import com.retronova.game.objects.entities.EffectApplicator;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import java.awt.*;
-import java.util.List;
 
-public class Arrow extends Utility {
+public class Arrow extends Projetil {
 
     private final double angle;
     private final EffectApplicator action;
 
-    public Arrow(double x, double y, double angle, EffectApplicator action) {
-        super(x, y, 0);
+    /** Trava de seguranca: nenhuma flecha vive mais que isto. */
+    private static final int LIMITE = 60 * 4;
+
+    public Arrow(double centroX, double centroY, double angle, EffectApplicator action) {
+        this(centroX, centroY, angle, "arrow", 7d, null, action);
+    }
+
+    public Arrow(double centroX, double centroY, double angle, String sprite,
+                 EffectApplicator action) {
+        this(centroX, centroY, angle, sprite, 7d, null, action);
+    }
+
+    public Arrow(double centroX, double centroY, double angle, String sprite,
+                 double velocidade, EffectApplicator action) {
+        this(centroX, centroY, angle, sprite, velocidade, null, action);
+    }
+
+    /**
+     * @param centroX,centroY o CENTRO de onde o tiro sai — a ponta da arma
+     * @param dono            quem atirou; nunca e alvo do proprio tiro
+     * @param velocidade      pixels de arte por tick
+     */
+    public Arrow(double centroX, double centroY, double angle, String sprite,
+                 double velocidade, Entity dono, EffectApplicator action) {
+        super(centroX, centroY, 0, dono);
         this.angle = angle;
         this.action = action;
-        loadSprites("arrow");
-        setSpeed(7d);
+        loadSprites(sprite);
+        setSpeed(velocidade);
         this.getPhysical().addForce("shot", getSpeed(), angle);
     }
 
     @Override
     public void tick() {
-        if(getPhysical().crashing()) {
-            this.disappear();
+        Entity alvo = avancar(Entity.class, LIMITE);
+        if (alvo != null && !(alvo instanceof Player)) {
+            action.effect(alvo);
+            disappear();
+            return;
         }
-        List<Entity> entities = Game.getMap().getEntities();
-        for(int i = 0; i < entities.size(); i++) {
-            Entity entity = entities.get(i);
-            if(entity instanceof Player || entity == this)
-                continue;
-            if(this.colliding(entity)) {
-                action.effect(entity);
-                this.disappear();
-            }
+        if (acabou()) {
+            disappear();
         }
     }
 
+    /**
+     * Em voo, a flecha e desenhada pelo MIOLO DO DESENHO no meio da hitbox.
+     *
+     * A hitbox agora tem seis pixels de arte, e nao os dezesseis de antes; o
+     * desenho continua do tamanho que era e so passa a ser centrado nela.
+     */
     @Override
     public void render(Graphics2D g) {
-        Rotate.draw(getSprite(), (int)getX(), (int)getY(), angle + Math.PI/4, null, g);
+        Rotate.apontar(getSprite(), meioX(), meioY(), angle, Rotate.PARA_CIMA, g);
     }
-
 }

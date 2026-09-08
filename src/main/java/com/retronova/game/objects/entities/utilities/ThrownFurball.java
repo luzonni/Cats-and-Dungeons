@@ -1,18 +1,34 @@
 package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.engine.graphics.Rotate;
-import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
+import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.*;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-public class ThrownFurball extends Utility{
-    private Enemy lastEnemy;
+public class ThrownFurball extends Projetil {
+
     private double angle;
-    public ThrownFurball(double x, double y, double angle) {
-        super(x, y, 0);
+
+    /**
+     * A bola ATRAVESSA e continua, mas cada inimigo so leva dano uma vez.
+     *
+     * Antes o controle era uma unica referencia ao ultimo atingido, o que deixava
+     * o mesmo inimigo levar dano de novo assim que outro entrasse no meio.
+     */
+    private final Set<Enemy> atingidos = new HashSet<>();
+
+    private static final int LIMITE = 60 * 3;
+
+    public ThrownFurball(double centroX, double centroY, double angle) {
+        this(centroX, centroY, angle, null);
+    }
+
+    public ThrownFurball(double centroX, double centroY, double angle, Entity dono) {
+        super(centroX, centroY, 0, dono);
         loadSprites("furball");
         getPhysical().addForce("movement", 3, angle);
     }
@@ -20,22 +36,19 @@ public class ThrownFurball extends Utility{
     @Override
     public void tick() {
         angle += Math.PI / 12;
-        if(getPhysical().crashing()){
-            disappear();
+        // ATRAVESSA: acerta e continua, entao o fim so e checado depois.
+        Enemy alvo = avancar(Enemy.class, LIMITE);
+        if (alvo != null && atingidos.add(alvo)) {
+            alvo.strike(AttackTypes.Piercing, 1);
         }
-        List<Enemy> entities = Game.getMap().getEntities(Enemy.class);
-        for(int i = 0; i < entities.size(); i++){
-            Enemy enemy = entities.get(i);
-            if(!enemy.equals(lastEnemy) && enemy.colliding(this)){
-                enemy.strike(AttackTypes.Piercing, 1);
-                this.lastEnemy = enemy;
-            }
-
+        if (acabou()) {
+            disappear();
         }
     }
 
     @Override
     public void render(Graphics2D g) {
-        Rotate.draw(getSprite(), (int)getX(), (int)getY(), angle, null, g);
+        Rotate.draw(getSprite(), (int) (meioX() - getSprite().getWidth() / 2d),
+                (int) (meioY() - getSprite().getHeight() / 2d), angle, null, g);
     }
 }

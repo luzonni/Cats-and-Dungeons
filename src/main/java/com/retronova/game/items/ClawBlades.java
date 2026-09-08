@@ -1,5 +1,6 @@
 package com.retronova.game.items;
 
+import com.retronova.engine.Debugging;
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.graphics.SpriteHandler;
@@ -18,7 +19,7 @@ public class ClawBlades extends Item {
     private final Rectangle boundsAttack;
     private int side;
 
-    private int countdown;
+    private final Investida investida = Investida.rapida();
 
     ClawBlades(int id) {
         super(id, "Claw Blades", "claw_blades");
@@ -27,31 +28,55 @@ public class ClawBlades extends Item {
     }
 
     @Override
+    protected Porte porte() {
+        return Porte.UMA_MAO;
+    }
+
+    /**
+     * GARRA E ARMA DE ASSASSINO: golpe curto e repetido.
+     *
+     * Ela tinha a mesma varredura de 180 graus em velocidade constante que a
+     * espada tinha — e ali era ainda pior, porque o que se espera de uma garra e
+     * uma sequencia rapida, nao um giro. Agora usa a Investida RAPIDA, de 170 ms
+     * contra os 400 da espada, alternando a mao a cada golpe.
+     */
+    @Override
     public void tick() {
         Player player = Game.getPlayer();
-        setBoundsAttack(player);
-        Enemy nearest = player.getNearest(2, Enemy.class);
-        if(nearest != null) {
-            countdown++;
-            if(countdown > player.getAttackSpeed()*0.1) {
-                rad += (Math.PI/12) * side;
-                if(Math.abs(rad) > Math.PI) {
-                    countdown = 0;
-                    rad = 0;
-                    side *= -1;
-                    attack(player, nearest);
-                }
-            }
-        }else {
-            rad = 0;
+        Enemy nearest = alvoVisivel(player, 2);
+        setBoundsAttack(player, nearest);
+        if (nearest != null) {
+            investida.comecar();
+        }
+        boolean estava = investida.ativa();
+        investida.tick();
+        this.atacando = investida.ativa();
+        if (investida.acertaAgora() && nearest != null) {
+            attack(player, nearest);
+        }
+        if (estava && !investida.ativa()) {
+            side *= -1;
         }
     }
 
-    private void setBoundsAttack(Player player) {
-        int dist = (this.side == -1) ? this.boundsAttack.width * side : 0;
-        double x = (player.getX() + player.getWidth()/2d) + dist;
-        double y = (player.getY() + player.getHeight()/2d) - this.boundsAttack.height/2d;
-        this.boundsAttack.setLocation((int)x, (int)y);
+    /**
+     * A caixa de ataque vai para o lado do ALVO.
+     *
+     * Antes ela alternava entre o centro e a esquerda conforme o sentido do
+     * giro, sem olhar onde o inimigo estava: dava para ver a garra golpeando
+     * para a direita e o bicho da esquerda levando dano. Era o mesmo defeito que
+     * a referência chama de hitbox que não bate com o que se vê.
+     */
+    private void setBoundsAttack(Player player, Enemy alvo) {
+        double meioX = player.getX() + player.getWidth() / 2d;
+        double meioY = player.getY() + player.getHeight() / 2d;
+        int lado = 0;
+        if (alvo != null) {
+            lado = alvo.getX() + alvo.getWidth() / 2d < meioX ? -1 : 1;
+        }
+        double x = meioX + (lado < 0 ? -this.boundsAttack.width : 0);
+        double y = meioY - this.boundsAttack.height / 2d;
+        this.boundsAttack.setLocation((int) x, (int) y);
     }
 
     private void attack(Player player, Enemy enemy) {
@@ -64,19 +89,28 @@ public class ClawBlades extends Item {
 
     @Override
     public void render(Graphics2D g) {
+        // Parado, a pose vem do porte, igual para todas as armas. So o golpe
+        // e desenhado por aqui.
+        if (!atacando) {
+            naMao(g, getSprite());
+            return;
+        }
         Rectangle rec = this.boundsAttack;
-        Player player = Game.getPlayer();
-        double x = player.getX();
-        double y = player.getY() + player.getHeight()/1.5d;
-        renderBlades((int)x, (int)y, g);
-        g.setColor(Color.red);
-        g.drawRect(rec.x, rec.y, rec.width, rec.height);
-        g.drawLine(rec.x + rec.width/2, rec.y, rec.x + rec.width/2, rec.y + rec.height);
+        // Mesmo caminho da espada e do machado: a pose manda no lugar e no arco.
+        naMaoGolpeando(g, getSprite(), investida.avanco() * side);
+        // A caixa de ataque E O EIXO dela so aparecem com a depuracao ligada.
+        // A linha vermelha ficou de fora na primeira passada e continuava
+        // desenhada sempre — parecia parte da arma.
+        if (Debugging.showEntityHitBox) {
+            g.setColor(Color.red);
+            g.drawRect(rec.x, rec.y, rec.width, rec.height);
+            g.drawLine(rec.x + rec.width / 2, rec.y, rec.x + rec.width / 2, rec.y + rec.height);
+        }
     }
 
     private void renderBlades(int x, int y, Graphics2D g) {
         BufferedImage sprite = getSprite();
-        Point pointRotate = new Point(3 * Configs.GameScale(), 12 * Configs.GameScale());
+        Point pointRotate = empunhadura(sprite);
         if(side == -1) {
             pointRotate.setLocation( 13 * Configs.GameScale(), 12 * Configs.GameScale());
             sprite = SpriteHandler.flip(sprite, 1, -1);

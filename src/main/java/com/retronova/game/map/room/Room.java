@@ -11,7 +11,7 @@ public class Room extends GameMap {
         // Silencia o combate aqui, e nao no dispose da arena: o construtor do
         // mapa novo roda antes do dispose do antigo, entao quem entra e quem
         // manda na trilha.
-        Sound.stop(Musics.Fight);
+        Musics.pararCombate();
         Sound.play(Musics.Room, true);
     }
 

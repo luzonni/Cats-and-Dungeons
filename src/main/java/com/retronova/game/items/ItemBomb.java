@@ -47,8 +47,4 @@ public class ItemBomb extends Item {
         return false;
     }
 
-    @Override
-    public void render(Graphics2D g) {
-
-    }
 }

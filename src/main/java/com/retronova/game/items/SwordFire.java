@@ -1,5 +1,6 @@
 package com.retronova.game.items;
 
+import com.retronova.engine.Debugging;
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.sound.Sound;
@@ -32,10 +33,16 @@ public class SwordFire extends Item {
     }
 
     @Override
+    protected Porte porte() {
+        return Porte.UMA_MAO;
+    }
+
+    @Override
     public void tick() {
         Player player = Game.getPlayer();
         setBoundsAttack(player);
-        Enemy nearest = player.getNearest(3, Enemy.class);
+        Enemy nearest = alvoVisivel(player, 3);
+        this.atacando = nearest != null;
         if(nearest != null) {
             count++;
             if(count > player.getAttackSpeed()*0.1) {
@@ -69,18 +76,29 @@ public class SwordFire extends Item {
     }
 
     public void render(Graphics2D g) {
+        // Parado, a pose vem do porte, igual para todas as armas. So o golpe
+        // e desenhado por aqui.
+        if (!atacando) {
+            naMao(g, getSprite());
+            return;
+        }
         Player player = Game.getPlayer();
-        double x = player.getX() + player.getWidth()/2d ;
-        double y = player.getY() + player.getHeight()/1.5d;
-        renderSword((int)x, (int)y, g);
+        // Ancorada na MAO, e nao no meio do corpo: era dali que a espada saia
+        // pendurada longe do gato. O ponto da mao ja acompanha o espelhamento.
+        java.awt.Point mao = player.getMao();
+        renderSword(mao.x, mao.y, g);
         Rectangle rec = this.boundsAttack;
         g.setColor(Color.red);
-        g.drawRect(rec.x, rec.y, rec.width, rec.height);
+        // A caixa de ataque so aparece com a depuracao ligada. Ela estava
+        // desenhada sempre, e o quadrado em volta da arma era isso.
+        if (Debugging.showEntityHitBox) {
+            g.drawRect(rec.x, rec.y, rec.width, rec.height);
+        }
     }
 
     private void renderSword(int x, int y, Graphics2D g) {
         BufferedImage sprite = getSprite();
-        Point pointRotate = new Point(3 * Configs.GameScale(), 12 * Configs.GameScale());
+        Point pointRotate = empunhadura(sprite);
         x -= pointRotate.x;
         y -= pointRotate.y;
         x+= (int) (Math.cos(rad) * Configs.GameScale() *6 * side);

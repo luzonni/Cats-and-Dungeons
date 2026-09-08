@@ -8,6 +8,12 @@ import java.awt.*;
 
 public class CatToyBoss extends Enemy {
 
+    @Override
+    public boolean chefe() {
+        return true;
+    }
+
+
     public CatToyBoss(int ID, double x, double y) {
         super(ID, x, y, 70);
         setWidth(2);

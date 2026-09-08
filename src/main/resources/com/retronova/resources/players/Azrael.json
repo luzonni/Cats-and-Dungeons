@@ -1,6 +1,7 @@
 {
   "profile": {
     "voice": "CatAzrael",
+    "hurt": "DamageAzrael",
     "role": "Duelist",
     "lore": "Went down first, came back alone, and has not said a word about it since.",
     "color": "0x6A3D8F"
@@ -14,7 +15,7 @@
     "attackSpeed": 12,
     "range": 11,
     "bagSize": 5,
-    "hotBarSize": 4
+    "hotBarSize": 5
   },
   "inventory": [
     [

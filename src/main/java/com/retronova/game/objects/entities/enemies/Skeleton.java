@@ -37,7 +37,8 @@ public class Skeleton extends Enemy {
         cooldown++;
         if(cooldown >= 45 && player.getDistance(this) <= GameObject.SIZE() * 5) {
             cooldown = 0;
-            Skull skull = new Skull(getX(), getY(), player.getAngle(this));
+            Skull skull = new Skull(getX() + getWidth() / 2d, getY() + getHeight() / 2d,
+                    player.getAngle(this), this);
             Game.getMap().put(skull);
         }
     }

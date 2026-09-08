@@ -20,15 +20,13 @@ public class Furball extends Item {
         if(cooldown > player.getAttackSpeed()){
             cooldown = 0;
             for(double angle = 0; angle < Math.PI * 2; angle += (Math.PI * 2) / 6){
-                ThrownFurball ball = new ThrownFurball(player.getX(), player.getY(), angle);
+                ThrownFurball ball = new ThrownFurball(
+                        player.getX() + player.getWidth() / 2d,
+                        player.getY() + player.getHeight() / 2d, angle, player);
                 Game.getMap().put(ball);
 
             }
         }
     }
 
-    @Override
-    public void render(Graphics2D g) {
-
-    }
 }

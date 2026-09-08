@@ -1,6 +1,7 @@
 {
   "profile": {
     "voice": "CatFinn",
+    "hurt": "DamageFinn",
     "role": "Fortune",
     "lore": "Wears the bell of a beckoning cat. Says luck is not given, it is owed.",
     "color": "0x7E2A30"

@@ -21,6 +21,18 @@ public abstract class Enemy extends Entity {
 
     private double xpWeight;
 
+    /**
+     * Isto aqui e um chefe?
+     *
+     * Serve para a arena saber quando trocar a trilha. Fica no inimigo, e nao
+     * numa lista de classes na arena, porque quem sabe se um bicho e chefe e o
+     * bicho: chefe novo que esqueca de sobrescrever isto entra com musica de
+     * arena comum, e nao quebra nada.
+     */
+    public boolean chefe() {
+        return false;
+    }
+
     private boolean tookDamage;
     private int countTookDamage;
 

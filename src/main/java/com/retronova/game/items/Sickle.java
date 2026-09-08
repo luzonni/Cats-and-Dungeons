@@ -1,5 +1,6 @@
 package com.retronova.game.items;
 
+import com.retronova.engine.Debugging;
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.game.Game;
@@ -14,7 +15,15 @@ import java.awt.*;
 public class Sickle extends Item {
 
     private double rotationAngle = 0;
-    private final double rotationSpeed = 0.1;
+    /**
+     * Velocidade da orbita. Mais que o dobro do que era.
+     *
+     * A foice fere quem a lamina encosta enquanto gira, entao girar mais depressa
+     * E atacar mais depressa — nao ha animacao de golpe para encurtar. A 0,1 ela
+     * dava uma volta a cada tres segundos, o que para uma arma curta de assassino
+     * e lento demais: o inimigo entrava e saia do alcance sem ser tocado.
+     */
+    private final double rotationSpeed = 0.24;
     private final double damage = 30.0;
     private final double radius = 10 * Configs.GameScale();
     private final Rectangle boundsAttack = new Rectangle(GameObject.SIZE() * 2, GameObject.SIZE() * 2);
@@ -27,6 +36,11 @@ public class Sickle extends Item {
     }
 
     @Override
+    protected Porte porte() {
+        return Porte.UMA_MAO;
+    }
+
+    @Override
     public void tick() {
         Player player = Game.getPlayer();
         rotationAngle += rotationSpeed;
@@ -36,6 +50,7 @@ public class Sickle extends Item {
 
         updateBoundsAttack(player);
         Enemy nearest = player.getNearest(radius * 1.5, Enemy.class);
+        this.atacando = nearest != null;
 
         if (nearest != null) {
             attacking = true;
@@ -71,6 +86,11 @@ public class Sickle extends Item {
 
     @Override
     public void render(Graphics2D g) {
+        // Parado, a pose vem do porte, igual para todas as armas.
+        if (!atacando) {
+            naMao(g, getSprite());
+            return;
+        }
         Player player = Game.getPlayer();
         double playerCenterX = player.getX() + player.getWidth() / 2.0;
         double playerCenterY = player.getY() + player.getHeight() / 2.0;
@@ -85,7 +105,11 @@ public class Sickle extends Item {
 
         if (attacking) {
             g.setColor(Color.GREEN);
-            g.drawRect(boundsAttack.x, boundsAttack.y, boundsAttack.width, boundsAttack.height);
+            // A caixa de ataque so aparece com a depuracao ligada. Ela estava
+            // desenhada sempre, e o quadrado em volta da arma era isso.
+            if (Debugging.showEntityHitBox) {
+                g.drawRect(boundsAttack.x, boundsAttack.y, boundsAttack.width, boundsAttack.height);
+            }
         }
     }
 

@@ -31,9 +31,14 @@ public class BowElectric extends Item {
     public void tick() {
         this.arrowSprite = SpriteSheet.getSprite("sprites/objects/utility.arrow").getImage(0);
         Player player = Game.getPlayer();
-        Entity nearest = player.getNearest(player.getRange(), Enemy.class);
+        // Aponta sempre; so dispara com caminho livre.
+        Entity nearest = alvoAlcancavel(player, player.getRange());
+        Entity paraApontar = nearest != null ? nearest
+                : alvoParaMirar(player, player.getRange());
+        if (paraApontar != null) {
+            angle = paraApontar.getAngle(player);
+        }
         if(nearest != null){
-            angle = nearest.getAngle(player);
             count++;
             if(count > (player.getAttackSpeed()*3.25d)/5) {
                 count = 0;
@@ -50,9 +55,10 @@ public class BowElectric extends Item {
     }
 
     private void shot(Player shooter) {
-        double x = shooter.getX();
-        double y = shooter.getY();
-        ArrowEletric arrow = new ArrowEletric(x, y, angle, (entity) -> {
+        // Sai do MEIO de quem atirou, e nao do canto da caixa dele.
+        double x = shooter.getX() + shooter.getWidth() / 2d;
+        double y = shooter.getY() + shooter.getHeight() / 2d;
+        ArrowEletric arrow = new ArrowEletric(x, y, angle, shooter, (entity) -> {
             entity.strike(AttackTypes.Piercing, shooter.getDamage());
             entity.getPhysical().addForce("knockback", 2.2, this.angle);
         });

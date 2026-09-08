@@ -1,6 +1,7 @@
 package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Configs;
+import com.retronova.engine.Debugging;
 import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.EntityNotFound;
 import com.retronova.engine.io.Resources;
@@ -8,6 +9,7 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.interfaces.Inventory;
+import com.retronova.game.items.Shield;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.SpriteHandler;
@@ -64,6 +66,14 @@ public class Player extends Entity {
                         System.err.println("profile.voice invalido em " + name + ": " + voz);
                     }
                 }
+                Object gemido = profile.get("hurt");
+                if(gemido != null) {
+                    try {
+                        player.dor = Sounds.valueOf(String.valueOf(gemido));
+                    }catch (IllegalArgumentException naoExiste) {
+                        System.err.println("profile.hurt invalido em " + name + ": " + gemido);
+                    }
+                }
                 Object cor = profile.get("color");
                 if(cor != null) {
                     try {
@@ -116,6 +126,8 @@ public class Player extends Entity {
      * cai no miado generico e o erro sai no console em vez de derrubar o jogo.
      */
     private Sounds voz = Sounds.Cat;
+    /** O gemido de dor deste gato. Cai no generico se o perfil nao disser. */
+    private Sounds dor = Sounds.DamageCat;
     /**
      * Cor de ambiente do personagem, para a tela de selecao.
      *
@@ -184,8 +196,15 @@ public class Player extends Entity {
     private int ticksDoZ;
     private boolean cochilando;
 
-    /** Quanto tempo de quietude ate o gato cochilar, e o intervalo entre os Zs. */
-    private static final int ATE_COCHILAR = 60 * 5, ENTRE_ZS = 55;
+    /**
+     * Quanto tempo de quietude ate o gato cochilar, e o intervalo entre os Zs.
+     *
+     * Doze segundos, e nao cinco. Cinco pegava o jogador so lendo a tela ou
+     * decidindo para onde ir, e o cochilo aparecia como um bug de animacao em vez
+     * de uma piada: a graca depende de o gato so dormir quando o teclado foi
+     * MESMO largado.
+     */
+    private static final int ATE_COCHILAR = 60 * 12, ENTRE_ZS = 55;
 
     /** O sprite avancou de quadro neste tick. */
     private boolean avancouQuadro;
@@ -311,7 +330,13 @@ public class Player extends Entity {
                 return;
             }
         }
-        Sound.play(Sounds.DamageCat);
+        // O escudo come parte do golpe enquanto estiver na mao. Fica aqui, e
+        // nao no item, porque quem apanha e o gato: o escudo nao precisa estar
+        // do lado certo da orbita para valer, senao a defesa viraria sorteio.
+        if (getInventory().getItemHand() instanceof Shield) {
+            damage *= 1 - Shield.absorcao();
+        }
+        Sound.play(this.dor);
         super.strike(type, damage);
     }
 
@@ -375,6 +400,11 @@ public class Player extends Entity {
     }
 
     public void setMoney(int money) {
+        // Na vitrine o dinheiro não cai. A ideia ali é ver os vinte e um itens na
+        // mão, e ficar sem moeda no meio disso só interrompe a revisão.
+        if (Debugging.VITRINE && money < this.money) {
+            return;
+        }
         this.money = money;
     }
 
@@ -394,10 +424,8 @@ public class Player extends Entity {
      * Solta um "Z" de vez em quando depois de um tempo parado.
      *
      * O mesmo truque do vendedor, e o mesmo motivo: e o que faz "parado" virar um
-     * estado com leitura propria em vez de ausencia de movimento. Cinco segundos
-     * e tempo de o jogador ter mesmo largado o teclado — no meio de uma luta
-     * ninguem fica tanto tempo sem andar, entao o gato nao vai cochilar na hora
-     * errada.
+     * estado com leitura propria em vez de ausencia de movimento. Ver
+     * ATE_COCHILAR para o porque da espera ser longa.
      */
     private void cochilar(boolean andando) {
         if (andando || !(Engine.getACTIVITY() instanceof Game)) {
@@ -522,6 +550,11 @@ public class Player extends Entity {
      * tela — quem sobe e desce e a cabeca, dentro da propria folha, e a linha das
      * patas fica parada.
      */
+    /** 1 se o gato anda para a direita, -1 para a esquerda. Espelha o item. */
+    public int getLadoDoPasso() {
+        return ladoDoPasso;
+    }
+
     public Point getMao() {
         BufferedImage sprite = getSprite();
         int px = Configs.GameScale();

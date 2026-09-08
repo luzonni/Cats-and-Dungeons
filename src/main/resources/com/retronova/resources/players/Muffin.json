@@ -1,6 +1,7 @@
 {
   "profile": {
     "voice": "CatMuffin",
+    "hurt": "DamageMuffin",
     "role": "Ranger",
     "lore": "Kept the map of the upper floors. Says the fourth brother is still breathing.",
     "color": "0x2E6F5E"
@@ -14,7 +15,7 @@
     "attackSpeed": 15,
     "range": 8,
     "bagSize": 5,
-    "hotBarSize": 4
+    "hotBarSize": 5
   },
   "inventory": [
     [

@@ -17,6 +17,9 @@ public class Arena extends GameMap {
     private final Waves waves;
     private boolean ended;
 
+    /** A trilha que a arena subiu. Guardada para saber quando trocar. */
+    private Musics trilha;
+
     public Arena(int difficult) {
         super(maps[difficult]);
         this.ended = false;
@@ -24,7 +27,8 @@ public class Arena extends GameMap {
         Sound.stop(Musics.Room);
         // keepPlaying, e nao play: de uma arena para a proxima a trilha de
         // combate segue de onde estava, em vez de recomecar a cada vitoria.
-        Sound.keepPlaying(Musics.Fight, true);
+        Sound.keepPlaying(Musics.combate(), true);
+        this.trilha = Musics.combate();
     }
 
     public Waves getWaves() {
@@ -42,8 +46,48 @@ public class Arena extends GameMap {
      * Consequencia assumida: por enquanto nao ha onde comprar nem se curar no
      * meio da corrida. So a antecamara tem loja, e dela nao se volta.
      */
+    /**
+     * A trilha de chefe entra quando um chefe entra, e sai quando ele morre.
+     *
+     * A troca e feita aqui, e nao na hora de invocar o bicho, porque chefe pode
+     * aparecer em qualquer onda e por qualquer caminho — e porque ele tambem
+     * pode morrer no meio da arena, e ai a briga continua sem chefe nenhum.
+     * So mexe no som quando a faixa desejada MUDA: chamar play todo tick
+     * rebobinaria a musica sessenta vezes por segundo.
+     */
+    private void ajustarTrilha() {
+        // NAO DECIDE NADA COM O SOM CALADO. Sem foco as faixas ficam pausadas, e
+        // pausada responde "nao estou tocando" — o que fazia esta funcao reiniciar
+        // a musica do zero a cada F11.
+        if (Sound.silenciado()) {
+            return;
+        }
+        Musics desejada = temChefe() ? Musics.FightBoss : Musics.combate();
+        // A pergunta e "a faixa certa ESTA TOCANDO?", e nao "e a mesma que eu
+        // subi?". Comparando com o campo lembrado, trocar de musica pelo menu
+        // fazia a arena parar e retocar uma faixa que ja estava no ar — o segundo
+        // recomeco que se ouvia ao voltar para o jogo.
+        if (Sound.playing(desejada)) {
+            trilha = desejada;
+            return;
+        }
+        Musics.pararCombate();
+        Sound.play(desejada, true);
+        this.trilha = desejada;
+    }
+
+    private boolean temChefe() {
+        for (Enemy e : Game.getMap().getEntities(Enemy.class)) {
+            if (e.chefe()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void tick() {
+        ajustarTrilha();
         if(waves.ended() && !ended && enemiesEmpty()) {
             int x = (getBounds().width / GameObject.SIZE()) / 2;
             int y = (getBounds().height / GameObject.SIZE()) / 2;

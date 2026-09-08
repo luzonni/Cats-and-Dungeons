@@ -17,43 +17,88 @@ import java.awt.image.BufferedImage;
 
 public class Sword extends Item {
 
+    /**
+     * De que lado vem o golpe: +1 de fora para dentro, -1 de volta.
+     *
+     * Alterna a cada investida, entao os golpes seguidos fazem direita-esquerda em
+     * vez de repetir o mesmo movimento. E o que a referencia chama de forehand e
+     * backhand: repetir o mesmo lado le como a mesma animacao tocando de novo.
+     */
     private int side;
-    private double rad;
-    private int count;
+
+    /**
+     * A INVESTIDA, no lugar da varredura antiga.
+     *
+     * O golpe anterior era uma volta de 180 graus em velocidade CONSTANTE, sem
+     * comeco nem fim: o rad andava de PI/12 em PI/12 e recomecava. Isso quebra as
+     * tres coisas que toda referencia de animacao de golpe repete — antecipacao,
+     * impacto rapido e sustentacao —, e o resultado e uma arma que parece girar
+     * sozinha em vez de golpear.
+     *
+     * A Investida ja tinha essa estrutura e ja era usada pelo machado: recua
+     * devagar (antecipacao), cruza a distancia inteira em tres ticks (o impacto),
+     * segue adiante quase parada (a sustentacao, que e o que da peso) e volta
+     * (recuperacao). Aqui ela entra na versao LEVE, 400 ms, que e o tempo de
+     * espada de uma mao — o machado usa a pesada, de 800.
+     */
+    private final Investida investida = Investida.leve();
 
     private final BufferedImage sword_attack;
     private final double damage;
     private final Rectangle boundsAttack;
 
 
+    private final Elemento elemento;
+
     Sword(int id) {
-        super(id, "Sword", "sword");
+        this(id, Elemento.NENHUM);
+    }
+
+    /**
+     * A variante elemental. Mesma espada, mesmo golpe: so o pigmento e o tipo de
+     * dano mudam — e e de proposito que o gesto seja identico, para o jogador ler
+     * "a mesma espada, de fogo" em vez de aprender uma arma nova.
+     */
+    Sword(int id, Elemento elemento) {
+        super(id, elemento.nome("Sword"), elemento.sprite("sword"));
+        this.elemento = elemento;
         setIndexSprite(Engine.RAND.nextInt(25));
-        this.damage = 35;
+        this.damage = elemento.dano(35);
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));
         sword_attack = new SpriteHandler("sprites/items", "sword_attack", Configs.GameScale()).getSHEET();
-        addSpecifications("Melee Attack", "Player damage + "+ this.damage, "very fast");
+        addSpecifications("Melee Attack", "Player damage + "+ this.damage,
+                elemento == Elemento.NENHUM ? "very fast" : elemento.name().toLowerCase() + " damage");
+    }
+
+    /** A arte desta familia vem dos pacotes, desenhada na diagonal. */
+    @Override
+    protected double grausDaArte() {
+        return 45;
+    }
+
+    @Override
+    protected Porte porte() {
+        return Porte.UMA_MAO;
     }
 
     @Override
     public void tick() {
         Player player = Game.getPlayer();
         setBoundsAttack(player);
-        Enemy nearest = player.getNearest(3, Enemy.class);
-        if(nearest != null) {
-            count++;
-            if(count > player.getAttackSpeed()*0.1) {
-                rad += (Math.PI/12) * side;
-                if(Math.abs(rad) > Math.PI) {
-                    count = 0;
-                    rad = 0;
-                    side *= -1;
-                    attack(player, nearest);
-                }
-            }
-        }else {
-            rad = 0;
+        Enemy nearest = alvoVisivel(player, 3);
+        if (nearest != null) {
+            investida.comecar();
+        }
+        boolean estava = investida.ativa();
+        investida.tick();
+        this.atacando = investida.ativa();
+        if (investida.acertaAgora() && nearest != null) {
+            attack(player, nearest);
+        }
+        // Acabou a investida: o proximo golpe vem do outro lado.
+        if (estava && !investida.ativa()) {
+            side *= -1;
         }
     }
 
@@ -66,7 +111,7 @@ public class Sword extends Item {
 
     private void attack(Player player, Enemy enemy) {
         if(enemy.colliding(this.boundsAttack)) {
-            enemy.strike(AttackTypes.Melee, this.damage + player.getDamage());
+            enemy.strike(elemento.ataque(AttackTypes.Melee), this.damage + player.getDamage());
             double r = enemy.getAngle(player);
             enemy.getPhysical().addForce("knockback", 3, r);
         }
@@ -74,27 +119,30 @@ public class Sword extends Item {
     }
 
     public void render(Graphics2D g) {
-        Player player = Game.getPlayer();
-        double x = player.getX() + player.getWidth()/2d;
-        double y = player.getY() + player.getHeight()/1.5d;
-        renderSword((int)x, (int)y, g);
+        // Parado, a pose vem do porte, igual para todas as armas. So o golpe
+        // e desenhado por aqui.
+        if (!atacando) {
+            naMao(g, getSprite());
+            return;
+        }
+        // Mesmo caminho do machado: a pose manda no lugar e no arco, e o giro do
+        // golpe sai de naMaoGolpeando. Antes a espada tinha uma conta so dela e
+        // ignorava a pose — mexer nela no editor nao mudava o golpe.
+        naMaoGolpeando(g, getSprite(), investida.avanco() * side);
         drawAttackEffect(g);
     }
 
-    private void renderSword(int x, int y, Graphics2D g) {
-        BufferedImage sprite = getSprite();
-        Point pointRotate = new Point(3 * Configs.GameScale(), 12 * Configs.GameScale());
-        x -= pointRotate.x;
-        y -= pointRotate.y;
-        x+= (int) (Math.cos(rad) * Configs.GameScale() *6 * side);
-        y+= (int) (Math.sin(rad) * Configs.GameScale() *4 * side);
-        double rotate = (rad - Math.PI/4) + Math.PI/8*side;
-        Rotate.draw(sprite, x, y, rotate, pointRotate, g);
-    }
-
     private void drawAttackEffect(Graphics2D g) {
-        if(Math.abs(rad) > Math.PI/4 && Math.abs(rad) < Math.PI/2) {
-            BufferedImage flipped = SpriteHandler.flip(this.sword_attack,1, side);
+        // O rastro so aparece no IMPACTO, os poucos ticks em que a lamina cruza a
+        // distancia. Deixa-lo aceso o golpe inteiro anula o efeito: rastro que
+        // dura vira parte do desenho, e nao um golpe.
+        double avanco = investida.avanco();
+        if (avanco > -0.35 && avanco < 0.6) {
+            // O rastro sai na cor do elemento: e o que faz a espada de fogo
+            // PARECER de fogo na hora do golpe, e nao so no icone da hotbar.
+            BufferedImage corte = elemento == Elemento.NENHUM
+                    ? this.sword_attack : tingir(this.sword_attack, elemento.cor());
+            BufferedImage flipped = SpriteHandler.flip(corte, 1, side);
             int x = this.boundsAttack.x + (this.boundsAttack.width - this.sword_attack.getWidth())/2;
             int y = this.boundsAttack.y + (this.boundsAttack.height - this.sword_attack.getHeight())/2;
             g.drawImage(flipped, x, y, null);
