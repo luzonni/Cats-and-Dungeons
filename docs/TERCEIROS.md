@@ -10,9 +10,9 @@ Declaradas em `build.gradle.kts`.
 | Biblioteca | Versão | Licença | Uso |
 |---|---|---|---|
 | [json-simple](https://github.com/fangyidong/json-simple) | 1.1.1 | Apache-2.0 | Leitura de `config.json` e dos JSON de mapas e jogadores |
-| [OSHI](https://github.com/oshi/oshi) | 6.8.1 | MIT | Informações de hardware no overlay de depuração (F3) |
-| [JNA](https://github.com/java-native-access/jna) | 5.14.0 | Apache-2.0 / LGPL-2.1 | Dependência do OSHI |
-| [SLF4J](https://www.slf4j.org/) | 2.0.13 | MIT | Fachada de log exigida pelo OSHI |
+| [OSHI](https://github.com/oshi/oshi) | 6.12.0 | MIT | Informações de hardware no overlay de depuração (F3) |
+| [JNA](https://github.com/java-native-access/jna) | 5.19.1 | Apache-2.0 / LGPL-2.1 | Dependência do OSHI |
+| [SLF4J](https://www.slf4j.org/) | 2.0.19 | MIT | Fachada de log exigida pelo OSHI |
 
 ## Versionadas em `libs/`
 

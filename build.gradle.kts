@@ -35,15 +35,17 @@ dependencies {
     }
 
     // Usado apenas pelo overlay de debug (F3).
-    implementation("com.github.oshi:oshi-core:6.8.1")
-    // O oshi 6.8.1 exige JNA 5.14+. O projeto vinha com a 5.13 vendorizada, e o
+    implementation("com.github.oshi:oshi-core:6.12.0")
+    // O oshi exige JNA 5.14+. O projeto vinha com a 5.13 vendorizada, e o
     // overlay quebrava com NoSuchMethodError em IsProcessorFeaturePresent.
-    implementation("net.java.dev.jna:jna:5.14.0")
-    implementation("net.java.dev.jna:jna-platform:5.14.0")
-    implementation("org.slf4j:slf4j-api:2.0.13")
-    runtimeOnly("org.slf4j:slf4j-simple:2.0.13")
+    // Presa na série 6.x do oshi de propósito: a 7.x troca os artefatos JNA
+    // para jna-jpms/jna-platform-jpms, o que invalidaria este pin.
+    implementation("net.java.dev.jna:jna:5.19.1")
+    implementation("net.java.dev.jna:jna-platform:5.19.1")
+    implementation("org.slf4j:slf4j-api:2.0.19")
+    runtimeOnly("org.slf4j:slf4j-simple:2.0.19")
 
-    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation(platform("org.junit:junit-bom:5.14.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
