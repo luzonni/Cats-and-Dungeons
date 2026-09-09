@@ -61,7 +61,16 @@ class A_Star {
 				}
 			}
 			if(openList.isEmpty()) {
-				throw new RuntimeException("Way not found!");
+				// NAO HA CAMINHO — E ISSO E NORMAL, NAO E ERRO.
+				//
+				// Acontece o tempo todo em partida: o alvo esta fora da janela de
+				// busca, ou atras de uma parede sem volta. Estourar excecao para
+				// isso enchia o log de rastro de pilha vindo da thread de busca e,
+				// pior, jogava fora a busca inteira em vez de responder "nao achei".
+				// Quem chama ja sabe lidar com caminho vazio: o bicho anda direto
+				// para o jogador ate ter rota.
+				this.path = new ArrayList<>();
+				return;
 			}
 			current_Node = openList.get(bestNodeIndex);
 			if(current_Node == wayMap.goal) {

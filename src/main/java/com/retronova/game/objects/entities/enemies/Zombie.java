@@ -31,8 +31,15 @@ public class Zombie extends Enemy {
         }
     };
 
-    /** Raio de busca do A*, em tiles. */
-    private static final int ALCANCE_TILES = 25;
+    /**
+     * Raio de busca do A*, em tiles.
+     *
+     * Tem de cobrir a maior arena, senao o alvo cai FORA da janela de busca e o
+     * bicho nunca calcula rota — ele fica andando reto contra a parede enquanto o
+     * jogador esta do outro lado. Vinte e cinco cobria a arena antiga pela metade;
+     * a cisterna tem trinta e quatro tiles de lado, e a diagonal e maior ainda.
+     */
+    private static final int ALCANCE_TILES = 40;
 
     private final PathFinder path;
     private int countAnim;
