@@ -3,6 +3,7 @@ package com.retronova.game;
 import com.retronova.engine.Activity;
 import com.retronova.engine.Debugging;
 import com.retronova.engine.Engine;
+import com.retronova.engine.sound.Sound;
 import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.game.hud.HUD;
@@ -90,13 +91,35 @@ public class Game implements Activity {
         this.difficult = difficult;
     }
 
+    /** Quadros decorridos dentro do segundo atual. Serve para espacar efeitos. */
+    public int getCount() {
+        return this.count;
+    }
+
     public long getSeconds() {
         return this.seconds;
     }
 
+    /**
+     * A partida acabou; nada mais do jogo deve rodar.
+     *
+     * Sem esta trava a partida seguia recebendo ticks ate a troca de tela
+     * acontecer de fato, e um desses ticks passava pelo ajuste de trilha da arena.
+     * Ele pergunta "a faixa de combate esta tocando?", ouve que nao — porque a tela
+     * de fim acabou de calar tudo — e SOBE A MUSICA DE BATALHA DE NOVO, agora por
+     * cima do game over. Era so as vezes porque depende de quantos ticks ainda
+     * cabem antes da troca.
+     */
+    private boolean acabou;
+
     private void gameOver() {
+        this.acabou = true;
+        // LEVA O PERSONAGEM JUNTO. A partida e descartada aqui, entao quem quiser
+        // tentar de novo depois nao tem mais de onde descobrir com qual gato o
+        // jogador estava — e sem isso o botao de recomecar nao tem o que recomecar.
+        int gato = this.indexPlayer;
         Engine.backActivity();
-        Engine.heapActivity(new GameOver());
+        Engine.heapActivity(new GameOver(gato));
     }
 
     public void changeMap(GameMap newMap) {
@@ -107,6 +130,14 @@ public class Game implements Activity {
             this.map.remove(player);
             this.map.dispose();
         }
+        // NENHUM EFEITO ATRAVESSA A TROCA DE SALA.
+        //
+        // O som da passagem abrindo continuava tocando dentro da fase seguinte,
+        // porque um efeito nao sabe que a sala mudou — ele so sabe que ainda tem
+        // audio pela frente. Cortar aqui vale para qualquer som, e nao so para
+        // aquele: qualquer efeito longo disparado no fim de um turno teria o mesmo
+        // problema, e o proximo a aparecer ja nasce resolvido.
+        Sound.stopAllSounds();
         this.map = newMap;
         this.map.addPlayer(player);
         this.gCam = new Camera(this.map.getBounds(), 0.25d);
@@ -117,6 +148,9 @@ public class Game implements Activity {
 
     @Override
     public void tick() {
+        if (acabou) {
+            return;
+        }
         count++;
         if(count > 60) {
             count = 0;
@@ -134,6 +168,35 @@ public class Game implements Activity {
         List<Entity> entities = map.getEntities();
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
+            // OS BICHOS IGNORAM QUEM JA MORREU.
+            //
+            // Enquanto a queda roda, nenhum inimigo age: ninguem persegue, ninguem
+            // ataca. E o padrao dos jogos do genero — a morte e um momento que
+            // pertence ao jogador, e mob batendo em cadaver rouba a cena dele.
+            //
+            // A TRAVA FICA AQUI, no unico laco que roda todos, e nao dentro de cada
+            // bicho. Sao dez classes de inimigo, cada uma com a propria perseguicao;
+            // uma lista dessas envelhece no primeiro bicho novo que alguem escrever
+            // sem lembrar da regra.
+            if (entity instanceof Enemy bicho) {
+                // O bicho conta o proprio nascimento mesmo sem agir.
+                bicho.tickNascimento();
+                if (player.morrendo() || bicho.nascendo()) {
+                    continue;
+                }
+                // A COLEIRA. Longe demais do gato, o inimigo simplesmente para de
+                // agir — nao persegue, nao atira. E o suficiente para que sair da
+                // area dele seja uma jogada: dentro da arena nada muda, porque a
+                // coleira e maior que a tela.
+                //
+                // A trava fica aqui pela mesma razao da morte: sao dez classes de
+                // inimigo, cada uma com a propria perseguicao, e uma regra copiada
+                // dez vezes deixa de valer no primeiro bicho novo.
+                if (bicho.getDistance(player)
+                        > Enemy.COLEIRA_EM_TILES * com.retronova.game.objects.GameObject.SIZE()) {
+                    continue;
+                }
+            }
             entity.preTick();
             entity.tick();
             entity.postTick();
@@ -173,6 +236,30 @@ public class Game implements Activity {
         g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
         renderWorld(g);
         hud.render(g);
+        apagarNaMorte(g);
+    }
+
+    /**
+     * A luz se fechando enquanto o gato cai.
+     *
+     * POR CIMA DE TUDO, INCLUSIVE DO HUD. A barra de vida e a hotbar sao a
+     * interface de quem esta jogando, e durante a queda ja nao ha o que jogar —
+     * deixa-las acesas sobre uma arena escura seria manter em cena a unica parte da
+     * imagem que ainda promete controle. Escurecendo tambem elas, a tela inteira se
+     * despede junto.
+     *
+     * FICA NO GAME, e nao no Player, porque o veu cobre a JANELA e nao o mundo: o
+     * desenho do gato acontece dentro da transformacao da camera, que esta com zoom
+     * e deslocada, e um retangulo pintado ali cobriria um pedaco da arena em vez da
+     * tela. Aqui fora, a conta e o tamanho da janela e mais nada.
+     */
+    private void apagarNaMorte(Graphics2D g) {
+        float escuro = player.escuridao();
+        if (escuro <= 0f) {
+            return;
+        }
+        g.setColor(new java.awt.Color(0, 0, 0, (int) (255 * escuro)));
+        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
     }
 
     private void renderWorld(Graphics2D g) {
@@ -197,10 +284,43 @@ public class Game implements Activity {
         }
     }
 
+    /** A folha do portal, carregada uma vez. */
+    private studio.retrozoni.sheeter.SpriteSheet portal;
+
+    private java.awt.image.BufferedImage portalDosBichos() {
+        if (portal == null) {
+            portal = new studio.retrozoni.sheeter.SpriteSheet(
+                    "sprites/objects/furniture", new String[]{"portalCistern"});
+        }
+        // Roda os quadros junto com o relogio do jogo, para os varios portais de uma
+        // onda nao piscarem todos no mesmo compasso de um sprite parado.
+        if (count % 6 == 0) {
+            portal.plusIndex();
+        }
+        return portal.getSprite();
+    }
+
     private void renderEntities(Graphics2D g) {
         List<Entity> entities = map.getEntities();
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
+            // O PORTAL DOS BICHOS, desenhado ANTES do inimigo para ficar por baixo
+            // dele. Mesmo desenho da chegada do gato: os dois chegam do mesmo jeito,
+            // entao chegam com a mesma imagem — duas animacoes diferentes para o
+            // mesmo acontecimento fariam o jogador procurar uma diferenca que nao
+            // existe. Fica aqui, no unico laco que desenha todos, e nao nas dez
+            // classes de inimigo.
+            if (entity instanceof com.retronova.game.objects.entities.Nascente nascente
+                    && nascente.nascendo()) {
+                com.retronova.game.map.arena.Chegada.desenhar(g, portalDosBichos(),
+                        (int) entity.getX() + entity.getWidth() / 2,
+                        (int) entity.getY() + entity.getHeight() / 2,
+                        nascente.aberturaDoPortal());
+            }
+            if (entity instanceof com.retronova.game.objects.entities.Nascente chegando
+                    && !chegando.corpoVisivel()) {
+                continue;                 // so o portal, ainda: o corpo vem depois
+            }
             entity.render(g);
             if(entity instanceof Enemy enemy) {
                 enemy.renderLife(g);
