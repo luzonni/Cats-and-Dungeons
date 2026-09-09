@@ -87,7 +87,6 @@ public class Menu implements Activity {
             Button botao = botoes.get(i);
             botao.tick();
             if (botao.isHovered()) {
-                Engine.window.pointing();
                 foco = -1;          // o mouse assume o controle
             }
             botao.setFocused(foco == i);

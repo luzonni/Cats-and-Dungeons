@@ -1,6 +1,7 @@
 package com.retronova.menus.shared;
 
 import com.retronova.engine.Configs;
+import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.NineSlice;
 import com.retronova.engine.graphics.Palette;
@@ -96,6 +97,15 @@ public class Button {
 
     public void tick() {
         hovered = bounds.contains(Mouse.getX(), Mouse.getY());
+        if (hovered) {
+            // A PATINHA TAMBEM NOS MENUS.
+            //
+            // O cursor de mao so era pedido pelas interfaces de dentro do jogo —
+            // inventario, loja, vendedor. Nos menus, que sao feitos inteiros de
+            // botoes, ele nunca aparecia: a unica parte do jogo em que passar o
+            // mouse por cima de algo clicavel nao dizia nada.
+            Engine.window.pointing();
+        }
         pressed = Mouse.isPressed(Mouse_Button.LEFT, bounds);
 
         if (hovered && !hoveredBefore) {

@@ -95,7 +95,6 @@ public class Pause implements Activity {
             Button botao = botoes.get(i);
             botao.tick();
             if (botao.isHovered()) {
-                Engine.window.pointing();
                 foco = -1;
             }
             botao.setFocused(foco == i);
