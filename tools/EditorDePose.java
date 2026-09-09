@@ -872,15 +872,19 @@ public class EditorDePose {
             return modoDe(arma);
         }
 
-        /** O ponto onde uma arma apontada e ancorada — igual ao do jogo. */
+        /**
+         * O ponto onde uma arma apontada e ancorada — igual ao do jogo.
+         *
+         * Deslocamento FIXO no corpo, espelhado com o lado da mira. Enquanto ele
+         * era medido na direcao da mira, virava raio e a arma orbitava o gato.
+         */
         private java.awt.geom.Point2D.Double ancoraDeMira(Pose p) {
             double ang = Math.toRadians(mira.getValue());
             Point centro = centroDoGato();
-            double dist = p.dx * escala;
-            double lateral = p.dy * escala;
+            int lado = Math.cos(ang) < 0 ? -1 : 1;
             return new java.awt.geom.Point2D.Double(
-                    centro.x + Math.cos(ang) * dist + Math.cos(ang + Math.PI / 2) * lateral,
-                    centro.y + Math.sin(ang) * dist + Math.sin(ang + Math.PI / 2) * lateral);
+                    centro.x + p.dx * escala * lado,
+                    centro.y + p.dy * escala);
         }
 
         /** O canto do quadro da arma quando ela esta em modo de mira. */

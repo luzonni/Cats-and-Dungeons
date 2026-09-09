@@ -43,6 +43,6 @@ public class KunaiThrown extends Projetil {
 
     @Override
     public void render(Graphics2D g) {
-        Rotate.apontar(getSprite(), meioX(), meioY(), direction, Rotate.PARA_DIREITA, g);
+        Rotate.apontar(getSprite(), meioX(), meioY(), direction, Rotate.DIAGONAL, g);
     }
 }

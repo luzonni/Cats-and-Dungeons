@@ -26,14 +26,34 @@ import java.util.Set;
  *
  * Nada disso se conserta ajustando numero. Arma que sai da mao e volta e um
  * PROJETIL, e projetil e uma entidade com posicao propria: e assim que bumerangue
- * e tridente funcionam em Minecraft, Terraria e afins. Duas fases, as duas em linha
- * RETA: ida ate o alcance ou ate bater na parede, e volta refazendo a mesma reta
- * de tras para a frente. Voltar perseguindo o gato descrevia uma curva, e curva
- * le como bumerangue — a referencia aqui e o martelo do Thor, que volta direto.
+ * e tridente funcionam em Minecraft, Terraria e afins.
  *
- * Cada inimigo leva UMA pancada por arremesso. Sem isso, um bicho parado no meio
- * do caminho tomaria dano a cada quadro em que o tridente o atravessa, na ida e
- * na volta, e a arma viraria uma serra.
+ * A VOLTA E PARA A MAO, E NAO PARA O PONTO DE LANCAMENTO.
+ *
+ * A primeira versao voltava em linha reta, refazendo a propria ida ao contrario.
+ * O raciocinio era que curva le como bumerangue e o tridente nao e bumerangue —
+ * mas o efeito na pratica era outro: o gato joga, ANDA (que e o que se faz o
+ * tempo todo neste jogo), e a arma volta para onde ele estava, nao para onde ele
+ * esta. Era isso que parecia "guardar a posicao de onde foi jogado". Um par de
+ * condicoes de encerramento tapava o buraco fazendo a arma sumir perto da origem,
+ * o que so trocava um defeito visivel por um invisivel.
+ *
+ * Agora a volta MIRA no gato a cada quadro. E o que o tridente da lealdade do
+ * Minecraft faz, e e a unica versao em que a arma sempre chega — a reta so
+ * funcionava enquanto ninguem se mexesse. A curva que aparece e pequena, porque o
+ * gato raramente andou muito em meio segundo, e ela LE bem: a arma parece
+ * procurar o dono.
+ *
+ * DA DANO NA IDA E NA VOLTA, uma pancada por bicho em cada perna do trajeto. Sao
+ * duas passagens de verdade — a arma cruza o campo duas vezes — e cobrar so a
+ * primeira desperdicava metade do voo. Sem a divisao em pernas, porem, um bicho
+ * parado na linha tomaria dano a cada quadro em que fosse atravessado, e a arma
+ * viraria uma serra: por isso a lista de atingidos e ZERADA na virada, e nao
+ * simplesmente abandonada.
+ *
+ * E o que isso faz com a arma vale a pena dizer: acertar na ida e um problema de
+ * mira, acertar na volta e um problema de POSICIONAMENTO — depende de onde o gato
+ * esta quando ela retorna. Sao duas decisoes diferentes no mesmo arremesso.
  */
 public class ThrownTrident extends Projetil {
 
@@ -106,11 +126,10 @@ public class ThrownTrident extends Projetil {
             // ainda devolve a arma ao jogador em vez de puni-lo pela mira.
             if (andou >= alcance || bateuNaParede()) {
                 voltando = true;
-                // VOLTA RETO, refazendo a propria linha — nao perseguindo o gato.
-                // Perseguir descrevia uma curva, e curva le como bumerangue. A
-                // referencia e o tridente do Minecraft e o martelo do Thor: a
-                // arma volta na mesma reta em que foi, direto para a mao.
-                angulo += Math.PI;
+                // A LISTA E ZERADA, e nao esquecida: quem levou pancada na ida pode
+                // levar outra na volta, mas so uma por perna. Zerar aqui e o que
+                // separa "duas passagens" de "uma serra".
+                atingidos.clear();
             }
         } else {
             // BATEU NA PAREDE NA VOLTA: acaba ali.
@@ -124,14 +143,17 @@ public class ThrownTrident extends Projetil {
                 encerrar();
                 return;
             }
-            // Acaba ao chegar na mao OU ao completar a volta ate onde foi jogada.
-            // Sao duas condicoes porque o gato pode ter andado: sem a segunda, um
-            // tridente arremessado por alguem que saiu do lugar voaria reto para
-            // sempre, ja que a reta de volta nao passa mais por ele.
-            double aoDono = Math.hypot(dono.getX() + dono.getWidth() / 2d - meioX(),
-                    dono.getY() + dono.getHeight() / 2d - meioY());
-            double aOrigem = Math.hypot(meioX() - origemX, meioY() - origemY);
-            if (aoDono <= GameObject.SIZE() * 0.75 || aOrigem <= GameObject.SIZE() * 0.5) {
+            // MIRA NO GATO A CADA QUADRO. E a linha que faz a arma voltar para onde
+            // o dono ESTA, e nao para onde ele estava quando arremessou.
+            double aoDonoX = dono.getX() + dono.getWidth() / 2d - meioX();
+            double aoDonoY = dono.getY() + dono.getHeight() / 2d - meioY();
+            angulo = Math.atan2(aoDonoY, aoDonoX);
+            // UMA CONDICAO DE FIM, e nao mais duas. A segunda — "chegou perto de
+            // onde foi jogada" — existia so para o caso de a reta nao passar mais
+            // pelo gato, que era consequencia de a volta ser reta. Com a arma
+            // mirando nele, chegar na mao e a unica maneira de o voo terminar bem,
+            // e e a unica que o jogador consegue prever.
+            if (Math.hypot(aoDonoX, aoDonoY) <= GameObject.SIZE() * 0.75) {
                 encerrar();
                 return;
             }
@@ -150,6 +172,10 @@ public class ThrownTrident extends Projetil {
      * passar por dentro de um inimigo entre dois quadros sem tocar nele. A
      * varredura resolve isso; um inimigo por tick e o bastante, porque o proximo
      * tick varre o trecho seguinte.
+     *
+     * A lista de atingidos vale por PERNA do trajeto — ela e zerada na virada —,
+     * entao um bicho parado na linha leva uma pancada quando a arma passa e outra
+     * quando ela volta.
      */
     private void bater() {
         Enemy alvo = atingido(Enemy.class);
