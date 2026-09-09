@@ -36,6 +36,7 @@ Não têm publicação no Maven Central.
 | [Tiny gun icons (16x16)](https://opengameart.org/content/tiny-gun-icons-16x16) | congusbongus | CC0 1.0 | Desenho do laser |
 | [Ninja Throwing Items Kit](https://opengameart.org/content/ninja-throwing-items-kit-32x32) | kungfu4000 | CC0 1.0 | Desenho da kunai |
 | [16x16 RPG Items (DB32)](https://opengameart.org/content/16x16-rpg-items-db32) | ARoachIFoundOnMyPillow | CC0 1.0 | Varinhas de agua (orbe) e de fogo (tocha) |
+| [16x16 Puny Dungeon Tileset](https://opengameart.org/content/16x16-puny-dungeon-tileset) | Shade | CC0 1.0 | Tiles da cisterna inundada (primeira arena) |
 | Pixel Bow Pack | **a confirmar** | **⚠ a confirmar** | Desenhos dos arcos |
 
 As **variantes elementais** das armas são montadas por `tools/GenElementais.java`.

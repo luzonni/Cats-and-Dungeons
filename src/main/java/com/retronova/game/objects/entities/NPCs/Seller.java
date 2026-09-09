@@ -19,7 +19,44 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class Seller extends NPC {
+public class Seller extends NPC implements com.retronova.game.objects.entities.Nascente {
+
+    /**
+     * O VENDEDOR TAMBEM CHEGA, e nao aparece.
+     *
+     * Ele nascia pronto no instante em que a carta era escolhida — surgia do nada
+     * no canto da tela, e quem estava olhando as cartas nem via acontecer. Chegando
+     * pelo mesmo portal dos bichos, a aparicao dele vira um acontecimento que a
+     * camera pode mostrar; e como a camera esta indo justamente para aquele canto,
+     * as duas coisas se resolvem de uma vez.
+     */
+    private static final int NASCENDO = 60;
+
+    private int nascendo;
+
+    @Override
+    public boolean nascendo() {
+        return nascendo > 0;
+    }
+
+    @Override
+    public boolean corpoVisivel() {
+        return nascendo <= NASCENDO - NASCENDO / 3;
+    }
+
+    @Override
+    public float aberturaDoPortal() {
+        if (!nascendo()) {
+            return 0f;
+        }
+        int decorrido = NASCENDO - nascendo;
+        int terco = Math.max(1, NASCENDO / 3);
+        if (decorrido < terco) {
+            return decorrido / (float) terco;
+        }
+        return nascendo > terco ? 1f : nascendo / (float) terco;
+    }
+
 
     private final Store store;
     private int countAnim;
@@ -33,10 +70,30 @@ public class Seller extends NPC {
      * sala inteira, e a barraca ficava para tras.
      */
     public Seller(int ID, double x, double y, JSONArray stock) {
+        this(ID, x, y, stock, false);
+    }
+
+    /**
+     * @param chegaPorPortal se ele APARECE agora, ou se ja estava aqui.
+     *
+     * O vendedor da antecamara MORA la: ele estava na sala antes de o jogador
+     * entrar, e nascer de um portal toda vez que a porta do saguao se abre conta
+     * uma historia que nao e a dele. O da arena e o contrario — surge no meio da
+     * corrida, e a chegada e justamente o assunto.
+     */
+    public Seller(int ID, double x, double y, JSONArray stock, boolean chegaPorPortal) {
         super(ID, x, y, 1000);
         loadStock(stock);
         this.store = new Store(this.stock, this.prices);
         loadSprites("seller");
+        this.nascendo = chegaPorPortal ? NASCENDO : 0;
+        if (chegaPorPortal) {
+            // O MESMO ESTALO DOS BICHOS. Ele chega pelo mesmo tipo de portal, entao
+            // chega com o mesmo som — e e esse som que faz o jogador virar a cabeca
+            // para o canto em que ele apareceu, que e onde fica a saida.
+            com.retronova.engine.sound.Sound.play(
+                    com.retronova.engine.sound.Sounds.Portal);
+        }
     }
 
     /**
@@ -166,6 +223,10 @@ public class Seller extends NPC {
 
     @Override
     public void tick() {
+        if (nascendo > 0) {
+            nascendo--;
+            return;                       // ainda se formando: nao atende ninguem
+        }
         Player player = Game.getPlayer();
         countAnim++;
         if (player.getDistance(this) <= GameObject.SIZE() * 3) {

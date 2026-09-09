@@ -125,6 +125,17 @@ public class Rotate {
     private static final Map<BufferedImage, BufferedImage> ESPELHADOS =
             Collections.synchronizedMap(new WeakHashMap<>());
 
+    /**
+     * O mesmo espelho que o apontar usa, para quem precisa acompanhar o desenho.
+     *
+     * Existe publico porque o calculo da boca da arma tem de espelhar junto: se um
+     * espelha e o outro nao, o tiro sai pela coronha quando a mira vai para a
+     * esquerda.
+     */
+    public static BufferedImage espelhadoNaVertical(BufferedImage sprite) {
+        return espelharNaVertical(sprite);
+    }
+
     private static BufferedImage espelharNaVertical(BufferedImage sprite) {
         BufferedImage pronto = ESPELHADOS.get(sprite);
         if (pronto != null) {

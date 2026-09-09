@@ -149,6 +149,19 @@ public class Physical {
         return this.crashing;
     }
 
+    /**
+     * Zera tudo que estava empurrando esta entidade.
+     *
+     * Serve a quem MUDA DE LUGAR de uma vez — trocar de mapa, nascer, ser
+     * teleportado. A posicao nova e escrita direto no objeto, mas os vetores
+     * acumulados nao sabem disso: eles continuam empurrando na direcao em que a
+     * entidade vinha andando e a arrastam para fora do ponto em que foi posta.
+     */
+    public void parar() {
+        this.vectors.clear();
+        this.isMoving = false;
+    }
+
     public void setRoughness(double friction) {
         this.roughness = friction;
     }

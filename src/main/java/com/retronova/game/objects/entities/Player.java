@@ -12,6 +12,8 @@ import com.retronova.game.interfaces.Inventory;
 import com.retronova.game.items.Shield;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
+import com.retronova.engine.graphics.Alpha;
+import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.items.ItemIDs;
@@ -284,6 +286,286 @@ public class Player extends Entity {
         return this.inventory;
     }
 
+    // ------------------------------------------------------------ reacoes
+    //
+    // Quanto tempo cada cara fica no rosto, em ticks.
+    //
+    // Curto de proposito. O retorno de golpe em jogo 2D vive de mudanca brusca e
+    // breve: passando de uns poucos quadros, a careta deixa de ser reacao e vira
+    // o estado normal do bicho — o gato ficaria permanentemente de cara feia numa
+    // sala cheia. Doze ticks sao dois decimos de segundo, tempo de o olho pegar
+    // sem o rosto travar naquilo.
+    private static final int DOR = 18;
+    private static final int GOLPE = 12;
+
+    /**
+     * Quadros de clarao branco no comeco da dor.
+     *
+     * So o comeco: o clarao e o aviso de QUANDO, e aviso longo deixa de ser aviso.
+     * A careta continua depois dele, contando o que aconteceu.
+     */
+    private static final int CLARAO = 6;
+
+    /**
+     * Quadros minimos entre dois gemidos de dor.
+     *
+     * Um quinto de segundo. Curto o bastante para uma sequencia de golpes ainda
+     * soar como sequencia, longo o bastante para golpes simultaneos virarem um som
+     * so — que e o caso que estava estourando.
+     */
+    private static final int ENTRE_GEMIDOS = 12;
+
+    private int desdeOGemido = ENTRE_GEMIDOS;
+
+    private int doendo;
+    private int golpeando;
+
+    // ------------------------------------------------------------ a queda
+    //
+    // Ate aqui morrer era um corte seco: o gato sumia do mapa no mesmo quadro e a
+    // tela de fim aparecia por cima. Nao havia o instante em que se ENTENDE o que
+    // aconteceu, e sem esse instante a derrota vira surpresa administrativa em vez
+    // de consequencia — some o bicho, aparece um texto.
+    //
+    // O que a pratica de animacao recomenda para esse momento e o contrario de
+    // mais quadros: e SEGURAR. Baixar a taxa de quadros num gesto e o jeito
+    // classico de dar peso a ele, e a morte e o gesto que mais pede peso no jogo
+    // inteiro. Entao a sequencia aqui e lenta de proposito e tem tres tempos, na
+    // ordem em que o olho consegue ler:
+    //
+    //   PARADA (12 ticks) — nada se move. E o mesmo recurso do impacto, o hitstop,
+    //   esticado: o silencio antes da queda e o que avisa que aquilo foi diferente
+    //   dos outros golpes que o gato levou na partida.
+    //
+    //   TOMBO (24 ticks) — o gato gira noventa graus ate o chao, desacelerando no
+    //   fim. Girar, e nao afundar, porque o corpo dele tem uma silhueta em pe bem
+    //   definida; deitado, ela le como tombo mesmo sem quadro desenhado para isso.
+    //
+    //   APAGAR (24 ticks) — deitado, ele perde cor e some. So depois disso a tela
+    //   de fim entra, e ai ela chega como conclusao e nao como interrupcao.
+    private static final int MORTE_PARADA = 40;
+    private static final int MORTE_TOMBO = 70;
+    private static final int MORTE_APAGAR = 55;
+
+    /** Quanto a camera fecha em cima do gato durante a queda. */
+    private static final float APROXIMACAO = 1.6f;
+    private static final int MORTE_TOTAL = MORTE_PARADA + MORTE_TOMBO + MORTE_APAGAR;
+
+    private int morrendo = -1;
+
+    /** O gato esta caindo. Enquanto isto for verdade ele nao obedece ninguem. */
+    public boolean morrendo() {
+        return morrendo >= 0;
+    }
+
+    /**
+     * O quanto a tela ja escureceu por causa da queda, de 0 a 1.
+     *
+     * A ESCURIDAO E DA CENA, e nao do gato. Ate agora so o corpo desaparecia: o
+     * resto da arena continuava iluminado, com os bichos andando e o HUD aceso, e
+     * por cima disso entrava a tela de fim. Sobrava a sensacao de que o jogo tinha
+     * TROCADO DE TELA, e nao de que ele tinha acabado.
+     *
+     * Fechando a luz junto com o corpo, a arena sai de cena antes de a tela de fim
+     * chegar — e ai ela entra num quadro que ja esta quase preto, como continuacao
+     * do que se estava vendo. E o mesmo recurso do fecha-para-preto do cinema, pela
+     * mesma razao: e o sinal de fim que nao precisa de palavra nenhuma.
+     *
+     * COMECA DEPOIS DA PARADA. Escurecer desde o primeiro quadro tiraria de vista
+     * justamente o que a queda quer mostrar — os olhos se fechando, o tombo. A luz
+     * so comeca a cair quando o corpo ja esta no chao.
+     */
+    public float escuridao() {
+        if (!morrendo()) {
+            return 0f;
+        }
+        int desde = morrendo - MORTE_PARADA - MORTE_TOMBO / 2;
+        if (desde <= 0) {
+            return 0f;
+        }
+        // Nao chega a preto total: a ultima coisa a sumir e o gato, e um preto
+        // absoluto antes disso apagaria a propria queda.
+        return Math.min(0.88f, desde / (float) (MORTE_TOMBO / 2 + MORTE_APAGAR));
+    }
+
+    /**
+     * Comeca a queda em vez de sumir na hora.
+     *
+     * O gato CONTINUA NO MAPA durante a sequencia, e e isso que segura a tela de
+     * fim: quem a dispara e o Game percebendo que o jogador saiu do mapa. Deixando
+     * a saida para o ultimo quadro da queda, nao foi preciso inventar nenhum outro
+     * caminho de aviso — a tela entra sozinha, na hora certa.
+     */
+    @Override
+    public void die() {
+        if (morrendo()) {
+            return;
+        }
+        this.morrendo = 0;
+        // UM GEMIDO POR VEZ, mesmo com quatro bichos batendo junto.
+        //
+        // Cada golpe tocava o proprio som, e cercado por quatro inimigos o gato
+        // gemia quatro vezes no mesmo quadro — as vozes se somam e o resultado e um
+        // estouro distorcido, alem de nao dizer nada: quatro gemidos nao informam
+        // quatro golpes, informam ruido. Um so, com uma pausa curta antes do
+        // proximo, continua avisando que voce esta apanhando e volta a ser legivel.
+        if (desdeOGemido >= ENTRE_GEMIDOS) {
+            desdeOGemido = 0;
+            Sound.play(this.dor);
+        }
+    }
+
+    private void tickMorte() {
+        this.morrendo++;
+        // Enquanto cai, o gato para de empurrar e de ser empurrado.
+        getPhysical().addForce("morte", 0, 0);
+        // A CAMERA FECHA. Ela ja tem suavizacao propria — persegue o zoom desejado
+        // um oitavo por quadro — entao basta dizer para onde ir e a aproximacao
+        // sai contínua de graca, no mesmo ritmo do resto do jogo.
+        Game.getCam().aproximar(1 + (APROXIMACAO - 1) * (float) Math.min(1,
+                morrendo / (double) (MORTE_PARADA + MORTE_TOMBO)));
+        if (morrendo >= MORTE_TOTAL) {
+            disappear();
+        }
+    }
+
+    /**
+     * A cara durante a queda: os olhos fecham em DOIS TEMPOS.
+     *
+     * Semicerrados primeiro, fechados depois, cada etapa ocupando metade da parada
+     * inicial. Fechar de uma vez le como piscar; fechar em dois degraus, devagar,
+     * le como perder a consciencia — que e o que o momento pede.
+     */
+    private Expressao.Cara caraDaMorte() {
+        // OS OLHOS COMECAM ABERTOS, e este e o ponto.
+        //
+        // Antes a cara de olho cerrado valia desde o primeiro quadro da queda. O
+        // resultado era um gato JA de olho fechado — e olho que ja nasce fechado
+        // nunca e visto fechando. O fechamento nao e um estado, e uma TROCA: e
+        // preciso ver o antes para perceber o depois.
+        //
+        // Entao a queda comeca com o gato de olhos abertos, parado, levando um
+        // terco da pausa inicial. So depois eles se fecham, e ai a mudanca
+        // acontece na frente de quem esta olhando.
+        if (morrendo < MORTE_PARADA / 3) {
+            return Expressao.Cara.NORMAL;
+        }
+        return Expressao.Cara.MACHUCADO;
+    }
+
+    /** De 0 (em pe) a 1 (deitado), com desaceleracao no fim do tombo. */
+    private double tombo() {
+        if (morrendo < MORTE_PARADA) {
+            return 0;
+        }
+        double t = Math.min(1, (morrendo - MORTE_PARADA) / (double) MORTE_TOMBO);
+        return 1 - Math.pow(1 - t, 3);
+    }
+
+    /** De 0 (ainda inteiro) a 1 (totalmente apagado). */
+    private float apagamento() {
+        int apagando = morrendo - MORTE_PARADA - MORTE_TOMBO;
+        if (apagando <= 0) {
+            return 0f;
+        }
+        return Math.min(1f, apagando / (float) MORTE_APAGAR);
+    }
+
+    /** De 1 (visivel) a 0 (apagado). */
+    private float restoDeVida() {
+        return 1f - apagamento();
+    }
+
+    /**
+     * O quanto o corpo ja perdeu a cor.
+     *
+     * ELE CLAREIA ANTES DE SUMIR, e nao so fica transparente.
+     *
+     * Transparencia sozinha le como um desenho sendo APAGADO — a arte vai ficando
+     * fraca, com as mesmas cores, ate acabar. E o que acontece quando se fecha uma
+     * janela, nao quando alguem morre. Clarear e outra coisa: a silhueta perde a
+     * identidade primeiro e so depois some, entao o que se ve nao e uma imagem
+     * sendo removida, e um corpo virando luz.
+     *
+     * A CURVA NAO E A MESMA DA TRANSPARENCIA, e isso importa. O branco corre na
+     * frente — chega ao maximo na metade do desaparecimento — porque as duas
+     * andando juntas se cancelam: branco a vinte por cento sobre um corpo a vinte
+     * por cento de opacidade e quase nada em cima de quase nada. Clareando antes, o
+     * gato fica todo branco enquanto ainda da para ve-lo, e e esse quadro que
+     * carrega o momento.
+     */
+    private float perdaDeCor() {
+        return Math.min(1f, apagamento() * 2f);
+    }
+
+    private void renderMorte(Graphics2D g) {
+        BufferedImage sprite = Expressao.reacao(getSprite(), caraDaMorte(), perdaDeCor());
+        if (ladoDoPasso == 1) {
+            sprite = SpriteHandler.flip(sprite, 1, -1);
+        }
+        BufferedImage apagado = Alpha.getImage(sprite, restoDeVida());
+        // Gira em volta do PE do desenho, e nao do meio: tombo e queda apoiada no
+        // chao. Girando pelo centro o gato subiria enquanto cai, que e o oposto.
+        int x = ((int) getX() + (getWidth() - apagado.getWidth()) / 2);
+        int y = ((int) getY() - apagado.getHeight() + getHeight());
+        Point pe = new Point(apagado.getWidth() / 2, apagado.getHeight() - Configs.GameScale());
+        Rotate.draw(apagado, x, y, tombo() * Math.PI / 2 * (ladoDoPasso == 1 ? -1 : 1), pe, g);
+    }
+
+    /** Levou pancada. */
+    public void reagirAoDano() {
+        this.doendo = DOR;
+    }
+
+    /**
+     * Acertou alguem.
+     *
+     * A duracao vem DA ARMA NA MAO, e nao de um numero fixo aqui: garra e machado
+     * tem ritmos que diferem em seis vezes, e uma so duracao nao acompanha os dois.
+     */
+    public void reagirAoGolpe() {
+        Item naMao = getInventory().getItemHand();
+        this.golpeando = naMao == null ? GOLPE : naMao.duracaoDaReacao();
+    }
+
+    /**
+     * Qual cara esta no rosto agora.
+     *
+     * A DOR GANHA DO GOLPE quando as duas acontecem juntas — e acontecem o tempo
+     * todo, porque trocar golpe e o normal de uma briga. Entre "acertei" e "fui
+     * atingido", quem o jogador precisa ver e a segunda: ela e a que custa vida.
+     */
+    /** Força do clarao agora, de 1 a 0 nos primeiros quadros da dor. */
+    private float clarao() {
+        int desde = DOR - doendo;
+        if (doendo <= 0 || desde >= CLARAO) {
+            return 0f;
+        }
+        return 1f - desde / (float) CLARAO;
+    }
+
+    private Expressao.Cara cara() {
+        if (doendo > 0) {
+            return Expressao.Cara.MACHUCADO;
+        }
+        if (golpeando > 0) {
+            return Expressao.Cara.GOLPEANDO;
+        }
+        return Expressao.Cara.NORMAL;
+    }
+
+    private void contarReacoes() {
+        if (desdeOGemido < ENTRE_GEMIDOS) {
+            desdeOGemido++;
+        }
+        if (doendo > 0) {
+            doendo--;
+        }
+        if (golpeando > 0) {
+            golpeando--;
+        }
+    }
+
     public BufferedImage getSprite(int index) {
         getSheet().setIndex(index);
         return getSheet().getSprite();
@@ -291,6 +573,16 @@ public class Player extends Entity {
 
     @Override
     public void tick() {
+        if (morrendo()) {
+            tickMorte();
+            return;
+        }
+        // CHEGANDO PELO PORTAL: nao anda, nao ataca. Mesmo trato da queda — cena em
+        // que o jogador nao controla nada nao pode cobrar reacao dele.
+        if (chegando()) {
+            return;
+        }
+        contarReacoes();
         boolean andando = getPhysical().isMoving();
         int horizontal = getPhysical().getOrientation()[0];
         if (horizontal != 0) {
@@ -322,6 +614,18 @@ public class Player extends Entity {
 
     @Override
     public void strike(AttackTypes type, double damage) {
+        // QUEM JA ESTA CAINDO NAO LEVA MAIS DANO.
+        //
+        // Sem isto o gato continuava piscando de dor e gemendo durante a propria
+        // queda, enquanto o chefe batia num corpo que ja acabou. Alem de ler mal,
+        // e contraditorio: a barra ja chegou a zero e a partida ja terminou; o
+        // dano seguinte nao muda nada e so estraga a cena.
+        if (morrendo()) {
+            return;
+        }
+        if (chegando()) {
+            return;
+        }
         if (hasModifier(Modifiers.Dodge)) {
             double percent = valueModifier(Modifiers.Dodge) + getLuck() * 0.10d;
             double a = Engine.RAND.nextDouble(1d);
@@ -337,12 +641,10 @@ public class Player extends Entity {
             damage *= 1 - Shield.absorcao();
         }
         Sound.play(this.dor);
+        // A careta so entra DEPOIS da esquiva: golpe desviado nao doeu, e fazer o
+        // gato se encolher num ataque que ele evitou contaria a historia errada.
+        reagirAoDano();
         super.strike(type, damage);
-    }
-
-    @Override
-    public void die() {
-        disappear();
     }
 
     public double getLuck() {
@@ -511,9 +813,47 @@ public class Player extends Entity {
         avancouQuadro = false;
     }
 
-    @Override
+    /**
+     * Esta saindo do portal de chegada da arena.
+     *
+     * PERGUNTA PELA ACTIVITY ANTES DE PEDIR O MAPA. Game.getMap lanca excecao fora
+     * do jogo, e este metodo e chamado do tick e do render do gato — que tambem
+     * rodam na TELA DE SELECAO DE PERSONAGEM, onde um Player e criado so para a
+     * previa. A primeira versao derrubava o jogo ali, antes de a partida comecar.
+     */
+    public boolean chegando() {
+        if (!(Engine.getACTIVITY() instanceof Game)) {
+            return false;
+        }
+        return Game.getMap() instanceof com.retronova.game.map.arena.Arena arena
+                && arena.chegando();
+    }
+
     public void render(Graphics2D g) {
-        BufferedImage sprite = getSprite();
+        if (morrendo()) {
+            renderMorte(g);
+            return;
+        }
+        if (chegando()) {
+            com.retronova.game.map.arena.Arena arena =
+                    (com.retronova.game.map.arena.Arena) Game.getMap();
+            arena.renderChegada(g);
+            float formado = arena.formacaoDoGato();
+            if (formado <= 0f) {
+                return;                      // o portal abriu; o gato ainda nao
+            }
+            // A ARMA CHEGA COM O GATO, e nao depois dele.
+            //
+            // Ela era desenhada so no caminho normal, entao o gato saia do portal
+            // de maos vazias e a arma aparecia no quadro seguinte, do nada. Ela faz
+            // parte da silhueta dele; chegar separada e o mesmo que chegar sem a
+            // cauda. Passa pelo mesmo clarao, pela mesma razao — o que se forma se
+            // forma inteiro.
+            renderSprite(Expressao.clarao(getSprite(), 1f - formado), g);
+            drawItem(g);
+            return;
+        }
+        BufferedImage sprite = Expressao.reacao(getSprite(), cara(), clarao());
         // O RABO FICA ATRAS. A arte tem o rabo a direita, que e a pose de quem
         // anda para a esquerda — entao quem espelha e quem anda para a DIREITA.
         // Estava ao contrario: o rabo saia na frente do gato nos dois sentidos.

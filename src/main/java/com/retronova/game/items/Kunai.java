@@ -90,7 +90,7 @@ public class Kunai extends Item {
                 java.awt.geom.Point2D.Double ponta = boca(getSprite(),
                         kunaiPosition.x + spriteRotatePosition.x,
                         kunaiPosition.y + spriteRotatePosition.y,
-                        this.angle, Rotate.PARA_DIREITA);
+                        this.angle, Rotate.DIAGONAL);
                 // Mira DA PONTA DA LAMINA, que e de onde ela sai — nao do gato.
                 double tiro = miraDe(ponta.x, ponta.y, target);
                 this.emVoo = new KunaiThrown(ponta.x, ponta.y, currentDamage, tiro, player);
@@ -108,9 +108,12 @@ public class Kunai extends Item {
         if (emVoo != null || sacando > 0) {
             return;
         }
-        // A kunai nova vem deitada, com a ponta para a direita, e e ancorada pelo
+        // A ARTE APONTA PARA CIMA-ESQUERDA, como as espadas: medido no arquivo, a
+        // ponta esta no canto de cima e a argola do cabo no canto de baixo. Ela
+        // estava sendo tratada como deitada para a direita, e por isso saia virada
+        // ao contrario na mao. Ancorada pelo
         // MIOLO do desenho: o +PI/4 e o pivo de canto eram da arte antiga, em pe.
         Rotate.apontar(getSprite(), kunaiPosition.x + spriteRotatePosition.x,
-                kunaiPosition.y + spriteRotatePosition.y, this.angle, Rotate.PARA_DIREITA, g);
+                kunaiPosition.y + spriteRotatePosition.y, this.angle, Rotate.DIAGONAL, g);
     }
 }

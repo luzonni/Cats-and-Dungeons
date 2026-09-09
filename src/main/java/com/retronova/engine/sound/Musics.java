@@ -47,6 +47,25 @@ public enum Musics {
     public static final String[] COMBATE_NOMES = {"Upbeat", "Spooky", "8-bit", "RPG"};
 
     /** A trilha de arena escolhida, ou a primeira se o config vier estranho. */
+    /**
+     * A trilha de quando nao ha mais nada para matar.
+     *
+     * E A MESMA DO SAGUAO, e isso e escolha e nao economia. O saguao e o lugar
+     * seguro do jogo, e o jogador ja aprendeu essa faixa como "ninguem esta te
+     * atacando". Reusa-la na arena limpa faz o silencio depois da briga soar igual
+     * ao da antecamara — a corrida inteira passa a ter uma sonoridade so para
+     * "respire", em vez de duas maneiras diferentes de dizer a mesma coisa.
+     *
+     * Procurei trilha nova antes de decidir isso. As candidatas CC0 de masmorra sao
+     * TENSAS, com sussurro e rangido, que e o oposto do que o momento pede; as
+     * calmas sao violao e lo-fi, de outro genero; e a unica com o clima certo,
+     * cordas e sintetizador, e CC-BY — e o projeto inteiro e CC0. Nenhuma delas
+     * melhoraria o que ja existe aqui.
+     */
+    public static Musics calma() {
+        return Room;
+    }
+
     public static Musics combate() {
         int i = com.retronova.engine.Configs.BattleMusic();
         return COMBATE[i < 0 || i >= COMBATE.length ? 0 : i];

@@ -78,7 +78,7 @@ public abstract class Entity extends GameObject {
                 return new MonarkMouse(ID, x, y);
             }
             case Seller -> {
-                if(values.length != 3) {
+                if(values.length < 3) {
                     break;
                 }
                 JSONArray stock = null;
@@ -88,7 +88,15 @@ public abstract class Entity extends GameObject {
                 if(stock == null && ((String)values[2]).equalsIgnoreCase("FULL")) {
                     stock = new JSONArray();
                 }
-                return new Seller(ID, x, y, stock);
+                // O QUARTO VALOR DIZ SE ELE CHEGA POR PORTAL.
+                //
+                // O vendedor da antecamara mora la: ele ja estava na sala quando o
+                // jogador chegou, e nascer de um portal toda vez que se abre a porta
+                // do saguao conta uma historia que nao e a dele. O da arena e o
+                // contrario — aparece no meio da corrida, e a chegada e o assunto.
+                boolean chegaPorPortal = values.length >= 4
+                        && "CHEGANDO".equalsIgnoreCase(String.valueOf(values[3]));
+                return new Seller(ID, x, y, stock, chegaPorPortal);
             }
             case Door -> {
                 return new Door(ID, x, y);
@@ -129,29 +137,31 @@ public abstract class Entity extends GameObject {
                 return new CryingCat(ID, x, y);
             }
             case Pillar -> {
-                return new Pillar(ID, x, y);
+                return new Pillar(ID, x, y, (length >= 3) ? (String) values[2] : "pillar");
             }
             case Brazier -> {
                 return new Brazier(ID, x, y);
             }
             case Rubble -> {
-                return new Rubble(ID, x, y);
+                return new Rubble(ID, x, y, (length >= 3) ? (String) values[2] : "rubble");
             }
             case Gate -> {
                 String destino = (length >= 3) ? (String) values[2] : "None";
-                return new Gate(ID, x, y, destino);
+                String desenho = (length >= 4) ? (String) values[3] : "gate";
+                return new Gate(ID, x, y, destino, desenho);
             }
             case Lever -> {
-                return new Lever(ID, x, y);
+                String risco = (length >= 3) ? (String) values[2] : "lever";
+                return new Lever(ID, x, y, risco);
             }
             case Barrel -> {
-                return new Barrel(ID, x, y);
+                return new Barrel(ID, x, y, (length >= 3) ? (String) values[2] : "barrel");
             }
             case Bones -> {
-                return new Bones(ID, x, y);
+                return new Bones(ID, x, y, (length >= 3) ? (String) values[2] : "bones");
             }
             case Chain -> {
-                return new Chain(ID, x, y);
+                return new Chain(ID, x, y, (length >= 3) ? (String) values[2] : "chain");
             }
             case Torch -> {
                 return new Torch(ID, x, y);

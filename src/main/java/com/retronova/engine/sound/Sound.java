@@ -96,6 +96,26 @@ public class Sound {
 		}
 	}
 
+	/**
+	 * Volume de UMA faixa, como fracao do volume que o jogador escolheu.
+	 *
+	 * Serve a passagem cruzada entre duas trilhas: enquanto uma desce, a outra
+	 * sobe. Sem isso a unica troca possivel e o corte — para uma, comeca a outra —
+	 * e corte anuncia "mudou de estado" em vez de deixar o estado novo chegar.
+	 *
+	 * A fracao e sobre a preferencia do jogador, e nao um valor absoluto: quem
+	 * jogou com a musica em vinte por cento continua ouvindo vinte por cento.
+	 */
+	public static void volume(Musics music, double fracao) {
+		if(musics == null) {
+			return;
+		}
+		Music m = musics.get(music.resource());
+		if(m != null) {
+			m.setVolume(Math.max(0d, Math.min(1d, fracao)) * Configs.Music() / 100d);
+		}
+	}
+
 	public static void play(Musics music, boolean loop, double pan) {
 		if(!musics.containsKey(music.resource()))
 			throw new RuntimeException("sound not exists");

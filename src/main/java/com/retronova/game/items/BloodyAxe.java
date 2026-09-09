@@ -17,6 +17,11 @@ public class BloodyAxe extends Item {
 
     private final Elemento elemento;
 
+    @Override
+    public Elemento elemento() {
+        return this.elemento;
+    }
+
     BloodyAxe(int id) {
         this(id, Elemento.NENHUM);
     }
@@ -44,17 +49,31 @@ public class BloodyAxe extends Item {
     private BloodyAxe(int id, Elemento elemento, String nome, String sprite) {
         super(id, nome, sprite);
         this.elemento = elemento;
+        this.investida = Investida.pesada().vezes(cadencia());
         addSpecifications("Life Leech", "Heals a percentage of damage dealt",
                 elemento == Elemento.NENHUM ? "heavy swing"
-                        : elemento.name().toLowerCase() + " damage");
+                        : elemento.rotulo().toLowerCase() + " damage");
     }
 
-    private final Investida investida = Investida.pesada();
+    // NAO e inicializador de campo: os inicializadores rodam ANTES do corpo do
+    // construtor, e la o elemento ainda e nulo. Montada aqui, depois que ele
+    // existe, e o unico jeito de a cadencia dele valer.
+    private final Investida investida;
+
+    @Override
+    public double cadencia() {
+        return elemento.cadencia();
+    }
 
     /** A arte desta familia vem dos pacotes, desenhada na diagonal. */
     @Override
     protected double grausDaArte() {
         return 45;
+    }
+
+    @Override
+    public int duracaoDaReacao() {
+        return investida.duracao();
     }
 
     @Override

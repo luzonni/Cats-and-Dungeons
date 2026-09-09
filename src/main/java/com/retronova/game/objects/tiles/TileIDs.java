@@ -32,7 +32,48 @@ public enum TileIDs {
     StoneSteps(0xff5a7d81, false),
     // Rocha em volta da sala, no lugar do Void. Sem ela a camera mostrava o
     // vazio preto ao chegar na borda do mapa.
-    Bedrock(0xff11161c, true);
+    Bedrock(0xff11161c, true),
+
+    /**
+     * A CISTERNA INUNDADA, tema da primeira arena.
+     *
+     * SEMPRE NO FIM, pela mesma razao dos itens: o ordinal deste enum e o numero
+     * gravado nos JSON de mapa, e inserir no meio trocaria o cenario de toda sala
+     * ja escrita por outro tile.
+     *
+     * Os tiles saem de tools/GenCisterna.java, e as cores abaixo tem de bater com
+     * as de la — e o mapa que liga a cor do PNG ao tile que aparece na tela.
+     */
+    /** Agua parada da cisterna. Rasa: molha o passo, nao barra. */
+    CisternWater(0xff2f6b3d, false),
+    /** Grade redonda na parede: por onde a agua entrou. */
+    CisternGrate(0xff24312b, true),
+    /** Laje seca da plataforma central. */
+    CisternFloor(0xff8f8b7a, false),
+    /** Laje rachada. Existe para quebrar a repeticao do piso. */
+    CisternFloorCracked(0xff84806f, false),
+    /** Laje gasta, a mais escura das tres. */
+    CisternFloorWorn(0xff7a7666, false),
+    /** Canaleta reta, no sentido norte-sul. */
+    CisternChannelV(0xff565349, false),
+    /** Canaleta reta, no sentido leste-oeste. */
+    CisternChannelH(0xff525046, false),
+    /** Cruzamento das duas canaletas. */
+    CisternChannelCross(0xff4e4c43, false),
+    /** O ralo no piso: para onde as canaletas correm. */
+    CisternSink(0xff4a4840, false),
+    /** Topo da parede da cisterna: a face que recebe a luz. */
+    CisternStoneTop(0xff8a8f92, true),
+    /** Face da parede da cisterna, virada para dentro. */
+    CisternStoneFace(0xff5c6165, true),
+    /** Caveira caida no piso. */
+    CisternSkull(0xff6b6f5e, false),
+    /** Placa de pressao emperrada. */
+    CisternPlate(0xff676b5a, false),
+    /** Frasco deixado para tras. */
+    CisternFlask(0xff5f6352, false),
+    /** Frasco grande, do mesmo despojo. */
+    CisternFlaskBig(0xff5b5f4e, false);
 
     private final int color;
     private final boolean solid;

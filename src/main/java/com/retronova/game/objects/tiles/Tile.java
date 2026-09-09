@@ -83,6 +83,51 @@ public abstract class Tile extends GameObject {
             case StoneSteps -> {
                 return new StoneSteps(ID, x, y, solid);
             }
+            case CisternWater -> {
+                return new CisternWater(ID, x, y, solid);
+            }
+            case CisternGrate -> {
+                return new CisternGrate(ID, x, y, solid);
+            }
+            case CisternFloor -> {
+                return new CisternFloor(ID, x, y, solid);
+            }
+            case CisternFloorCracked -> {
+                return new CisternFloorCracked(ID, x, y, solid);
+            }
+            case CisternFloorWorn -> {
+                return new CisternFloorWorn(ID, x, y, solid);
+            }
+            case CisternChannelV -> {
+                return new CisternChannelV(ID, x, y, solid);
+            }
+            case CisternChannelH -> {
+                return new CisternChannelH(ID, x, y, solid);
+            }
+            case CisternChannelCross -> {
+                return new CisternChannelCross(ID, x, y, solid);
+            }
+            case CisternSink -> {
+                return new CisternSink(ID, x, y, solid);
+            }
+            case CisternStoneTop -> {
+                return new CisternStoneTop(ID, x, y, solid);
+            }
+            case CisternSkull -> {
+                return new CisternSkull(ID, x, y, solid);
+            }
+            case CisternPlate -> {
+                return new CisternPlate(ID, x, y, solid);
+            }
+            case CisternFlaskBig -> {
+                return new CisternFlaskBig(ID, x, y, solid);
+            }
+            case CisternFlask -> {
+                return new CisternFlask(ID, x, y, solid);
+            }
+            case CisternStoneFace -> {
+                return new CisternStoneFace(ID, x, y, solid);
+            }
             case Bedrock -> {
                 return new Bedrock(ID, x, y, solid);
             }

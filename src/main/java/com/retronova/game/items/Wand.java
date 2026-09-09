@@ -34,6 +34,16 @@ import java.awt.image.BufferedImage;
 public class Wand extends Item {
 
     private final Elemento elemento;
+
+    @Override
+    public Elemento elemento() {
+        return this.elemento;
+    }
+
+    @Override
+    public double cadencia() {
+        return elemento.cadencia();
+    }
     private final double dano;
 
     /** Ticks entre um disparo e o outro. */
@@ -68,7 +78,7 @@ public class Wand extends Item {
         this.dano = elemento.dano(20);
         addSpecifications("Magic bolt", "player damage + " + (int) dano,
                 elemento == Elemento.NENHUM ? "sorcery damage"
-                        : elemento.name().toLowerCase() + " damage");
+                        : elemento.rotulo().toLowerCase() + " damage");
     }
 
     /** A arte desta familia vem dos pacotes, desenhada na diagonal. */
@@ -88,20 +98,22 @@ public class Wand extends Item {
             aceso--;
         }
         Player player = Game.getPlayer();
-        // A PERGUNTA E FEITA DA PONTA DO CAJADO, que e de onde a bola sai. Medir do
-        // meio do gato aprovava tiro que nascia do outro lado do bloco.
+        // A pergunta e feita da PONTA DO CAJADO — mas so enquanto der para sair
+        // dela. Com a ponta encostada num bloco a varinha ficava muda mesmo com o
+        // inimigo a descoberto na frente; ai a origem recua para o meio do gato.
         java.awt.geom.Point2D.Double bico = pontaDaVarinha(player);
-        Entity perto = alvoAlcancavel(player, player.getRange(), bico.x, bico.y);
+        java.awt.geom.Point2D.Double origem = bocaUsavel(player, bico.x, bico.y);
+        Entity perto = alvoAlcancavel(player, player.getRange(), origem.x, origem.y);
         if (perto == null) {
             contador = 0;
             return;
         }
-        if (++contador < CADENCIA) {
+        if (++contador < CADENCIA * cadencia()) {
             return;
         }
         contador = 0;
         this.aceso = BRILHO;
-        atirar(player, perto);
+        atirar(player, perto, origem);
     }
 
     /**
@@ -160,12 +172,12 @@ public class Wand extends Item {
                 mao.y + dy * px + ox * s + oy * c);
     }
 
-    private void atirar(Player player, Entity alvo) {
-        // A ponta PRIMEIRO, e o angulo medido A PARTIR DELA. Medir do gato fazia
-        // a bola sair da varinha numa reta paralela a mira e passar ao lado.
-        java.awt.geom.Point2D.Double ponta = pontaDaVarinha(player);
-        double x = ponta.x;
-        double y = ponta.y;
+    private void atirar(Player player, Entity alvo, java.awt.geom.Point2D.Double origem) {
+        // Nasce E MIRA do mesmo ponto de onde a linha foi medida. Misturar os dois
+        // — nascer na ponta e mirar do corpo — traca uma reta paralela a mira,
+        // afastada por meio corpo, e de longe a bola passa ao lado do alvo.
+        double x = origem.x;
+        double y = origem.y;
         double angulo = miraDe(x, y, alvo);
         double total = dano + player.getDamage();
         Arrow bola = new Arrow(x, y, angulo, elemento.sprite("bolt"), VELOCIDADE_DA_BOLA,

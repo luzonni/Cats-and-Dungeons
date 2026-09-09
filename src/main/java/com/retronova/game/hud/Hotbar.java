@@ -143,15 +143,29 @@ class Hotbar {
         for(int i = 0; i < length; i++) {
             BufferedImage sprite = index == i ? sprites[1] : sprites[0];
             g.drawImage(sprite, bounds[i].x + difX, bounds[i].y, null);
-            // A tecla que seleciona esta casa. A hotbar sempre respondeu a 1..5,
-            // mas isso nao estava escrito em lugar nenhum.
-            DrawString.draw(String.valueOf(i + 1), fontIndice,
-                    bounds[i].x + difX + Configs.HudScale(),
-                    bounds[i].y + Configs.HudScale(), g);
+            // A NUMERACAO SAIU. Ela ocupava o mesmo canto que o fundo de raridade
+            // agora usa, e as duas informacoes disputavam quatro pixels. Entre
+            // lembrar a tecla — que se aprende na primeira partida e nunca mais se
+            // esquece — e mostrar o quanto a arma e boa, a segunda vale mais.
             if(!items[i].isEmpty()) {
                 int x = bounds[i].x + difX;
                 int y = bounds[i].y;
-                g.drawImage(items[i].item().getSprite(), x + 2 * Configs.HudScale(), y + 2 * Configs.HudScale(),12 * Configs.HudScale(), 12 * Configs.HudScale(), null);
+                // O MESMO FUNDO PASTEL DO INVENTARIO.
+                //
+                // A hotbar e a unica lista de itens que fica na tela o tempo todo, e
+                // era a unica sem a cor: o jogador aprendia a ler raridade pelo fundo
+                // dentro da bolsa e perdia essa leitura justamente onde ela e mais
+                // usada — na hora de escolher a arma no meio da briga.
+                int ix = x + 2 * Configs.HudScale();
+                int iy = y + 2 * Configs.HudScale();
+                int ilado = 12 * Configs.HudScale();
+                com.retronova.game.items.Raridade raridade = items[i].item().raridade();
+                if (raridade != com.retronova.game.items.Raridade.COMUM) {
+                    java.awt.Color c = raridade.cor();
+                    g.setColor(new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue(), 56));
+                    g.fillRect(ix, iy, ilado, ilado);
+                }
+                g.drawImage(items[i].item().getSprite(), ix, iy, ilado, ilado, null);
                 if(items[i].item() instanceof Consumable consumable) {
                     if(consumable.getStack() <= 1)
                         continue;

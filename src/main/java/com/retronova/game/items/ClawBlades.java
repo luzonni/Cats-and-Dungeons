@@ -28,6 +28,11 @@ public class ClawBlades extends Item {
     }
 
     @Override
+    public int duracaoDaReacao() {
+        return investida.duracao();
+    }
+
+    @Override
     protected Porte porte() {
         return Porte.UMA_MAO;
     }

@@ -1,0 +1,30 @@
+{
+  "spawn": { "x": 17, "y": 17 },
+
+  "entities": [
+    { "name": "Gate", "x": 17, "y": 33, "values": ["NEXT ARENA", "none"] },
+    { "name": "Lever", "x": 19, "y": 32, "values": ["leverCistern"] },
+    { "name": "Rubble", "x": 7, "y": 7, "values": ["rubbleCistern"] },
+    { "name": "Rubble", "x": 8, "y": 7, "values": ["rubbleCistern"] },
+    { "name": "Rubble", "x": 7, "y": 8, "values": ["rubbleCistern"] },
+    { "name": "Bones", "x": 25, "y": 26, "values": ["bonesCistern"] },
+    { "name": "Bones", "x": 26, "y": 26, "values": ["bonesCistern"] },
+    { "name": "Bones", "x": 26, "y": 25, "values": ["bonesCistern"] },
+    { "name": "Barrel", "x": 7, "y": 26, "values": ["barrelCistern"] },
+    { "name": "Barrel", "x": 26, "y": 7, "values": ["barrelCistern"] },
+    { "name": "Chain", "x": 5, "y": 1, "values": ["chainCistern"] },
+    { "name": "Chain", "x": 28, "y": 1, "values": ["chainCistern"] },
+    { "name": "Chain", "x": 13, "y": 1, "values": ["chainCistern"] },
+    { "name": "Torch", "x": 1, "y": 8, "values": [] },
+    { "name": "Torch", "x": 1, "y": 17, "values": [] },
+    { "name": "Torch", "x": 1, "y": 25, "values": [] },
+    { "name": "Torch", "x": 32, "y": 8, "values": [] },
+    { "name": "Torch", "x": 32, "y": 17, "values": [] },
+    { "name": "Torch", "x": 32, "y": 25, "values": [] },
+    { "name": "Torch", "x": 8, "y": 1, "values": [] },
+    { "name": "Torch", "x": 17, "y": 1, "values": [] },
+    { "name": "Torch", "x": 25, "y": 1, "values": [] },
+    { "name": "Torch", "x": 8, "y": 32, "values": [] },
+    { "name": "Torch", "x": 25, "y": 32, "values": [] }
+  ]
+}

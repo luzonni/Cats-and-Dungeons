@@ -40,7 +40,7 @@ public class Trident extends Item {
 
     Trident(int id) {
         super(id, "Trident", "trident");
-        addSpecifications("Thrown, comes back", "player damage + " + DANO, "hits along the way");
+        addSpecifications("Thrown, comes back", "player damage + " + DANO, "hits going and returning");
     }
 
     /** A arte vem do pacote, desenhada na diagonal. */

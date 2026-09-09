@@ -48,12 +48,19 @@ public class Laser extends Item {
             angle = paraApontar.getAngle(player);
         }
 
-        if (currentTarget != null && !Game.getMap().getEntities(Enemy.class).contains(currentTarget)) {
-            currentTarget = null;
-        }
+        // O FEIXE SO EXISTE ENQUANTO O TIRO EXISTE.
+        //
+        // O alvo so era esquecido quando o bicho morria, entao bastava a linha de
+        // tiro fechar — o inimigo passar atras de um bloco — para o feixe continuar
+        // desenhado, grudado nele, enquanto o contador de disparo nem avancava.
+        // Dava exatamente a cena de "o laser fica tagado no inimigo e nao da dano":
+        // o desenho dizia que estava atirando e a mecanica dizia que nao.
+        //
+        // Agora o alvo E o alvo alcancavel deste tick. Sem tiro possivel, sem
+        // feixe — e ai o que se ve na tela e a verdade.
+        currentTarget = nearest;
 
         if (nearest != null) {
-            currentTarget = nearest;
             count++;
 
             if (count > (player.getAttackSpeed() * 3.25d) / 5) {
@@ -67,6 +74,10 @@ public class Laser extends Item {
                 shot(player);
             }
         } else {
+            // Perdeu o alvo: a carga volta do zero, senao o proximo inimigo levaria
+            // um tiro instantaneo herdado da mira anterior.
+            count = 0;
+            countShot = 0;
             resetIndexSprite();
         }
     }

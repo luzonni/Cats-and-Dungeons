@@ -14,10 +14,21 @@ package com.retronova.game.objects.entities.furniture;
 public class Pillar extends Furniture {
 
     public Pillar(int ID, double x, double y) {
+        this(ID, x, y, "pillar");
+    }
+
+    /**
+     * @param sprite qual versao desenhar.
+     *
+     * A mesma peca serve a salas de temas diferentes, e o unico que muda entre elas
+     * e a paleta. Passar o nome pelo mapa evita uma classe nova por tema — seriam
+     * seis Pilares identicos com uma linha diferente cada.
+     */
+    public Pillar(int ID, double x, double y, String sprite) {
         // Peso alto: o sistema de física ignora deslocamento acima de 500, então
         // nada empurra o pilar.
         super(ID, x, y, 1000);
-        loadSprites("pillar");
+        loadSprites(sprite);
     }
 
     @Override

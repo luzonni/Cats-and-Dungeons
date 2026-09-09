@@ -41,7 +41,15 @@ public class Sword extends Item {
      * (recuperacao). Aqui ela entra na versao LEVE, 400 ms, que e o tempo de
      * espada de uma mao — o machado usa a pesada, de 800.
      */
-    private final Investida investida = Investida.leve();
+    // NAO e inicializador de campo: os inicializadores rodam ANTES do corpo do
+    // construtor, e la o elemento ainda e nulo. Montada aqui, depois que ele
+    // existe, e o unico jeito de a cadencia dele valer.
+    private final Investida investida;
+
+    @Override
+    public double cadencia() {
+        return elemento.cadencia();
+    }
 
     private final BufferedImage sword_attack;
     private final double damage;
@@ -49,6 +57,11 @@ public class Sword extends Item {
 
 
     private final Elemento elemento;
+
+    @Override
+    public Elemento elemento() {
+        return this.elemento;
+    }
 
     Sword(int id) {
         this(id, Elemento.NENHUM);
@@ -62,19 +75,25 @@ public class Sword extends Item {
     Sword(int id, Elemento elemento) {
         super(id, elemento.nome("Sword"), elemento.sprite("sword"));
         this.elemento = elemento;
+        this.investida = Investida.leve().vezes(cadencia());
         setIndexSprite(Engine.RAND.nextInt(25));
         this.damage = elemento.dano(35);
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));
         sword_attack = new SpriteHandler("sprites/items", "sword_attack", Configs.GameScale()).getSHEET();
         addSpecifications("Melee Attack", "Player damage + "+ this.damage,
-                elemento == Elemento.NENHUM ? "very fast" : elemento.name().toLowerCase() + " damage");
+                elemento == Elemento.NENHUM ? "very fast" : elemento.rotulo().toLowerCase() + " damage");
     }
 
     /** A arte desta familia vem dos pacotes, desenhada na diagonal. */
     @Override
     protected double grausDaArte() {
         return 45;
+    }
+
+    @Override
+    public int duracaoDaReacao() {
+        return investida.duracao();
     }
 
     @Override

@@ -7,8 +7,6 @@ import com.retronova.engine.exceptions.InventoryOutsOfBounds;
 import com.retronova.game.Game;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
-import com.retronova.engine.graphics.DrawString;
-import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.UiSprite;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -291,24 +289,15 @@ public class Inventory implements Activity {
         }
         for(int i = 0; i < lengthHotbar; i++) {
             hotbar[i].render(g);
-            numeroDoSlot(hotbar[i], i, g);
         }
     }
 
-    /**
-     * O numero da tecla, no canto da casa.
-     *
-     * A hotbar sempre respondeu as teclas 1 a 5, mas em lugar nenhum isso estava
-     * escrito: quem nao tentasse por acaso jogava a corrida inteira trocando de
-     * arma pela roda do mouse. Fica no canto de cima e a esquerda, onde nao
-     * disputa com a contagem de pilha, que mora embaixo e a direita.
-     */
-    private void numeroDoSlot(Slot slot, int i, Graphics2D g) {
-        int s = Configs.HudScale();
-        Font fonte = FontHandler.font(FontHandler.Septem, s * 6f);
-        Rectangle b = slot.getBounds();
-        DrawString.draw(String.valueOf(i + 1), fonte, b.x + s, b.y + s, g);
-    }
+    // A NUMERACAO SAIU DAQUI TAMBEM.
+    //
+    // Ela foi tirada da hotbar da tela porque disputava o canto com o fundo de
+    // raridade, mas continuava desenhada na fileira de baixo do painel — que e a
+    // MESMA hotbar, so que vista de dentro do inventario. O resultado era a
+    // informacao aparecendo em um lugar e nao no outro, o que le como falha.
 
     private void renderInsurer(Graphics2D g) {
         if(!insurer.isEmpty()) {

@@ -392,6 +392,30 @@ public abstract class Item {
          * SEGURANDO os quadros, e estas ganham ameaca por nao segurar nenhum. A
          * proporcao entre as quatro fases e a mesma da leve, so comprimida.
          */
+        /**
+         * A mesma investida, esticada ou encurtada pelo elemento.
+         *
+         * Multiplica os quatro tempos de uma vez para que a PROPORCAO entre eles
+         * — preparo, corte, extensao, recuperacao — nao mude: e essa proporcao que
+         * da a leitura do golpe. Encurtar so o preparo deixaria o ataque rapido e
+         * ilegivel; esticar so a recuperacao pareceria travamento, e nao peso.
+         *
+         * Minimo de um quadro em cada etapa: etapa de zero quadro nao existe na
+         * tela, e o golpe passaria a pular pedaco.
+         */
+        protected Investida vezes(double fator) {
+            return new Investida(
+                    Math.max(1, (int) Math.round(preparo * fator)),
+                    Math.max(1, (int) Math.round(corte * fator)),
+                    Math.max(1, (int) Math.round(extensao * fator)),
+                    Math.max(1, (int) Math.round(recuperacao * fator)));
+        }
+
+        /** O ciclo inteiro do golpe, em quadros. */
+        protected int duracao() {
+            return preparo + corte + extensao + recuperacao;
+        }
+
         protected static Investida rapida() {
             return new Investida(3, 2, 3, 2);
         }
@@ -555,6 +579,19 @@ public abstract class Item {
      */
     protected java.awt.geom.Point2D.Double boca(BufferedImage sprite, double ancoraX,
                                                 double ancoraY, double mira, double facing) {
+        // ESPELHA JUNTO COM O DESENHO.
+        //
+        // O Rotate.apontar, mirando para a esquerda, espelha o sprite em vez de
+        // gira-lo meia volta — senao a arma ficaria de cabeca para baixo. Este
+        // calculo nao fazia o mesmo, entao a boca continuava sendo a do desenho
+        // NAO espelhado: mirando para a esquerda, o tiro saia pela CORONHA. Quem
+        // espelha a imagem tem de espelhar o ponto junto, e o facing troca de
+        // sinal pela mesma razao que troca la.
+        boolean espelhado = Math.cos(mira) < 0;
+        if (espelhado) {
+            sprite = Rotate.espelhadoNaVertical(sprite);
+            facing = -facing;
+        }
         java.awt.Point miolo = Rotate.centroDoDesenho(sprite);
         double giro = mira + facing;
         double c = Math.cos(giro), s = Math.sin(giro);
@@ -562,7 +599,11 @@ public abstract class Item {
         double bx, by;
         if (p != null && p.bocaX() >= 0) {
             int px = Configs.GameScale();
-            bx = p.bocaX() * px + px / 2.0 - miolo.x;
+            // A pose guarda a coluna do desenho ORIGINAL; espelhado, a coluna
+            // equivalente e a oposta.
+            int colunas = Math.max(1, sprite.getWidth() / px);
+            int coluna = espelhado ? colunas - 1 - p.bocaX() : p.bocaX();
+            bx = coluna * px + px / 2.0 - miolo.x;
             by = p.bocaY() * px + px / 2.0 - miolo.y;
         } else {
             java.awt.Point ponta = pontaDoDesenho(sprite, -facing);
@@ -684,6 +725,12 @@ public abstract class Item {
         List<Enemy> inimigos = Game.getMap().getEntities(Enemy.class);
         for (int i = 0; i < inimigos.size(); i++) {
             Enemy e = inimigos.get(i);
+            // Quem ainda esta nascendo NAO E ALVO. Sem esta linha a mira gruda num
+            // bicho invulneravel e a arma fica descarregando no vazio enquanto os
+            // que ja nasceram avancam — pior do que nao mirar em nada.
+            if (e.nascendo()) {
+                continue;
+            }
             double d = e.getDistance(jogador);
             if (d >= limite || d >= menor || !podeAcertar(origemX, origemY, e)) {
                 continue;
@@ -704,7 +751,8 @@ public abstract class Item {
      * impede e o tiro sair, nao o cano acompanhar.
      */
     protected static Enemy alvoParaMirar(Player jogador, double alcanceEmTiles) {
-        return jogador.getNearest(alcanceEmTiles, Enemy.class);
+        Enemy perto = jogador.getNearest(alcanceEmTiles, Enemy.class);
+        return perto != null && perto.nascendo() ? null : perto;
     }
 
     /**
@@ -728,6 +776,37 @@ public abstract class Item {
     protected static boolean podeAcertar(Player jogador, Entity alvo) {
         return podeAcertar(jogador.getX() + jogador.getWidth() / 2d,
                 jogador.getY() + jogador.getHeight() / 2d, alvo);
+    }
+
+    /**
+     * A boca da arma, se der para atirar dela — senao, o meio do gato.
+     *
+     * Medir a linha de tiro da boca conserta o caso do gato encostado numa quina,
+     * em que a arma nasceria do outro lado do bloco. Mas cria o caso oposto, que e
+     * o que se ve com a varinha: a ponta do cajado fica acima da cabeca do bicho, e
+     * bastava ela encostar num bloco para a arma ficar MUDA — nenhum alvo era
+     * considerado alcancavel, mesmo com o inimigo a descoberto bem na frente.
+     *
+     * A saida e a de sempre em jogo: a boca e enfeite, o corpo e a autoridade. Se
+     * nao ha caminho do gato ate a propria boca dele, a boca e descartada e tudo —
+     * mira e nascimento do projetil — passa a sair do meio do bicho. A arma
+     * continua funcionando; so perde o capricho de sair pela ponta.
+     */
+    protected static java.awt.geom.Point2D.Double bocaUsavel(Player jogador,
+                                                             double bocaX, double bocaY) {
+        double cx = jogador.getX() + jogador.getWidth() / 2d;
+        double cy = jogador.getY() + jogador.getHeight() / 2d;
+        double largura = Projetil.larguraEmPixels();
+        // DUAS condicoes, e a segunda e a que faltava: nao basta haver caminho ate
+        // a boca, o projetil precisa CABER nela. A ponta do cajado fica acima da
+        // cabeca do gato e num corredor baixo ela cai dentro do teto — a linha fina
+        // passava por essa fresta, o tiro de vinte e quatro pixels nao passava, e o
+        // resultado era a varinha muda com o inimigo a descoberto bem na frente.
+        if (Game.getMap().cabeEm(bocaX, bocaY, largura)
+                && Game.getMap().linhaLivre(cx, cy, bocaX, bocaY)) {
+            return new java.awt.geom.Point2D.Double(bocaX, bocaY);
+        }
+        return new java.awt.geom.Point2D.Double(cx, cy);
     }
 
     /** Ha caminho de UM PONTO QUALQUER ate o alvo — normalmente, da boca da arma. */
@@ -792,19 +871,73 @@ public abstract class Item {
                                                         double recuo) {
         Poses.Pose p = pose();
         int px = Configs.GameScale();
-        // O dx DA POSE E A DISTANCIA INTEIRA, sem base somada.
+        double dx = (p == null ? ALCANCE_DA_MAO : p.dx()) * px;
+        double dy = (p == null ? 0 : p.dy()) * px;
+
+        // O DESLOCAMENTO E FIXO NO CORPO DO GATO — nao gira com a mira.
         //
-        // Eu tinha acrescentado uma base aqui para tirar o laser de dentro do
-        // gato, e com isso empurrei para fora TODAS as armas de mira — os arcos
-        // sairam do lugar onde o editor os tinha deixado. Quem estava errado era
-        // um numero de uma pose, nao a regra: o ajuste certo foi no dx do laser.
-        double dist = (p == null ? ALCANCE_DA_MAO : p.dx()) * px - recuo;
-        double lateral = (p == null ? 0 : p.dy()) * px;
-        double cx = jogador.getX() + jogador.getWidth() / 2d;
-        double cy = jogador.getY() + jogador.getHeight() / 2d;
+        // Antes o dx era medido NA DIRECAO DA MIRA, o que o transforma num RAIO: a
+        // arma passava a percorrer uma circunferencia em volta do bicho conforme o
+        // alvo se movia, em vez de ficar na mao e apenas girar. O arco escapava
+        // disso por acidente, porque o dx dele e quase zero — raio zero nao orbita.
+        //
+        // Agora dx e "para a frente do gato" e dy e "para baixo", e o lado espelha
+        // junto com a mira, do mesmo jeito que a mao do sprite espelha. Mirando
+        // para a direita a conta da exatamente o mesmo ponto de antes, que e como
+        // as poses foram ajustadas no editor — entao nada sai do lugar onde voce
+        // deixou; o que muda e so o comportamento nos outros angulos.
+        int lado = Math.cos(mira) < 0 ? -1 : 1;
+        double ax = jogador.getX() + jogador.getWidth() / 2d + dx * lado;
+        double ay = jogador.getY() + jogador.getHeight() / 2d + dy;
+
+        // O recuo continua na direcao do tiro: e o gesto de puxar a corda, e isso
+        // acontece ao longo da linha do disparo, nao no eixo do corpo.
         return new java.awt.geom.Point2D.Double(
-                cx + Math.cos(mira) * dist + Math.cos(mira + Math.PI / 2) * lateral,
-                cy + Math.sin(mira) * dist + Math.sin(mira + Math.PI / 2) * lateral);
+                ax - Math.cos(mira) * recuo, ay - Math.sin(mira) * recuo);
+    }
+
+    /**
+     * Quanto tempo o ataque desta arma leva, em relacao ao normal.
+     *
+     * Uma na base para que TODA arma responda a pergunta, tenha elemento ou nao —
+     * assim quem usa nao precisa saber se aquele item e elemental. Quem tem
+     * elemento sobrescreve devolvendo a cadencia dele.
+     */
+    public double cadencia() {
+        return 1.0;
+    }
+
+    /**
+     * De que elemento esta arma e.
+     *
+     * Na base para que QUALQUER item responda, tenha elemento ou nao — assim quem
+     * pergunta (a carta de recompensa, a loja) nao precisa saber quais classes sao
+     * elementais. Quem tem sobrescreve.
+     */
+    public Elemento elemento() {
+        return Elemento.NENHUM;
+    }
+
+    /** Em que degrau de raridade este item cai. Derivado, nunca declarado. */
+    public Raridade raridade() {
+        return Raridade.de(this);
+    }
+
+    /**
+     * Quantos quadros a careta de "acertei" deve durar com esta arma.
+     *
+     * Nao pode ser um numero fixo. As armas tem ritmos muito diferentes — a garra
+     * fecha um golpe em dez quadros, o machado pesado leva quase setenta — e uma
+     * duracao unica erra dos dois lados: com a garra a careta sobra e fica presa no
+     * rosto por varios golpes seguidos, com o machado ela acaba antes de o golpe
+     * terminar. Nos dois casos a cara para de acompanhar a arma, que era a queixa
+     * de nao estar sincronizado.
+     *
+     * Cada arma responde com o proprio ciclo; a base devolve um valor curto, que
+     * serve para as de tiro.
+     */
+    public int duracaoDaReacao() {
+        return 12;
     }
 
     /** A pose ajustada no editor, ou null. */

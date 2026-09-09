@@ -59,6 +59,16 @@ public class Bow extends Item {
 
     private final Elemento elemento;
 
+    @Override
+    public Elemento elemento() {
+        return this.elemento;
+    }
+
+    @Override
+    public double cadencia() {
+        return elemento.cadencia();
+    }
+
     Bow(int id) {
         this(id, Elemento.NENHUM);
     }
@@ -66,9 +76,9 @@ public class Bow extends Item {
     Bow(int id, Elemento elemento) {
         super(id, elemento.nome("Bow"), elemento.sprite("bow"));
         this.elemento = elemento;
-        addSpecifications("Arrow add poisson", "player damage",
+        addSpecifications("Arrow adds poison", "player damage",
                 elemento == Elemento.NENHUM ? "shot slowed"
-                        : elemento.name().toLowerCase() + " damage");
+                        : elemento.rotulo().toLowerCase() + " damage");
     }
 
     /** A arte desta familia vem dos pacotes, desenhada na diagonal. */
@@ -86,12 +96,16 @@ public class Bow extends Item {
         // flecha parte. Medir do meio do gato aprovava tiro que nascia do outro
         // lado do bloco quando ele estava encostado numa quina.
         java.awt.geom.Point2D.Double corda = ancora(player, 0);
-        Entity nearest = alvoAlcancavel(player, player.getRange(), corda.x, corda.y);
+        java.awt.geom.Point2D.Double daCorda = bocaUsavel(player, corda.x, corda.y);
+        Entity nearest = alvoAlcancavel(player, player.getRange(), daCorda.x, daCorda.y);
         if(nearest != null){
             angle = nearest.getAngle(player);
             this.alvoDoTiro = nearest;
             count++;
-            if(count > (player.getAttackSpeed()*3.25d)/5) {
+            // O elemento estica ou encurta o intervalo entre os quadros de
+            // esticar a corda, entao o arco de terra e visivelmente mais pesado
+            // de armar que o de ar — e nao so um numero diferente na ficha.
+            if(count > (player.getAttackSpeed()*3.25d)/5 * cadencia()) {
                 count = 0;
                 countShot++;
                 this.plusIndexSprite();

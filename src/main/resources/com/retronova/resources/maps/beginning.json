@@ -3,7 +3,7 @@
 
   "entities": [
     { "name": "Entrance", "x": 20, "y": 4,  "values": [] },
-    { "name": "Gate", "x": 20, "y": 29, "values": ["LOAD ARENA EASY"] },
+    { "name": "Gate", "x": 20, "y": 29, "values": ["LOAD ARENA EASY", "none"] },
     { "name": "Lever", "x": 22, "y": 27, "values": [] },
 
     { "name": "Pillar", "x": 10, "y": 12, "values": [] },

@@ -93,6 +93,27 @@ public class Slot {
         int y = bounds.y + overAnimPref;
         int width = bounds.width - overAnimPref*2;
         int height = bounds.height - overAnimPref*2;
+        // O FUNDO DIZ A RARIDADE, e o selo saiu daqui.
+        //
+        // O carimbo no canto funcionava, mas competia com a arte: num quadrado de
+        // poucos pixels, um simbolo por cima do item tapa justamente a parte que
+        // identifica o item. O fundo resolve o mesmo problema sem ocupar espaco
+        // nenhum — a cor esta atras, e o desenho continua inteiro na frente.
+        //
+        // PASTEL, E NAO A COR CHEIA. A cor da raridade e forte por natureza: ela
+        // existe para gritar numa carta de recompensa, que e vista uma por vez.
+        // Repetida em vinte slots lado a lado, ela vira um mosaico que come o
+        // contraste dos itens. Um quinto de opacidade e o suficiente para o olho
+        // separar um roxo de um azul de relance, e pouco o bastante para a lamina
+        // de tres pixels continuar visivel.
+        //
+        // O comum nao pinta nada: se todo slot tem cor, cor deixa de ser sinal.
+        com.retronova.game.items.Raridade raridade = item.raridade();
+        if (raridade != com.retronova.game.items.Raridade.COMUM) {
+            java.awt.Color c = raridade.cor();
+            g.setColor(new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue(), 56));
+            g.fillRect(x, y, width, height);
+        }
         g.drawImage(item.getSprite(), x, y, width, height, null);
         if(item instanceof Consumable consumable) {
             String stack = String.valueOf(consumable.getStack());

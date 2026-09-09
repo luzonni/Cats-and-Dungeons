@@ -58,6 +58,14 @@ public abstract class GameMap {
 
     public void addPlayer(Player player) {
         put(player);
+        // ZERA O EMPURRAO QUE VEIO DA SALA ANTERIOR.
+        //
+        // O gato atravessa a passagem ANDANDO, e o vetor dessa caminhada sobrevive
+        // a troca de mapa: a posicao nova e escrita aqui, mas no primeiro tick a
+        // fisica retoma o empurrao de onde parou e o arrasta para fora do tile em
+        // que ele acabou de ser posto. Era por isso que ele nao nascia no ralo do
+        // centro mesmo com o mapa dizendo que o nascimento e ali.
+        player.getPhysical().parar();
         if(this.nascimento != null) {
             player.setX(this.nascimento.x * (double) GameObject.SIZE());
             player.setY(this.nascimento.y * (double) GameObject.SIZE());
@@ -248,6 +256,22 @@ public abstract class GameMap {
         // Amostra de um quarto de tile: fino o bastante para nao pular a quina de
         // um bloco, grosso o bastante para nao custar caro a cada tiro.
         return caminhoDeTiro(x1, y1, alvo, largura, GameObject.SIZE() / 4d, this::solidoEm);
+    }
+
+    /**
+     * Um projetil deste tamanho CABE neste ponto, sem encostar em bloco?
+     *
+     * E a pergunta que decide se a boca da arma serve como ponto de partida. A
+     * ponta de um cajado fica acima da cabeca do gato; num corredor de um tile de
+     * altura ela cai DENTRO do teto, e um tiro nascido ali morre no mesmo quadro.
+     * Testar so uma linha fina ate a ponta nao pega isso — a linha passa por uma
+     * fresta em que o projetil, que tem vinte e quatro pixels de lado, nao entra.
+     */
+    public boolean cabeEm(double x, double y, double largura) {
+        double m = largura / 2d;
+        return !(solidoEm(x, y)
+                || solidoEm(x - m, y - m) || solidoEm(x + m, y - m)
+                || solidoEm(x - m, y + m) || solidoEm(x + m, y + m));
     }
 
     /** Onde ha bloco solido. Existe para o teste poder montar um mapa de mentira. */

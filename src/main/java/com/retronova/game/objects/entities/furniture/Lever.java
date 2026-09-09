@@ -7,6 +7,7 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
+import com.retronova.game.map.arena.Arena;
 import com.retronova.game.objects.GameObject;
 
 import java.awt.BasicStroke;
@@ -59,9 +60,22 @@ public class Lever extends Furniture {
     private int pulso;
 
     public Lever(int ID, double x, double y) {
+        this(ID, x, y, "lever");
+    }
+
+    /**
+     * @param sprite qual alavanca desenhar.
+     *
+     * A da antecamara e azul-acinzentada, como o resto daquela sala. Do lado da
+     * porta da cisterna ela aparecia como a unica peca fria da cena — o mesmo
+     * problema de paleta que os barris emprestados tinham. A versao repintada vem
+     * do mesmo gerador que repinta as paredes, entao as duas combinam por
+     * construcao, e nao por coincidencia.
+     */
+    public Lever(int ID, double x, double y, String sprite) {
         // Atravessável: é peça de parede, e o tile já bloqueia passagem sozinho.
         super(ID, x, y, 1000, false);
-        loadSprites("lever");
+        loadSprites(sprite);
     }
 
     @Override
@@ -82,14 +96,41 @@ public class Lever extends Furniture {
         }
     }
 
+    /**
+     * A saida so existe depois que o turno acabou.
+     *
+     * Na arena dava para chegar na alavanca no primeiro segundo, abrir a porta e
+     * seguir para a proxima sala sem enfrentar onda nenhuma — e sem passar pela
+     * carta, que e o unico jeito de a corrida crescer. Uma saida aberta o tempo
+     * todo transforma cada arena em corredor.
+     *
+     * A pergunta e feita ao MAPA, e nao guardada aqui: quem sabe se a briga
+     * terminou e a arena. Na antecamara nao ha arena nenhuma, e por isso a alavanca
+     * do portao principal continua livre — la a porta e a saida de um lugar seguro,
+     * nao o premio de uma luta.
+     */
+    private boolean liberada() {
+        if (Game.getMap() instanceof Arena arena) {
+            return arena.turnoEncerrado();
+        }
+        return true;
+    }
+
     private void puxar() {
+        if (!liberada()) {
+            return;
+        }
         Gate portao = portao();
         if (portao == null) {
             System.err.println("Lever sem Gate no mapa: a alavanca não abre nada.");
             return;
         }
         this.puxada = true;
-        Sound.play(Sounds.Crack);
+        // ESTALO DE MECANISMO, e nao de cascalho. O Crack e um som de pedra
+        // quebrando — servia a grade de ferro que subia arrastando, e ficou para
+        // tras quando a grade saiu. O que ha aqui e uma alavanca sendo puxada, e o
+        // clique seco do Button e o que uma alavanca faz.
+        Sound.play(Sounds.Button);
         portao.abrir();
     }
 
@@ -127,8 +168,49 @@ public class Lever extends Furniture {
         return escolhido;
     }
 
+    /**
+     * O BRILHO DE "E AQUI".
+     *
+     * A alavanca fica na parede a sala inteira, apagada, e o jogador aprende a nao
+     * olhar para ela enquanto briga — e o certo, porque durante a briga ela nao faz
+     * nada. O problema e o instante em que ela PASSA a fazer: sem sinal nenhum, ela
+     * continua sendo o mesmo pedaco de parede que era ha um segundo.
+     *
+     * O halo resolve isso e nao pede arte nova. Ele pulsa pela mesma razao da luz
+     * da passagem: brilho parado vira mancha e o olho para de ve-lo; um que respira
+     * continua chamando enquanto ninguem puxou.
+     *
+     * E SOME AO SER PUXADA. Depois disso a alavanca nao tem mais nada a dizer, e a
+     * luz passa para a passagem — que e para onde o jogador deve olhar em seguida.
+     */
+    private void brilhar(Graphics2D g) {
+        if (puxada || !liberada()) {
+            return;
+        }
+        respiro += 0.08;
+        float pulso = (float) (0.7 + 0.3 * Math.sin(respiro));
+        int raio = (int) (GameObject.SIZE() * (0.9 + 0.25 * pulso));
+        int cx = (int) getX() + getWidth() / 2;
+        int cy = (int) getY() + getHeight() / 2;
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+                java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        int camadas = 4;
+        for (int i = camadas; i >= 1; i--) {
+            int r = raio * i / camadas;
+            int alfa = (int) (34 * pulso * (1f - (i - 1) / (float) camadas));
+            g2.setColor(new java.awt.Color(255, 226, 160, Math.max(0, alfa)));
+            g2.fillOval(cx - r, cy - r, r * 2, r * 2);
+        }
+        g2.dispose();
+    }
+
+    private double respiro;
+
     @Override
     public void render(Graphics2D g) {
+        brilhar(g);
         super.render(g);
         if (puxada || !perto()) {
             return;
