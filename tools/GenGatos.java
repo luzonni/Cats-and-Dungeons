@@ -162,10 +162,14 @@ public class GenGatos {
             String[] emPe = emPe(REPOUSO);
             String[] contato = afundar(emPe, 1);
             BufferedImage[] andando = {
-                    quadro(contato, cor, gato, 0),
-                    quadro(passada(emPe, true), cor, gato, 0),
-                    quadro(contato, cor, gato, 0),
-                    quadro(passada(emPe, false), cor, gato, 0),
+                    // O RABO ACOMPANHA A PASSADA. Sobe num contato, desce no
+                    // outro, entao ele completa um ciclo a cada duas passadas —
+                    // metade da cadencia das patas, que e como um rabo de verdade
+                    // se comporta: ele responde ao corpo, nao a cada pisada.
+                    quadro(rabo(contato, true), cor, gato, 0),
+                    quadro(rabo(passada(emPe, true), true), cor, gato, 0),
+                    quadro(rabo(contato, false), cor, gato, 0),
+                    quadro(rabo(passada(emPe, false), false), cor, gato, 0),
             };
             String[] sono = fecharOlhos(REPOUSO);
             BufferedImage[] dormindo = {
@@ -359,6 +363,70 @@ public class GenGatos {
             g[15][x] = '.';
         }
         return desfazer(g);
+    }
+
+    /** Linhas que o rabo ocupa na grade, contorno incluido. */
+    private static final int PRIMEIRA_LINHA_DO_RABO = 11;
+
+    /**
+     * Levanta ou abaixa a ponta do rabo um pixel.
+     *
+     * O rabo era a unica parte do gato que nao se mexia andando: o balanco esta na
+     * cabeca e nas patas, e ele ficava rigido atras, o que le como pedaco colado.
+     * Num sprite deste tamanho basta a PONTA subir e descer um pixel entre os
+     * quadros para a coisa toda ganhar vida.
+     *
+     * MOVE O BLOCO INTEIRO, CONTORNO JUNTO. A primeira versao deslocava so os
+     * pixels de rabo e deixava o contorno preto onde estava — a ponta subia e a
+     * moldura dela ficava para tras, abrindo buracos na silhueta. Num desenho com
+     * contorno fechado como este, o contorno e parte da forma: quem move a forma
+     * move a borda dela.
+     *
+     * Um pixel, e nao dois, e so nas colunas do fim: mexer o rabo todo faria ele
+     * parecer solto do corpo, e mais de um pixel viraria chicote. E a mesma
+     * economia do respiro do quadro parado, que sobe a cabeca um unico pixel.
+     *
+     * @param subir true levanta a ponta, false abaixa
+     */
+    static String[] rabo(String[] base, boolean subir) {
+        char[][] g = grade(base);
+        int altura = g.length;
+        int largura = g[0].length;
+
+        // A coluna mais a esquerda que ainda e ponta: duas colunas antes do fim do
+        // rabo. Antes disso o rabo encosta no corpo e nao deve se mexer.
+        int fim = -1;
+        for (int y = PRIMEIRA_LINHA_DO_RABO; y < altura; y++) {
+            for (int x = largura - 1; x >= 0; x--) {
+                if (g[y][x] == 'T' || g[y][x] == 't') {
+                    fim = Math.max(fim, x);
+                    break;
+                }
+            }
+        }
+        if (fim < 0) {
+            return base;
+        }
+        int comeco = Math.max(0, fim - 1);
+
+        char[][] o = grade(base);
+        for (int x = comeco; x < largura; x++) {
+            for (int y = PRIMEIRA_LINHA_DO_RABO; y < altura; y++) {
+                o[y][x] = '.';
+            }
+        }
+        for (int x = comeco; x < largura; x++) {
+            for (int y = PRIMEIRA_LINHA_DO_RABO; y < altura; y++) {
+                int destino = subir ? y - 1 : y + 1;
+                if (destino < PRIMEIRA_LINHA_DO_RABO || destino >= altura) {
+                    continue;
+                }
+                if (g[y][x] != '.') {
+                    o[destino][x] = g[y][x];
+                }
+            }
+        }
+        return desfazer(o);
     }
 
     /** Troca a base cheia do vendedor pela base de duas patas da caminhada. */
