@@ -62,22 +62,39 @@ public class Sound {
 		}
 	}
 	
+	/**
+	 * O ganho de um efeito: a curva do slider de efeitos, vezes a do master.
+	 *
+	 * OS DOIS SE MULTIPLICAM porque sao perguntas diferentes. O de efeitos diz
+	 * quanto os efeitos valem DENTRO da mixagem; o master diz quanto a mixagem
+	 * inteira vale na sala em que voce esta. Somar seria misturar as duas coisas;
+	 * multiplicar deixa o master mover tudo sem desfazer o equilibrio ajustado.
+	 */
+	private static double ganhoDeEfeito() {
+		return Ganho.de(Configs.Volum()) * Ganho.de(Configs.Master());
+	}
+
+	/** O mesmo para a musica. */
+	static double ganhoDeMusica() {
+		return Ganho.de(Configs.Music()) * Ganho.de(Configs.Master());
+	}
+
 	public static void play(Sounds sound) {
 		if(!sounds.containsKey(sound.resource()))
 			throw new RuntimeException("sound not exists");
-		sounds.get(sound.resource()).play((double) Configs.Volum() / 100d);
+		sounds.get(sound.resource()).play(ganhoDeEfeito());
 	}
 
 	public static void play(Sounds sound, double pan) {
 		if(!sounds.containsKey(sound.resource()))
 			throw new RuntimeException("sound not exists");
-		sounds.get(sound.resource()).play((double) Configs.Volum() / 100d, pan);
+		sounds.get(sound.resource()).play(ganhoDeEfeito(), pan);
 	}
 	
 	public static void play(Musics music, boolean loop) {
 		if(!musics.containsKey(music.resource()))
 			throw new RuntimeException("sound not exists");
-		musics.get(music.resource()).play(loop, (double) Configs.Music() / 100d);
+		musics.get(music.resource()).play(loop, ganhoDeMusica());
 	}
 
 	/**
@@ -92,7 +109,7 @@ public class Sound {
 			throw new RuntimeException("sound not exists");
 		Music m = musics.get(music.resource());
 		if(!m.playing()) {
-			m.play(loop, (double) Configs.Music() / 100d);
+			m.play(loop, ganhoDeMusica());
 		}
 	}
 
@@ -112,14 +129,14 @@ public class Sound {
 		}
 		Music m = musics.get(music.resource());
 		if(m != null) {
-			m.setVolume(Math.max(0d, Math.min(1d, fracao)) * Configs.Music() / 100d);
+			m.setVolume(Math.max(0d, Math.min(1d, fracao)) * ganhoDeMusica());
 		}
 	}
 
 	public static void play(Musics music, boolean loop, double pan) {
 		if(!musics.containsKey(music.resource()))
 			throw new RuntimeException("sound not exists");
-		musics.get(music.resource()).play(loop, (double) Configs.Music() / 100d, pan);
+		musics.get(music.resource()).play(loop, ganhoDeMusica(), pan);
 	}
 
 	public static void stop(Sounds sound) {
@@ -171,7 +188,7 @@ public class Sound {
 		}
 		m.resume();
 		if(!m.playing()) {
-			m.play(true, (double) Configs.Music() / 100d);
+			m.play(true, ganhoDeMusica());
 		}
 	}
 
@@ -210,7 +227,7 @@ public class Sound {
 			}
 			m.resume();
 			if(!m.playing()) {
-				m.play(true, (double) Configs.Music() / 100d);
+				m.play(true, ganhoDeMusica());
 			}
 		}
 		emAudicao.clear();
@@ -306,7 +323,7 @@ public class Sound {
 	public static void updateVolumes() {
 		if (musics != null) {
 			for (Music music : musics.values()) {
-				double volume = (double) Configs.Music() / 100d;
+				double volume = ganhoDeMusica();
 				music.setVolume(volume);
 			}
 		}

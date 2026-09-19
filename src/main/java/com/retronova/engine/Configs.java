@@ -44,8 +44,18 @@ public class Configs {
         DEFAULTS.put("MARGIN", 20);
         DEFAULTS.put("ZOOM", 130);        // por cento; ver Zoom()
         DEFAULTS.put("NeatGraphics", false);
-        DEFAULTS.put("VOLUM", 20);
-        DEFAULTS.put("MUSIC", 20);
+        // OITENTA, E NAO OS VINTE DE ANTES. Vinte nao era gosto de ninguem: era o
+        // conserto que sobrou de os arquivos chegarem desnivelados e alguns
+        // clipados, entao o jeito de a faixa do chefe nao machucar era cortar tudo
+        // a um quinto. Com a regua do tools/GenMixagem.java aplicada, o topo do
+        // slider passou a ser o nivel de referencia da mixagem, e oitenta e o que a
+        // pesquisa recomenda como padrao: alto o bastante para se jogar assim mesmo
+        // e com folga para subir.
+        DEFAULTS.put("VOLUM", 80);
+        DEFAULTS.put("MUSIC", 80);
+        DEFAULTS.put("MASTER", 100);
+        // Marca de qual mundo o arquivo veio. Ver migrarAudio.
+        DEFAULTS.put("AUDIOVERSION", 2);
         DEFAULTS.put("hitboxes", false);
         DEFAULTS.put("MaxFrames", 60);
         DEFAULTS.put("indexResolution", 0);
@@ -92,6 +102,32 @@ public class Configs {
         for (Map.Entry<String, Object> padrao : DEFAULTS.entrySet()) {
             aplicar(padrao.getKey(), objeto.get(padrao.getKey()), padrao.getValue());
         }
+        if (objeto.get("AUDIOVERSION") == null) {
+            migrarAudio();
+        }
+    }
+
+    /**
+     * Converte volumes gravados no mundo linear para a curva nova.
+     *
+     * A AUSENCIA DA CHAVE E A PROPRIA MARCA. Um config.json gravado antes desta
+     * mudanca nao tem "AUDIOVERSION"; um recem-criado tem, porque sai dos padroes.
+     * Nao ha como confundir os dois casos, e por isso a migracao nao precisa de
+     * nenhum estado extra — ela roda uma vez e o proximo update() ja grava a
+     * chave, o que a desliga para sempre.
+     *
+     * POR QUE MIGRAR EM VEZ DE DEIXAR. Os numeros antigos valiam ganho direto:
+     * MUSIC 20 era 0,20, ou -14 dB. Lidos pela curva nova os mesmos 20 dariam
+     * -32 dB, dezoito decibeis abaixo. Quem ja jogava abriria o jogo, ouviria silencio e
+     * concluiria — com razao — que a atualizacao quebrou o som. Convertido, 20
+     * vira 65 e a pessoa continua ouvindo o que ouvia.
+     */
+    private static void migrarAudio() {
+        for (String chave : new String[] {"VOLUM", "MUSIC"}) {
+            int antigo = inteiro(chave);
+            VALUES.put(chave, com.retronova.engine.sound.Ganho.posicaoDe(antigo / 100d));
+        }
+        update();
     }
 
     /**
@@ -302,6 +338,22 @@ public class Configs {
 
     public static void setVolum(int VOLUM) {
         VALUES.put("VOLUM", VOLUM);
+        update();
+    }
+
+    /**
+     * O controle que manda em tudo, musica e efeito.
+     *
+     * Existe porque baixar o jogo inteiro exigia mexer em dois controles, e quem
+     * so quer abaixar o volume nao esta querendo remixar nada. E o primeiro item
+     * das recomendacoes de tela de audio justamente por isso.
+     */
+    public static int Master() {
+        return inteiro("MASTER");
+    }
+
+    public static void setMaster(int MASTER) {
+        VALUES.put("MASTER", MASTER);
         update();
     }
 

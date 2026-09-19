@@ -135,6 +135,10 @@ public class Options implements Activity {
                 .desc("Darkens the corners of the screen during gameplay, to focus the eye on the center."));
 
         List<OptionRow> audio = new ArrayList<>();
+        audio.add(OptionRow.slider("Master", Configs::Master, v -> {
+            Configs.setMaster(v);
+            Sound.updateVolumes();
+        }, 0, 100, 5, "%").desc("Overall loudness of the game. Scales music and sound effects together."));
         audio.add(OptionRow.slider("Music", Configs::Music, v -> {
             Configs.setMusic(v);
             Sound.updateVolumes();     // aplica ao vivo: é preciso ouvir para ajustar
