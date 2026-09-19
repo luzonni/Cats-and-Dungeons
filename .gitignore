@@ -16,6 +16,14 @@ config.json
 config.json.tmp
 config.json.bak
 
+# As corridas interrompidas, gravadas em tempo de execução. É estado de UMA
+# pessoa jogando, e não do projeto: versioná-las faria o jogo de cada um começar
+# dentro da partida de outro. O corrida.json solto é da versão de um espaço só,
+# migrado para saves/ na primeira execução.
+saves/
+corrida.json
+corrida.json.tmp
+
 # IDEs
 .idea/
 *.iml
