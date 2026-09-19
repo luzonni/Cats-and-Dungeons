@@ -37,7 +37,25 @@ Não têm publicação no Maven Central.
 | [Ninja Throwing Items Kit](https://opengameart.org/content/ninja-throwing-items-kit-32x32) | kungfu4000 | CC0 1.0 | Desenho da kunai |
 | [16x16 RPG Items (DB32)](https://opengameart.org/content/16x16-rpg-items-db32) | ARoachIFoundOnMyPillow | CC0 1.0 | Varinhas de agua (orbe) e de fogo (tocha) |
 | [16x16 Puny Dungeon Tileset](https://opengameart.org/content/16x16-puny-dungeon-tileset) | Shade | CC0 1.0 | Tiles da cisterna inundada (primeira arena) |
+| [Pixelart Spells](https://opengameart.org/content/pixelart-spells) | DevWizard | CC0 1.0 | Lufada de vento da partícula de impacto do elemento ar |
 | Pixel Bow Pack | **a confirmar** | **⚠ a confirmar** | Desenhos dos arcos |
+
+As **partículas de impacto elementais** são montadas por
+`tools/GenParticulasElementais.java`, e só duas das seis vieram de fora.
+
+Quatro já estavam em `sprites/objects/particle/`, e **duas delas sem uso nenhum**:
+o floco que estilhaça (`ice.png`) e a gota que estoura (`water.png`) estavam no
+repositório sem uma linha de código referenciando, exatamente como os WAV
+elementais antes de virarem som de golpe. São impactos prontos e no traço da casa.
+`fire.png` já servia à queimadura e `damagemobs.png` é o brilho dourado da lendária.
+
+Sobravam **terra** e **ar**. A terra é a própria `dust.png` repintada em dois
+marrons e com a opacidade subida — poeira a 70 de alfa é fumaça, e torrão tapa o
+que está atrás. O ar é o único import: o `Wind Bolt` do pacote do DevWizard, cuja
+paleta já é quase a cor do elemento. O pacote é de **projéteis**, não de impactos
+— quase tudo ali voa para a direita —, e por isso só essa peça serviu; a única
+alteração foi pôr uma rampa de dissipação nos últimos quadros, já que os seis
+quadros originais são um ciclo de voo e não um estouro que morre.
 
 As **variantes elementais** das armas são montadas por `tools/GenElementais.java`.
 

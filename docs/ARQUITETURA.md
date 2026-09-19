@@ -91,6 +91,57 @@ como Service Provider do `javax.sound`: como o TinySound usa
 classpath. Nenhuma linha de código de áudio mudou por causa do formato — só a
 extensão do arquivo.
 
+### A régua de loudness
+
+Os arquivos **não** são usados como chegaram. `tools/GenMixagem.java` põe todos
+na mesma régua, e isso é o que torna os controles de volume utilizáveis.
+
+O estado anterior era um laço sem saída: as músicas iam de **-6,9 LUFS**
+(`fight_boss`) a **-33,8** (`menu_ambient`), vinte e sete decibéis — o chefe
+soava seis vezes e meia mais alto que o menu. Os efeitos iam de **-13,0 dB RMS**
+(`laser`) a **-43,6** (`woosh`), trinta e um decibéis. Como a dispersão estava
+DENTRO de cada categoria, e um slider move a categoria inteira junto, não existia
+posição certa do controle: subir para ouvir a espada estourava o laser. Onze
+arquivos chegavam ainda em 0 dBFS ou acima, já clipados.
+
+Normalizar **não** é achatar — o passo do gato deve ser mais baixo que a
+explosão. O que estava errado era a diferença ser acidental. Então são camadas:
+
+| Camada | Alvo | O que entra |
+|---|---|---|
+| Fundo | -34 dB RMS | passo, ponteiro, ronco |
+| Rotina | -28 dB RMS | espada, flecha, laser, impactos elementais |
+| Evento | -24 dB RMS | moeda, portal, gritos de bicho |
+| Marcante | -20 dB RMS | levar dano, explosão, conquista |
+| Trilha | -18 LUFS | todas as músicas |
+| Leito ambiente | -27 LUFS | `menu_ambient`, colchão debaixo da música |
+
+RMS para efeito e LUFS para música porque o algoritmo da EBU R128 trabalha em
+blocos de 400 ms: em arquivo de 30 ms ele devolve -70, que quer dizer "não medi".
+O teto de pico é -1,5 dBFS, com folga para o mixer somar dois sons.
+
+O gerador é **idempotente** — o alvo é absoluto, então a segunda passada não
+escreve nada. Isso importa para os OGG, que perderiam uma geração de qualidade a
+cada execução. Ele deve rodar **depois** dos outros geradores de áudio.
+
+### A curva dos controles
+
+`Ganho.java` converte a posição do slider em ganho. Era `valor/100`, ganho
+linear, que é um erro conhecido: audição é logarítmica, então metade do curso
+cobria só os últimos 6 dB e o resto quase não respondia.
+
+A curva é `y = a·e^(b·x)` com **40 dB** de alcance, mais uma rampa em reta nos
+10% finais para o mínimo ser silêncio de verdade — exponencial nunca chega a
+zero. Quarenta, e não os sessenta da recomendação genérica, porque os arquivos já
+passaram pela régua: o slider ajusta gosto, não conserta loudness.
+
+Há **três** controles: Master, Music e Sound effects. O master multiplica os
+outros dois, para baixar o jogo inteiro sem desfazer o equilíbrio.
+
+Configs antigos são migrados uma vez, pela ausência da chave `AUDIOVERSION`: os
+números do mundo linear são convertidos para a posição equivalente na curva
+(`MUSIC 20` vira `65`). Sem isso, quem já jogava abriria o jogo em -32 dB.
+
 ## Pontos frágeis conhecidos
 
 Registrados para não se perderem:
