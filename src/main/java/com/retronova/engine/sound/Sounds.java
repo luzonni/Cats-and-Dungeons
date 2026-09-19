@@ -81,6 +81,42 @@ public enum Sounds {
 	 */
 	Portal("portal"),
 
+	/**
+	 * OS CINCO ELEMENTAIS JA ESTAVAM EM resources, e nenhum era usado.
+	 *
+	 * fire, ice, water, wind e thunder estavam la desde sempre, sem uma linha de
+	 * codigo referenciando — arquivos orfaos, provavelmente baixados junto com o
+	 * resto do pacote e esquecidos. Agora que o elemento e escolha de corrida, eles
+	 * sao exatamente o que faltava: e o som que diz, a cada golpe, de que corrida
+	 * esta e.
+	 *
+	 * OS ARQUIVOS SAO OS RECORTES, e nao os originais. Os originais duram de dois
+	 * a quase tres segundos: sao AMBIENCIA, feitos para tocar sozinhos e em loop. A
+	 * espada golpeia a cada 0,3 s, entao ligados direto ao golpe eles punham sete
+	 * copias tocando ao mesmo tempo, somando seis decibeis a cada dobra — nao era um
+	 * efeito alto, era o mesmo efeito empilhado sete vezes. tools/GenSonsElementais
+	 * recorta os 350 ms do ataque e deixa os originais intactos para o dia em que
+	 * houver ambiencia de sala elemental.
+	 */
+	Fogo("hit_fire"),
+	Gelo("hit_ice"),
+	Agua("hit_water"),
+	Ar("hit_wind"),
+	Terra("hit_earth"),
+	Trovao("hit_thunder"),
+
+	/**
+	 * O som de conquista, para o momento em que a arma vira outra.
+	 *
+	 * Arpejo maior ascendente, sintetizado por tools/GenSonsDeCena.java. Nao havia
+	 * nada parecido no projeto: a escolha mais importante da corrida acontecia em
+	 * silencio.
+	 */
+	Conquista("achievement"),
+
+	/** O ronco do gato dormindo. Derivado do proprio miado. Ver GenSonsDeCena. */
+	Ronco("purr"),
+
 	Woosh("woosh");
 
 	
