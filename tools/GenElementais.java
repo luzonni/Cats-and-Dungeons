@@ -150,7 +150,7 @@ public class GenElementais {
             // guarda. Por isso o cabo tambem sai "dark": deixa-lo marrom daria uma
             // espada preta com cabo de madeira, que nao e o desenho.
             new Peca("sword",         ASSORTED, 2, 1, "dark", "dark", "gema"),
-            new Peca("swordfire",     ASSORTED, 2, 8, "fire"),
+            new Peca("sword_fire",     ASSORTED, 2, 8, "fire"),
             new Peca("sword_ice",     ASSORTED, 2, 5, "ice"),
             new Peca("sword_water",   ASSORTED, 2, 3, "water"),
             new Peca("sword_earth",   ASSORTED, 2, 7, "earth"),

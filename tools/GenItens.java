@@ -91,7 +91,7 @@ public class GenItens {
             // corpo a corpo, na altura do gato ou abaixo
             new Arma("kunai", "weapon_knife", 10),
             new Arma("sword", "weapon_regular_sword", 12),
-            new Arma("swordfire", "weapon_lavish_sword", 13),
+            new Arma("sword_fire", "weapon_lavish_sword", 13),
             new Arma("sickle", "weapon_machete", 12),
             new Arma("claw_blades", "weapon_saw_sword", 12),
             new Arma("bloody_axe", "weapon_waraxe", 12),

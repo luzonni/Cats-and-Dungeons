@@ -25,7 +25,15 @@ public class SwordFire extends Item {
 
 
     SwordFire(int id) {
-        super(id, "SwordFire", "swordfire");
+        // O ARQUIVO PASSOU A SE CHAMAR sword_fire, com sublinhado.
+        //
+        // Ele era a unica arte de arma elemental fora do padrao — feita a mao antes
+        // do gerador existir — e Item.variante ate documentava a excecao. Enquanto o
+        // elemento morava na arma isso era so uma esquisitice de nome; quando ele
+        // virou escolha de CORRIDA, passou a ser um buraco: Elemento.sprite("sword")
+        // pede "sword_fire", esse arquivo nao existia, e quem escolhesse fogo via a
+        // espada virar um bloco rosa e preto de textura faltando.
+        super(id, "SwordFire", "sword_fire");
         this.damage = 35;
         this.side = 1;
         this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));
