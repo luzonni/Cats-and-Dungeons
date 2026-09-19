@@ -184,7 +184,18 @@ public class Personagens implements Activity {
     private Rectangle caixaModelo = new Rectangle();
     private Rectangle arte = new Rectangle();
 
-    public Personagens() {
+    /**
+     * Em que espaco de save a corrida que esta sendo montada vai morar.
+     *
+     * Vem da tela de saves, e nao e escolhido aqui: escolher o gato e escolher onde
+     * gravar sao duas perguntas, e junta-las obrigaria a repetir os tres espacos
+     * para cada gato. A tela de saves pergunta primeiro "qual corrida", esta
+     * pergunta "qual gato".
+     */
+    private final int espaco;
+
+    public Personagens(int espaco) {
+        this.espaco = espaco;
         // A trilha do menu NAO e trocada aqui. Escolher o gato ainda e a tela
         // inicial: cortar a musica no meio para tocar outra por poucos segundos
         // soava como se o jogador tivesse mudado de lugar quando nao mudou.
@@ -225,7 +236,7 @@ public class Personagens implements Activity {
         // Cala o menu ANTES de montar o jogo: o construtor de Room ja sobe a
         // trilha da antecamara, e um stopAll depois dele mataria as duas.
         Sound.stopAll();
-        Activity novoJogo = new Game(selecionado, new Room("beginning"));
+        Activity novoJogo = new Game(selecionado, new Room("beginning"), espaco);
         // Sem trabalho para fazer aqui: o jogo ja esta montado. Quem segura a
         // transicao e o tempo minimo do proprio Loading.
         Engine.heapActivity(novoJogo, () -> { });

@@ -64,6 +64,20 @@ public class Bow extends Item {
         return this.elemento;
     }
 
+    /**
+     * Dano da propria arma, somado ao do gato.
+     *
+     * ERA ZERO, e isso era descuido e nao desenho. A espada soma 35 e a varinha 20;
+     * a flecha saia com o dano do gato e mais nada, entao o Finn batia por NOVE
+     * enquanto o Muffin batia por quarenta e cinco — cinco vezes menos, antes de
+     * qualquer resistencia entrar na conta.
+     *
+     * Doze e menos que a varinha de proposito: o arco dispara a cada doze quadros
+     * contra os trinta dela, entao em dano por segundo ele passa na frente mesmo
+     * somando menos por flecha. E acerta de longe, que ja e uma vantagem.
+     */
+    private static final double DANO = 12;
+
     @Override
     public double cadencia() {
         return elemento.cadencia();
@@ -142,11 +156,11 @@ public class Bow extends Item {
         Arrow arrow = new Arrow(b.x, b.y, tiro, elemento.sprite("arrow"), 7d, shooter,
                 (entity) -> {
             entity.strike(elemento.ataque(AttackTypes.Piercing),
-                    elemento.dano(shooter.getDamage()));
+                    elemento.dano(DANO + shooter.getDamage()));
             entity.getPhysical().addForce("knockback", 4, tiro);
         });
         Game.getMap().put(arrow);
-        Sound.play(Sounds.Bow);
+        tocarGolpe(Sounds.Bow);
     }
 
     @Override

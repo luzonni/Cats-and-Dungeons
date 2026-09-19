@@ -120,6 +120,7 @@ public class Pause implements Activity {
         for (Button botao : botoes) {
             botao.render(g);
         }
+        desenharAvisoDoSave(g);
         confirmacao.render(g);
     }
 
@@ -135,6 +136,35 @@ public class Pause implements Activity {
         g.drawString(titulo, x + s, y + s);
         g.setColor(Palette.LIGHT);
         g.drawString(titulo, x, y);
+    }
+
+    /**
+     * Diz onde a corrida está gravada, embaixo dos botões.
+     *
+     * NÃO HÁ BOTÃO DE "SAVE AND QUIT", e a ausência é proposital: o jogo já gravou
+     * sozinho ao entrar nesta sala. Um botão de salvar sugeriria que sem ele nada
+     * é gravado, o que é falso, e ainda prometeria gravar o instante atual — que é
+     * o que este save justamente não faz.
+     *
+     * O que faltava não era o mecanismo, era o jogador SABER dele. Sem esta linha,
+     * sair da partida parece perder tudo, e quem acha que vai perder tudo não sai —
+     * fica jogando cansado, que é o problema que um suspend save existe para
+     * resolver. Uma frase resolve, e ela diz a verdade inteira, inclusive a parte
+     * inconveniente: o ponto é o COMEÇO desta sala, não este segundo.
+     */
+    private void desenharAvisoDoSave(Graphics2D g) {
+        int s = Configs.UiScale();
+        Font fonte = FontHandler.font(FontHandler.Game, 5f * s);
+        String aviso = "Your run is saved at the start of this room";
+        int largura = FontHandler.getWidth(aviso, fonte);
+        int x = Engine.window.getWidth() / 2 - largura / 2;
+        Rectangle ultimo = botoes.get(botoes.size() - 1).getBounds();
+        int y = ultimo.y + ultimo.height + 10 * s;
+        g.setFont(fonte);
+        g.setColor(Palette.OUTLINE);
+        g.drawString(aviso, x + s, y + s);
+        g.setColor(Palette.LIGHT);
+        g.drawString(aviso, x, y);
     }
 
     @Override

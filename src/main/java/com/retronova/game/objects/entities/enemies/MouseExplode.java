@@ -29,22 +29,66 @@ public class MouseExplode extends Enemy {
     }
 
     public void tick() {
-        moveIA();
+        if (pavio >= 0) {
+            // ACESO, ELE PARA. Um bicho que persegue enquanto o pavio queima nao da
+            // para evitar — a unica leitura seria correr, e correr de um bicho mais
+            // lento que voce nao e decisao nenhuma.
+            if (--pavio <= 0) {
+                explodir(Game.getPlayer());
+            }
+        } else {
+            moveIA();
+        }
         animar();
     }
 
     public void moveIA() {
         Player player = Game.getPlayer();
-
-        if(this.getDistance(player) < GameObject.SIZE()) {
-            explodir(player);
-//            getPhysical().addForce("move", getSpeed(), radians);
+        // ELE VOLTOU A ANDAR. A linha que o movia estava COMENTADA, entao ele
+        // nascia com duzentos de vida e trinta e tres de dano e ficava plantado ate
+        // alguem encostar. Como as ondas da sala doze em diante sao feitas dele,
+        // metade do jogo era um campo de estatuas.
+        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        getPhysical().addForce("move", getSpeed(), radians);
+        if (this.getDistance(player) < GameObject.SIZE() * ALCANCE) {
+            acender();
         }
+    }
 
+    /**
+     * Quadros entre acender o pavio e explodir.
+     *
+     * A EXPLOSAO PRECISA DE MAIS AVISO QUE QUALQUER OUTRO GOLPE, porque e a que
+     * mais machuca: trinta e tres de dano contra oitenta de vida. Sem pavio, ela
+     * era um pedagio por chegar perto; com pavio, vira uma corrida — da para
+     * recuar, matar antes, ou aceitar a troca. Cinquenta quadros sao quase um
+     * segundo, longos de proposito.
+     */
+    private static final int PAVIO = 50;
+
+    /** A que distancia o pavio acende, em tiles. */
+    private static final double ALCANCE = 1.8;
+
+    private int pavio = -1;
+
+    private void acender() {
+        if (pavio < 0) {
+            pavio = PAVIO;
+            Sound.play(Sounds.Crack);
+        }
+    }
+
+    /** De 0 a 1 conforme o pavio queima. E o clarao que avisa. */
+    private float carga() {
+        return pavio < 0 ? 0f : 1f - pavio / (float) PAVIO;
     }
 
     private void explodir(Player player) {
-        player.strike(AttackTypes.Explosion, getDamage());
+        // SO ACERTA QUEM AINDA ESTIVER PERTO. O pavio nao vale nada se o dano sair
+        // de qualquer jeito: e esta conferencia que transforma o aviso em chance.
+        if (player.getDistance(this) < GameObject.SIZE() * ALCANCE * 1.6) {
+            player.strike(AttackTypes.Explosion, getDamage());
+        }
         double range = GameObject.SIZE()*1.5d;
         for(int i = 0; i < 60; i++) {
             double angle = Engine.RAND.nextDouble(Math.toRadians(360));
@@ -71,7 +115,10 @@ public class MouseExplode extends Enemy {
         if(orientation == 0)
             orientation = -1;
         BufferedImage sprite = SpriteHandler.flip(getSprite(), 1, orientation);
-        renderSprite(sprite, d);
+        float carga = carga();
+        renderSprite(carga > 0.01f
+                ? com.retronova.game.objects.entities.Expressao.clarao(sprite, carga)
+                : sprite, d);
     }
 
 }

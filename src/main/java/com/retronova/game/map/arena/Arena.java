@@ -58,9 +58,25 @@ public class Arena extends GameMap {
     private Musics trilha;
 
     public Arena(int difficult) {
-        super(planta(difficult, Game.getGame().getLevel()));
+        this(difficult, Game.getGame().getLevel());
+    }
+
+    /**
+     * A arena com o nivel dito de fora.
+     *
+     * EXISTE PARA A RETOMADA. O construtor de cima pergunta o nivel a
+     * {@code Game.getGame()}, que resolve pela activity corrente — e ao retomar uma
+     * corrida a arena precisa ser montada DENTRO do construtor do Game, quando ele
+     * ainda nao esta na pilha e a pergunta nao tem resposta.
+     *
+     * Sem isto, a unica saida era comecar no saguao e trocar de sala no primeiro
+     * tick, o que fazia o jogador ver o saguao e ser teleportado — parecia defeito,
+     * e era.
+     */
+    public Arena(int difficult, int nivel) {
+        super(planta(difficult, nivel));
         this.ended = false;
-        this.waves = new Waves(this, Game.getGame().getLevel(), difficult);
+        this.waves = new Waves(this, nivel, difficult);
         Sound.stop(Musics.Room);
         // DEVOLVE O VOLUME DAS FAIXAS DE ACAO.
         //
@@ -179,6 +195,23 @@ public class Arena extends GameMap {
         Sound.volume(calma, t);
     }
 
+    /**
+     * Solta a saida assim que a arma terminar de mudar.
+     *
+     * Roda no tick da arena e nao no fim da animacao porque quem sabe que a
+     * animacao acabou e o gato; a arena so precisa perguntar.
+     */
+    private void esperarATransmutacao() {
+        if (!esperandoTransmutacao) {
+            return;
+        }
+        if (Game.getPlayer().transmutando()) {
+            return;
+        }
+        esperandoTransmutacao = false;
+        liberarSaida();
+    }
+
     private boolean temChefe() {
         for (Enemy e : Game.getMap().getEntities(Enemy.class)) {
             if (e.chefe()) {
@@ -263,11 +296,21 @@ public class Arena extends GameMap {
     }
 
     private void tickCamera() {
-        if (olhandoASaida <= 0) {
-            return;
+        // A GUARDA ERA "SE NAO ESTA OLHANDO A SAIDA, SAI" — e era o bug.
+        //
+        // A volta da camera acontece DEPOIS de olhandoASaida chegar a zero, e o
+        // proprio zero fazia o metodo retornar no tick seguinte. O contador da
+        // volta ficava congelado no valor em que parou, nunca chegava a zero, e
+        // {@code velocidadeDeCena(0)} nunca era chamado: a camera continuava na
+        // velocidade de CENA, que e um vigesimo da normal, pelo resto da sala. So
+        // parecia normalizar na troca de fase porque ali nasce uma camera nova.
+        //
+        // Os dois contadores sao independentes e agora correm independentes.
+        if (olhandoASaida > 0) {
+            olhandoASaida--;
         }
-        olhandoASaida--;
-        if (olhandoASaida == 0) {
+        if (olhandoASaida == 0 && voltando == 0 && saidaLiberada && !voltaFeita) {
+            voltaFeita = true;
             // A VOLTA TAMBEM E LENTA. So depois de chegar no gato a camera recupera
             // a velocidade de jogo — devolver antes faria o retorno ser o corte que
             // a ida deixou de ser.
@@ -316,6 +359,7 @@ public class Arena extends GameMap {
         }
         tickCamera();
         ajustarTrilha();
+        esperarATransmutacao();
         if(waves.ended() && !ended && enemiesEmpty()) {
             ended = true;
             abrirRecompensa();
@@ -343,8 +387,45 @@ public class Arena extends GameMap {
      *   SEGUIR — o alcapao. Ele so nasce depois da carta escolhida, senao daria
      *   para pular a recompensa correndo para o buraco.
      */
+    /**
+     * A recompensa de fim de turno — e a PRIMEIRA e diferente das outras.
+     *
+     * O ELEMENTO E O PREMIO DA PRIMEIRA ARENA, e nao uma pergunta feita no saguao.
+     * A diferenca nao e de lugar, e de ORDEM: o jogador enfrenta uma sala inteira
+     * com a arma de fabrica antes de escolher, entao quando as tres cartas
+     * aparecem ele ja sabe como o gato dele bate — o alcance da espada, o ritmo do
+     * arco — e a escolha deixa de ser no escuro. Escolhendo antes de jogar, ele
+     * estaria apostando em palavras.
+     *
+     * E o mesmo desenho do Hades: a primeira camara tem recompensa FORCADA, e ela
+     * e sempre uma bencao. A corrida comeca com uma decisao que define o resto, mas
+     * so depois de a primeira briga ter ensinado alguma coisa.
+     *
+     * O teste e "o gato ainda nao tem elemento", e nao "e a primeira sala". Uma
+     * corrida retomada do save ja escolheu, e o elemento veio gravado junto — ela
+     * cai direto nas cartas normais, sem perguntar de novo.
+     */
     private void abrirRecompensa() {
-        Engine.pause(new Recompensa(this::liberarSaida));
+        if (Game.getPlayer().elemento() == com.retronova.game.items.Elemento.NENHUM) {
+            Engine.pause(new EscolhaDeElemento(() -> {
+                com.retronova.game.Corrida.gravar();
+                // A SAIDA ESPERA A ARMA TERMINAR DE MUDAR. Ver esperarATransmutacao.
+                this.esperandoTransmutacao = true;
+            }));
+            return;
+        }
+        Engine.pause(new Recompensa(() -> {
+            // GRAVA DEPOIS DA ESCOLHA, e este e o detalhe que importa.
+            //
+            // O checkpoint da entrada da sala e anterior a oferta das tres cartas.
+            // Se ele fosse o unico, quem nao gostasse do sorteio poderia fechar o
+            // jogo e voltar para receber outra oferta, quantas vezes quisesse — o
+            // save viraria uma maquina de re-rolagem. Gravando com a carta ja no
+            // inventario, nao ha o que re-sortear. E a mesma razao pela qual o
+            // Hades grava logo apos a recompensa ser aceita.
+            com.retronova.game.Corrida.gravar();
+            liberarSaida();
+        }));
     }
 
     /**
@@ -370,6 +451,9 @@ public class Arena extends GameMap {
 
     private int olhandoASaida;
     private int voltando;
+
+    /** A camera ja voltou para o gato. Impede a volta de ser disparada de novo. */
+    private boolean voltaFeita;
 
     private void liberarSaida() {
         this.saidaLiberada = true;
@@ -418,6 +502,22 @@ public class Arena extends GameMap {
     }
 
     private boolean saidaLiberada;
+
+    /**
+     * A saida foi pedida, mas a arma ainda esta virando outra.
+     *
+     * POR QUE ESPERAR. Liberar a saida comeca a CENA DA CAMERA: ela sai do gato e
+     * viaja ate a alavanca, para mostrar por onde se segue. Disparada junto com a
+     * transmutacao, a camera abandonaria o gato exatamente no segundo em que a arma
+     * dele sobe, acende e volta sendo outra — a animacao aconteceria fora de quadro,
+     * e a unica coisa que o jogador veria da propria escolha seria o nome numa
+     * carta.
+     *
+     * Duas cenas boas disputando o mesmo instante viram duas cenas perdidas. Esta
+     * espera poe as duas em fila: primeiro a arma muda, com a camera no gato; depois
+     * a camera vai embora mostrar a saida.
+     */
+    private boolean esperandoTransmutacao;
 
     boolean enemiesEmpty() {
         List<Enemy> entities = Game.getMap().getEntities(Enemy.class);

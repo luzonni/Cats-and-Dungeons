@@ -142,4 +142,48 @@ public enum Elemento {
     public Color cor() {
         return cor;
     }
+
+    /**
+     * O som deste elemento, ou nulo quando nao ha um.
+     *
+     * Os arquivos ja existiam e nao eram usados por ninguem. Amarra-los aqui, e nao
+     * em cada arma, e o que faz uma corrida de agua SOAR como agua independentemente
+     * do que o gato esteja empunhando — que e o mesmo raciocinio da cor e do tipo de
+     * dano, que tambem moram neste enum.
+     */
+    public com.retronova.engine.sound.Sounds som() {
+        return switch (this) {
+            case NENHUM -> null;
+            case FOGO -> com.retronova.engine.sound.Sounds.Fogo;
+            case GELO -> com.retronova.engine.sound.Sounds.Gelo;
+            case AGUA -> com.retronova.engine.sound.Sounds.Agua;
+            case TERRA -> com.retronova.engine.sound.Sounds.Terra;
+            case AR -> com.retronova.engine.sound.Sounds.Ar;
+            case LENDARIA -> com.retronova.engine.sound.Sounds.Trovao;
+        };
+    }
+
+    /**
+     * O elemento DESTA CORRIDA.
+     *
+     * A VIRADA E ESTA: o elemento deixou de pertencer à arma e passou a pertencer à
+     * partida. Antes, ter gelo significava ter achado uma espada de gelo, e a
+     * decisão acontecia na loja, uma arma de cada vez. Agora é uma escolha só, no
+     * começo, que vale para tudo o que o gato empunhar até o fim — que é como o
+     * Hades faz com as bênçãos de um deus.
+     *
+     * SILENCIOSO FORA DA PARTIDA. A tela de seleção de personagem constrói gatos e
+     * itens para mostrar, e ali não existe corrida nenhuma; {@code Game.getPlayer}
+     * lança nesse caso. Devolver NENHUM em vez de propagar deixa a vitrine e os
+     * menus funcionarem sem saber que este sistema existe.
+     */
+    public static Elemento daCorrida() {
+        try {
+            com.retronova.game.objects.entities.Player gato =
+                    com.retronova.game.Game.getPlayer();
+            return gato == null ? NENHUM : gato.elemento();
+        } catch (RuntimeException foraDaPartida) {
+            return NENHUM;
+        }
+    }
 }

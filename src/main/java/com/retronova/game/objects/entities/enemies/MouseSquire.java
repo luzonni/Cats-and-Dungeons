@@ -1,5 +1,7 @@
 package com.retronova.game.objects.entities.enemies;
 
+import com.retronova.game.objects.Investida;
+
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
@@ -23,48 +25,26 @@ public class MouseSquire extends Enemy {
         setSolid();
         setLife(70);
         setSpeed(3);
+        // Ver Skeleton para o porque. Aqui havia ainda Poison 1.0 — IMUNIDADE
+        // total —, e o arco anuncia "adiciona veneno": o efeito impresso na arma
+        // valia exatamente zero contra este bicho, sem nada dizer ao jogador.
         addResistances(AttackTypes.Fire, 0.6);
-        addResistances(AttackTypes.Poison, 1);
-        addResistances(AttackTypes.Piercing, 0.7);
-        setXpWeight(500000.0d);
+        setXpWeight(9d);
+        // O "Near" DE REFERENCIA: dano alto, empurrao forte, preparo medio. E dele
+        // que o jogador aprende a ler o clarao, porque ele aparece cedo e bate o
+        // bastante para doer.
+        golpeCorpoACorpo(Investida.media(), 1.2, 8, AttackTypes.Melee,
+                8, 45, Sounds.MouseSquire);
     }
 
     public void tick() {
-        moveIA();
+        if (!tickGolpe()) {
+            moveIA();
+        }
         animation();
-        setDamage();
     }
 
-    public void setDamage() {
-        Player player = Game.getPlayer();
-        cooldown++;
 
-        // Resetar o soundStopDelay se o jogador estiver em contato, independentemente do cooldown
-        if (player.getBounds().intersects(this.getBounds())) {
-            soundStopDelay = 30; // Reseta o delay enquanto o jogador estiver em contato
-        }
-
-        if (player.getBounds().intersects(this.getBounds()) && cooldown > 40) {
-            cooldown = 0;
-            player.strike(AttackTypes.Melee, 6);
-            player.addEffect("knockback", (e) -> {
-                e.getPhysical().setRoughness(0.2);
-                e.getPhysical().addForce("knockback", 8.0d, getPhysical().getAngleForce());
-            }, 0.08);
-
-            Sound.play(Sounds.MouseSquire);
-            soundPlaying = true;
-        } else {
-            if (soundPlaying) {
-                if (soundStopDelay > 0) {
-                    soundStopDelay--;
-                } else {
-                    Sound.stop(Sounds.MouseSquire);
-                    soundPlaying = false;
-                }
-            }
-        }
-    }
 
     public void moveIA() {
         Player player = Game.getPlayer();
@@ -88,6 +68,6 @@ public class MouseSquire extends Enemy {
             orientation = -1;
         }
         BufferedImage sprite = SpriteHandler.flip(getSprite(), 1, orientation);
-        renderSprite(sprite, d);
+        renderComAviso(sprite, d);
     }
 }

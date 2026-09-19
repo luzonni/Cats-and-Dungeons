@@ -77,8 +77,12 @@ public class GameOver implements Activity {
     /** Com qual gato a partida perdida foi jogada. */
     private final int gato;
 
-    public GameOver(int gato) {
+    /** Em que espaco a corrida perdida morava. O "Try Again" recomeca no mesmo. */
+    private final int espaco;
+
+    public GameOver(int gato, int espaco) {
         this.gato = gato;
+        this.espaco = espaco;
         Sound.stopAll();
         Sound.play(Musics.GameOver, true);
         botoes.add(new Button(0, 0, 0, 0, "Try Again", b -> reiniciar()).primary());
@@ -97,7 +101,7 @@ public class GameOver implements Activity {
      */
     private void reiniciar() {
         Sound.stopAll();
-        Engine.heapActivity(new Game(gato, new Room("beginning")), () -> { });
+        Engine.heapActivity(new Game(gato, new Room("beginning"), espaco), () -> { });
     }
 
     private void posicionar() {

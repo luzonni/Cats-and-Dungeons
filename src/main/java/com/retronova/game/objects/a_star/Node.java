@@ -18,10 +18,13 @@ class Node {
 		this.y = y;
 	}
 	
-	public Node(Point position) {
-		this.x = position.x / GameObject.SIZE();
-		this.y = position.y / GameObject.SIZE();
-	}
+	// O CONSTRUTOR QUE RECEBIA PIXELS FOI REMOVIDO.
+	//
+	// Ele dividia por GameObject.SIZE() para virar tile, e era o unico lugar do A*
+	// que falava em pixels. Bastou quem chamava passar a converter antes — coisa
+	// razoavel de se fazer — para a divisao acontecer duas vezes e todo caminho
+	// nascer colado na origem da grade. Tirando o construtor, a unidade deixa de
+	// ser uma convencao que alguem precisa lembrar: aqui so existe tile.
 	
 	public void setSolid(boolean solid) {
 		this.solid = solid;

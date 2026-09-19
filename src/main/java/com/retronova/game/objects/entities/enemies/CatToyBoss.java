@@ -1,5 +1,9 @@
 package com.retronova.game.objects.entities.enemies;
 
+import com.retronova.engine.sound.Sounds;
+
+import com.retronova.game.objects.Investida;
+
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Player;
@@ -22,28 +26,29 @@ public class CatToyBoss extends Enemy {
         loadSprites("cattoyboss");
         setSpeed(4);
         setSolid();
+        setArmadura(200);
+        // O CONTATO SAIU DAQUI TAMBEM. Um chefe que machuca por encostar e pior
+        // que um rato que machuca por encostar: ele e grande, rapido e persegue, e
+        // sem golpe telegrafado a unica leitura possivel e "nunca fique no caminho".
+        golpeCorpoACorpo(Investida.pesada(), 1.6, 18, AttackTypes.Melee,
+                10, 55, Sounds.Cat);
 
     }
 
     @Override
     public void tick() {
+        if (tickGolpe()) {
+            return;
+        }
         Player player = Game.getPlayer();
         double angle = player.getAngle(this);
         getPhysical().addForce("Moving",getSpeed(), angle);
-        if(player.colliding(this)){
-            player.strike(AttackTypes.Melee, 30);
-            //TODO Sound.play
-            player.getPhysical().addForce("knockback", 60, getPhysical().getAngleForce());
-        }
+
     }
 
     @Override
     public void render(Graphics2D g){
         super.render(g);
-        int x = (int)getX();
-        int y = (int)getY();
-        g.setColor(Color.red);
-        g.drawRect(x,y,getWidth(), getHeight());
     }
 
 }

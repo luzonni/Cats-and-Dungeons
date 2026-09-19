@@ -1,5 +1,9 @@
 package com.retronova.game.items;
 
+import com.retronova.engine.sound.Sounds;
+
+import com.retronova.game.objects.Investida;
+
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.Game;
@@ -101,6 +105,7 @@ public class BloodyAxe extends Item {
         }
         double damage = elemento.dano(player.getDamage());
         enemy.strike(elemento.ataque(AttackTypes.Piercing), damage);
+        tocarGolpe(Sounds.Sword);
         if (roubaVida) {
             player.setLife(player.getLife() + damage * 0.06);
         }

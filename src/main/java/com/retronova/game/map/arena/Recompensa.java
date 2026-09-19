@@ -11,8 +11,7 @@ import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.game.items.Item;
-import com.retronova.game.items.ItemIDs;
+import com.retronova.game.items.Melhorias;
 import com.retronova.menus.shared.Button;
 
 import java.awt.Color;
@@ -45,28 +44,22 @@ import java.util.List;
  * fecham no automatico; obrigando, cada fim de turno vira uma decisao pequena
  * que o jogador de fato toma.
  *
- * O QUE ELA AINDA NAO E. Por enquanto as cartas so oferecem ARMAS, e a oferta e
- * sorteio simples. Bencaos, melhorias de atributo, raridade e cartas que
- * conversam entre si sao o passo seguinte; o encanamento — sortear, mostrar,
- * escolher, entregar — e o mesmo, e ja esta aqui.
+ * AS CARTAS DEIXARAM DE SER ARMAS. Trocar de arma e uma decisao que se toma UMA
+ * vez: depois que a espada de fogo entra na mao, as proximas quinze cartas de
+ * arma sao ruido. E raridade nao significava nada — uma "espada epica" era uma
+ * espada de outra cor, porque a arma nao tinha grau.
+ *
+ * Agora a carta entrega uma MELHORIA, e a mesma melhoria existe em quatro
+ * intensidades. Isso conserta as duas coisas de uma vez: a raridade passa a ser
+ * QUANTO em vez de O QUE, e toda carta soma em cima do que ja foi escolhido em
+ * vez de substituir. As armas ficaram com o vendedor. Ver Melhoria e Melhorias.
  */
 public class Recompensa implements Activity {
 
     /** Quantas cartas sao oferecidas. Tres e o numero que vira decisao sem virar lista. */
     private static final int QUANTAS = 3;
 
-    /**
-     * Itens que nao entram no sorteio.
-     *
-     * Os consumiveis estao em espera no jogo todo, e o ima foi retirado. Cair uma
-     * carta de item desativado seria oferecer ao jogador uma escolha que nao vale
-     * nada — pior que nao oferecer.
-     */
-    private static final java.util.Set<ItemIDs> FORA = java.util.EnumSet.of(
-            ItemIDs.Feed, ItemIDs.Acorn, ItemIDs.Catnip, ItemIDs.Watermelon,
-            ItemIDs.MagneticOrb, ItemIDs.Bomb, ItemIDs.GasBomb);
-
-    private final List<Item> cartas = new ArrayList<>();
+    private final List<Melhorias.Carta> cartas = new ArrayList<>();
     private final List<Rectangle> caixas = new ArrayList<>();
     private final Runnable aoEscolher;
 
@@ -78,28 +71,14 @@ public class Recompensa implements Activity {
 
     public Recompensa(Runnable aoEscolher) {
         this.aoEscolher = aoEscolher;
-        for (ItemIDs id : sortear()) {
-            cartas.add(Item.build(id.ordinal()));
-        }
+        com.retronova.game.objects.entities.Player gato = Game.getPlayer();
+        double promocao = gato.hasModifier(
+                com.retronova.game.objects.entities.Modifiers.Fortune)
+                ? gato.valueModifier(com.retronova.game.objects.entities.Modifiers.Fortune)
+                : 0;
+        this.cartas.addAll(gato.getMelhorias()
+                .oferecer(QUANTAS, Game.getGame().getLevel(), promocao));
         posicionar();
-    }
-
-    /**
-     * Sorteia sem repetir.
-     *
-     * Embaralhar a lista inteira e tirar as tres primeiras, em vez de sortear tres
-     * vezes: sorteio independente repete, e duas cartas iguais na mesma oferta
-     * desperdicam uma das tres opcoes.
-     */
-    private List<ItemIDs> sortear() {
-        List<ItemIDs> possiveis = new ArrayList<>();
-        for (ItemIDs id : ItemIDs.values()) {
-            if (!FORA.contains(id)) {
-                possiveis.add(id);
-            }
-        }
-        Collections.shuffle(possiveis, Engine.RAND);
-        return possiveis.subList(0, Math.min(QUANTAS, possiveis.size()));
     }
 
     private void posicionar() {
@@ -157,7 +136,9 @@ public class Recompensa implements Activity {
 
     private void escolher(int qual) {
         Sound.play(Sounds.Button);
-        Game.getPlayer().getInventory().give(cartas.get(qual));
+        Melhorias.Carta carta = cartas.get(qual);
+        Game.getPlayer().getMelhorias()
+                .aplicar(Game.getPlayer(), carta.melhoria(), carta.raridade());
         Engine.pause(null);
         if (aoEscolher != null) {
             aoEscolher.run();
@@ -298,20 +279,15 @@ public class Recompensa implements Activity {
     }
 
     /**
-     * A cor que representa a carta.
+     * A cor da carta.
      *
-     * O ELEMENTO GANHA DA RARIDADE quando existe, porque e a informacao mais
-     * especifica: dizer "epico" numa arma que o jogador ja viu ser de gelo repete o
-     * selo em vez de acrescentar. Sem elemento, a raridade e o que ha.
+     * AGORA E SEMPRE A RARIDADE, e nao mais o elemento. Enquanto a carta era uma
+     * arma, o elemento ganhava por ser a informacao mais especifica; uma melhoria
+     * nao tem elemento, e a raridade voltou a ser o unico eixo — que e tambem o
+     * unico que o jogador precisa comparar entre as tres.
      */
-    private static java.awt.Color corDe(Item item) {
-        return item.elemento() == com.retronova.game.items.Elemento.NENHUM
-                ? item.raridade().cor()
-                : item.elemento().cor();
-    }
-
-    private Item item(int i) {
-        return cartas.get(i);
+    private static java.awt.Color corDe(Melhorias.Carta carta) {
+        return carta.raridade().cor();
     }
 
     /**
@@ -347,7 +323,7 @@ public class Recompensa implements Activity {
                 ? new Rectangle(r.x - 2 * s, r.y - 2 * s, r.width + 4 * s, r.height + 4 * s)
                 : r;
 
-        Item carta = item(i);
+        Melhorias.Carta carta = cartas.get(i);
         java.awt.Color daCarta = corDe(carta);
 
         // O BRILHO VEM ANTES DA MOLDURA, para ficar por tras dela.
@@ -355,8 +331,8 @@ public class Recompensa implements Activity {
         // E O QUANTO ELA BRILHA VEM DA RARIDADE, nao do mouse. Aceso igual em tudo,
         // o halo era enfeite; numa escada, ele mesmo e a informacao. O foco
         // ACRESCENTA luz mas nao iguala: uma comum sob o mouse continua mais
-        // discreta que uma lendaria parada, porque o brilho esta dizendo o valor do
-        // item e nao onde esta o cursor.
+        // discreta que uma lendaria parada, porque o brilho esta dizendo o valor da
+        // carta e nao onde esta o cursor.
         respiro += 0.05;
         float pulso = (float) (0.75 + 0.25 * Math.sin(respiro + i));
         float luz = Math.min(1f, carta.raridade().brilho() + (ativa ? 0.3f : 0f));
@@ -380,55 +356,31 @@ public class Recompensa implements Activity {
         Button.frame(ativa).draw(g, ativa ? 1 : 0,
                 caixa.x, caixa.y, caixa.width, caixa.height, s);
 
-        // OS SELOS EM CANTOS OPOSTOS: raridade a esquerda, elemento a direita.
+        // UM SELO SO, no canto esquerdo: o da raridade.
         //
-        // Empilhados no mesmo canto eles competiam — dois losangos coloridos
-        // encostados viram um borrao, e o olho precisa separar um do outro antes de
-        // ler qualquer um. Nos dois cantos, cada um tem o proprio espaco e a carta
-        // ganha simetria: e o mesmo arranjo que carta de jogo usa ha decadas, com o
-        // custo no canto esquerdo e o naipe no direito.
-        //
-        // E ha uma leitura a mais de graca: quando so o canto esquerdo tem selo, o
-        // vazio a direita ja diz "esta arma nao tem elemento" sem desenhar nada.
+        // O canto direito era do elemento, e melhoria nao tem elemento. Deixar um
+        // desenho ali so para preencher seria inventar informacao — o vazio diz a
+        // verdade, e o olho para de procurar um segundo eixo que nao existe.
         int selo = 11 * s;
         int cantoY = caixa.y + ORELHAS * s + 2 * s;
         BufferedImage daRaridade = selo(carta.raridade().simbolo());
         if (daRaridade != null) {
             g.drawImage(daRaridade, caixa.x + 3 * s, cantoY, selo, selo, null);
         }
-        BufferedImage doElemento = selo(carta.elemento().simbolo());
-        if (doElemento != null) {
-            g.drawImage(doElemento, caixa.x + caixa.width - selo - 3 * s, cantoY,
-                    selo, selo, null);
-        }
 
-        // O CONTORNO SEGUE A SILHUETA DA PECA, e nao um retangulo em volta dela.
-        //
-        // As duas tentativas anteriores desenharam retangulos: o primeiro so no
-        // corpo, deixando as orelhas sem cor; o segundo em volta de tudo, passando
-        // reto por cima delas e desenhando um quadrado onde ha duas pontas. Nos dois
-        // casos a borda descrevia uma forma que a carta nao tem.
-        //
-        // A solucao e nao inventar forma nenhuma: a moldura JA TEM o contorno certo,
-        // entao ele e LIDO dela. A peca e desenhada uma vez fora da tela, os pixels
-        // de borda dela sao achados — os que tem tinta e fazem divisa com o vazio —
-        // e sao esses que recebem a cor. O tracado desce na orelha, sobe no vinco,
-        // corre reto no lado: acompanha porque e ela.
         BufferedImage contorno = contornoDe(caixa.width, caixa.height, ativa, s, daCarta);
         if (contorno != null) {
             g.drawImage(contorno, caixa.x, caixa.y, null);
         }
 
-        // O CORPO COMECA ABAIXO DAS ORELHAS. Elas ficam para fora do retangulo
-        // util; desenhar por cima delas jogaria a arte do item na testa da carta.
         int corpoY = caixa.y + ORELHAS * s;
         int esq = caixa.x + 5 * s;
         int dir = caixa.x + caixa.width - 5 * s;
         int util = dir - esq;
         int fundo = caixa.y + caixa.height - 4 * s;
 
-        // ---------------------------------------------------------- 1. a arte
-        BufferedImage arte = carta.getSprite();
+        // ---------------------------------------------------------- 1. o icone
+        BufferedImage arte = icone(carta.melhoria());
         int lado = 30 * s;
         if (arte != null) {
             g.drawImage(arte, caixa.x + caixa.width / 2 - lado / 2, corpoY + 2 * s,
@@ -438,7 +390,7 @@ public class Recompensa implements Activity {
 
         // ---------------------------------------------------------- 2. identidade
         Font nome = FontHandler.font(FontHandler.Game, 6f * s);
-        for (String linha : quebrar(carta.getName(), nome, util)) {
+        for (String linha : quebrar(carta.melhoria().nome(), nome, util)) {
             escreverCentrado(g, linha, caixa, y, carta.raridade().cor(), s, nome);
             y += 7 * s;
         }
@@ -447,37 +399,34 @@ public class Recompensa implements Activity {
                 Palette.LIGHT, s, miuda);
         y += 3 * s;
 
-        // ---------------------------------------------------------- 3. numeros
+        // ---------------------------------------------------------- 3. o efeito
+        //
+        // E A UNICA LINHA QUE IMPORTA, e por isso ela fica sozinha na propria
+        // faixa e no maior corpo depois do nome. Uma carta de melhoria diz uma
+        // coisa so — "+6 de dano" — e enterrar isso numa lista de atributos, como
+        // a carta de arma fazia, seria esconder o unico dado da decisao.
         Font ficha = FontHandler.font(FontHandler.Game, 5f * s);
         y = regua(g, esq, dir, y, s, daCarta);
-        for (String[] par : atributos(carta)) {
+        for (String linha : quebrar(carta.efeito(), ficha, util)) {
             if (y > fundo) {
                 return;
             }
-            escrever(g, par[0], esq, y, Palette.LIGHT, s, ficha);
-            escreverADireita(g, par[1], dir, y, Palette.TEXT, s, ficha);
+            escreverCentrado(g, linha, caixa, y, Palette.TEXT, s, ficha);
             y += 7 * s;
         }
 
-        // ---------------------------------------------------------- 4. efeitos
-        List<String> efeitos = efeitos(carta);
-        if (efeitos.isEmpty()) {
-            return;
-        }
-        y = regua(g, esq, dir, y - 2 * s, s, daCarta);
-        for (String efeito : efeitos) {
-            boolean primeira = true;
-            for (String linha : quebrar(efeito, ficha, util - 5 * s)) {
-                if (y > fundo) {
-                    return;
-                }
-                if (primeira) {
-                    g.setColor(daCarta);
-                    g.fillRect(esq, y - 2 * s, 2 * s, 2 * s);
-                    primeira = false;
-                }
-                escrever(g, linha, esq + 5 * s, y, Palette.ACCENT, s, ficha);
-                y += 6 * s;
+        // ---------------------------------------------------------- 4. o que ja tem
+        //
+        // SO APARECE A PARTIR DA SEGUNDA COPIA, e existe para explicar um numero
+        // que de outra forma pareceria defeito: a terceira "Furia" rende menos que
+        // a primeira, de proposito, e sem esta linha o jogador veria a mesma carta
+        // valendo menos sem entender por que. Dizer quantas ele tem transforma o
+        // desgaste de surpresa em regra.
+        if (carta.jaTinha() > 0) {
+            y = regua(g, esq, dir, y - 2 * s, s, daCarta);
+            if (y <= fundo) {
+                escreverCentrado(g, "You have " + carta.jaTinha(), caixa, y,
+                        Palette.ACCENT, s, ficha);
             }
         }
     }
@@ -495,109 +444,19 @@ public class Recompensa implements Activity {
         return y + 8 * s;
     }
 
-    /**
-     * Os numeros da arma, em pares rotulo/valor.
-     *
-     * DOIS DELES SAO DERIVADOS DO JOGO, e nao de texto: forca e velocidade saem do
-     * elemento e da cadencia que a arma de fato usa para bater, entao a carta nao
-     * pode discordar do combate. O dano e o unico que ainda vem escrito a mao nas
-     * armas, e por isso e LIDO da linha de ficha em vez de inventado.
-     */
-    private static List<String[]> atributos(Item item) {
-        List<String[]> saida = new ArrayList<>();
-        if (item.elemento() != com.retronova.game.items.Elemento.NENHUM
-                && item.elemento() != com.retronova.game.items.Elemento.LENDARIA) {
-            saida.add(new String[]{"Element", item.elemento().rotulo()});
-        }
-        String dano = danoExtra(item);
-        if (dano != null) {
-            saida.add(new String[]{"Damage", "+" + dano});
-        }
-        double poder = item.elemento().dano(1.0);
-        saida.add(new String[]{"Power",
-                String.format(java.util.Locale.ROOT, "x%.2f", poder)});
-        saida.add(new String[]{"Speed", velocidade(item.cadencia())});
-        return saida;
-    }
+    /** Icones ja carregados, um por melhoria. */
+    private static final java.util.Map<String, BufferedImage> ICONES =
+            new java.util.HashMap<>();
 
-    /**
-     * A cadencia dita em palavra, e nao em multiplicador.
-     *
-     * O numero cru enganaria: cadencia MAIOR e golpe mais LENTO, porque ela mede
-     * tempo e nao ritmo. "x1,40" seria lido como "quarenta por cento melhor" por
-     * qualquer pessoa que nao tenha lido o codigo.
-     */
-    private static String velocidade(double cadencia) {
-        if (cadencia <= 0.90) {
-            return "Very fast";
-        }
-        if (cadencia < 0.98) {
-            return "Fast";
-        }
-        if (cadencia <= 1.05) {
-            return "Normal";
-        }
-        if (cadencia < 1.25) {
-            return "Slow";
-        }
-        return "Very slow";
-    }
-
-    /** O que sobra da ficha depois de os numeros sairem dela. */
-    private static List<String> efeitos(Item item) {
-        List<String> saida = new ArrayList<>();
-        for (String spec : item.getSpecifications()) {
-            if (spec == null || spec.isBlank()) {
-                continue;
+    private static BufferedImage icone(com.retronova.game.items.Melhoria melhoria) {
+        return ICONES.computeIfAbsent(melhoria.name().toLowerCase(), n -> {
+            try {
+                return javax.imageio.ImageIO.read(Recompensa.class.getResourceAsStream(
+                        "/com/retronova/resources/sprites/items/melhorias/" + n + ".png"));
+            } catch (Exception naoTem) {
+                return null;
             }
-            if (numeroDepoisDeDano(spec) != null) {
-                continue;               // ja virou a linha "Damage"
-            }
-            saida.add(spec);
-        }
-        return saida;
-    }
-
-    private static String danoExtra(Item item) {
-        for (String spec : item.getSpecifications()) {
-            String numero = numeroDepoisDeDano(spec);
-            if (numero != null) {
-                return numero;
-            }
-        }
-        return null;
-    }
-
-    /** O pedaco que as armas ja escrevem igual ha muito tempo. */
-    private static final String MARCA_DE_DANO = "damage +";
-
-    /**
-     * "Player damage + 12" vira "12"; qualquer outra linha vira null.
-     *
-     * SEM EXPRESSAO REGULAR de proposito: a busca e por um pedaco literal, e uma
-     * varredura de digitos diz exatamente o que aceita. O ganho e a linha de dano
-     * deixar de ser um trecho de texto perdido no meio dos efeitos e virar um valor
-     * alinhado com os das cartas vizinhas — que era a queixa de os atributos nao
-     * estarem legais.
-     */
-    private static String numeroDepoisDeDano(String spec) {
-        if (spec == null) {
-            return null;
-        }
-        int corte = spec.toLowerCase().indexOf(MARCA_DE_DANO);
-        if (corte < 0) {
-            return null;
-        }
-        StringBuilder numero = new StringBuilder();
-        for (int k = corte + MARCA_DE_DANO.length(); k < spec.length(); k++) {
-            char c = spec.charAt(k);
-            if (Character.isDigit(c)) {
-                numero.append(c);
-            } else if (numero.length() > 0 || c != ' ') {
-                break;
-            }
-        }
-        return numero.length() == 0 ? null : numero.toString();
+        });
     }
 
     /** Quebra pela largura medida da fonte, como o painel de personagem. */

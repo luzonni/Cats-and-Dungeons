@@ -20,12 +20,29 @@ import java.awt.Rectangle;
 public class Confirm {
 
     private String mensagem;
+
+    /**
+     * Linhas miudas embaixo da pergunta, ou vazio.
+     *
+     * A PERGUNTA E A DESCRICAO SAO COISAS DIFERENTES, e por isso nao cabem na
+     * mesma linha. "Continue your run?" e a decisao; "Muffin, Room 2, 04:31" e a
+     * informacao que permite tomar a decisao. Espremer as duas numa frase so daria
+     * uma caixa larguissima — o painel se dimensiona pelo texto — e ainda obrigaria
+     * a ler a pergunta inteira para achar o dado.
+     */
+    private String[] detalhes = new String[0];
     private Runnable aoConfirmar;
     private Button sim;
     private Button nao;
 
     /** Abre o diálogo. Enquanto estiver aberto, a tela de trás não recebe cliques. */
     public void perguntar(String mensagem, Runnable aoConfirmar) {
+        perguntar(mensagem, new String[0], aoConfirmar);
+    }
+
+    /** @param detalhes linhas miudas sob a pergunta, para descrever o que sera afetado */
+    public void perguntar(String mensagem, String[] detalhes, Runnable aoConfirmar) {
+        this.detalhes = detalhes == null ? new String[0] : detalhes;
         this.mensagem = mensagem;
         this.aoConfirmar = aoConfirmar;
         this.sim = new Button(0, 0, 0, 0, "Yes", b -> {
@@ -42,6 +59,7 @@ public class Confirm {
 
     public void fechar() {
         this.mensagem = null;
+        this.detalhes = new String[0];
         this.aoConfirmar = null;
         this.sim = null;
         this.nao = null;
@@ -84,13 +102,29 @@ public class Confirm {
         nao.setBounds(new Rectangle(centro + folga / 2, y, larguraBotao, alturaBotao));
     }
 
+    private static Font fonteDaPergunta(int s) {
+        return FontHandler.font(FontHandler.Game, 8f * s);
+    }
+
+    /** Miuda de propósito: o detalhe informa, mas quem decide é a pergunta. */
+    private static Font fonteDoDetalhe(int s) {
+        return FontHandler.font(FontHandler.Game, 5f * s);
+    }
+
+    private static final int ALTURA_DO_DETALHE = 7;
+
     private Rectangle painel() {
         int s = Configs.UiScale();
-        Font fonte = FontHandler.font(FontHandler.Game, 8f * s);
+        Font fonte = fonteDaPergunta(s);
         int largura = Math.max(130 * s, FontHandler.getWidth(mensagem, fonte) + 24 * s);
+        Font miuda = fonteDoDetalhe(s);
+        for (String linha : detalhes) {
+            largura = Math.max(largura, FontHandler.getWidth(linha, miuda) + 24 * s);
+        }
         //30*s cobre: folga superior, a linha da mensagem, o respiro até os botões
         //e a folga inferior. Com 20*s os botões subiam por cima do texto.
-        int altura = 30 * s + Button.preferredHeight();
+        int altura = 30 * s + Button.preferredHeight()
+                + detalhes.length * ALTURA_DO_DETALHE * s;
         return new Rectangle(
                 Engine.window.getWidth() / 2 - largura / 2,
                 Engine.window.getHeight() / 2 - altura / 2,
@@ -116,7 +150,7 @@ public class Confirm {
         g.setColor(Palette.MAIN);
         g.fillRect(p.x + s, p.y + s, p.width - 2 * s, s);
 
-        Font fonte = FontHandler.font(FontHandler.Game, 8f * s);
+        Font fonte = fonteDaPergunta(s);
         int largura = FontHandler.getWidth(mensagem, fonte);
         int altura = FontHandler.getHeight(mensagem, fonte);
         int x = p.x + (p.width - largura) / 2;
@@ -126,6 +160,18 @@ public class Confirm {
         g.drawString(mensagem, x + s, y + s);
         g.setColor(Palette.TEXT);
         g.drawString(mensagem, x, y);
+
+        Font miuda = fonteDoDetalhe(s);
+        g.setFont(miuda);
+        for (String linha : detalhes) {
+            y += ALTURA_DO_DETALHE * s;
+            int lg = FontHandler.getWidth(linha, miuda);
+            int lx = p.x + (p.width - lg) / 2;
+            g.setColor(Palette.OUTLINE);
+            g.drawString(linha, lx + s, y + s);
+            g.setColor(Palette.LIGHT);
+            g.drawString(linha, lx, y);
+        }
         g.dispose();
 
         sim.render(g2);

@@ -125,7 +125,7 @@ public class Seller extends NPC implements com.retronova.game.objects.entities.N
         // vaga, em vez de sumir da loja sem aviso — que e justamente o defeito
         // que esta vitrine existe para pegar.
         for (ItemIDs id : ItemIDs.values()) {
-            if (naPrateleira.contains(id) || EM_ESPERA.contains(id)) {
+            if (naPrateleira.contains(id) || !id.jogavel()) {
                 continue;
             }
             for (int casa = 0; casa < total; casa++) {
@@ -214,10 +214,6 @@ public class Seller extends NPC implements com.retronova.game.objects.entities.N
      * serve. Nada foi apagado: as classes, os IDs e os saves continuam de pe, e
      * tirar um nome desta lista devolve o item a loja.
      */
-    private static final java.util.Set<ItemIDs> EM_ESPERA = java.util.EnumSet.of(
-            ItemIDs.Feed, ItemIDs.Acorn, ItemIDs.Catnip, ItemIDs.Watermelon,
-            ItemIDs.MagneticOrb, ItemIDs.Bomb, ItemIDs.GasBomb);
-
     /** Colunas da loja. Tem de bater com Store.COLUNAS. */
     private static final int COLUNAS = 7;
 

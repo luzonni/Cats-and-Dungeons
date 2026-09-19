@@ -39,6 +39,9 @@ public class Waves implements Runnable {
     private final int[] amount;
     private final EntityIDs[] types;
 
+    /** Em que sala esta onda acontece. Decide a dureza dos bichos. */
+    private final int nivel;
+
     private int counter;
     private int lastCounter;
 
@@ -48,6 +51,7 @@ public class Waves implements Runnable {
 
     public Waves(Arena gameMap, int waveLevel, int difficult) {
         this.gameMap = gameMap;
+        this.nivel = waveLevel;
         JSONArray listWaves = (JSONArray) controller[difficult].get("waves");
         JSONObject wave = (JSONObject) listWaves.get(waveLevel);
         this.period = ((Number)wave.get("period")).intValue();
@@ -110,6 +114,13 @@ public class Waves implements Runnable {
         for(int i = 0; i < amount[step]; i++){
             int id = types[Engine.RAND.nextInt(types.length)].ordinal();
             Entity e = Entity.build(id, 0, 0);
+            // A DUREZA VEM DA SALA, e e aplicada AQUI porque este e o unico lugar
+            // que cria inimigo de onda. Espalhar a conta pelas dez classes daria
+            // dez lugares para alguem esquecer, e o bicho esquecido nasceria em
+            // nivel de fabrica na sala vinte sem nada acusando.
+            if (e instanceof com.retronova.game.objects.entities.enemies.Enemy bicho) {
+                bicho.escalarPara(this.nivel);
+            }
             lista.add(e);
         }
         return lista;

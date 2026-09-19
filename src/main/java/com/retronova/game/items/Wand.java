@@ -1,5 +1,7 @@
 package com.retronova.game.items;
 
+import com.retronova.engine.sound.Sounds;
+
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.Game;
@@ -183,6 +185,7 @@ public class Wand extends Item {
         Arrow bola = new Arrow(x, y, angulo, elemento.sprite("bolt"), VELOCIDADE_DA_BOLA,
                 player, alvoAtingido -> {
             alvoAtingido.strike(elemento.ataque(AttackTypes.Sorcery), total);
+            tocarGolpe(Sounds.Laser);
             alvoAtingido.getPhysical().addForce("knockback", 2, alvoAtingido.getAngle(player));
         });
         Game.getMap().put(bola);

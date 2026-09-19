@@ -98,11 +98,10 @@ public class Store implements Activity {
             }
         }
         Player player = Game.getPlayer();
-        if (indexSelected != -1 && Mouse.on(buttonBuy)
-                && player.getMoney() >= prices[indexSelected]) {
+        if (indexSelected != -1 && Mouse.on(buttonBuy) && podeComprar(player)) {
             Engine.window.pointing();
         }
-        if(indexSelected != -1 &&  Mouse.clickOn(Mouse_Button.LEFT, buttonBuy) && player.getMoney() >= prices[indexSelected]) {
+        if(indexSelected != -1 && Mouse.clickOn(Mouse_Button.LEFT, buttonBuy) && podeComprar(player)) {
             // Na vitrine a prateleira não esvazia: dá para pegar o mesmo item
             // de novo depois de trocar de arma, que é o que uma revisão exige.
             Item comprado = Debugging.VITRINE
@@ -116,6 +115,28 @@ public class Store implements Activity {
             Sound.play(Sounds.Coin);
             Sound.play(Sounds.Cat);
         }
+    }
+
+    /**
+     * Da para levar o item selecionado?
+     *
+     * A PRATELEIRA CONTINUA MOSTRANDO TUDO, e so a compra e barrada. A vitrine
+     * existe para ser o inventario visivel do projeto — bater o olho e ver o que ja
+     * existe e o que ainda falta de arte —, entao esconder metade dela por causa do
+     * gato da vez derrotaria o proposito dela. Barrar na hora de comprar preserva
+     * as duas coisas: a vitrine seve de catalogo, e o gato de espada nao sai de la
+     * com uma varinha que ele nao sabe empunhar.
+     */
+    private boolean podeComprar(Player player) {
+        if (indexSelected < 0 || slots[indexSelected].isEmpty()) {
+            return false;
+        }
+        if (player.getMoney() < prices[indexSelected]) {
+            return false;
+        }
+        // Na vitrine nao ha trava: quem esta revisando arte precisa pegar qualquer
+        // item na mao, e a classe do gato da vez nao tem nada a ver com isso.
+        return Debugging.VITRINE || player.sabeUsar(slots[indexSelected].item());
     }
 
     @Override

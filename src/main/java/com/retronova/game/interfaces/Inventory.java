@@ -161,6 +161,73 @@ public class Inventory implements Activity {
         return this.hotbar;
     }
 
+    public Slot[] getBag() {
+        return this.bag;
+    }
+
+    /**
+     * Tira tudo de todas as casas.
+     *
+     * Serve a retomada de uma corrida: o gato e construido com o inventario
+     * inicial do personagem, e sem esvaziar antes de repor os itens gravados o
+     * jogador voltaria com a espada de fabrica alem do que tinha. Esvaziar e
+     * repor e mais simples e mais seguro do que tentar construir um gato "vazio",
+     * que abriria um segundo caminho de criacao so para este caso.
+     */
+    /**
+     * Refaz cada item a partir do próprio ID.
+     *
+     * Serve à escolha de elemento: uma arma monta dano, cadência, nome e sprite no
+     * construtor, então a única forma de ela passar a ser "de gelo" é nascer de
+     * novo. Pelo ID, e não copiando campos, porque o catálogo é quem sabe montar
+     * cada arma — e é ele que já aplica o elemento da corrida.
+     *
+     * A quantidade dos empilháveis é preservada; perder a pilha de comida ao
+     * escolher um elemento seria um roubo silencioso.
+     */
+    public void refazerItens() {
+        refazer(this.hotbar);
+        refazer(this.bag);
+    }
+
+    private void refazer(Slot[] slots) {
+        for (Slot slot : slots) {
+            if (slot == null || slot.isEmpty()) {
+                continue;
+            }
+            Item velho = slot.item();
+            int pilha = velho instanceof com.retronova.game.items.Consumable c
+                    ? c.getStack() : 1;
+            slot.takeAll();
+            Item novo = Item.build(velho.getID(), pilha);
+            slot.put(novo);
+            // O QUE ESTA NA MAO TAMBEM TROCA, e esquecer disto matou a animacao de
+            // transformacao inteira. O itemHand e uma referencia ao OBJETO, e o
+            // objeto antigo acabou de sair da casa: quem perguntasse "a arma mudou
+            // de desenho?" logo depois compararia a arma velha com ela mesma e
+            // concluiria que nada aconteceu. A Hotbar corrige isso sozinha no tick
+            // seguinte, o que esconde o problema de quem esta jogando e o deixa
+            // intacto para quem pergunta no mesmo quadro.
+            if (this.itemHand == velho) {
+                this.itemHand = novo;
+            }
+        }
+    }
+
+    public void esvaziar() {
+        for (Slot slot : this.hotbar) {
+            if (slot != null) {
+                slot.takeAll();
+            }
+        }
+        for (Slot slot : this.bag) {
+            if (slot != null) {
+                slot.takeAll();
+            }
+        }
+        this.itemHand = null;
+    }
+
     @Override
     public void tick() {
         refreshPositions();

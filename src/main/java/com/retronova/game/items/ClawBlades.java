@@ -1,5 +1,9 @@
 package com.retronova.game.items;
 
+import com.retronova.engine.sound.Sounds;
+
+import com.retronova.game.objects.Investida;
+
 import com.retronova.engine.Debugging;
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.Rotate;
@@ -87,6 +91,7 @@ public class ClawBlades extends Item {
     private void attack(Player player, Enemy enemy) {
         if(enemy.colliding(this.boundsAttack)) {
             enemy.strike(AttackTypes.Piercing, player.getDamage());
+            tocarGolpe(Sounds.Sword);
             double addLife = player.getLifeSize() * 0.05d;
             player.setLife(player.getLife() + addLife);
         }

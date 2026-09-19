@@ -82,7 +82,10 @@ public class Physical {
         double result = (roughness * N) * delta;
         for(int i = vectors.size() - 1; i >= 0; i--) {
             Vector v = vectors.get(i);
-            double vForce = v.getForce() * (1 - drag);
+            // O CHAO E A PROPRIA FORCA. O drag vem do terreno e vale para todo mundo
+            // que esta em cima dele; o freio e desta forca so, e serve a impulsos
+            // que devem acabar depressa sem cobrar nada do resto.
+            double vForce = v.getForce() * (1 - drag) * (1 - v.getFreio());
             v.setForce(vForce - result);
             if(v.getForce() <= 0.1d) {
                 vectors.remove(v);
@@ -94,25 +97,58 @@ public class Physical {
     }
 
     /**
+     * Um empurrao que se apaga sozinho, sem dizer que o chao ficou pesado.
+     *
+     * E o que o dash precisava. Ele usava {@link #setDrag}, que e o botao do
+     * TERRENO — o mesmo que areia, lava e atordoamento usam —, e o efeito colateral
+     * era grave: o drag tambem multiplica toda forca NOVA em {@link #addForce},
+     * entao durante a volta dele o proprio andar do jogador saia enfraquecido. Com
+     * drag em 0,6 caindo meio por segundo, eram 1,2 segundo de caminhada a quarenta
+     * por cento depois de cada arranco. O impulso era instantaneo e a conta vinha
+     * devagar.
+     *
+     * @param freio quanto desta forca some por quadro, de 0 a 1
+     */
+    public void addImpulso(String name, double force, double radians, double freio) {
+        aplicar(name, force, radians).setFreio(freio);
+    }
+
+    /**
      *
      * @param force é um double que será a força aplicada no objeto
      * @param radians é a direção que essa força será aplicada
      */
     public void addForce(String name, double force, double radians){
+        // FORCA COMUM NAO TEM FREIO, e zerar aqui e o que garante isso quando o
+        // nome ja existia. Sem esta linha um nome usado uma vez como impulso
+        // carregaria o freio para sempre, e a proxima forca com o mesmo nome
+        // morreria depressa sem ninguem ter pedido.
+        aplicar(name, force, radians).setFreio(0);
+    }
+
+    /**
+     * Poe a forca e devolve o vetor que ficou valendo.
+     *
+     * Devolver e o que permite ao impulso ajustar o proprio freio sem ter de
+     * procurar o vetor de novo na lista — e sem que "achar um vetor pelo nome" vire
+     * uma operacao publica desta classe.
+     */
+    private Vector aplicar(String name, double force, double radians) {
         force *= Configs.GameScale();
         force *= (1 - drag);
         Vector vec = new Vector(name, force, radians);
-        if(vectors.contains(vec)) {
-            int index = vectors.indexOf(vec);
-            Vector vector = vectors.get(index);
-            vector.setForce(force);
-            vector.setAngle(radians);
+        int index = vectors.indexOf(vec);
+        if(index >= 0) {
+            vec = vectors.get(index);
+            vec.setForce(force);
+            vec.setAngle(radians);
         }else {
             this.vectors.add(vec);
         }
         int vx = (int)Math.round(vec.getVecX());
         int vy = (int)Math.round(vec.getVecY());
         this.orientation = new int[] {(int)Math.signum(vx), (int)Math.signum(vy)};
+        return vec;
     }
 
     boolean moveSystem(double vectorX, double vectorY) {

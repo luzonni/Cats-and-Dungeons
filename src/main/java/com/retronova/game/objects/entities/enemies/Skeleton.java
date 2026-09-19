@@ -20,9 +20,17 @@ public class Skeleton extends Enemy {
         loadSprites("mouseskeleton");
         setLife(60);
         setSpeed(3);
+        // AS RESISTENCIAS DE TIPO DE ARMA SAIRAM. Ele resistia a Piercing em 0,9
+        // e a Poison em 0,8 — e Piercing e o dano do ARCO. Enquanto todo gato podia
+        // carregar qualquer arma, isso era textura: quem batia mal de flecha trocava
+        // de arma. Com a classe travada, virou imposto cobrado de um gato so: o Finn
+        // levava treze segundos para matar um esqueleto que o Muffin resolve em meio
+        // segundo. Resistencia so e interessante quando ha resposta, e nao ha.
+        //
+        // A resistencia a fogo fica: essa e ELEMENTAL, e elemento vai ser escolha de
+        // corrida. Ali ela volta a ter resposta — e vai ganhar o espelho dela, a
+        // fraqueza, para a escolha premiar e nao so punir.
         addResistances(AttackTypes.Fire, 0.5);
-        addResistances(AttackTypes.Poison, 0.8);
-        addResistances(AttackTypes.Piercing, 0.9);
         setSolid();
     }
 
@@ -35,7 +43,7 @@ public class Skeleton extends Enemy {
         }
         Player player = Game.getPlayer();
         cooldown++;
-        if(cooldown >= 45 && player.getDistance(this) <= GameObject.SIZE() * 5) {
+        if(cooldown >= 45 && player.getDistance(this) <= GameObject.SIZE() * 8) {
             cooldown = 0;
             Skull skull = new Skull(getX() + getWidth() / 2d, getY() + getHeight() / 2d,
                     player.getAngle(this), this);

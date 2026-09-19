@@ -223,16 +223,26 @@ public abstract class Entity extends GameObject {
         this.resistances.put(attack, resistance);
     }
 
+    /**
+     * Teto da reducao de dano somada.
+     *
+     * Sem teto, cartas de resistencia empilhadas chegariam a cem por cento e o gato
+     * viraria invulneravel — e um jogo em que nao da para perder deixa de ter
+     * corrida. Oitenta por cento ja e enorme e mantem toda pancada custando algo.
+     */
+    private static final double RESISTENCIA_MAXIMA = 0.8;
+
     public void strike(AttackTypes type, double damage) {
-        if(resistances.containsKey(type)) {
-            double r = resistances.get(type);
-            double finalDamage = damage * (1 - r);
-            double currentLife = getLife();
-            setLife(currentLife - finalDamage); // Dano total
-            return;
+        // AS DUAS RESISTENCIAS SE SOMAM: a do TIPO, que e de quem nasce resistente a
+        // fogo, e a GERAL, que vem das cartas. Sao perguntas diferentes — "do que
+        // este bicho e feito" e "o quanto este gato aguenta" — e tratar as duas no
+        // mesmo lugar e o que permite uma carta de couro valer contra qualquer dano.
+        double r = resistances.getOrDefault(type, 0d);
+        if(hasModifier(Modifiers.Resistance)) {
+            r += valueModifier(Modifiers.Resistance);
         }
-        double currentLife = getLife();
-        setLife(currentLife - damage);
+        r = Math.max(0, Math.min(RESISTENCIA_MAXIMA, r));
+        setLife(getLife() - damage * (1 - r));
     }
 
     public void strike(AttackTypes type, double damage, Particle particle) {
@@ -308,6 +318,22 @@ public abstract class Entity extends GameObject {
         return this.life[0];
     }
 
+    /**
+     * Multiplica a vida MAXIMA, e a atual junto.
+     *
+     * {@link #setLife} so mexe na vida atual e recusa qualquer valor acima do
+     * maximo — e correto para curar e apanhar, e inutil para dizer "este bicho e
+     * uma versao mais dura de si mesmo". Sem isto, escalar dificuldade exigiria que
+     * cada uma das dez classes de inimigo soubesse em que sala nasceu.
+     */
+    public void escalarVida(double fator) {
+        if (this.life == null || fator <= 0) {
+            return;
+        }
+        this.life[0] *= fator;
+        this.life[1] *= fator;
+    }
+
     public void setLife(double life) {
         if(this.life == null) {
             this.life = new double[] {life, life};
@@ -351,9 +377,20 @@ public abstract class Entity extends GameObject {
         this.range = range;
     }
 
+    /**
+     * Intervalo minimo entre golpes, em ticks.
+     *
+     * A cadencia e um INTERVALO, entao cartas que a melhoram SUBTRAEM — e sem piso
+     * elas chegariam a zero, onde a arma ataca todo quadro e o jogo perde o ritmo
+     * antes de perder o desafio. Quatro ticks sao quinze golpes por segundo, que ja
+     * e mais rapido do que o olho separa.
+     */
+    private static final double CADENCIA_MINIMA = 4;
+
     public double getAttackSpeed() {
         if(modifiers.containsKey(Modifiers.AttackSpeed)) {
-            return this.attackSpeed + modifiers.get(Modifiers.AttackSpeed);
+            return Math.max(CADENCIA_MINIMA,
+                    this.attackSpeed + modifiers.get(Modifiers.AttackSpeed));
         }
         return this.attackSpeed;
     }
@@ -509,7 +546,6 @@ public abstract class Entity extends GameObject {
         this.addEffect("stunned", (e) -> {
             e.getPhysical().setDrag(0.6);
             e.getPhysical().addForce("stunned", e.getSpeed()*2, Engine.RAND.nextDouble()*Math.PI*2);
-            System.out.println("Stunned");
         }, seconds);
     }
 }

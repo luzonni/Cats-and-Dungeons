@@ -6,6 +6,8 @@ import com.retronova.engine.graphics.DrawSprite;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
+import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.Investida;
 import com.retronova.game.objects.entities.AttackTypes;
 import com.retronova.game.objects.entities.Expressao;
 import com.retronova.game.objects.entities.Nascente;
@@ -109,7 +111,7 @@ public abstract class Enemy extends Entity implements Nascente {
 
     protected Enemy(int ID, double x, double y, int weight) {
         super(ID, x, y, weight);
-        addResistances(AttackTypes.Flat, 0);
+        // Flat com zero nao fazia nada: resistir zero por cento e nao resistir.
     }
 
     /**
@@ -221,9 +223,46 @@ public abstract class Enemy extends Entity implements Nascente {
         }
     }
 
+    /**
+     * A folha de particula que combina com o tipo de dano.
+     *
+     * QUATRO DAS SEIS JA ESTAVAM EM particle/, E DUAS SEM USO NENHUM. O floco que
+     * estilhaca (ice) e a gota que estoura (water) estavam no repositorio desde
+     * sempre, sem uma linha de codigo referenciando — a mesma historia dos WAV
+     * elementais. Sao impactos prontos, no traco da casa. Terra e ar sao os unicos
+     * que precisaram existir, e saem de tools/GenParticulasElementais.java.
+     *
+     * O PADRAO CONTINUA SENDO O BRILHO DOURADO. Todo tipo nao-elemental — corte,
+     * perfuracao, explosao, laser — cai nele, e cair no padrao e o certo: o
+     * dourado diz "acertou", que e o que esses golpes tem a dizer. So o elemento
+     * tem uma segunda frase, e por isso so ele ganha desenho proprio.
+     */
+    private static String particulaDe(AttackTypes type) {
+        return switch (type) {
+            case Fire -> "fire";
+            case Ice -> "ice";
+            case Water -> "water";
+            case Earth -> "earth";
+            case Air -> "air";
+            default -> "damagemobs";
+        };
+    }
+
     @Override
     public void strike(AttackTypes type, double damage) {
-        this.strike(type, damage, new Volatile("damagemobs", 0, 0));
+        // O ELEMENTO PRECISAVA APARECER, E NAO SO SOAR.
+        //
+        // Ate aqui todo golpe do jogo produzia a MESMA faisca dourada, viesse de
+        // espada, de fogo ou de gelo. Com o elemento virando a escolha central da
+        // corrida, a tela era o unico lugar que nao tomava conhecimento dela: a
+        // agua se ouvia, a arma era de agua, e o impacto continuava generico.
+        //
+        // A ESCOLHA MORA AQUI, e nao em cada arma, pelo mesmo motivo que o aviso de
+        // dano ja morava: sao mais de vinte itens chamando strike, e cada um
+        // lembrando de escolher a propria particula seria uma lista que envelhece
+        // na primeira arma nova. Quem sabe o elemento do golpe e o TIPO DE DANO, e
+        // ele chega aqui de graca.
+        this.strike(type, damage, new Volatile(particulaDe(type), 0, 0));
     }
 
     @Override
@@ -249,6 +288,21 @@ public abstract class Enemy extends Entity implements Nascente {
         }
         Player player = Game.getPlayer();
         damage *= Engine.RAND.nextDouble() + player.getLuck();
+        // A ARMADURA COME O GOLPE ANTES DA VIDA, e o que sobra passa.
+        //
+        // O EXCEDENTE PASSAR e deliberado: sem isso, um golpe enorme contra uma
+        // armadura minuscula seria desperdicado por inteiro, e quem guardou o
+        // ataque pesado para o momento certo seria punido por acertar.
+        //
+        // O aviso visual continua saindo mesmo quando a armadura absorve tudo. Um
+        // golpe que nao produz nada na tela le como golpe que nao aconteceu, e o
+        // jogador conclui que a arma esta quebrada em vez de que o bicho esta duro
+        // — e a barra amarela esta logo ali dizendo o contrario.
+        if (armadura > 0) {
+            double sobra = damage - armadura;
+            armadura = Math.max(0, armadura - damage);
+            damage = Math.max(0, sobra);
+        }
         super.strike(type, damage);
         this.tookDamage = true;
         double x = getX() + Engine.RAND.nextDouble(getWidth());
@@ -299,8 +353,15 @@ public abstract class Enemy extends Entity implements Nascente {
     }
 
     public void renderLife(Graphics2D g) {
-        if(getLife() == getLifeSize() || getLife() < 0)
+        if(getLife() == getLifeSize() || getLife() < 0) {
+            // A ARMADURA APARECE MESMO COM A VIDA CHEIA. E o caso normal: enquanto
+            // ela nao acaba a vida nem comecou a cair, e um bicho sem barra nenhuma
+            // que nao morre le como bug.
+            if (temArmadura()) {
+                renderArmadura(g);
+            }
             return;
+        }
         int x = (int)getX();
         int y = (int)getY() + getHeight() + Configs.GameScale() *2;
         int w = getWidth();
@@ -315,6 +376,246 @@ public abstract class Enemy extends Entity implements Nascente {
         g.setStroke(new BasicStroke(Configs.GameScale()));
         g.setColor(new Color(9, 18, 44));
         g.drawRect(x, y, w, h);
+        renderArmadura(g);
     }
+
+    /**
+     * A barra da armadura, ACIMA da vida e em amarelo.
+     *
+     * Acima e nao no lugar: as duas sao quantidades diferentes e o jogador precisa
+     * ver as duas para saber se esta progredindo. Amarelo porque e a cor que o
+     * Hades usa para armadura, e porque nao colide com o vermelho da vida nem com
+     * o clarao branco do golpe.
+     */
+    private void renderArmadura(Graphics2D g) {
+        if (armaduraCheia <= 0 || armadura <= 0) {
+            return;
+        }
+        int x = (int) getX();
+        int h = Configs.GameScale() * 3;
+        int y = (int) getY() + getHeight() + Configs.GameScale() * 2 - h - Configs.GameScale();
+        int w = getWidth();
+        g.setColor(new Color(90, 70, 25));
+        g.fillRect(x, y, w, h);
+        g.setColor(new Color(232, 200, 74));
+        g.fillRect(x, y, (int) (w * (armadura / armaduraCheia)), h);
+        g.setStroke(new BasicStroke(Configs.GameScale()));
+        g.setColor(new Color(9, 18, 44));
+        g.drawRect(x, y, w, h);
+    }
+
+
+    // ------------------------------------------------------------ o golpe
+    //
+    // POR QUE ISTO EXISTE, e o que ele substitui.
+    //
+    // Sete dos dez inimigos machucavam por COLISAO: bastava a caixa do gato tocar
+    // a do bicho e o dano saia, com um contador como unico freio. Isso quebra as
+    // duas coisas que fazem um combate ser combate.
+    //
+    // A PRIMEIRA e que colisao NAO PODE SER TELEGRAFADA. Nao existe instante entre
+    // "encostou" e "tomou", entao nao ha nada que o jogador possa ler, prever ou
+    // evitar — apanhar deixa de ser um erro dele e vira uma consequencia de estar
+    // perto. A literatura de design e unanime: sem aviso, o golpe chega do nada e
+    // levar dano parece arbitrario; com aviso, vira uma troca legivel em que o
+    // jogador reconhece a deixa e responde.
+    //
+    // A SEGUNDA e que colisao nao tem INTENCAO. O bicho nao decidiu bater; ele
+    // estava andando e voce estava no caminho. Os jogadores descrevem exatamente
+    // este caso como o mais irritante — tomar dano quando esta claro que o inimigo
+    // nao tentou acertar nada.
+    //
+    // Aqui todo golpe passa pela Investida, a MESMA estrutura que as armas do gato
+    // usam: preparo, corte, extensao, recuperacao. Isso importa para alem de
+    // reaproveitar codigo — e o que faz o jogador reconhecer a mesma gramatica dos
+    // dois lados da briga, em vez de aprender um caso por inimigo.
+    //
+    // E O BICHO SE COMPROMETE. Ele para de andar ao iniciar o preparo, e o dano so
+    // sai se o gato AINDA estiver no alcance no quadro do impacto. Sair da frente
+    // depois do aviso passa a funcionar — que e a definicao de "dar tempo de
+    // desviar".
+
+    private Investida golpe;
+    private double alcanceDoGolpe;
+    private double danoDoGolpe;
+    private AttackTypes tipoDoGolpe = AttackTypes.Melee;
+    private double empurraoDoGolpe;
+    private int descanso;
+    private int desdeOGolpe;
+    private Sounds vozDoGolpe;
+
+    /**
+     * Ensina este bicho a bater, com aviso.
+     *
+     * @param investida  as quatro fases; ver Investida.rapida/leve/media/pesada
+     * @param alcance    a que distancia ele comeca e ate onde o golpe acerta, em tiles
+     * @param descanso   quadros de espera entre um golpe e o proximo
+     */
+    protected void golpeCorpoACorpo(Investida investida, double alcance, double dano,
+                                    AttackTypes tipo, double empurrao, int descanso,
+                                    Sounds voz) {
+        this.golpe = investida;
+        this.alcanceDoGolpe = alcance;
+        this.danoDoGolpe = dano;
+        this.tipoDoGolpe = tipo;
+        this.empurraoDoGolpe = empurrao;
+        this.descanso = descanso;
+        this.vozDoGolpe = voz;
+        this.desdeOGolpe = descanso;
+    }
+
+    /**
+     * Roda o golpe.
+     *
+     * @return true enquanto o bicho estiver PRESO no golpe — quem chama deve parar
+     *         de andar. Um inimigo que ataca andando nao tem preparo visivel: o
+     *         aviso so existe se ele se plantar para dar o golpe.
+     */
+    protected boolean tickGolpe() {
+        if (golpe == null) {
+            return false;
+        }
+        desdeOGolpe++;
+        Player gato = Game.getPlayer();
+        if (!golpe.ativa() && desdeOGolpe >= descanso && noAlcance(gato)) {
+            golpe.comecar();
+        }
+        boolean estava = golpe.ativa();
+        golpe.tick();
+        if (golpe.acertaAgora()) {
+            // O ALVO E CONFERIDO DE NOVO NO QUADRO DO IMPACTO. E isto, e nao o
+            // preparo, que faz o aviso valer: quem saiu do alcance depois de ver a
+            // deixa nao leva o golpe. Sem esta linha o preparo seria enfeite.
+            if (noAlcance(gato)) {
+                gato.strike(tipoDoGolpe, danoDoGolpe);
+                if (empurraoDoGolpe > 0) {
+                    gato.getPhysical().addForce("knockback", empurraoDoGolpe,
+                            gato.getAngle(this) + Math.PI);
+                }
+            }
+            if (vozDoGolpe != null) {
+                Sound.play(vozDoGolpe);
+            }
+        }
+        if (estava && !golpe.ativa()) {
+            desdeOGolpe = 0;
+        }
+        return golpe.ativa();
+    }
+
+    private boolean noAlcance(Player gato) {
+        return gato != null && !gato.morrendo()
+                && getDistance(gato) <= GameObject.SIZE() * alcanceDoGolpe;
+    }
+
+    /**
+     * O quanto o bicho esta "carregado", de 0 a 1. Zero quando nao ha golpe.
+     *
+     * E O AVISO, e ele e desenhado sem arte nova: o corpo do bicho vai ficando
+     * branco durante o preparo e estoura no impacto. O jogo ja usa exatamente este
+     * clarao quando o gato leva pancada, entao o jogador nao precisa aprender um
+     * simbolo novo — ele ja sabe que branco significa "acontecendo agora".
+     */
+    protected float cargaDoGolpe() {
+        if (golpe == null || !golpe.ativa()) {
+            return 0f;
+        }
+        double avanco = golpe.avanco();
+        // O avanco vai de -1 (recuo maximo, fim do preparo) a +1 (impacto). O
+        // clarao acompanha o recuo: quanto mais recuado, mais perto de bater.
+        return (float) Math.max(0, Math.min(1, -avanco));
+    }
+
+    /** O bicho esta preso no proprio golpe e nao deve se mover. */
+    protected boolean golpeando() {
+        return golpe != null && golpe.ativa();
+    }
+
+    /**
+     * Desenha o bicho com o aviso do golpe por cima.
+     *
+     * Passa a ser o caminho de todos: cada inimigo desenhava o proprio sprite
+     * direto, e um aviso que so alguns tivessem seria pior do que nenhum — o
+     * jogador aprenderia a confiar no clarao e seria punido justamente pelos que
+     * nao o tem.
+     */
+    protected void renderComAviso(BufferedImage sprite, Graphics2D g) {
+        float carga = cargaDoGolpe();
+        renderSprite(carga > 0.01f
+                ? com.retronova.game.objects.entities.Expressao.clarao(sprite, carga)
+                : sprite, g);
+    }
+
+    // ------------------------------------------------------- dificuldade
+
+    /**
+     * ESCALAR PELA SALA, E NUNCA PELO PODER DO JOGADOR.
+     *
+     * A distincao decide se a progressao existe ou nao, e ela e a queixa mais
+     * repetida que jogadores fazem a jogos com escalonamento: "quanto mais subo de
+     * nivel, mais fraco fico". Quando o inimigo acompanha os SEUS atributos, toda
+     * carta que voce escolhe e imediatamente anulada — e uma esteira que acelera
+     * junto com voce, e o progresso vira ilusao.
+     *
+     * Pela sala e outra coisa. A curva e fixa e conhecida; a sua build cresce mais
+     * rapido que ela, entao voce SENTE que ficou forte e ainda assim a sala quinze
+     * e mais dura que a primeira. E como Vampire Survivors escala — por tempo
+     * decorrido, nao por poder — e e o que o Hades faz com biomas, so que la os
+     * inimigos mais fundos sao OUTROS em vez dos mesmos mais duros.
+     *
+     * Os dois numeros sao diferentes de proposito. A VIDA sobe mais rapido que o
+     * DANO porque vida que sobe alonga a briga e dano que sobe encurta a sua vida:
+     * subir os dois juntos deixaria a sala vinte impossivel em vez de longa. Sao
+     * valores de partida, para sentir e ajustar.
+     */
+    private static final double CRESCIMENTO_VIDA = 0.07;
+    private static final double CRESCIMENTO_DANO = 0.04;
+
+    /**
+     * Deixa este bicho na dureza da sala em que ele nasceu.
+     *
+     * Chamado pelo Waves, que e o unico lugar que cria inimigos de onda. Quem e
+     * posto pelo JSON de mapa — o saguao — nao passa por aqui e continua no valor
+     * de fabrica, que e o certo: aquela sala nao tem numero.
+     */
+    public void escalarPara(int sala) {
+        if (sala <= 0) {
+            return;
+        }
+        escalarVida(1 + CRESCIMENTO_VIDA * sala);
+        double porDano = 1 + CRESCIMENTO_DANO * sala;
+        this.danoDoGolpe *= porDano;
+        // O MouseExplode nao bate com golpe: o estouro dele le o getDamage.
+        setDamage(getDamage() * porDano);
+    }
+
+    // ---------------------------------------------------------- armadura
+
+    /**
+     * VIDA EXTRA QUE NAO OLHA O TIPO DO DANO.
+     *
+     * E o que o Hades usa no lugar de resistencia, e a diferenca entre as duas
+     * ideias e exatamente o que este jogo precisava. Resistencia pergunta COM O QUE
+     * voce esta batendo, e por isso ela favorece um personagem e pune outro sem que
+     * nenhum dos dois possa fazer nada a respeito. Armadura pergunta QUANTO — todo
+     * mundo atravessa, ninguem atravessa de graca.
+     *
+     * Ela deixa o bicho duro sem deixa-lo duro PARA VOCE ESPECIFICAMENTE, que era o
+     * defeito. E continua sendo uma diferenca de comportamento legivel: enquanto
+     * houver armadura, a barra amarela em cima da vermelha diz que ainda nao
+     * comecou a valer.
+     */
+    private double armadura;
+    private double armaduraCheia;
+
+    protected void setArmadura(double quanto) {
+        this.armadura = Math.max(0, quanto);
+        this.armaduraCheia = this.armadura;
+    }
+
+    public boolean temArmadura() {
+        return this.armadura > 0;
+    }
+
 
 }

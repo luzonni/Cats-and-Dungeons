@@ -8,7 +8,6 @@ import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
-import com.retronova.engine.sound.Sounds;
 import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.Cenario;
 import com.retronova.menus.shared.Confirm;
@@ -47,9 +46,22 @@ public class Menu implements Activity {
     }
 
     private void criarBotoes() {
-        // "Play" é a ação principal da tela e carrega o peso visual sozinha.
+        // "PLAY" ABRE A TELA DE CORRIDAS, e nao a selecao de personagem.
+        //
+        // Com um save so, o menu dava conta com dois botoes: "Continue" quando havia
+        // corrida guardada, "Play" quando nao. Com tres espacos essa saida acaba —
+        // seriam tres botoes de continuar, todos com o mesmo rotulo, sem como dizer
+        // qual e qual sem entrar. O que se escolhe aqui deixou de ser uma ACAO e
+        // passou a ser uma CORRIDA, e corrida se escolhe vendo. Ver Saves.
+        // SEM MIADO AQUI. Ele fazia sentido enquanto "Play" abria a selecao de gato:
+        // o clique escolhia um bicho, e o bicho respondia. Agora ele abre a lista de
+        // corridas, onde nao ha gato nenhum sendo escolhido — e era o miado
+        // GENERICO ainda por cima, nao a voz de nenhum dos tres.
+        //
+        // Quem mia e o botao "Embark" da selecao de personagem, com a voz DAQUELE
+        // gato. La o som responde a uma escolha; aqui ele so acontecia.
         botoes.add(new Button(0, 0, 0, 0, "Play",
-                b -> Engine.heapActivity(new Personagens())).primary().meow(Sounds.Cat));
+                b -> Engine.heapActivity(new Saves())).primary());
         botoes.add(new Button(0, 0, 0, 0, "Options",
                 b -> Engine.heapActivity(new Options())));
         //Sair pela pausa já perguntava; aqui fechava direto. Mesmo diálogo nos dois.

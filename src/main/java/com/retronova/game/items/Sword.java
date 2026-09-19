@@ -1,5 +1,7 @@
 package com.retronova.game.items;
 
+import com.retronova.game.objects.Investida;
+
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.Rotate;
@@ -106,18 +108,27 @@ public class Sword extends Item {
         Player player = Game.getPlayer();
         setBoundsAttack(player);
         Enemy nearest = alvoVisivel(player, 3);
-        if (nearest != null) {
+        if (nearest != null && !investida.ativa()) {
+            // O LADO DO GOLPE PASSA A SER O LADO DO ALVO.
+            //
+            // Ele ALTERNAVA sozinho: um golpe pela direita, o proximo pela esquerda,
+            // e assim por diante. A intencao era boa — golpes seguidos lendo como
+            // direita-esquerda em vez da mesma animacao repetida — mas a caixa de
+            // dano acompanha esse lado, e ela nao perguntava onde o bicho estava.
+            // Com um inimigo parado a direita, metade dos golpes saia para a
+            // esquerda: a animacao rodava, o som saia, e nada acontecia.
+            //
+            // Era isso que se sentia como "a arma acerta mas nao da dano". A
+            // alternancia era bonita e custava metade dos golpes; mirar e melhor.
+            this.side = nearest.getBounds().getCenterX()
+                    < player.getBounds().getCenterX() ? -1 : 1;
+            setBoundsAttack(player);
             investida.comecar();
         }
-        boolean estava = investida.ativa();
         investida.tick();
         this.atacando = investida.ativa();
         if (investida.acertaAgora() && nearest != null) {
             attack(player, nearest);
-        }
-        // Acabou a investida: o proximo golpe vem do outro lado.
-        if (estava && !investida.ativa()) {
-            side *= -1;
         }
     }
 
@@ -129,12 +140,12 @@ public class Sword extends Item {
     }
 
     private void attack(Player player, Enemy enemy) {
-        if(enemy.colliding(this.boundsAttack)) {
+        if (enemy.colliding(this.boundsAttack)) {
             enemy.strike(elemento.ataque(AttackTypes.Melee), this.damage + player.getDamage());
             double r = enemy.getAngle(player);
             enemy.getPhysical().addForce("knockback", 3, r);
         }
-        Sound.play(Sounds.Sword);
+        tocarGolpe(Sounds.Sword);
     }
 
     public void render(Graphics2D g) {

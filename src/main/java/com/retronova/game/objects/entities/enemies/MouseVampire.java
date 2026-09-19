@@ -1,5 +1,7 @@
 package com.retronova.game.objects.entities.enemies;
 
+import com.retronova.game.objects.Investida;
+
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
@@ -22,19 +24,26 @@ public class MouseVampire extends Enemy {
         loadSprites("mousevampire");
         setSolid();
         setLife(60);
-        setXpWeight(500000.0d);
+        setXpWeight(7d);
+        setSpeed(1.6);
+        // RAPIDO E FRACO: preparo curto, dano baixo, sem empurrao. Ele pressiona,
+        // nao pune — e o contraste com o escudeiro e o que faz o jogador precisar
+        // OLHAR qual dos dois esta carregando.
+        golpeCorpoACorpo(Investida.rapida(), 1.0, 4, AttackTypes.Melee,
+                0, 30, Sounds.MouseVampire);
     }
 
     public void tick() {
-        moveIA();
+        if (!tickGolpe()) {
+            moveIA();
+        }
         animation();
-        attackPlayer();
     }
 
     public void moveIA() {
         Player player = Game.getPlayer();
         double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
-        getPhysical().addForce("move", 0.80, radians);
+        getPhysical().addForce("move", getSpeed(), radians);
     }
 
     public void animation() {
@@ -45,32 +54,7 @@ public class MouseVampire extends Enemy {
         }
     }
 
-    public void attackPlayer() {
-        Player player = Game.getPlayer();
-        cooldown++;
 
-        // Resetar o soundStopDelay se o jogador estiver em contato, independentemente do cooldown
-        if (player.getBounds().intersects(this.getBounds())) {
-            soundStopDelay = 30; // Reseta o delay enquanto o jogador estiver em contato
-        }
-
-        if (player.getBounds().intersects(this.getBounds()) && cooldown > 45) {
-            cooldown = 0;
-            player.strike(AttackTypes.Melee, 3);
-            player.getPhysical().addForce("knockback_vampire", 0.82d, getPhysical().getAngleForce());
-            Sound.play(Sounds.MouseVampire);
-            soundPlaying = true;
-        } else {
-            if (soundPlaying) {
-                if (soundStopDelay > 0) {
-                    soundStopDelay--;
-                } else {
-                    Sound.stop(Sounds.MouseVampire);
-                    soundPlaying = false;
-                }
-            }
-        }
-    }
 
     public void render(Graphics2D d) {
         int orientation = getPhysical().getOrientation()[0] * -1;

@@ -153,12 +153,16 @@ public final class Expressao {
         for (int q = 0; q < quadros; q++) {
             int base = q * lado;
             if (cara == Cara.MACHUCADO) {
-                apertarOlho(o, cores, base, OLHO_ESQ, px);
-                apertarOlho(o, cores, base, OLHO_DIR, px);
+                fecharOlho(o, cores, base, OLHO_ESQ, px);
+                fecharOlho(o, cores, base, OLHO_DIR, px);
                 abrirFocinho(o, cores, base, px);
             } else if (cara == Cara.GOLPEANDO) {
-                apertarOlho(o, cores, base, OLHO_ESQ, px);
-                apertarOlho(o, cores, base, OLHO_DIR, px);
+                // SEMICERRADO, E NAO FECHADO. As duas caras chamavam a mesma
+                // funcao, entao "concentrado" e "com dor" tinham exatamente o
+                // mesmo olho e so o focinho as separava — o documento desta classe
+                // ja descrevia a diferenca que o codigo nao fazia.
+                estreitarOlho(o, cores, base, OLHO_ESQ, px);
+                estreitarOlho(o, cores, base, OLHO_DIR, px);
             }
         }
         return o;
@@ -208,25 +212,57 @@ public final class Expressao {
      * expressao valida para os tres gatos: o pelo do Muffin e cinza, o do Azrael e
      * quase preto e o do Finn e creme, e nenhum desses valores aparece aqui.
      */
-    private static void apertarOlho(BufferedImage im, BufferedImage cores,
-                                    int base, int ax, int px) {
-        // O SEGUNDO PIXEL, PARA DENTRO. Medido no sprite de DORMINDO, que e o
-        // unico lugar em que a arte oficial ja desenha o gato de olho fechado:
-        // la cada olho tem DOIS pixels de largura, simetricos em torno do focinho
-        // — esquerdo nas colunas 4 e 5, direito nas 9 e 10 — enquanto o olho
-        // aberto tem so a coluna de fora. Fechar e portanto tirar o de cima E
-        // acrescentar um para o lado do meio da cara. Seguir o desenho existente
-        // vale mais que qualquer regra que eu invente: e assim que este gato ja
-        // fecha os olhos quando dorme.
+    private static void estreitarOlho(BufferedImage im, BufferedImage cores,
+                                      int base, int ax, int px) {
+        // SEMICERRADO: some a linha de CIMA e fica so a de baixo, com a cor cheia.
+        // O olho continua aberto — e so um olhar baixado. E por isso que ele NAO
+        // ganha o pixel para dentro nem escurece: as duas coisas pertencem ao olho
+        // fechado, e usa-las aqui apagaria a diferenca entre concentrar e sofrer.
+        pintar(im, base, ax, OLHO_TOPO, px, ler(im, base, ax, OLHO_TOPO - 1, px));
+        pintar(im, base, ax, OLHO_BASE, px, ler(cores, base, ax, OLHO_BASE, px));
+    }
+
+    /**
+     * O quanto a palpebra escurece a cor do olho.
+     *
+     * NAO FOI ESCOLHIDO: foi MEDIDO no sprite de dormir, que e o unico lugar em que
+     * a arte oficial desenha os gatos de olho fechado. O olho aberto do Azrael e do
+     * Finn e #DCAA32 e o fechado deles e #6E5519 — 220 para 110, 170 para 85, 50
+     * para 25. Metade exata nos tres canais.
+     *
+     * E ISSO ERA O DEFEITO. A versao anterior repintava o olho fechado com a cor do
+     * olho ABERTO, em brilho cheio. No Muffin nao se via nada, porque o olho dele e
+     * preto e metade de preto e preto; no Azrael e no Finn, cujos olhos sao dourados
+     * sobre pelo escuro e claro, o resultado era uma barra dourada VIVA e mais larga
+     * que o olho normal — lia como o olho arregalando, exatamente o contrario de
+     * fechar. Um bug que so aparece em dois dos tres personagens e o tipo que passa
+     * despercebido por quem testa sempre com o mesmo.
+     */
+    private static final double PALPEBRA = 0.5;
+
+    private static int escurecer(int argb) {
+        int a = argb >>> 24;
+        int r = (int) (((argb >> 16) & 0xFF) * PALPEBRA);
+        int g = (int) (((argb >> 8) & 0xFF) * PALPEBRA);
+        int b = (int) ((argb & 0xFF) * PALPEBRA);
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    private static void fecharOlho(BufferedImage im, BufferedImage cores,
+                                   int base, int ax, int px) {
+        // O SEGUNDO PIXEL, PARA DENTRO. Medido no sprite de DORMINDO, que e o unico
+        // lugar em que a arte oficial ja desenha o gato de olho fechado: la cada
+        // olho tem DOIS pixels de largura, simetricos em torno do focinho —
+        // esquerdo nas colunas 4 e 5, direito nas 9 e 10 — enquanto o olho aberto
+        // tem so a coluna de fora. Fechar e portanto tirar o de cima E acrescentar
+        // um para o lado do meio da cara.
         int paraDentro = ax < QUADRO / 2 ? ax + 1 : ax - 1;
         // O de cima vira pele — a pele DO QUE VAI PARA A TELA, para acompanhar o
-        // clarao — e o de baixo e repintado com a cor original do olho. Sem esta
-        // segunda parte o pixel que sobra herda o branco do clarao e a careta some
-        // justamente no quadro do impacto, que e quando ela mais precisa aparecer.
+        // clarao. O de baixo recebe a cor do olho ESCURECIDA, que e a palpebra.
         pintar(im, base, ax, OLHO_TOPO, px, ler(im, base, ax, OLHO_TOPO - 1, px));
-        int corDoOlho = ler(cores, base, ax, OLHO_BASE, px);
-        pintar(im, base, ax, OLHO_BASE, px, corDoOlho);
-        pintar(im, base, paraDentro, OLHO_BASE, px, corDoOlho);
+        int palpebra = escurecer(ler(cores, base, ax, OLHO_BASE, px));
+        pintar(im, base, ax, OLHO_BASE, px, palpebra);
+        pintar(im, base, paraDentro, OLHO_BASE, px, palpebra);
     }
 
     /** Puxa o focinho um pixel para baixo: a boca aberta da careta de dor. */

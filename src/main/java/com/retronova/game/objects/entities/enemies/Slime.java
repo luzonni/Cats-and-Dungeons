@@ -1,5 +1,7 @@
 package com.retronova.game.objects.entities.enemies;
 
+import com.retronova.game.objects.Investida;
+
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
@@ -23,34 +25,26 @@ public class Slime extends Enemy {
         setSolid();
         setSpeed(6);
         setLife(10);
-        setXpWeight(800000.6d);
+        // O PESO DE XP ERA 800000.6, e nao era exagero de balanceamento: era erro
+        // de digitacao com consequencia. O XP cai multiplicado por sorte e por um
+        // aleatorio, e getXpLength() e cerca de 157 por nivel — um slime morto
+        // subia o gato uns dois mil niveis de uma vez. O vampiro e o escudeiro
+        // tinham 500000 pelo mesmo motivo.
+        setXpWeight(6d);
+        golpeCorpoACorpo(Investida.rapida(), 1.0, 3, AttackTypes.Melee,
+                0, 24, Sounds.Slime);
     }
 
     public void tick() {
-        moveIA();
+        // O GOLPE PRENDE O BICHO. Enquanto ele esta no preparo ou no corte, nao
+        // anda — e o que torna o aviso visivel e o que permite sair de perto.
+        if (!tickGolpe()) {
+            moveIA();
+        }
         countAnim++;
         if (countAnim > 10) {
             countAnim = 0;
             getSheet().plusIndex();
-        }
-
-        Player player = Game.getPlayer();
-
-        // Lógica de colisão e som
-        if (player.getBounds().intersects(this.getBounds()) && attackCooldown <= 0) {
-            try {
-                Sound.play(Sounds.Slime);
-                attackCooldown = 15; // Reduzido para 15 para teste
-                System.out.println("Slime sound played!"); // Debug
-                player.strike(AttackTypes.Melee, 2);
-            } catch (Exception e) {
-                System.err.println("Error playing Slime sound: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-
-        if (attackCooldown > 0) {
-            attackCooldown--;
         }
     }
 

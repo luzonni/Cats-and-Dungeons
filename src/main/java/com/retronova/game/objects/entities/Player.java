@@ -10,8 +10,11 @@ import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.interfaces.Inventory;
 import com.retronova.game.items.Shield;
+import com.retronova.game.items.Classe;
 import com.retronova.game.items.Consumable;
+import com.retronova.game.items.Elemento;
 import com.retronova.game.items.Item;
+import com.retronova.game.items.Melhorias;
 import com.retronova.engine.graphics.Alpha;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.graphics.SpriteHandler;
@@ -19,6 +22,7 @@ import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.particles.Poeira;
+import com.retronova.game.objects.particles.Rastro;
 import com.retronova.game.objects.particles.Word;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -198,6 +202,9 @@ public class Player extends Entity {
     private int ticksDoZ;
     private boolean cochilando;
 
+    /** Quantos "Z" ja sairam. Serve para o ronco nao acompanhar todos. */
+    private int roncos;
+
     /**
      * Quanto tempo de quietude ate o gato cochilar, e o intervalo entre os Zs.
      *
@@ -251,7 +258,84 @@ public class Player extends Entity {
         setRange(range);
         setSolid();
         setMoney(100);
+        // O DASH VOLTA A EXISTIR.
+        //
+        // A tecla ja estava ligada e a fisica ja estava escrita, mas o Player so
+        // arranca se tiver o modificador Dash — e o UNICO lugar que o concedia era
+        // a bolota, que esta fora do sorteio de cartas e so aparece como loot num
+        // mapa que as arenas de cisterna nao usam. Na pratica o espaco nao fazia
+        // nada, e o jogo nao tinha nenhum verbo alem de andar.
+        //
+        // Ele passa a ser DE FABRICA porque e a unica coisa que o jogador aciona.
+        // Num jogo em que as armas atiram sozinhas, tirar o dash e tirar a ultima
+        // decisao de momento que existe — e e justamente sobre ele que as cartas de
+        // esquiva vao ser penduradas.
+        addModifier(Modifiers.Dash, DASH);
     }
+
+    /**
+     * Forca do arranco, multiplicada pela velocidade do gato.
+     *
+     * Vinte e o valor que a bolota dava. Nao foi escolhido agora: e o unico numero
+     * que alguem ja tinha ajustado sentindo, e comecar por ele e mais honesto do
+     * que inventar outro sem ter jogado.
+     */
+    private static final double DASH = 20;
+
+    /**
+     * Quanto do arranco some por quadro.
+     *
+     * Seis decimos e exatamente o que o drag fazia antes, entao a DISTANCIA e a
+     * curva do dash continuam as mesmas — o que sumiu foi so o castigo depois. A
+     * escolha e deliberada: o pedido era consertar a fluidez, nao mudar o
+     * movimento, e trocar as duas coisas de uma vez deixaria sem saber qual delas
+     * resolveu.
+     */
+    private static final double FREIO_DO_DASH = 0.6;
+
+    /**
+     * Por quantos quadros o arranco deixa copias pelo caminho.
+     *
+     * SEIS, QUE E O TEMPO DO EMPURRAO. A conta: o impulso entra valendo
+     * velocidade x 20 x GameScale e perde 60% por quadro para o freio, mais o
+     * atrito; em 4 quadros ele ja esta abaixo do andar normal. Depois disso o gato
+     * so caminha, e continuar soltando copias ali empilharia gatos quase no mesmo
+     * lugar — o rastro engrossaria justamente onde nao ha nada de rapido a
+     * explicar.
+     */
+    private static final int RASTRO = 6;
+
+    /**
+     * Distancia entre duas copias, em pixels de arte.
+     *
+     * AS COPIAS SAO ESPACADAS POR DISTANCIA, E NAO POR QUADRO — e essa e a parte
+     * que nao da para errar. O primeiro quadro do arranco cobre perto de 140
+     * pixels de tela, mais de DOIS sprites; uma copia por quadro deixaria um vao
+     * do tamanho de dois gatos entre a primeira e a segunda, e dois borroes
+     * separados nao lem como trajeto, lem como dois fantasmas.
+     *
+     * Oito pixels de arte sao meio gato: perto o bastante para as copias se
+     * tocarem e formarem faixa. Como o gato desacelera ao longo do arranco, sair
+     * de tantos em tantos pixels tambem faz elas se ADENSAREM no fim, que e
+     * exatamente a assinatura de quem freou.
+     */
+    private static final int PASSO_DO_RASTRO = 8;
+
+    /**
+     * Teto de copias por quadro.
+     *
+     * Um seguro, e nao um numero de arte. Se o gato for reposicionado de um quadro
+     * para o outro — troca de sala, portal, qualquer coisa que mexa na posicao sem
+     * ser deslocamento —, a distancia percorrida daria centenas e o laco encheria o
+     * mapa de gatos. Oito cobrem o arranco inteiro com folga.
+     */
+    private static final int MAX_COPIAS = 8;
+
+    private int rastroRestante;
+
+    /** Onde saiu a ultima copia, para medir o trecho a preencher. */
+    private double rastroX;
+    private double rastroY;
 
     @Override
     public void loadSprites(String... sprites) {
@@ -278,12 +362,125 @@ public class Player extends Entity {
         return this.arma;
     }
 
+    /**
+     * A que familia de armas este gato se dedica.
+     *
+     * DERIVADA DA ARMA INICIAL, e nao declarada no JSON. O arquivo do personagem ja
+     * segue essa regra para a arma em si — o comentario do build diz "a arma
+     * inicial nao e declarada, e o primeiro item do inventario" — e a classe e uma
+     * pergunta sobre essa mesma arma. Declarar de novo criaria dois lugares que
+     * podem discordar, e o dia em que discordassem o gato comecaria com uma arma
+     * que ele proprio nao pode usar.
+     */
+    public Classe classe() {
+        for (ItemIDs id : ItemIDs.values()) {
+            if (id.name().equalsIgnoreCase(this.arma)) {
+                return Classe.de(id);
+            }
+        }
+        return Classe.NENHUMA;
+    }
+
+    /** Este gato sabe usar este item? Consumivel e utilitario valem para todos. */
+    public boolean sabeUsar(Item item) {
+        Classe doItem = Classe.de(item);
+        return doItem == Classe.NENHUMA || doItem == classe();
+    }
+
     public Sounds getVoz() {
         return this.voz;
     }
 
     public Inventory getInventory() {
         return this.inventory;
+    }
+
+    /**
+     * As melhorias escolhidas nesta corrida.
+     *
+     * Vive no gato, e nao na tela de recompensa, porque a tela e passageira e o
+     * acumulo nao e: quem precisa saber quantas vezes "Furia" ja saiu e quem esta
+     * carregando as furias.
+     */
+    private final Melhorias melhorias = new Melhorias();
+
+    public Melhorias getMelhorias() {
+        return this.melhorias;
+    }
+
+    /**
+     * O elemento desta corrida. NENHUM até o gato escolher.
+     *
+     * Vive no gato, e não na arma, e essa é a mudança de fundo: o que define como a
+     * corrida joga deixou de ser o que você achou na loja e passou a ser o que você
+     * escolheu na primeira sala.
+     */
+    private Elemento elemento = Elemento.NENHUM;
+
+    public Elemento elemento() {
+        return this.elemento;
+    }
+
+    /**
+     * Fixa o elemento da corrida e RECONSTRÓI o que já está na mão.
+     *
+     * A reconstrução não é detalhe. As armas montam dano, cadência, nome e sprite
+     * no construtor, a partir do elemento — é a razão de a espada de fogo ter uma
+     * silhueta própria em vez de ser a mesma pintada de laranja. Um item criado
+     * antes da escolha ficaria com os valores de "sem elemento" para sempre, e o
+     * jogador veria a espada inicial ignorar o elemento que ele acabou de pegar
+     * enquanto tudo o que comprasse depois o respeitaria.
+     *
+     * Reconstruir pelo ID é o que mantém isso barato: o item novo nasce do mesmo
+     * catálogo, já com o elemento valendo, e nenhuma arma precisa saber trocar de
+     * elemento por dentro.
+     */
+    public void escolherElemento(Elemento escolhido) {
+        aplicarElemento(escolhido, true);
+    }
+
+    /**
+     * Devolve o elemento de uma corrida gravada, SEM a cerimonia.
+     *
+     * A animacao existe para marcar a ESCOLHA, e retomar um save nao e escolher —
+     * e continuar. Tocando-a no carregamento, a mesma decisao seria comemorada toda
+     * vez que o jogador abrisse o jogo, e uma comemoracao que se repete deixa de
+     * comemorar: na terceira vez ela e so um atraso antes de voltar a jogar.
+     */
+    public void reporElemento(Elemento gravado) {
+        aplicarElemento(gravado, false);
+    }
+
+    private void aplicarElemento(Elemento escolhido, boolean comCerimonia) {
+        Item naMao = getInventory().getItemHand();
+        BufferedImage antes = naMao == null ? null : naMao.getSprite();
+        this.elemento = escolhido == null ? Elemento.NENHUM : escolhido;
+        getInventory().refazerItens();
+        if (!comCerimonia) {
+            return;
+        }
+        Item agora = getInventory().getItemHand();
+        // A TRANSFORMACAO SO ACONTECE SE A ARMA DE FATO MUDOU DE DESENHO. Levantar a
+        // arma no alto, acender e devolver a MESMA imagem seria cerimonia em cima de
+        // nada — e cerimonia sem conteudo ensina o jogador a ignorar a proxima.
+        if (antes != null && agora != null && agora.getSprite() != antes) {
+            this.transmutacao = new Transmutacao(antes, agora.getSprite(),
+                    this.elemento.som());
+        }
+    }
+
+    /**
+     * A arma virando outra, na mao do gato. Nulo quando nao ha nada acontecendo.
+     *
+     * Vive no gato porque e no corpo dele que a cena acontece: a arma sai da mao
+     * DELE e volta para a mao DELE. Uma tela por cima faria o oposto do que a
+     * animacao existe para fazer — tirar o jogador da arena no momento em que a
+     * recompensa e justamente ver o proprio gato mudar.
+     */
+    private Transmutacao transmutacao;
+
+    public boolean transmutando() {
+        return transmutacao != null && !transmutacao.acabou();
     }
 
     // ------------------------------------------------------------ reacoes
@@ -314,6 +511,16 @@ public class Player extends Entity {
      * so — que e o caso que estava estourando.
      */
     private static final int ENTRE_GEMIDOS = 12;
+
+    /** Quadros de invulnerabilidade depois de levar um golpe. */
+    private static final int INVULNERAVEL = 24;
+
+    private int desdeODano = INVULNERAVEL;
+
+    /** Esta no intervalo em que nao pode levar dano. Serve ao piscar. */
+    public boolean invulneravel() {
+        return desdeODano < INVULNERAVEL;
+    }
 
     private int desdeOGemido = ENTRE_GEMIDOS;
 
@@ -554,9 +761,25 @@ public class Player extends Entity {
         return Expressao.Cara.NORMAL;
     }
 
+    private void tickTransmutacao() {
+        if (transmutacao == null) {
+            return;
+        }
+        transmutacao.tick();
+        if (transmutacao.acabou()) {
+            transmutacao = null;
+        }
+    }
+
     private void contarReacoes() {
         if (desdeOGemido < ENTRE_GEMIDOS) {
             desdeOGemido++;
+        }
+        // FORA DO if ACIMA, e isto quase virou um bug feio: preso dentro dele, o
+        // contador pararia junto com o do gemido e o gato ficaria invulneravel para
+        // o resto da partida, sem nada acusando.
+        if (desdeODano < INVULNERAVEL) {
+            desdeODano++;
         }
         if (doendo > 0) {
             doendo--;
@@ -583,6 +806,7 @@ public class Player extends Entity {
             return;
         }
         contarReacoes();
+        tickTransmutacao();
         boolean andando = getPhysical().isMoving();
         int horizontal = getPhysical().getOrientation()[0];
         if (horizontal != 0) {
@@ -626,6 +850,26 @@ public class Player extends Entity {
         if (chegando()) {
             return;
         }
+        // INVULNERABILIDADE CURTA DEPOIS DE APANHAR.
+        //
+        // Nao existia, e a falta dela era o que transformava um cerco em morte sem
+        // saida: cada inimigo roda o proprio contador de ataque, entao quatro
+        // bichos em volta acertavam QUATRO golpes independentes, sem intervalo
+        // nenhum entre eles. Nao havia o que o jogador pudesse fazer no meio disso
+        // — nem sair, porque o empurrao de um o jogava contra o outro.
+        //
+        // E o recurso mais antigo do genero e existe exatamente para isto: impedir
+        // que uma entidade tome dano demais de fontes repetidas. O efeito colateral
+        // bom e que ele tambem devolve a possibilidade de ATRAVESSAR um grupo
+        // pagando um golpe so, que e uma decisao — e decisao e o que faltava.
+        //
+        // Meio quarto de segundo e curto de proposito: longo o bastante para
+        // separar dois golpes, curto o bastante para nao dar imunidade a quem
+        // simplesmente fica parado no meio dos bichos.
+        if (desdeODano < INVULNERAVEL) {
+            return;
+        }
+        this.desdeODano = 0;
         if (hasModifier(Modifiers.Dodge)) {
             double percent = valueModifier(Modifiers.Dodge) + getLuck() * 0.10d;
             double a = Engine.RAND.nextDouble(1d);
@@ -667,6 +911,36 @@ public class Player extends Entity {
 
     public List<Consumable> getPassives() {
         return List.copyOf(this.passives);
+    }
+
+    /**
+     * Repoe a experiencia exatamente como estava, sem passar pela conta de nivel.
+     *
+     * {@link #plusXp} SOBE de nivel enquanto o total passar do limite, que e o
+     * certo para quem esta jogando e errado para quem esta sendo restaurado: o
+     * nivel gravado ja e o resultado daquela conta, e refaze-la em cima dele
+     * subiria o gato de novo. Retomar tem de devolver o estado, nao recalcula-lo.
+     */
+    public void setXpBruto(double xp, int nivel) {
+        this.XP = Math.max(0, xp);
+        this.level = Math.max(0, nivel);
+    }
+
+    /**
+     * Devolve um passivo com a pilha que ele tinha.
+     *
+     * {@link #addPassive} sempre entra com um, porque foi feito para o momento em
+     * que o item e consumido. Restaurar tres precisaria chama-lo tres vezes, e
+     * isso funciona por acidente — depende de o primeiro criar e os outros
+     * empilharem. Aqui a quantidade e dita de uma vez.
+     */
+    public void reporPassivo(int id, int pilha) {
+        Item item = Item.build(id, Math.max(1, pilha));
+        if (!(item instanceof Consumable c)) {
+            return;
+        }
+        c.setStack(Math.max(1, pilha));
+        this.passives.add(c);
     }
 
     public void addPassive(Consumable passive) {
@@ -746,6 +1020,16 @@ public class Player extends Entity {
             return;
         }
         ticksDoZ = 0;
+        // O RONCO, MAS NAO EM TODO Z.
+        //
+        // O "Z" sai a cada 55 quadros e o ronco dura 90: tocando junto com todos,
+        // um comecaria antes de o anterior acabar e o resultado seria um zumbido
+        // continuo em vez de um bicho respirando. Um a cada tres deixa silencio
+        // entre eles, que e o que faz o som ser engracado em vez de irritante — e e
+        // o mesmo motivo de ele ser o mais baixo do jogo.
+        if (++roncos % 3 == 0) {
+            Sound.play(Sounds.Ronco);
+        }
         // Sai de cima da cabeca, com um respingo horizontal para os Zs nao
         // subirem todos na mesma coluna.
         double x = getX() + getWidth() / 2d + Engine.RAND.nextInt(5) - 2;
@@ -794,8 +1078,23 @@ public class Player extends Entity {
         if (isMoving) {
             double radians = Math.atan2(vertical, horizontal);
             if (dash) {
-                getPhysical().addForce("dash", getSpeed() * valueModifier(Modifiers.Dash), radians);
-                getPhysical().setDrag(0.6);
+                // O ARRANCO TEM FREIO PROPRIO, e nao mexe mais no drag.
+                //
+                // O drag e a lentidao do TERRENO — e dele que areia e lava se
+                // servem — e ele multiplica toda forca nova, inclusive o andar. O
+                // dash o punha em 0,6 para que o proprio impulso morresse depressa,
+                // e conseguia isso; so que o mesmo numero cobrava 1,2 segundo de
+                // caminhada a quarenta por cento como troco, que foi o "slow
+                // gigante depois do dash". O arranco durava quatro quadros e o
+                // castigo, setenta e dois.
+                //
+                // Com o freio no vetor, o impulso morre igual de rapido e o gato
+                // volta a andar inteiro no quadro seguinte.
+                getPhysical().addImpulso("dash",
+                        getSpeed() * valueModifier(Modifiers.Dash), radians, FREIO_DO_DASH);
+                rastroRestante = RASTRO;
+                rastroX = getX();
+                rastroY = getY();
                 dash = false;
             }
             getPhysical().addForce("move", getSpeed(), radians);
@@ -810,7 +1109,66 @@ public class Player extends Entity {
                 Sound.play(Sounds.Walking);
             }
         }
+        rastrear();
         avancouQuadro = false;
+    }
+
+    /**
+     * Solta as copias do arranco.
+     *
+     * FORA DO {@code isMoving}, DE PROPOSITO. O impulso do dash sobrevive a tecla:
+     * quem arranca e larga o teclado continua deslizando, e e exatamente nesse
+     * trecho que o rastro mais importa, porque e o trecho em que nada mais na tela
+     * indica que houve movimento. Preso ao isMoving, o rastro sumiria no instante
+     * em que o jogador soltasse a direcao.
+     *
+     * NASCE NO TICK, E NAO NO RENDER. E tentador fotografar o gato de dentro do
+     * proprio desenho, onde o sprite ja esta pronto — mas o render percorre os
+     * objetos do mapa, e criar objeto no meio dessa passagem e mexer na lista que
+     * esta sendo lida. O preco de faze-lo aqui e repetir as tres linhas que montam
+     * o sprite; e barato perto de um ConcurrentModificationException intermitente.
+     */
+    private void rastrear() {
+        if (rastroRestante <= 0) {
+            return;
+        }
+        rastroRestante--;
+        double dx = getX() - rastroX;
+        double dy = getY() - rastroY;
+        double percorrido = Math.hypot(dx, dy);
+        int passo = PASSO_DO_RASTRO * Configs.GameScale();
+        int quantas = (int) (percorrido / passo);
+        if (quantas <= 0) {
+            return;
+        }
+        quantas = Math.min(quantas, MAX_COPIAS);
+
+        // O MESMO SPRITE QUE O RENDER DESENHA, espelho e careta inclusos. Uma copia
+        // sem a expressao do quadro seria um gato de cara diferente aparecendo
+        // atras do gato — o rastro tem que ser dele, e nao parecido com ele.
+        BufferedImage sprite = Expressao.reacao(getSprite(), cara(), clarao());
+        if (ladoDoPasso == 1) {
+            sprite = SpriteHandler.flip(sprite, 1, -1);
+        }
+        Elemento elemento = elemento();
+        Color cor = elemento == null || elemento == Elemento.NENHUM ? null : elemento.cor();
+
+        for (int i = 1; i <= quantas; i++) {
+            double f = i / (double) quantas;
+            double x = rastroX + dx * f;
+            double y = rastroY + dy * f;
+            // A MAIS ATRASADA NASCE MAIS VELHA. As copias deste quadro cobrem um
+            // trecho que o gato levou um quadro para andar, entao todas nasceriam
+            // com a mesma idade e apagariam em bloco. Dando adianto de vida a quem
+            // ficou para tras, o rastro se recolhe na direcao do gato, que e o
+            // sentido em que o tempo de fato correu.
+            double adianto = (1 - f) * 0.35;
+            Game.getMap().put(new Rastro(sprite,
+                    (int) x + (getWidth() - sprite.getWidth()) / 2,
+                    (int) y - sprite.getHeight() + getHeight(), cor, adianto));
+        }
+        rastroX = getX();
+        rastroY = getY();
     }
 
     /**
@@ -866,6 +1224,13 @@ public class Player extends Entity {
         // rabo e a pata apoiada subiam junto com o corpo — e eles ficam no chao.
         renderSprite(sprite, g);
 
+        // DURANTE A TRANSMUTACAO A ARMA NAO ESTA NA MAO — ela esta no alto, virando
+        // outra coisa. Desenhar as duas seria mostrar a mesma arma em dois lugares.
+        if (transmutando()) {
+            transmutacao.render(g, (int) getX() + getWidth() / 2,
+                    (int) getY() + getHeight() / 2);
+            return;
+        }
         // A arma nao balanca junto: ela orbita o gato e tem ritmo proprio.
         drawItem(g);
     }

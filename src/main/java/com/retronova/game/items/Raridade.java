@@ -94,6 +94,81 @@ public enum Raridade {
         };
     }
 
+    /**
+     * Peso desta raridade no sorteio de cartas.
+     *
+     * RARIDADE E, ANTES DE TUDO, CHANCE DE APARECER — era isso que faltava para a
+     * palavra significar alguma coisa. Enquanto a carta era uma arma, "epica" so
+     * dizia de que cor era a borda; com melhorias, o grau passa a ser QUANTO a
+     * carta rende, e ai a frequencia e o que da peso ao encontro.
+     *
+     * Os numeros seguem a proporcao do Hades, que e severa de proposito: la o raro
+     * sai em dez por cento das vezes e o epico em cinco, ou seja, a grande maioria
+     * das ofertas e comum. Um lendario que aparece toda hora nao e lendario — e
+     * so o valor normal com outro nome, e o jogador para de comemorar.
+     */
+    public int peso() {
+        return switch (this) {
+            case COMUM -> 60;
+            case RARO -> 25;
+            case EPICO -> 12;
+            case LENDARIO -> 3;
+        };
+    }
+
+    /**
+     * Teto da chance de promocao.
+     *
+     * Sem teto, copias suficientes de Presagio fariam toda carta subir de grau —
+     * e uma promocao certa e a mesma coisa que apagar o degrau de baixo. Sessenta
+     * por cento ja e enorme e ainda deixa quase metade das cartas no grau sorteado.
+     */
+    public static final double PROMOCAO_MAXIMA = 0.6;
+
+    /** O degrau imediatamente acima, ou este mesmo se ja for o topo. */
+    public Raridade acima() {
+        Raridade[] todas = values();
+        return ordinal() + 1 < todas.length ? todas[ordinal() + 1] : this;
+    }
+
+    /**
+     * Sorteia e, com a chance dada, sobe um degrau.
+     *
+     * A PROMOCAO E DEPOIS DO SORTEIO, e nao um remexer nos pesos. Mexer nos pesos
+     * seria mais "exato" e e pior de duas formas: o jogador nao consegue prever o
+     * resultado de somar duas cartas, e a conta pode inverter a ordem dos degraus
+     * sem ninguem perceber. Promover e uma frase que se entende inteira — "esta
+     * carta podia ter vindo um grau acima" — e nunca desarruma a escada.
+     *
+     * A PROMOCAO NAO ENCADEIA. Uma carta sobe no maximo um degrau, entao um comum
+     * nunca vira lendario de uma vez: o presagio aproxima o topo, nao teleporta
+     * para ele.
+     */
+    public static Raridade sortear(double promocao) {
+        Raridade tirada = sortear();
+        double chance = Math.max(0, Math.min(PROMOCAO_MAXIMA, promocao));
+        if (chance > 0 && com.retronova.engine.Engine.RAND.nextDouble() < chance) {
+            return tirada.acima();
+        }
+        return tirada;
+    }
+
+    /** Uma raridade ao acaso, respeitando os pesos. */
+    public static Raridade sortear() {
+        int total = 0;
+        for (Raridade r : values()) {
+            total += r.peso();
+        }
+        int tirada = com.retronova.engine.Engine.RAND.nextInt(total);
+        for (Raridade r : values()) {
+            tirada -= r.peso();
+            if (tirada < 0) {
+                return r;
+            }
+        }
+        return COMUM;
+    }
+
     /** Nome do arquivo do selo desta raridade. */
     public String simbolo() {
         return this.simbolo;

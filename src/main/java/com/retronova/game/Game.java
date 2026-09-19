@@ -42,6 +42,17 @@ public class Game implements Activity {
 
     private final int indexPlayer;
 
+    /**
+     * Em qual espaco de save esta partida grava.
+     *
+     * ELE E ESCOLHIDO UMA VEZ E NAO MUDA MAIS. E o que impede que os tres espacos
+     * virem tres pontos da MESMA corrida: se a partida pudesse trocar de espaco no
+     * meio, o jogador guardaria uma copia antes de uma sala perigosa e recarregaria
+     * ao morrer, e a permadeath acabaria. Sem escolha na hora de gravar, nao ha
+     * como ramificar. Ver Corrida.
+     */
+    private final int espaco;
+
     private long seconds;
     private int count;
 
@@ -55,8 +66,73 @@ public class Game implements Activity {
     private final HUD hud;
     private final Inter inter;
 
+    /**
+     * A corrida acabou de ser retomada e precisa reescrever o proprio save.
+     *
+     * A leitura APAGA o arquivo — e o que impede retomar duas vezes o mesmo ponto.
+     * Mas isso abre uma janela: entre retomar e trocar de sala, nao existe save
+     * nenhum no disco, e quem fechasse o jogo nesse intervalo perderia a corrida
+     * que tinha acabado de abrir. Regravar no primeiro tick fecha a janela.
+     *
+     * No primeiro tick, e nao no construtor, porque a gravacao pergunta qual e a
+     * partida corrente — e durante o construtor a resposta ainda e outra.
+     */
+    private boolean regravarSave;
+
+    /**
+     * Retoma a corrida gravada, montando a arena DIRETO.
+     *
+     * A primeira versao comecava no saguao e trocava de sala no primeiro tick,
+     * porque o construtor da Arena perguntava o nivel a {@code Game.getGame()} e
+     * ali este objeto ainda nao estava na pilha. O efeito era o jogador aparecer no
+     * saguao e ser teleportado um instante depois — parecia defeito, e era. Com a
+     * Arena aceitando o nivel de fora, a sala certa e a PRIMEIRA que se ve.
+     */
+    public static Game retomar(Corrida corrida, int espaco) {
+        return new Game(corrida, espaco);
+    }
+
+    private Game(Corrida corrida, int espaco) {
+        this.espaco = espaco;
+        this.indexPlayer = corrida.gato();
+        this.inter = new Inter();
+        Player player = Player.newPlayer(this.indexPlayer);
+        this.inter.put("inventory", player.getInventory(), false);
+        this.inter.put("status", new Status(player), false);
+        this.player = player;
+        // O ESTADO ANTES DO MAPA. A arena e escolhida pelo nivel, e o gato precisa
+        // estar reconstituido antes de ser posto nela — o changeMap ja o posiciona.
+        this.level = corrida.nivel();
+        this.difficult = corrida.dificuldade();
+        this.seconds = corrida.segundos();
+        corrida.aplicarNoGato(player);
+        this.changeMap(new Arena(this.difficult, this.level));
+        this.hud = new HUD(player);
+        this.regravarSave = true;
+    }
+
+    public int getIndexPlayer() {
+        return this.indexPlayer;
+    }
+
+    public int getEspaco() {
+        return this.espaco;
+    }
+
     //Teste
-    public Game(int indexPlayer, GameMap map) {
+    public Game(int indexPlayer, GameMap map, int espaco) {
+        // COMECAR UMA PARTIDA LIMPA O ESPACO ESCOLHIDO — e so ele.
+        //
+        // Sem isto o espaco mentiria: quem comecasse uma corrida por cima de outra e
+        // saisse ainda no saguao veria, na tela de saves, a corrida ANTIGA — uma que
+        // ele acabara de mandar apagar. Limpar aqui cobre todos os inicios de uma
+        // vez, porque todos passam por este construtor: a selecao de personagem, o
+        // "Try Again" e o reiniciar da pausa.
+        //
+        // OS OUTROS DOIS ESPACOS NAO SAO TOCADOS. Comecar uma corrida nova nao pode
+        // custar as corridas dos outros espacos — e o motivo de existirem tres.
+        Corrida.apagar(espaco);
+        this.espaco = espaco;
         this.indexPlayer = indexPlayer;
         this.inter = new Inter();
         Player player = Player.newPlayer(indexPlayer);
@@ -114,12 +190,17 @@ public class Game implements Activity {
 
     private void gameOver() {
         this.acabou = true;
+        // MORREU, NAO HA O QUE RETOMAR. Sem isto o save do inicio da sala ficaria
+        // no disco depois da morte, e o botao de continuar do menu ofereceria
+        // desfazer a derrota — que e precisamente o que a permadeath proibe.
+        Corrida.apagar(this.espaco);
         // LEVA O PERSONAGEM JUNTO. A partida e descartada aqui, entao quem quiser
         // tentar de novo depois nao tem mais de onde descobrir com qual gato o
         // jogador estava — e sem isso o botao de recomecar nao tem o que recomecar.
         int gato = this.indexPlayer;
+        int onde = this.espaco;
         Engine.backActivity();
-        Engine.heapActivity(new GameOver(gato));
+        Engine.heapActivity(new GameOver(gato, onde));
     }
 
     public void changeMap(GameMap newMap) {
@@ -144,12 +225,48 @@ public class Game implements Activity {
         this.gCam.setX((int)player.getX() + player.getWidth()/2 - Engine.window.getWidth()/2);
         this.gCam.setY((int)player.getY() + player.getHeight()/2 - Engine.window.getHeight()/2);
         this.gCam.setFollowed(player);
+
+        // O PONTO DE RETOMADA E AQUI, ao ENTRAR na sala.
+        //
+        // Este metodo e o funil por onde toda troca de sala passa — alcapao, porta,
+        // saguao — entao um unico ponto cobre todos, inclusive as passagens que
+        // ainda nao existem. E gravar na ENTRADA, e nao na saida, e o que faz o
+        // arquivo descrever sempre uma sala intacta: uma sala pela metade nao pode
+        // ser reconstruida, ja que os bichos e os projeteis nao sao gravados.
+        //
+        // Fica depois de a camera estar montada porque a gravacao le o estado do
+        // jogador, e o jogador so esta no lugar certo depois do addPlayer acima.
+        if (ehAPartidaCorrente()) {
+            Corrida.gravar();
+        }
+    }
+
+    /**
+     * Esta partida e a que esta rodando?
+     *
+     * A GRAVACAO PRECISA SABER DE QUEM E O ESTADO QUE ELA ESTA FOTOGRAFANDO.
+     * {@code changeMap} tambem roda dentro do construtor, e ali este objeto ainda
+     * nao esta na pilha de activities — a corrente e outra. Sem a checagem,
+     * reiniciar uma partida podia gravar um ponto de retomada da partida
+     * ABANDONADA, e quem saisse antes de entrar na primeira arena voltaria, pelo
+     * "Continue", para a corrida que tinha acabado de jogar fora.
+     *
+     * Hoje o {@code restart} escapa disso por acidente, porque desempilha antes de
+     * construir. Depender do acidente e o problema: a checagem aqui vale para
+     * qualquer ordem de pilha que alguem venha a escrever.
+     */
+    private boolean ehAPartidaCorrente() {
+        return Engine.getACTIVITY() == this;
     }
 
     @Override
     public void tick() {
         if (acabou) {
             return;
+        }
+        if (regravarSave) {
+            regravarSave = false;
+            Corrida.gravar();
         }
         count++;
         if(count > 60) {
@@ -366,7 +483,8 @@ public class Game implements Activity {
         Engine.backActivity();
         // Passa pela tela de transicao, como o inicio de partida: reiniciar e
         // comecar uma corrida nova, e o corte seco fazia parecer um bug.
-        Engine.heapActivity(new Game(game.indexPlayer, map), () -> { });
+        // MESMO ESPACO. Reiniciar troca a corrida, nao o lugar onde ela mora.
+        Engine.heapActivity(new Game(game.indexPlayer, map, game.espaco), () -> { });
     }
 
     public static Game getGame() {
