@@ -98,8 +98,17 @@ public final class Atmosfera {
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         BufferedImage img = sombra();
         int s = Configs.GameScale();
+        // So a parte do mundo que esta na tela (mais um tile de folga).
+        java.awt.Rectangle visivel;
+        try {
+            visivel = g.getTransform().createInverse().createTransformedShape(new java.awt.Rectangle(
+                    0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
+            visivel.grow(GameObject.SIZE(), GameObject.SIZE());
+        } catch (java.awt.geom.NoninvertibleTransformException semZoom) {
+            visivel = null;
+        }
         for (Entity e : entidades) {
-            if (!temSombra(e)) {
+            if (!temSombra(e) || (visivel != null && !e.getBounds().intersects(visivel))) {
                 continue;
             }
             double[] d = e.deslocamentoNoQuadro(alpha);

@@ -194,6 +194,11 @@ public abstract class GameMap {
         return this.map;
     }
 
+    /** Largura do mapa em tiles (o indice de (x, y) e x + y * largura). */
+    public int larguraEmTiles() {
+        return this.length;
+    }
+
     /**
      * Há parede entre os dois pontos?
      *

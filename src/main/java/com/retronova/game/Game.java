@@ -430,18 +430,19 @@ public class Game implements Activity {
         // mil e tantos tiles dela a cada quadro, a maioria fora da janela. Agora a
         // janela e levada de volta para coordenadas do mundo, com dois tiles de
         // folga para paredes cujo desenho sobe alem do proprio tile.
-        Rectangle visivel;
-        try {
-            visivel = g.getTransform().createInverse().createTransformedShape(
-                    new Rectangle(0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
-            int folga = 2 * com.retronova.game.objects.GameObject.SIZE();
-            visivel.grow(folga, folga);
-        } catch (java.awt.geom.NoninvertibleTransformException semZoom) {
-            visivel = gCam.getBounds();
-        }
-        for(int i = 0; i < map.length; i++) {
-            Tile tile = map[i];
-            if(tile.getBounds().intersects(visivel)) {
+        //
+        // E SEM PERCORRER O MAPA TODO: com o campo aberto (160x160) testar os 25 mil
+        // tiles um a um ja custava. A faixa visivel de colunas e linhas sai direto
+        // do retangulo, e so ela e visitada.
+        Rectangle visivel = areaVisivel(g, 2);
+        int tile = com.retronova.game.objects.GameObject.SIZE();
+        int largura = this.map.larguraEmTiles();
+        int altura = largura == 0 ? 0 : map.length / largura;
+        int x0 = Math.max(0, visivel.x / tile), x1 = Math.min(largura - 1, (visivel.x + visivel.width) / tile);
+        int y0 = Math.max(0, visivel.y / tile), y1 = Math.min(altura - 1, (visivel.y + visivel.height) / tile);
+        for (int y = y0; y <= y1; y++) {
+            for (int x = x0; x <= x1; x++) {
+                int i = x + y * largura;
                 map[i].render(g);
                 if(Debugging.showTileBox) {
                     map[i].renderBounds(i, g);
@@ -466,10 +467,33 @@ public class Game implements Activity {
         return portal.getSprite();
     }
 
+    /**
+     * A janela levada de volta para coordenadas do mundo, com 'folgaEmTiles' de
+     * margem. Na duvida (transformacao sem inversa), o mapa inteiro.
+     */
+    private Rectangle areaVisivel(Graphics2D g, int folgaEmTiles) {
+        try {
+            Rectangle r = g.getTransform().createInverse().createTransformedShape(
+                    new Rectangle(0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
+            int folga = folgaEmTiles * com.retronova.game.objects.GameObject.SIZE();
+            r.grow(folga, folga);
+            return r;
+        } catch (java.awt.geom.NoninvertibleTransformException semZoom) {
+            return gCam.getBounds();
+        }
+    }
+
     private void renderEntities(Graphics2D g) {
         List<Entity> entities = map.getEntities();
+        // So o que esta na tela (com folga de dois tiles para sprites altos e
+        // auras). Com a horda grande, boa parte dela esta fora da janela, e cada
+        // um desses ainda passava por sombra, animacao, sprite e barra de vida.
+        Rectangle visivel = areaVisivel(g, 2);
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
+            if (entity != player && !entity.getBounds().intersects(visivel)) {
+                continue;
+            }
             // O PORTAL DOS BICHOS, desenhado ANTES do inimigo para ficar por baixo
             // dele. Mesmo desenho da chegada do gato: os dois chegam do mesmo jeito,
             // entao chegam com a mesma imagem — duas animacoes diferentes para o
