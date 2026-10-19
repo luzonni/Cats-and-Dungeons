@@ -70,6 +70,14 @@ public abstract class GameObject {
         return new double[]{-(1 - alpha) * dx, -(1 - alpha) * dy};
     }
 
+    /** Quanto andou no ultimo tick, em pixels do mundo. Zero se acabou de nascer. */
+    public double passoNoTick() {
+        if (Double.isNaN(antX)) {
+            return 0;
+        }
+        return Math.hypot(x - antX, y - antY);
+    }
+
     public double getX() {
         return this.x;
     }

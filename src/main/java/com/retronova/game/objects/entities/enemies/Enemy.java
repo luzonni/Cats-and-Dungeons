@@ -214,6 +214,7 @@ public abstract class Enemy extends Entity implements Nascente {
     @Override
     public void postTick() {
         super.postTick();
+        desdeOApanhar++;
         if(tookDamage) {
             countTookDamage++;
             if(countTookDamage > 50) {
@@ -306,6 +307,7 @@ public abstract class Enemy extends Entity implements Nascente {
         }
         super.strike(type, damage);
         this.tookDamage = true;
+        this.desdeOApanhar = 0;
         double x = getX() + Engine.RAND.nextDouble(getWidth());
         double y = getY() + Engine.RAND.nextDouble(getHeight());
         particle.setX(x);
@@ -325,10 +327,67 @@ public abstract class Enemy extends Entity implements Nascente {
             float quanto = restante() / (float) NASCENDO;
             return Expressao.clarao(currentSprite, quanto);
         }
-        if(tookDamage) {
-            currentSprite = DrawSprite.draw(currentSprite, new Color(122, 19, 17));
+        // CLARAO BRANCO CURTO, e nao vermelho-escuro longo. O tingimento antigo
+        // durava 50 ticks e ESCURECIA o bicho: numa horda em que todos apanham, a
+        // tela inteira ficava cor de sangue seco e os ratos sumiam no chao. Branco
+        // por um decimo de segundo diz "acertou" e devolve o bicho com a cor dele.
+        if (desdeOApanhar < CLARAO) {
+            currentSprite = Expressao.clarao(currentSprite, 1f - desdeOApanhar / (float) CLARAO);
         }
-        return currentSprite;
+        return contornado(currentSprite);
+    }
+
+    /** Ticks de clarao branco ao ser atingido. */
+    private static final int CLARAO = 7;
+    /** Ticks desde o ultimo golpe recebido. Comeca alto: ninguem nasce apanhando. */
+    private int desdeOApanhar = 999;
+
+    /**
+     * De 1 (acabou de apanhar) a 0, em dez ticks: quanto o "soco" de escala ainda
+     * deforma o bicho. Lido pelo Game ao desenhar.
+     */
+    public float impacto() {
+        return Math.max(0f, 1f - desdeOApanhar / 10f);
+    }
+
+    /**
+     * O sprite com um contorno escuro de um pixel de arte em volta.
+     *
+     * E o que separa o rato do chao. Os dois tem a mesma familia de cor — cinza,
+     * verde-musgo, marrom —, e sem borda o bicho le como mais uma mancha do piso.
+     * Cacheado por quadro da folha, como os outros tingimentos.
+     */
+    private static BufferedImage contornado(BufferedImage sprite) {
+        return CONTORNOS.computeIfAbsent(sprite, Enemy::contornar);
+    }
+
+    private static final java.util.Map<BufferedImage, BufferedImage> CONTORNOS =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    private static BufferedImage contornar(BufferedImage src) {
+        int t = Math.max(1, com.retronova.engine.Configs.GameScale());
+        int w = src.getWidth(), h = src.getHeight();
+        BufferedImage out = new BufferedImage(w + 2 * t, h + 2 * t, BufferedImage.TYPE_INT_ARGB);
+        int[] px = src.getRGB(0, 0, w, h, null, 0, w);
+        int borda = 0xFF1A0E16;
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if ((px[y * w + x] >>> 24) < 40) {
+                    continue;
+                }
+                // Carimba a borda nas quatro direcoes, a um pixel de arte.
+                for (int[] d : new int[][]{{-t, 0}, {t, 0}, {0, -t}, {0, t}}) {
+                    int ox = x + t + d[0], oy = y + t + d[1];
+                    if ((out.getRGB(ox, oy) >>> 24) == 0) {
+                        out.setRGB(ox, oy, borda);
+                    }
+                }
+            }
+        }
+        Graphics2D g = out.createGraphics();
+        g.drawImage(src, t, t, null);
+        g.dispose();
+        return out;
     }
 
     // ------------------------------------------------------------ evolucao
@@ -402,6 +461,14 @@ public abstract class Enemy extends Entity implements Nascente {
     public void die() {
         this.disappear();
         dropXp();
+        // O corpo voa e some, em vez de sumir no quadro seguinte. Mesmo espelho
+        // que os bichos usam no render, para ele nao virar de lado ao morrer.
+        int lado = getPhysical().getOrientation()[0] * -1;
+        BufferedImage corpo = com.retronova.engine.graphics.SpriteHandler.flip(
+                contornado(super.getSprite()), 1, lado == 0 ? -1 : lado);
+        Game.getMap().put(new com.retronova.game.objects.particles.Cadaver(corpo,
+                getX() + (getWidth() - corpo.getWidth()) / 2.0,
+                getY() + getHeight() - corpo.getHeight()));
         // O BAU VEM DA SORTE. Elite larga sempre; bicho comum, conforme os pontos
         // de sorte do gato (ver Player.chanceDeBau). Mais sorte, mais roleta.
         if (elite || Engine.RAND.nextDouble() < Game.getPlayer().chanceDeBau()) {

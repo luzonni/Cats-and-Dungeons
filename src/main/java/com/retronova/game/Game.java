@@ -473,7 +473,14 @@ public class Game implements Activity {
             if (entity instanceof Enemy elite) {
                 elite.renderAura(g);
             }
-            entity.render(g);
+            if (entity instanceof Enemy bicho) {
+                java.awt.geom.AffineTransform antes = g.getTransform();
+                animarBicho(g, bicho);
+                entity.render(g);
+                g.setTransform(antes);
+            } else {
+                entity.render(g);
+            }
             if (entity == player && !player.morrendo()) {
                 com.retronova.game.objects.entities.Arsenal.render(g, player);
             }
@@ -509,6 +516,44 @@ public class Game implements Activity {
             }
             g.translate(-d[0], -d[1]);
         }
+    }
+
+    /**
+     * Vida no desenho dos bichos, sem precisar de quadro novo de arte.
+     *
+     * A folha dos ratos tem dois ou tres quadros, e eles andavam deslizando pelo
+     * chao como recortes de papel. Aqui o corpo ganha peso: quica a cada passo,
+     * achata e estica (squash & stretch), balanca de um lado para o outro,
+     * respira parado, e da um tranco quando apanha. Tudo em volta dos PES, para
+     * o bicho nao sair do lugar em que a sombra esta.
+     *
+     * A fase vem da identidade de cada bicho, para a horda nao marchar em
+     * uniao — cem ratos pulando no mesmo compasso parecem uma coreografia.
+     */
+    private static void animarBicho(Graphics2D g, Enemy bicho) {
+        int s = com.retronova.engine.Configs.GameScale();
+        double t = System.nanoTime() / 1e9;
+        double fase = (System.identityHashCode(bicho) % 1000) / 1000.0 * Math.PI * 2;
+        // Quanto ele esta andando, de 0 a 1.
+        double andando = Engine.pausado() ? 0 : Math.min(1, bicho.passoNoTick() / (0.6 * s));
+
+        double passo = t * 11 + fase;
+        double quique = Math.abs(Math.sin(passo)) * 2.2 * s * andando;
+        double estica = 1 + 0.08 * Math.sin(passo * 2) * andando
+                + 0.035 * Math.sin(t * 3 + fase) * (1 - andando);   // respirar parado
+        double inclina = 0.10 * Math.sin(passo) * andando;
+
+        // O tranco do golpe: alarga e achata, voltando em dez ticks.
+        float impacto = bicho.impacto();
+        double sx = (1 / estica) * (1 + 0.28 * impacto);
+        double sy = estica * (1 - 0.18 * impacto);
+
+        double pesX = bicho.getX() + bicho.getWidth() / 2.0;
+        double pesY = bicho.getY() + bicho.getHeight();
+        g.translate(pesX, pesY - quique);
+        g.rotate(inclina);
+        g.scale(sx, sy);
+        g.translate(-pesX, -pesY);
     }
 
     /**
