@@ -62,6 +62,28 @@ public final class Atmosfera {
     // ------------------------------------------------------------ sombras
 
     /** A elipse de sombra, pintada uma vez e ampliada para cada entidade. */
+    private static BufferedImage sombraDePerigo;
+
+    /**
+     * A sombra dos INIMIGOS: avermelhada e um pouco mais forte. E a marca de
+     * "isto machuca" — no meio de gemas, coracoes, caixotes e particulas, o que
+     * pode ferir o gato tem uma assinatura so dele, lida pelo canto do olho.
+     */
+    private static BufferedImage sombraDePerigo() {
+        if (sombraDePerigo == null) {
+            int w = 64, h = 64;
+            BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = img.createGraphics();
+            g.setPaint(new RadialGradientPaint(new Point2D.Float(w / 2f, h / 2f), w / 2f,
+                    new float[]{0f, 0.55f, 1f},
+                    new Color[]{new Color(150, 10, 25, 190), new Color(120, 10, 20, 110), new Color(90, 0, 10, 0)}));
+            g.fillRect(0, 0, w, h);
+            g.dispose();
+            sombraDePerigo = com.retronova.engine.graphics.Acelerada.de(img);
+        }
+        return sombraDePerigo;
+    }
+
     private static BufferedImage sombra() {
         if (sombra == null) {
             int w = 64, h = 64;
@@ -122,7 +144,9 @@ public final class Atmosfera {
             }
             double cx = e.getX() + d[0] + e.getWidth() / 2.0;
             double base = e.getY() + d[1] + e.getHeight() + queda;
-            g.drawImage(img, (int) (cx - largura / 2), (int) (base - altura / 2),
+            boolean perigo = e instanceof Enemy inimigo && inimigo.alvoAutomatico()
+                    || e instanceof Projetil tiro && tiro.hostil();
+            g.drawImage(perigo ? sombraDePerigo() : img, (int) (cx - largura / 2), (int) (base - altura / 2),
                     (int) largura, (int) altura, null);
         }
         if (antes != null) {

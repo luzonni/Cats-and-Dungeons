@@ -420,19 +420,26 @@ public abstract class Enemy extends Entity implements Nascente {
      * verde-musgo, marrom —, e sem borda o bicho le como mais uma mancha do piso.
      * Cacheado por quadro da folha, como os outros tingimentos.
      */
-    private static BufferedImage contornado(BufferedImage sprite) {
-        return CONTORNOS.computeIfAbsent(sprite, Enemy::contornar);
+    private BufferedImage contornado(BufferedImage sprite) {
+        // QUEM FERE TEM BORDA VERMELHA-ESCURA. Junto da sombra avermelhada (ver
+        // Atmosfera), e a assinatura de perigo: gemas, coracoes e caixotes nunca
+        // a tem. Objetos quebraveis ficam com a borda neutra.
+        if (alvoAutomatico()) {
+            return PERIGO.computeIfAbsent(sprite, s -> contornar(s, 0xFF5A0A14));
+        }
+        return CONTORNOS.computeIfAbsent(sprite, s -> contornar(s, 0xFF1A0E16));
     }
 
     private static final java.util.Map<BufferedImage, BufferedImage> CONTORNOS =
             java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+    private static final java.util.Map<BufferedImage, BufferedImage> PERIGO =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
-    private static BufferedImage contornar(BufferedImage src) {
+    private static BufferedImage contornar(BufferedImage src, int borda) {
         int t = Math.max(1, com.retronova.engine.Configs.GameScale());
         int w = src.getWidth(), h = src.getHeight();
         BufferedImage out = new BufferedImage(w + 2 * t, h + 2 * t, BufferedImage.TYPE_INT_ARGB);
         int[] px = src.getRGB(0, 0, w, h, null, 0, w);
-        int borda = 0xFF1A0E16;
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 if ((px[y * w + x] >>> 24) < 40) {

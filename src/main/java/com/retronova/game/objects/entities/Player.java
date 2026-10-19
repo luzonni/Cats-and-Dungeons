@@ -915,12 +915,18 @@ public class Player extends Entity {
     }
 
     /**
-     * Chance de um bicho comum largar bau ao morrer. Mesma curva, mais lenta:
-     * seis pontos dao ~5,7%, trinta dao ~23%.
+     * Chance de um bicho comum largar bau ao morrer: seis pontos dao ~0,7%, nove
+     * ~1%, trinta ~3%.
+     *
+     * ERA OITO VEZES ISSO, e com a horda o calculo mudou de natureza: o Finn (nove
+     * de sorte) matando sessenta ratos por minuto tirava uns cinco baus por minuto
+     * — uma roleta a cada doze segundos, e o gato ja estava forte demais no
+     * terceiro minuto. Agora sao uns dois baus a cada tres minutos, mais os das
+     * elites; a sorte continua mandando, so que sobre uma base que cabe na horda.
      */
     public double chanceDeBau() {
         double pontos = getLuck();
-        return pontos / (pontos + 100);
+        return pontos / (pontos + 100) * 0.12;
     }
 
     public void setRangeOfColect(double range){

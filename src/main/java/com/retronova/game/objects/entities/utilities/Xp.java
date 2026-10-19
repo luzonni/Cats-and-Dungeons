@@ -44,6 +44,8 @@ public class Xp extends Utility {
     private static final double ARRANCO = 15d;
 
     private int idade;
+    /** Ticks de vida, so para a animacao da gema (idade para de contar). */
+    private int vivo = com.retronova.engine.Engine.RAND.nextInt(100);   // fase propria: as gemas nao flutuam em coro
 
     public Xp(double x, double y) {
         super(x, y, 1);
@@ -63,27 +65,41 @@ public class Xp extends Utility {
     }
 
     @Override
+    /**
+     * O XP e uma GEMA: losango ciano com brilho branco, flutuando.
+     *
+     * O sprite antigo era uma bolha verde girando — a mesma familia de cor e de
+     * forma do veneno e das auras, e no meio da horda ele parecia uma ameaca a
+     * mais. Coletavel tem de ler como coletavel de relance: forma de cristal (que
+     * nenhum inimigo tem), cor fria e limpa, brilho, e o subir-e-descer de quem
+     * esta esperando ser pego. O orbe grande e a mesma gema, maior e dourada.
+     */
     public void render(java.awt.Graphics2D g) {
-        if (!grande) {
-            super.render(g);
-            return;
-        }
-        java.awt.image.BufferedImage sprite = getSprite();
-        double t = (idade + count) * 0.15;
-        double escala = 1.7 + 0.15 * Math.sin(t);
-        int w = (int) (sprite.getWidth() * escala);
-        int h = (int) (sprite.getHeight() * escala);
+        int s = com.retronova.engine.Configs.GameScale();
+        double t = (vivo + com.retronova.engine.Engine.alpha()) * 0.12;
+        int meia = (grande ? 5 : 3) * s;                       // meia largura do losango
+        int alto = (int) (meia * 1.4);
         int cx = (int) getX() + getWidth() / 2;
-        int cy = (int) getY() + getHeight() / 2;
-        g.setColor(new java.awt.Color(255, 214, 90, 70));
-        g.fillOval(cx - w, cy - h, w * 2, h * 2);
-        java.awt.image.BufferedImage dourado = DOURADOS.computeIfAbsent(sprite,
-                k -> com.retronova.engine.graphics.DrawSprite.draw(k, new java.awt.Color(255, 200, 60)));
-        g.drawImage(dourado, cx - w / 2, cy - h / 2, w, h, null);
+        int cy = (int) (getY() + getHeight() / 2 - Math.abs(Math.sin(t)) * 1.5 * s);
+        java.awt.Color corpo = grande ? new java.awt.Color(0xFFC83C) : new java.awt.Color(0x3FD8FF);
+        java.awt.Color sombra = grande ? new java.awt.Color(0xB07A10) : new java.awt.Color(0x1F7FB8);
+        // Halo suave: diz "brilha", nao "ameaca".
+        g.setColor(new java.awt.Color(corpo.getRed(), corpo.getGreen(), corpo.getBlue(), grande ? 70 : 45));
+        g.fillOval(cx - meia * 2, cy - meia * 2, meia * 4, meia * 4);
+        int[] xs = {cx, cx + meia, cx, cx - meia};
+        int[] ys = {cy - alto, cy, cy + alto, cy};
+        g.setColor(java.awt.Color.WHITE);                       // contorno claro, nunca escuro
+        g.fillPolygon(new int[]{cx, cx + meia + s, cx, cx - meia - s},
+                new int[]{cy - alto - s, cy, cy + alto + s, cy}, 4);
+        g.setColor(sombra);
+        g.fillPolygon(xs, ys, 4);
+        g.setColor(corpo);                                      // faceta clara de cima
+        g.fillPolygon(new int[]{cx, cx + meia, cx, cx - meia}, new int[]{cy - alto, cy, cy, cy}, 4);
+        g.setColor(java.awt.Color.WHITE);                       // o brilho que pisca
+        if (Math.sin(t * 2.3) > 0.2) {
+            g.fillRect(cx - meia / 2, cy - alto / 2, Math.max(1, s), Math.max(1, s));
+        }
     }
-
-    private static final java.util.Map<java.awt.image.BufferedImage, java.awt.image.BufferedImage> DOURADOS =
-            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
     public void setWeight(double weight) {
         this.weight = weight;
@@ -95,6 +111,7 @@ public class Xp extends Utility {
 
     @Override
     public void tick() {
+        vivo++;
         count++;
         if(count > 15) {
             count = 0;
