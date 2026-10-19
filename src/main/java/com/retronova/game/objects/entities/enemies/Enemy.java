@@ -93,6 +93,11 @@ public abstract class Enemy extends Entity implements Nascente {
         return nascendo > 0;
     }
 
+    /** Para quem ja esta no mapa desde o comeco (objetos): sem portal de chegada. */
+    protected void nascerPronto() {
+        this.nascendo = 0;
+    }
+
     /**
      * A DISTANCIA EM QUE O BICHO DESISTE, em tiles.
      *
@@ -112,6 +117,64 @@ public abstract class Enemy extends Entity implements Nascente {
     protected Enemy(int ID, double x, double y, int weight) {
         super(ID, x, y, weight);
         // Flat com zero nao fazia nada: resistir zero por cento e nao resistir.
+    }
+
+    // -------------------------------------------------------------- cerco
+
+    /**
+     * O lado do gato que este bicho quer ocupar, sorteado ao nascer.
+     *
+     * A HORDA VINHA EM FILA. Todo rato mirava o centro do gato, entao chegavam
+     * pela mesma reta, se empilhavam atras uns dos outros, e bastava andar para o
+     * lado oposto: nunca havia aperto. Com um lado proprio, cada um contorna um
+     * pouco ate o seu flanco enquanto se aproxima — a horda se abre em leque e
+     * FECHA o cerco. E o que torna andar uma decisao, e acertar em area um premio.
+     */
+    private final double ladoDoCerco = Engine.RAND.nextDouble() * Math.PI * 2;
+
+    /** Perto disto, o bicho para de contornar e vai direto. */
+    private static final double RAIO_DO_CERCO_EM_TILES = 3.0;
+    /** Quanto o rumo pode girar em direcao ao proprio flanco, por decisao. */
+    private static final double GIRO_MAXIMO = 0.7;
+
+    /**
+     * O ponto para onde andar: um ponto no anel em volta do gato, do lado deste
+     * bicho, que encolhe conforme ele chega perto. Colado, e o proprio gato.
+     */
+    protected java.awt.geom.Point2D pontoDeCerco() {
+        Player gato = Game.getPlayer();
+        double px = gato.getX() + gato.getWidth() / 2.0;
+        double py = gato.getY() + gato.getHeight() / 2.0;
+        double cx = getX() + getWidth() / 2.0;
+        double cy = getY() + getHeight() / 2.0;
+        double dist = Math.hypot(cx - px, cy - py);
+        double raio = RAIO_DO_CERCO_EM_TILES * GameObject.SIZE();
+        if (dist < raio * 1.15) {
+            return new java.awt.geom.Point2D.Double(px, py);
+        }
+        // Rumo atual (do gato ate o bicho), puxado para o lado preferido.
+        double rumo = Math.atan2(cy - py, cx - px);
+        double diferenca = Math.atan2(Math.sin(ladoDoCerco - rumo), Math.cos(ladoDoCerco - rumo));
+        double desejado = rumo + Math.max(-GIRO_MAXIMO, Math.min(GIRO_MAXIMO, diferenca));
+        double alcance = Math.max(raio, dist * 0.55);
+        return new java.awt.geom.Point2D.Double(px + Math.cos(desejado) * alcance,
+                py + Math.sin(desejado) * alcance);
+    }
+
+    /** O angulo de movimento para fechar o cerco. Ver pontoDeCerco. */
+    protected double anguloDeCerco() {
+        java.awt.geom.Point2D alvo = pontoDeCerco();
+        return Math.atan2(alvo.getY() - (getY() + getHeight() / 2.0),
+                alvo.getX() - (getX() + getWidth() / 2.0));
+    }
+
+    /**
+     * Se este alvo entra na mira automatica das armas e na contagem da onda.
+     * Objetos quebraveis respondem nao: apanham de tudo, mas ninguem mira neles e
+     * eles nao seguram a onda aberta.
+     */
+    public boolean alvoAutomatico() {
+        return true;
     }
 
     /**
@@ -461,6 +524,15 @@ public abstract class Enemy extends Entity implements Nascente {
     public void die() {
         this.disappear();
         dropXp();
+        if (alvoAutomatico()) {
+            com.retronova.game.objects.entities.Furia.somarMorte();
+            if (Game.getMap() instanceof com.retronova.game.map.arena.Arena arena) {
+                arena.getWaves().contarAbate();
+            }
+        }
+        if (elite) {
+            com.retronova.game.map.Camera.tremer(6);   // elite cai com peso
+        }
         // O corpo voa e some, em vez de sumir no quadro seguinte. Mesmo espelho
         // que os bichos usam no render, para ele nao virar de lado ao morrer.
         int lado = getPhysical().getOrientation()[0] * -1;

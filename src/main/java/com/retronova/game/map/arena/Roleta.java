@@ -148,14 +148,14 @@ public class Roleta implements Activity {
     }
 
     /**
-     * Arma ou carta. Arma sai em ~30% das vezes — 45% enquanto o gato nao tem
+     * Arma ou carta. Arma sai em ~40% das vezes — 55% enquanto o gato nao tem
      * nenhuma, para a primeira chegar cedo e a corrida ganhar forma.
      */
     private static Premio sortear(Melhorias melhorias, double promocao) {
         List<ArmaExtra> armas = melhorias.armasDisponiveis();
         boolean temAlguma = java.util.Arrays.stream(ArmaExtra.values())
                 .anyMatch(a -> melhorias.nivel(a) > 0);
-        double chanceArma = temAlguma ? 0.30 : 0.45;
+        double chanceArma = temAlguma ? 0.40 : 0.55;   // seis armas na mesa: mais chance de sair uma
         if (!armas.isEmpty() && Engine.RAND.nextDouble() < chanceArma) {
             ArmaExtra a = armas.get(Engine.RAND.nextInt(armas.size()));
             return new Premio(null, a, melhorias.nivel(a) + 1);

@@ -50,6 +50,41 @@ public class Xp extends Utility {
         loadSprites("xp");
     }
 
+    /**
+     * Orbe grande: o premio de quebrar um objeto. Vale bem mais e precisa PARECER
+     * que vale — maior, dourado e pulsando, para ser reconhecido no meio das
+     * dezenas de orbes azuis da horda.
+     */
+    private boolean grande;
+
+    public Xp grande() {
+        this.grande = true;
+        return this;
+    }
+
+    @Override
+    public void render(java.awt.Graphics2D g) {
+        if (!grande) {
+            super.render(g);
+            return;
+        }
+        java.awt.image.BufferedImage sprite = getSprite();
+        double t = (idade + count) * 0.15;
+        double escala = 1.7 + 0.15 * Math.sin(t);
+        int w = (int) (sprite.getWidth() * escala);
+        int h = (int) (sprite.getHeight() * escala);
+        int cx = (int) getX() + getWidth() / 2;
+        int cy = (int) getY() + getHeight() / 2;
+        g.setColor(new java.awt.Color(255, 214, 90, 70));
+        g.fillOval(cx - w, cy - h, w * 2, h * 2);
+        java.awt.image.BufferedImage dourado = DOURADOS.computeIfAbsent(sprite,
+                k -> com.retronova.engine.graphics.DrawSprite.draw(k, new java.awt.Color(255, 200, 60)));
+        g.drawImage(dourado, cx - w / 2, cy - h / 2, w, h, null);
+    }
+
+    private static final java.util.Map<java.awt.image.BufferedImage, java.awt.image.BufferedImage> DOURADOS =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
     public void setWeight(double weight) {
         this.weight = weight;
     }

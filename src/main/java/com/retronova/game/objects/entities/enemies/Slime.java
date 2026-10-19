@@ -23,7 +23,7 @@ public class Slime extends Enemy {
         jumpCoolDown = 0;
         random = new Random();
         setSolid();
-        setSpeed(6);
+        setSpeed(4.5);
         setLife(10);
         // O PESO DE XP ERA 800000.6, e nao era exagero de balanceamento: era erro
         // de digitacao com consequencia. O XP cai multiplicado por sorte e por um
@@ -59,7 +59,7 @@ public class Slime extends Enemy {
 
         //    return;
 
-        radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        radians = anguloDeCerco();   // fecha o cerco em vez de vir em fila
         getPhysical().addForce("jump", getSpeed(), radians);
         //    radians = random.nextDouble() * (2 * Math.PI);
         //    getPhysical().addForce("follow", getSpeed(), radians);

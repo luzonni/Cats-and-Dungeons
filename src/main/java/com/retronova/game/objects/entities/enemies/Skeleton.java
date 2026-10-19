@@ -20,7 +20,7 @@ public class Skeleton extends Enemy {
         loadSprites("mouseskeleton");
         setLife(60);
         setXpWeight(6d);
-        setSpeed(3);
+        setSpeed(2.0);
         // AS RESISTENCIAS DE TIPO DE ARMA SAIRAM. Ele resistia a Piercing em 0,9
         // e a Poison em 0,8 — e Piercing e o dano do ARCO. Enquanto todo gato podia
         // carregar qualquer arma, isso era textura: quem batia mal de flecha trocava
@@ -54,7 +54,7 @@ public class Skeleton extends Enemy {
 
     private void moveIA() {
         Player player = Game.getPlayer();
-        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        double radians = anguloDeCerco();   // fecha o cerco em vez de vir em fila
         if(player.getDistance(this) >= GameObject.SIZE() * 3){
             getPhysical().addForce("move", getSpeed(), radians);
         }

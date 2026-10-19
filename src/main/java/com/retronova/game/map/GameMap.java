@@ -75,20 +75,58 @@ public abstract class GameMap {
         player.setY(getBounds().getHeight()/2);
     }
 
-    private void loadMap(String mapName) {
+    /**
+     * Um mapa feito em memoria: a mesma imagem de tiles e o mesmo JSON de
+     * entidades que os mapas desenhados a mao, mais entidades ja construidas.
+     * E o formato que o gerador procedural entrega — ver Gerador.
+     */
+    public record Planta(BufferedImage imagem, JSONObject json, List<Entity> extras) {
+    }
+
+    /** Le um mapa desenhado a mao (PNG de tiles + JSON de entidades) como Planta. */
+    public static Planta deArquivo(String mapName) {
         BufferedImage mapImage = new SpriteHandler("maps", mapName, 1).getSHEET();
-        int width = mapImage.getWidth();
-        int height = mapImage.getHeight();
-        this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
-        int[] rgb = mapImage.getRGB(0, 0, width, height, null, 0, width);
-        this.map = convertMap(rgb, width, height);
-        this.length = width;
         JSONObject jsonObject = null;
         try {
             jsonObject = Resources.getJsonFile("maps", mapName);
         } catch (IOException ignore) {
             System.err.println("Arquivo não encontrado: " + mapName);
         }
+        return new Planta(mapImage, jsonObject, List.of());
+    }
+
+    public GameMap(Planta planta) {
+        this.entities = new ArrayList<>();
+        this.particles = new ArrayList<>();
+        long inicio = System.nanoTime();
+        carregar(planta.imagem(), planta.json());
+        if (com.retronova.engine.Desempenho.LIGADO) {
+            System.out.printf("[perf] mapa %dx%d carregado em %.1f ms%n", planta.imagem().getWidth(),
+                    planta.imagem().getHeight(), (System.nanoTime() - inicio) / 1e6);
+        }
+        putAll(planta.extras());
+        this.repulsion = new Repulsion(this);
+        this.repulsion.start();
+    }
+
+    private void loadMap(String mapName) {
+        BufferedImage mapImage = new SpriteHandler("maps", mapName, 1).getSHEET();
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = Resources.getJsonFile("maps", mapName);
+        } catch (IOException ignore) {
+            System.err.println("Arquivo não encontrado: " + mapName);
+        }
+        carregar(mapImage, jsonObject);
+    }
+
+    private void carregar(BufferedImage mapImage, JSONObject jsonObject) {
+        int width = mapImage.getWidth();
+        int height = mapImage.getHeight();
+        this.bounds = new Rectangle(width * GameObject.SIZE(), height * GameObject.SIZE());
+        int[] rgb = mapImage.getRGB(0, 0, width, height, null, 0, width);
+        this.map = convertMap(rgb, width, height);
+        this.length = width;
         if(jsonObject != null && !jsonObject.isEmpty()) {
             this.nascimento = lerNascimento(jsonObject);
             loadEntities(width, height, jsonObject);
@@ -192,6 +230,11 @@ public abstract class GameMap {
 
     public Tile[] getMap() {
         return this.map;
+    }
+
+    /** Largura do mapa em tiles (o indice de (x, y) e x + y * largura). */
+    public int larguraEmTiles() {
+        return this.length;
     }
 
     /**

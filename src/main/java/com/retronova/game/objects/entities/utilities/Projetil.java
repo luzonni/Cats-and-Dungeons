@@ -106,29 +106,66 @@ public abstract class Projetil extends Utility {
     }
 
     /**
-     * Desenha o rastro: um traco que afina e some, da ponta para tras. Suavizado
-     * mesmo com a opcao de graficos desligada — e uma linha, nao um sprite.
+     * Desenha o rastro: um risco que afina e some, da ponta para tras.
+     *
+     * UMA IMAGEM ESTICADA, E NAO LINHAS. A primeira versao tracava segmentos com
+     * antialiasing, e o Java2D faz antialiasing na CPU mesmo com OpenGL ligado:
+     * medido com a horda cheia, so os rastros eram um quarto do tempo da thread do
+     * jogo. Agora o risco e pintado uma vez por cor (degrade que afina) e cada
+     * projetil so o cola girado entre a cauda e a ponta — um quad de textura na
+     * GPU. O suave vem do degrade e da filtragem bilinear, de graca.
      */
     public void renderRastro(java.awt.Graphics2D g) {
         if (gravados < 2) {
             return;
         }
-        java.awt.Graphics2D r = (java.awt.Graphics2D) g.create();
-        r.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-        java.awt.Color c = corDoRastro();
-        float largura = (float) (larguraEmPixels() * 0.55);
         double px = meioX(), py = meioY();
-        for (int i = 0; i < gravados; i++) {
-            float t = 1f - (i + 1f) / (gravados + 1f);           // 1 na ponta, 0 no fim
-            r.setStroke(new java.awt.BasicStroke(Math.max(0.5f, largura * t),
-                    java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
-            r.setColor(new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (150 * t)));
-            r.draw(new Line2D.Double(px, py, rastroX[i], rastroY[i]));
-            px = rastroX[i];
-            py = rastroY[i];
+        double cx = rastroX[gravados - 1], cy = rastroY[gravados - 1];
+        double comprimento = Math.hypot(px - cx, py - cy);
+        if (comprimento < 1) {
+            return;
         }
-        r.dispose();
+        java.awt.image.BufferedImage risco = risco(corDoRastro());
+        double largura = larguraEmPixels() * 0.7;
+        java.awt.geom.AffineTransform antes = g.getTransform();
+        Object filtro = g.getRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION);
+        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.translate(px, py);
+        g.rotate(Math.atan2(py - cy, px - cx));
+        g.drawImage(risco, (int) -comprimento, (int) (-largura / 2), (int) comprimento, (int) largura, null);
+        g.setTransform(antes);
+        if (filtro != null) {
+            g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, filtro);
+        }
+    }
+
+    private static final java.util.Map<Integer, java.awt.image.BufferedImage> RISCOS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * O risco de uma cor: 64x16, transparente na cauda (esquerda) e forte na ponta
+     * (direita), afinando para a cauda e macio nas bordas.
+     */
+    private static java.awt.image.BufferedImage risco(java.awt.Color c) {
+        return RISCOS.computeIfAbsent(c.getRGB(), k -> {
+            int w = 64, h = 16;
+            java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(w, h,
+                    java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            for (int x = 0; x < w; x++) {
+                double t = x / (double) (w - 1);                 // 0 na cauda, 1 na ponta
+                double meiaAltura = (h / 2.0) * (0.25 + 0.75 * t);
+                for (int y = 0; y < h; y++) {
+                    double d = Math.abs(y + 0.5 - h / 2.0) / meiaAltura;   // 0 no eixo, 1 na borda
+                    if (d >= 1) {
+                        continue;
+                    }
+                    int alfa = (int) (160 * t * t * (1 - d * d));
+                    img.setRGB(x, y, (alfa << 24) | (c.getRGB() & 0xFFFFFF));
+                }
+            }
+            return com.retronova.engine.graphics.Acelerada.de(img);
+        });
     }
 
     protected double meioX() {

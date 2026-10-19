@@ -24,7 +24,7 @@ public class MonarkMouse extends Enemy {
         loadSprites("monarkmouse");
         setSolid();
         setLife(120);
-        setSpeed(1.8);
+        setSpeed(1.3);
         setXpWeight(11d);
         // O HEAVY GANHA ARMADURA. E o papel dele: nao ser rapido nem esperto, e sim
         // demorar a cair. Antes isso seria feito com resistencia, e resistencia
@@ -51,7 +51,7 @@ public class MonarkMouse extends Enemy {
 
     public void moveIA() {
         Player player = Game.getPlayer();
-        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        double radians = anguloDeCerco();   // fecha o cerco em vez de vir em fila
         getPhysical().addForce("move", getSpeed(), radians);
     }
 

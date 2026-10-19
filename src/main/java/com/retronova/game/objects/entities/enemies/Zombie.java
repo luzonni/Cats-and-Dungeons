@@ -52,13 +52,13 @@ public class Zombie extends Enemy {
         loadSprites("mousezombie");
         setLife(40);
         setXpWeight(5d);
-        setSpeed(1.8);
+        setSpeed(1.2);
         setWidth(0.5);
         setHeight(0.8);
         addResistances(AttackTypes.Fire, 0.5);
         setSolid();
         this.path = new PathFinder(CHECKER);
-        // O MAIS LENTO GANHA O GOLPE MAIS LENTO. Ele anda a pouco mais da metade da
+        // O MAIS LENTO GANHA O GOLPE MAIS LENTO. Ele anda a cerca de um terco da
         // velocidade do gato; se o bote dele fosse rapido, a unica leitura possivel
         // seria "nao chegue perto", e nao ha decisao nisso. Com preparo pesado, dar
         // a volta nele passa a ser uma jogada.
@@ -101,10 +101,21 @@ public class Zombie extends Enemy {
         Player player = Game.getPlayer();
         Point aqui = new Point((int) getBounds().getCenterX(), (int) getBounds().getCenterY());
 
+        // A rota vai ao PONTO DE CERCO, e nao ao centro do gato: cada zumbi chega
+        // pelo proprio flanco. Colado no gato, o ponto e o proprio gato.
+        java.awt.geom.Point2D cerco = pontoDeCerco();
+        // CAMPO ABERTO DISPENSA O A*. Na corrida sem fim o mapa nao tem paredes no
+        // caminho, e buscar rota para cada zumbi a cada terco de segundo era o maior
+        // custo da logica com a horda cheia — para chegar ao mesmo lugar que a reta.
+        if (Game.getMap() instanceof com.retronova.game.map.arena.Arena arena
+                && arena.getWaves().semFim()) {
+            getPhysical().addForce("a_star", getSpeed(), anguloDeCerco());
+            return;
+        }
         if (++desdeARota >= REFAZER || path.isEmpty()) {
             desdeARota = 0;
             path.buildPath(emTiles(aqui.x, aqui.y),
-                    emTiles(player.getBounds().getCenterX(), player.getBounds().getCenterY()),
+                    emTiles(cerco.getX(), cerco.getY()),
                     ALCANCE_TILES);
         }
 
@@ -120,8 +131,7 @@ public class Zombie extends Enemy {
         int size = GameObject.SIZE();
         double radianos;
         if (proximo == null) {
-            radianos = Math.atan2(player.getBounds().getCenterY() - aqui.y,
-                    player.getBounds().getCenterX() - aqui.x);
+            radianos = Math.atan2(cerco.getY() - aqui.y, cerco.getX() - aqui.x);
         } else {
             Point alvo = new Point(proximo.x * size + size / 2, proximo.y * size + size / 2);
             radianos = Math.atan2(alvo.y - aqui.y, alvo.x - aqui.x);

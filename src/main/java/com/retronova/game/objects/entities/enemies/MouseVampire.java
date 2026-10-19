@@ -25,7 +25,7 @@ public class MouseVampire extends Enemy {
         setSolid();
         setLife(60);
         setXpWeight(7d);
-        setSpeed(2.4);
+        setSpeed(1.7);
         // RAPIDO E FRACO: preparo curto, dano baixo, sem empurrao. Ele pressiona,
         // nao pune — e o contraste com o escudeiro e o que faz o jogador precisar
         // OLHAR qual dos dois esta carregando.
@@ -42,7 +42,7 @@ public class MouseVampire extends Enemy {
 
     public void moveIA() {
         Player player = Game.getPlayer();
-        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        double radians = anguloDeCerco();   // fecha o cerco em vez de vir em fila
         getPhysical().addForce("move", getSpeed(), radians);
     }
 

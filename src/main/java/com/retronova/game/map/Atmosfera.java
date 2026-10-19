@@ -98,8 +98,17 @@ public final class Atmosfera {
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         BufferedImage img = sombra();
         int s = Configs.GameScale();
+        // So a parte do mundo que esta na tela (mais um tile de folga).
+        java.awt.Rectangle visivel;
+        try {
+            visivel = g.getTransform().createInverse().createTransformedShape(new java.awt.Rectangle(
+                    0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
+            visivel.grow(GameObject.SIZE(), GameObject.SIZE());
+        } catch (java.awt.geom.NoninvertibleTransformException semZoom) {
+            visivel = null;
+        }
         for (Entity e : entidades) {
-            if (!temSombra(e)) {
+            if (!temSombra(e) || (visivel != null && !e.getBounds().intersects(visivel))) {
                 continue;
             }
             double[] d = e.deslocamentoNoQuadro(alpha);
@@ -162,7 +171,7 @@ public final class Atmosfera {
             float forca;
             Color cor = null;  // brilho colorido por cima, alem de abrir a luz
             if (e instanceof Player) {
-                raio = 7.5; forca = 1f;
+                raio = 9.5; forca = 1f;   // visao mais ampla com a camera afastada
             } else if (e instanceof Torch || e instanceof Brazier) {
                 raio = 4.5; forca = 0.95f; cor = new Color(255, 150, 60);
             } else if (e instanceof Bau) {

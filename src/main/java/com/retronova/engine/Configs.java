@@ -44,7 +44,7 @@ public class Configs {
         DEFAULTS.put("UISCALE", 0);        // 0 = automática, ver autoUiScale()
         DEFAULTS.put("HUDSCALE", 4);
         DEFAULTS.put("MARGIN", 20);
-        DEFAULTS.put("ZOOM", 100);        // por cento; ver Zoom(). Era 130: perto demais para ler a horda chegando
+        DEFAULTS.put("ZOOM", 80);         // por cento; ver Zoom(). Era 130: perto demais para ler a horda chegando
         DEFAULTS.put("NeatGraphics", true);   // barato desde que o OpenGL liga de verdade (Main)
         // OITENTA, E NAO OS VINTE DE ANTES. Vinte nao era gosto de ninguem: era o
         // conserto que sobrou de os arquivos chegarem desnivelados e alguns

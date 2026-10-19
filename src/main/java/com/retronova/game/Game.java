@@ -108,6 +108,8 @@ public class Game implements Activity {
         corrida.aplicarNoGato(player);
         this.changeMap(new Arena(this.difficult, this.level));
         this.hud = new HUD(player);
+        com.retronova.game.objects.entities.Furia.reiniciar();
+        com.retronova.game.objects.entities.ArmasDeArea.reiniciar();
         this.regravarSave = true;
     }
 
@@ -141,6 +143,8 @@ public class Game implements Activity {
         this.player = player;
         this.changeMap(map);
         this.hud = new HUD(player);
+        com.retronova.game.objects.entities.Furia.reiniciar();
+        com.retronova.game.objects.entities.ArmasDeArea.reiniciar();
     }
 
     public static Camera getCam() {
@@ -297,6 +301,7 @@ public class Game implements Activity {
         map.tick();
         if (!player.morrendo()) {
             com.retronova.game.objects.entities.Arsenal.tick(player);
+            com.retronova.game.objects.entities.Furia.tick(player);
         }
         map.depth();
         List<Entity> entities = map.getEntities();
@@ -328,6 +333,11 @@ public class Game implements Activity {
                 // dez vezes deixa de valer no primeiro bicho novo.
                 if (bicho.getDistance(player)
                         > Enemy.COLEIRA_EM_TILES * com.retronova.game.objects.GameObject.SIZE()) {
+                    // Na arena aberta, quem ficou para tras volta para perto do
+                    // gato (fora da tela) em vez de ficar parado la longe.
+                    if (bicho.alvoAutomatico() && map instanceof com.retronova.game.map.arena.Arena arena) {
+                        arena.trazerDePerto(bicho);
+                    }
                     continue;
                 }
             }
@@ -371,6 +381,9 @@ public class Game implements Activity {
         renderWorld(g);
         long t0 = System.nanoTime();
         hud.render(g);
+        if (map instanceof com.retronova.game.map.arena.Arena) {
+            com.retronova.game.objects.entities.Furia.renderBarra(g, Engine.window.getWidth(), Engine.window.getHeight());
+        }
         com.retronova.engine.Desempenho.secao("hud", System.nanoTime() - t0);
         apagarNaMorte(g);
     }
@@ -408,11 +421,14 @@ public class Game implements Activity {
         com.retronova.game.map.Atmosfera.renderSombras(cam, entidades, alphaDoMundo());
         t = medir("sombras", t);
         renderEntities(cam);
+        com.retronova.game.objects.entities.Furia.renderMundo(cam);
+        com.retronova.game.objects.entities.ArmasDeArea.render(cam);
         t = medir("entidades", t);
         renderParticles(cam);
         t = medir("particulas", t);
         cam.dispose();
         com.retronova.game.map.Atmosfera.renderLuz(g, entidades, alphaDoMundo());
+        com.retronova.game.objects.entities.Furia.renderTela(g, Engine.window.getWidth(), Engine.window.getHeight());
         medir("luz", t);
     }
 
@@ -430,18 +446,19 @@ public class Game implements Activity {
         // mil e tantos tiles dela a cada quadro, a maioria fora da janela. Agora a
         // janela e levada de volta para coordenadas do mundo, com dois tiles de
         // folga para paredes cujo desenho sobe alem do proprio tile.
-        Rectangle visivel;
-        try {
-            visivel = g.getTransform().createInverse().createTransformedShape(
-                    new Rectangle(0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
-            int folga = 2 * com.retronova.game.objects.GameObject.SIZE();
-            visivel.grow(folga, folga);
-        } catch (java.awt.geom.NoninvertibleTransformException semZoom) {
-            visivel = gCam.getBounds();
-        }
-        for(int i = 0; i < map.length; i++) {
-            Tile tile = map[i];
-            if(tile.getBounds().intersects(visivel)) {
+        //
+        // E SEM PERCORRER O MAPA TODO: com o campo aberto (160x160) testar os 25 mil
+        // tiles um a um ja custava. A faixa visivel de colunas e linhas sai direto
+        // do retangulo, e so ela e visitada.
+        Rectangle visivel = areaVisivel(g, 2);
+        int tile = com.retronova.game.objects.GameObject.SIZE();
+        int largura = this.map.larguraEmTiles();
+        int altura = largura == 0 ? 0 : map.length / largura;
+        int x0 = Math.max(0, visivel.x / tile), x1 = Math.min(largura - 1, (visivel.x + visivel.width) / tile);
+        int y0 = Math.max(0, visivel.y / tile), y1 = Math.min(altura - 1, (visivel.y + visivel.height) / tile);
+        for (int y = y0; y <= y1; y++) {
+            for (int x = x0; x <= x1; x++) {
+                int i = x + y * largura;
                 map[i].render(g);
                 if(Debugging.showTileBox) {
                     map[i].renderBounds(i, g);
@@ -466,10 +483,33 @@ public class Game implements Activity {
         return portal.getSprite();
     }
 
+    /**
+     * A janela levada de volta para coordenadas do mundo, com 'folgaEmTiles' de
+     * margem. Na duvida (transformacao sem inversa), o mapa inteiro.
+     */
+    private Rectangle areaVisivel(Graphics2D g, int folgaEmTiles) {
+        try {
+            Rectangle r = g.getTransform().createInverse().createTransformedShape(
+                    new Rectangle(0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
+            int folga = folgaEmTiles * com.retronova.game.objects.GameObject.SIZE();
+            r.grow(folga, folga);
+            return r;
+        } catch (java.awt.geom.NoninvertibleTransformException semZoom) {
+            return gCam.getBounds();
+        }
+    }
+
     private void renderEntities(Graphics2D g) {
         List<Entity> entities = map.getEntities();
+        // So o que esta na tela (com folga de dois tiles para sprites altos e
+        // auras). Com a horda grande, boa parte dela esta fora da janela, e cada
+        // um desses ainda passava por sombra, animacao, sprite e barra de vida.
+        Rectangle visivel = areaVisivel(g, 2);
         for(int i = 0; i < entities.size(); i++) {
             Entity entity = entities.get(i);
+            if (entity != player && !entity.getBounds().intersects(visivel)) {
+                continue;
+            }
             // O PORTAL DOS BICHOS, desenhado ANTES do inimigo para ficar por baixo
             // dele. Mesmo desenho da chegada do gato: os dois chegam do mesmo jeito,
             // entao chegam com a mesma imagem — duas animacoes diferentes para o
@@ -569,8 +609,10 @@ public class Game implements Activity {
 
         double passo = t * 11 + fase;
         double quique = Math.abs(Math.sin(passo)) * 2.2 * s * andando;
+        // Caixote nao respira: objeto quebravel so da o tranco ao apanhar.
+        double respira = bicho.alvoAutomatico() ? 0.035 : 0;
         double estica = 1 + 0.08 * Math.sin(passo * 2) * andando
-                + 0.035 * Math.sin(t * 3 + fase) * (1 - andando);   // respirar parado
+                + respira * Math.sin(t * 3 + fase) * (1 - andando);   // respirar parado
         double inclina = 0.10 * Math.sin(passo) * andando;
 
         // O tranco do golpe: alarga e achata, voltando em dez ticks.

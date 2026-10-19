@@ -55,6 +55,7 @@ public final class Arsenal {
 
     public static void tick(Player gato) {
         tempo++;
+        ArmasDeArea.tick(gato);   // as de area tem relogio proprio
         Melhorias m = gato.getMelhorias();
         int novelo = m.nivel(ArmaExtra.NOVELO);
         int grimorio = m.nivel(ArmaExtra.GRIMORIO);

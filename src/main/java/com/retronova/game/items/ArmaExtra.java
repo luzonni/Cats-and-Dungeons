@@ -17,7 +17,14 @@ public enum ArmaExtra {
 
     NOVELO("Yarn Ball", "Balls of yarn orbit you", new Color(0xFF6FA8)),
     GRIMORIO("Grimoire", "Spell books circle and knock back", new Color(0xC9A227)),
-    AURA("Catnip Aura", "Burns everything close to you", new Color(0x5BE07A));
+    AURA("Catnip Aura", "Burns everything close to you", new Color(0x5BE07A)),
+    // As tres de baixo sao de AREA: cada uma resolve a horda de um jeito —
+    // o raio pula de bicho em bicho, o tremor limpa o entorno, o meteoro
+    // castiga onde a horda esta mais junta. Novas sempre no FIM do enum: o
+    // save grava o ordinal.
+    RAIO("Electric Arc", "Lightning chains between enemies", new Color(0x7FD8FF)),
+    TREMOR("Quake", "Slam the ground, hurting and pushing all around", new Color(0xD08A4A)),
+    METEORO("Meteor Rain", "Meteors crash where enemies gather", new Color(0xFF6A3D));
 
     public static final int NIVEL_MAXIMO = 5;
 
@@ -48,6 +55,9 @@ public enum ArmaExtra {
             case NOVELO -> novoNivel % 2 == 0 ? "+1 yarn ball" : "More damage";
             case GRIMORIO -> novoNivel == 4 ? "More damage and knockback" : "+1 book";
             case AURA -> "Bigger and stronger aura";
+            case RAIO -> "+1 chain jump and more damage";
+            case TREMOR -> novoNivel >= 4 ? "Bigger quake, more often" : "Bigger and stronger quake";
+            case METEORO -> novoNivel % 2 == 1 ? "+1 meteor" : "Bigger blasts";
         };
     }
 }

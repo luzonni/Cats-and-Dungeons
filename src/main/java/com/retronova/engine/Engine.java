@@ -71,7 +71,7 @@ public class Engine implements Runnable {
         // nada e gravado nem apagado; as corridas do jogador ficam intactas.
         if (Boolean.getBoolean("cd.bench")) {
             heapActivity(new com.retronova.game.Game(2,
-                    new com.retronova.game.map.arena.Arena(1, 4), 0));
+                    new com.retronova.game.map.arena.Arena(0, 4), 0));
             // Telas por cima, para conferir o desenho delas sem jogar ate elas.
             // Abrem depois de um segundo de partida: a chegada do gato fecha
             // qualquer pausa aberta antes dela.
@@ -81,6 +81,23 @@ public class Engine implements Runnable {
             } else if (Boolean.getBoolean("cd.nivel")) {
                 com.retronova.game.Game.depoisDeUmSegundo =
                         () -> pause(new com.retronova.game.map.arena.SubirDeNivel());
+            }
+            // -Dcd.armas=RAIO,TREMOR,... da essas armas extras no nivel 3, para ver
+            // o efeito delas sem depender do sorteio do caca-niquel.
+            String armas = System.getProperty("cd.armas");
+            if (armas != null) {
+                Runnable antes = com.retronova.game.Game.depoisDeUmSegundo;
+                com.retronova.game.Game.depoisDeUmSegundo = () -> {
+                    for (String nome : armas.split(",")) {
+                        for (int i = 0; i < 3; i++) {
+                            com.retronova.game.Game.getPlayer().getMelhorias().subirArma(
+                                    com.retronova.game.items.ArmaExtra.valueOf(nome.trim()));
+                        }
+                    }
+                    if (antes != null) {
+                        antes.run();
+                    }
+                };
             }
         }
         start();
