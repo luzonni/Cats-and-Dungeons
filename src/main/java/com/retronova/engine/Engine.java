@@ -27,6 +27,18 @@ public class Engine implements Runnable {
     private static final int MAX_CATCHUP = 5;
     public static int FRAMES;
     public static int HERTZ;
+    /**
+     * Fracao, de 0 a 1, do caminho ate o proximo tick no instante do quadro.
+     *
+     * A logica anda a 60 Hz fixos; o quadro pode sair a 144 ou 165. Sem isso, um
+     * monitor rapido mostra o mesmo estado repetido entre dois ticks e a animacao
+     * anda aos trancos. Quem anima pode somar alpha() ao seu contador no render.
+     */
+    private static float alpha;
+
+    public static float alpha() {
+        return alpha;
+    }
 
     private static Activity OverView;
     private static List<Activity> stackActivities;
@@ -294,6 +306,7 @@ public class Engine implements Runnable {
                 lastTimeFPS = nowFPS;
                 boolean desenhou = false;
                 if (delta_FPS >= 1) {
+                    alpha = (float) Math.max(0, Math.min(1, delta_HZ));
                     Graphics2D g = getGraphics();
                     if (g != null) {
                         if (!stackActivities.isEmpty()) {

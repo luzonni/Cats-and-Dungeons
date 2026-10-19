@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class Options implements Activity {
 
-    private static final int[] FPS_VALORES = {30, 60, 120, 144};
+    private static final int[] FPS_VALORES = {30, 60, 120, 144, 165, 240};
     /** 0 = automática: a escala acompanha o tamanho da janela. */
     private static final int[] ESCALAS_UI = {0, 2, 3, 4, 5, 6};
     private static final String[] ROTULOS_ESCALA = {"Auto", "2", "3", "4", "5", "6"};
