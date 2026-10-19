@@ -133,7 +133,7 @@ public class Waves implements Runnable {
     private int ateOProximoGrupo = 60 * 2;
     private int proximoChefe = 1;
     /** Teto de bichos vivos: acima disto a horda espera, e o jogo nao afoga. */
-    private static final int MAX_VIVOS = 140;
+    private static final int MAX_VIVOS = 170;
 
     /** Quem entra na horda, por minuto de corrida em que passa a aparecer. */
     private static final Object[][] ESCALA = {
@@ -182,24 +182,24 @@ public class Waves implements Runnable {
         if (--ateOProximoGrupo > 0) {
             return;
         }
-        // Grupos cada vez mais frequentes (2,5s -> 0,5s) e maiores.
-        ateOProximoGrupo = (int) Math.max(30, 150 - 20 * min);
+        // Grupos cada vez mais frequentes (2,2s -> 0,4s) e maiores.
+        ateOProximoGrupo = (int) Math.max(24, 130 - 22 * min);
         int vivos = 0;
         for (Entity e : gameMap.getEntities()) {
             if (e instanceof com.retronova.game.objects.entities.enemies.Enemy b && b.alvoAutomatico()) {
                 vivos++;
             }
         }
-        int tamanho = 2 + (int) (min * 2) + Engine.RAND.nextInt(3);
+        int tamanho = 3 + (int) (min * 3) + Engine.RAND.nextInt(3);
         tamanho = Math.min(tamanho, MAX_VIVOS - vivos);
         if (tamanho > 0) {
             nascerGrupo(tamanho, null, false);
         }
     }
 
-    /** O nivel de dureza pelo tempo: um degrau a cada 40 segundos. */
+    /** O nivel de dureza pelo tempo: um degrau a cada 24 segundos. */
     private int durezaDoTempo() {
-        return (int) (minutos() * 1.5);
+        return (int) (minutos() * 2.5);
     }
 
     private EntityIDs sortearTipo() {
@@ -230,8 +230,12 @@ public class Waves implements Runnable {
         if (e instanceof com.retronova.game.objects.entities.enemies.Enemy bicho) {
             bicho.escalarPara(durezaDoTempo());
             if (!chefe) {
-                bicho.escalarVida(VIDA_HORDA);
-                double chanceElite = Math.min(0.10, 0.003 + 0.012 * minutos());
+                // A "meia vida" da horda so vale no comeco: some ao longo de cinco
+                // minutos. Junto com a dureza pelo tempo, e o que impede o gato de
+                // atravessar o meio da corrida com uma build de tres minutos.
+                bicho.escalarVida(Math.min(1.0, VIDA_HORDA + 0.1 * minutos()));
+                // Elites mais raras: cada uma larga um bau garantido.
+                double chanceElite = Math.min(0.06, 0.002 + 0.008 * minutos());
                 if (Engine.RAND.nextDouble() < chanceElite) {
                     bicho.tornarElite();
                 }
