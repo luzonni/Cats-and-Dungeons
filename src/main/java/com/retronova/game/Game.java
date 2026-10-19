@@ -273,6 +273,7 @@ public class Game implements Activity {
             count = 0;
             seconds++;
         }
+        guardarPosicoes();
         hud.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause());
@@ -447,6 +448,11 @@ public class Game implements Activity {
                     && !chegando.corpoVisivel()) {
                 continue;                 // so o portal, ainda: o corpo vem depois
             }
+            // Desenha na posicao interpolada: translada o pincel em vez de mexer
+            // no x/y, para tudo que a entidade desenha (arma na mao, barra de
+            // vida, aura) andar junto com ela.
+            double[] d = entity.deslocamentoNoQuadro(alphaDoMundo());
+            g.translate(d[0], d[1]);
             if (entity instanceof Enemy elite) {
                 elite.renderAura(g);
             }
@@ -460,6 +466,7 @@ public class Game implements Activity {
             if(Debugging.showEntityHitBox) {
                 entity.renderBounds(g);
             }
+            g.translate(-d[0], -d[1]);
         }
         // A linha que a arma usou para decidir se atirava: verde quer dizer "ha
         // caminho", vermelha quer dizer "nao ha".
@@ -477,10 +484,34 @@ public class Game implements Activity {
         List<Particle> particles = map.getParticles();
         for(int i = 0; i < particles.size(); i++) {
             Particle p = particles.get(i);
+            double[] d = p.deslocamentoNoQuadro(alphaDoMundo());
+            g.translate(d[0], d[1]);
             p.render(g);
             if(Debugging.showParticleHitBox) {
                 p.renderBounds(g);
             }
+            g.translate(-d[0], -d[1]);
+        }
+    }
+
+    /**
+     * Fracao do tick para interpolar o mundo. Com uma tela por cima (pausa,
+     * cartas, roleta) o mundo esta parado: usar a fracao do relogio faria tudo
+     * tremer entre a posicao anterior e a atual.
+     */
+    private static float alphaDoMundo() {
+        return Engine.pausado() ? 1f : Engine.alpha();
+    }
+
+    /** Guarda a posicao de todos antes do tick, para o render interpolar. */
+    private void guardarPosicoes() {
+        List<Entity> entities = map.getEntities();
+        for (int i = 0; i < entities.size(); i++) {
+            entities.get(i).guardarPosicaoAnterior();
+        }
+        List<Particle> particles = map.getParticles();
+        for (int i = 0; i < particles.size(); i++) {
+            particles.get(i).guardarPosicaoAnterior();
         }
     }
 

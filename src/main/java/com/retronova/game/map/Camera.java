@@ -59,6 +59,7 @@ public class Camera {
         this.speed = speed;
         this.zoom = Configs.Zoom() / 100f;
         this.currentZoom = this.zoom;
+        this.antZoom = this.zoom;
     }
 
     public static AffineTransform getAt() {
@@ -66,9 +67,15 @@ public class Camera {
         AffineTransform at = new AffineTransform();
         int screenWidth = Engine.window.getWidth();
         int screenHeight = Engine.window.getHeight();
-        int camX = cam.getX() + screenWidth/2;
-        int camY = cam.getY() + screenHeight/2;
-        double zoom = cam.currentZoom;
+        // Posicao e zoom INTERPOLADOS e sem arredondar. A camera arredondava para
+        // pixel inteiro e so mudava a cada tick: mesmo com o mundo fluido, a tela
+        // inteira andava aos degraus de 60 Hz.
+        float a = Engine.pausado() ? 1f : Engine.alpha();
+        double cx = Double.isNaN(cam.antX) ? cam.x : cam.antX + (cam.x - cam.antX) * a;
+        double cy = Double.isNaN(cam.antY) ? cam.y : cam.antY + (cam.y - cam.antY) * a;
+        double camX = cx + screenWidth/2d;
+        double camY = cy + screenHeight/2d;
+        double zoom = cam.antZoom + (cam.currentZoom - cam.antZoom) * a;
         double centerX = camX + screenWidth / 2.0 / zoom;
         double centerY = camY + screenHeight / 2.0 / zoom;
         at.translate(screenWidth / 2.0, screenHeight / 2.0);
@@ -90,14 +97,23 @@ public class Camera {
     }
 
     public void setX(int newX) {
+        this.antX = Double.NaN;   // salto: sem interpolar
         this.x = newX;
     }
 
     public void setY(int newY) {
+        this.antY = Double.NaN;
         this.y = newY;
     }
 
+    /** Estado do tick anterior, para o getAt interpolar. */
+    private double antX = Double.NaN, antY = Double.NaN;
+    private float antZoom;
+
     public void tick() {
+        antX = x;
+        antY = y;
+        antZoom = currentZoom;
         if(followed != null)
             follow();
         // A aproximacao vem das opcoes, e nao mais de Ctrl+= / Ctrl+-. O atalho
@@ -142,11 +158,13 @@ public class Camera {
         double visX = width / z;
         double visY = height / z;
 
-        double targetX = followed.getBounds().getCenterX() - width / 2d;
-        double targetY = followed.getBounds().getCenterY() - height / 2d;
+        // Em double do comeco ao fim: arredondar aqui fazia a camera andar em
+        // degraus de pixel e travar a poucos pixels do alvo.
+        double targetX = followed.getX() + followed.getWidth() / 2d - width / 2d;
+        double targetY = followed.getY() + followed.getHeight() / 2d - height / 2d;
         double passo = velocidadeDeCena > 0 ? velocidadeDeCena : speed;
-        double xx = getX() + (targetX - getX()) * passo;
-        double yy = getY() + (targetY - getY()) * passo;
+        double xx = this.x + (targetX - this.x) * passo;
+        double yy = this.y + (targetY - this.y) * passo;
 
         // O ponto do mundo que cai no meio da tela e (x + width/2); a janela vista
         // vai dele menos meia area visivel ate ele mais meia.
@@ -155,8 +173,8 @@ public class Camera {
         double minY = bounds.y - height / 2d + visY / 2d;
         double maxY = bounds.height - height / 2d - visY / 2d;
 
-        setX((int) (minX > maxX ? (minX + maxX) / 2d : Math.min(maxX, Math.max(minX, xx))));
-        setY((int) (minY > maxY ? (minY + maxY) / 2d : Math.min(maxY, Math.max(minY, yy))));
+        this.x = minX > maxX ? (minX + maxX) / 2d : Math.min(maxX, Math.max(minX, xx));
+        this.y = minY > maxY ? (minY + maxY) / 2d : Math.min(maxY, Math.max(minY, yy));
     }
 
 }
