@@ -119,9 +119,34 @@ public class SpriteHandler {
         return this.SHEET;
     }
 
+    /**
+     * Espelhos ja feitos, por imagem de origem: [h][v] com 0 = normal, 1 = invertido.
+     *
+     * O flip era chamado no render de cada bicho, a cada quadro, e criava uma
+     * imagem nova toda vez. Com uma horda a 165 FPS isso eram milhares de imagens
+     * por segundo para o coletor de lixo — e o tranco periodico dele era o "lag".
+     * Os quadros das folhas sao sempre os mesmos objetos, entao o espelho de cada
+     * um so precisa existir uma vez. Fraco na chave para folhas descartadas sairem.
+     */
+    private static final java.util.Map<BufferedImage, BufferedImage[][]> ESPELHOS =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
     public static BufferedImage flip(BufferedImage image, int horizontal, int vertical) {
         if(horizontal == 0 || vertical == 0)
             throw new FlipException("Valores precisam ser 1 (default) ou -1 (invertido)");
+        if (horizontal == 1 && vertical == 1) {
+            return image;
+        }
+        BufferedImage[][] feitos = ESPELHOS.computeIfAbsent(image, k -> new BufferedImage[2][2]);
+        int h = horizontal < 0 ? 1 : 0;
+        int v = vertical < 0 ? 1 : 0;
+        if (feitos[h][v] == null) {
+            feitos[h][v] = espelhar(image, horizontal, vertical);
+        }
+        return feitos[h][v];
+    }
+
+    private static BufferedImage espelhar(BufferedImage image, int horizontal, int vertical) {
         int width = image.getWidth();
         int height = image.getHeight();
         BufferedImage flippedImage = new BufferedImage(width, height, image.getType());
