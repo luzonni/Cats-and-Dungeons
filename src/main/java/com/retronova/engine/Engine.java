@@ -82,6 +82,23 @@ public class Engine implements Runnable {
                 com.retronova.game.Game.depoisDeUmSegundo =
                         () -> pause(new com.retronova.game.map.arena.SubirDeNivel());
             }
+            // -Dcd.armas=RAIO,TREMOR,... da essas armas extras no nivel 3, para ver
+            // o efeito delas sem depender do sorteio do caca-niquel.
+            String armas = System.getProperty("cd.armas");
+            if (armas != null) {
+                Runnable antes = com.retronova.game.Game.depoisDeUmSegundo;
+                com.retronova.game.Game.depoisDeUmSegundo = () -> {
+                    for (String nome : armas.split(",")) {
+                        for (int i = 0; i < 3; i++) {
+                            com.retronova.game.Game.getPlayer().getMelhorias().subirArma(
+                                    com.retronova.game.items.ArmaExtra.valueOf(nome.trim()));
+                        }
+                    }
+                    if (antes != null) {
+                        antes.run();
+                    }
+                };
+            }
         }
         start();
         Debugging.init();

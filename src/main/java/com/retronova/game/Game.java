@@ -109,6 +109,7 @@ public class Game implements Activity {
         this.changeMap(new Arena(this.difficult, this.level));
         this.hud = new HUD(player);
         com.retronova.game.objects.entities.Furia.reiniciar();
+        com.retronova.game.objects.entities.ArmasDeArea.reiniciar();
         this.regravarSave = true;
     }
 
@@ -143,6 +144,7 @@ public class Game implements Activity {
         this.changeMap(map);
         this.hud = new HUD(player);
         com.retronova.game.objects.entities.Furia.reiniciar();
+        com.retronova.game.objects.entities.ArmasDeArea.reiniciar();
     }
 
     public static Camera getCam() {
@@ -420,6 +422,7 @@ public class Game implements Activity {
         t = medir("sombras", t);
         renderEntities(cam);
         com.retronova.game.objects.entities.Furia.renderMundo(cam);
+        com.retronova.game.objects.entities.ArmasDeArea.render(cam);
         t = medir("entidades", t);
         renderParticles(cam);
         t = medir("particulas", t);
