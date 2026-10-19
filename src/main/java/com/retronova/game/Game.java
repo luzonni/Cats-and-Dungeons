@@ -393,9 +393,12 @@ public class Game implements Activity {
         Graphics2D cam = (Graphics2D) g.create();
         cam.setTransform(Camera.getAt());
         renderMap(cam);
+        List<Entity> entidades = map.getEntities();
+        com.retronova.game.map.Atmosfera.renderSombras(cam, entidades, alphaDoMundo());
         renderEntities(cam);
         renderParticles(cam);
         cam.dispose();
+        com.retronova.game.map.Atmosfera.renderLuz(g, entidades, alphaDoMundo());
     }
 
     private void renderMap(Graphics2D g) {

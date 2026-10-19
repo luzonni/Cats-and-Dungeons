@@ -133,6 +133,9 @@ public class Options implements Activity {
         video.add(OptionRow.toggle("Vignette",
                 () -> Configs.Vignette() ? 1 : 0, v -> Configs.setVignette(v != 0))
                 .desc("Darkens the corners of the screen during gameplay, to focus the eye on the center."));
+        video.add(OptionRow.toggle("Lighting",
+                () -> Configs.Lighting() ? 1 : 0, v -> Configs.setLighting(v != 0))
+                .desc("Soft shadows under everything and dynamic light from the cat, torches and chests."));
 
         List<OptionRow> audio = new ArrayList<>();
         audio.add(OptionRow.slider("Master", Configs::Master, v -> {

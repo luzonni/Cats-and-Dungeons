@@ -37,13 +37,14 @@ public class Configs {
     public static void init() {
         DEFAULTS.clear();
         DEFAULTS.put("vignette", true);
+        DEFAULTS.put("lighting", true);
         DEFAULTS.put("fullscreen", false);
         DEFAULTS.put("SCALE", 4);
         DEFAULTS.put("UISCALE", 0);        // 0 = automática, ver autoUiScale()
         DEFAULTS.put("HUDSCALE", 4);
         DEFAULTS.put("MARGIN", 20);
         DEFAULTS.put("ZOOM", 130);        // por cento; ver Zoom()
-        DEFAULTS.put("NeatGraphics", false);
+        DEFAULTS.put("NeatGraphics", true);   // barato desde que o OpenGL liga de verdade (Main)
         // OITENTA, E NAO OS VINTE DE ANTES. Vinte nao era gosto de ninguem: era o
         // conserto que sobrou de os arquivos chegarem desnivelados e alguns
         // clipados, entao o jeito de a faixa do chefe nao machucar era cortar tudo
@@ -218,6 +219,17 @@ public class Configs {
 
     public static void setVignette(boolean vignette) {
         VALUES.put("vignette", vignette);
+        update();
+    }
+
+    /** Sombras e iluminacao dinamica no mundo. Ver game.map.Atmosfera. */
+    public static boolean Lighting() {
+        Object v = VALUES.get("lighting");
+        return v == null || (boolean) v;
+    }
+
+    public static void setLighting(boolean lighting) {
+        VALUES.put("lighting", lighting);
         update();
     }
 
