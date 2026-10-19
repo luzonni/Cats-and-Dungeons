@@ -524,6 +524,12 @@ public abstract class Enemy extends Entity implements Nascente {
     public void die() {
         this.disappear();
         dropXp();
+        if (alvoAutomatico()) {
+            com.retronova.game.objects.entities.Furia.somarMorte();
+        }
+        if (elite) {
+            com.retronova.game.map.Camera.tremer(6);   // elite cai com peso
+        }
         // O corpo voa e some, em vez de sumir no quadro seguinte. Mesmo espelho
         // que os bichos usam no render, para ele nao virar de lado ao morrer.
         int lado = getPhysical().getOrientation()[0] * -1;

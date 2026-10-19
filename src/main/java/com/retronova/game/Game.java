@@ -108,6 +108,7 @@ public class Game implements Activity {
         corrida.aplicarNoGato(player);
         this.changeMap(new Arena(this.difficult, this.level));
         this.hud = new HUD(player);
+        com.retronova.game.objects.entities.Furia.reiniciar();
         this.regravarSave = true;
     }
 
@@ -141,6 +142,7 @@ public class Game implements Activity {
         this.player = player;
         this.changeMap(map);
         this.hud = new HUD(player);
+        com.retronova.game.objects.entities.Furia.reiniciar();
     }
 
     public static Camera getCam() {
@@ -297,6 +299,7 @@ public class Game implements Activity {
         map.tick();
         if (!player.morrendo()) {
             com.retronova.game.objects.entities.Arsenal.tick(player);
+            com.retronova.game.objects.entities.Furia.tick(player);
         }
         map.depth();
         List<Entity> entities = map.getEntities();
@@ -371,6 +374,9 @@ public class Game implements Activity {
         renderWorld(g);
         long t0 = System.nanoTime();
         hud.render(g);
+        if (map instanceof com.retronova.game.map.arena.Arena) {
+            com.retronova.game.objects.entities.Furia.renderBarra(g, Engine.window.getWidth(), Engine.window.getHeight());
+        }
         com.retronova.engine.Desempenho.secao("hud", System.nanoTime() - t0);
         apagarNaMorte(g);
     }
@@ -408,11 +414,13 @@ public class Game implements Activity {
         com.retronova.game.map.Atmosfera.renderSombras(cam, entidades, alphaDoMundo());
         t = medir("sombras", t);
         renderEntities(cam);
+        com.retronova.game.objects.entities.Furia.renderMundo(cam);
         t = medir("entidades", t);
         renderParticles(cam);
         t = medir("particulas", t);
         cam.dispose();
         com.retronova.game.map.Atmosfera.renderLuz(g, entidades, alphaDoMundo());
+        com.retronova.game.objects.entities.Furia.renderTela(g, Engine.window.getWidth(), Engine.window.getHeight());
         medir("luz", t);
     }
 

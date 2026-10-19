@@ -73,6 +73,13 @@ public class Camera {
         float a = Engine.pausado() ? 1f : Engine.alpha();
         double cx = Double.isNaN(cam.antX) ? cam.x : cam.antX + (cam.x - cam.antX) * a;
         double cy = Double.isNaN(cam.antY) ? cam.y : cam.antY + (cam.y - cam.antY) * a;
+        // Tremor: deslocamento que oscila rapido e encolhe sozinho. Ruido de senos
+        // em vez de aleatorio puro, para nao "teleportar" a tela a cada quadro.
+        if (cam.tremor > 0.05) {
+            double t = System.nanoTime() / 1e9;
+            cx += Math.sin(t * 71) * cam.tremor;
+            cy += Math.cos(t * 59) * cam.tremor;
+        }
         double camX = cx + screenWidth/2d;
         double camY = cy + screenHeight/2d;
         double zoom = cam.antZoom + (cam.currentZoom - cam.antZoom) * a;
@@ -110,10 +117,24 @@ public class Camera {
     private double antX = Double.NaN, antY = Double.NaN;
     private float antZoom;
 
+    /** Amplitude atual do tremor de tela, em pixels do mundo. Decai sozinha. */
+    private double tremor;
+
+    /**
+     * Sacode a tela. Golpes grandes (a Furia, uma elite morrendo) precisam de
+     * PESO, e nada vende impacto tao barato quanto a camera sentir o golpe.
+     * Tremores somados nao passam de um teto, para a tela nunca ficar ilegivel.
+     */
+    public static void tremer(double intensidade) {
+        Camera cam = Game.getCam();
+        cam.tremor = Math.min(18, cam.tremor + intensidade * com.retronova.engine.Configs.GameScale() / 4.0);
+    }
+
     public void tick() {
         antX = x;
         antY = y;
         antZoom = currentZoom;
+        tremor *= 0.86;
         if(followed != null)
             follow();
         // A aproximacao vem das opcoes, e nao mais de Ctrl+= / Ctrl+-. O atalho
