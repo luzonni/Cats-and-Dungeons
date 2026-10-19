@@ -17,6 +17,23 @@ import java.util.List;
 
 public class Waves implements Runnable {
 
+    // RITMO DE HORDA, a la Vampire Survivors.
+    //
+    // Antes cada fatia do JSON nascia de uma vez, e a primeira onda inteira eram
+    // cinco zumbis em sessenta segundos: o jogador limpava a tela e ficava
+    // esperando. Agora cada fatia vira um fio continuo de pequenos grupos, com mais
+    // bichos e mais frageis — morrer rapido e em quantidade e o que da o ritmo.
+    // O JSON continua dizendo a PROPORCAO entre ondas; estes numeros dizem o ritmo.
+
+    /** Multiplica a quantidade do JSON. */
+    private static final double DENSIDADE = 3.0;
+    /** Em quantos grupos cada fatia do JSON e dividida. */
+    private static final int GRUPOS_POR_FATIA = 12;
+    /** Vida dos bichos de horda; chefe (fatia de um so) fica intacto. */
+    private static final double VIDA_HORDA = 0.5;
+    /** Anel em volta do gato onde a horda nasce, em tiles: fora da tela, perto. */
+    private static final int ANEL_MIN = 8, ANEL_MAX = 13;
+
     private static final int M;
 
     private static final JSONObject[] controller;
@@ -46,6 +63,8 @@ public class Waves implements Runnable {
     private int lastCounter;
 
     private volatile int step;
+    /** Quantos grupos ja nasceram nesta onda. step = grupo / GRUPOS_POR_FATIA. */
+    private volatile int grupo;
     private volatile List<Entity> listAppend;
     private boolean end;
 
@@ -104,14 +123,23 @@ public class Waves implements Runnable {
             return;
         }
         if(counter > lastCounter){
-            lastCounter += (M/period);
+            lastCounter += Math.max(1, M / (period * GRUPOS_POR_FATIA));
             new Thread(this, "Waves-Thread").start();
         }
     }
 
     private synchronized List<Entity> listEntity(){
         List<Entity> lista = new ArrayList<>();
-        for(int i = 0; i < amount[step]; i++){
+        int fatia = Math.min(step, amount.length - 1);
+        boolean chefe = amount[fatia] <= 1;
+        int quantos;
+        if (chefe) {
+            // Fatia de um so e chefe: nasce uma vez, no primeiro grupo, inteiro.
+            quantos = grupo % GRUPOS_POR_FATIA == 0 ? amount[fatia] : 0;
+        } else {
+            quantos = (int) Math.ceil(amount[fatia] * DENSIDADE / GRUPOS_POR_FATIA);
+        }
+        for(int i = 0; i < quantos; i++){
             int id = types[Engine.RAND.nextInt(types.length)].ordinal();
             Entity e = Entity.build(id, 0, 0);
             // A DUREZA VEM DA SALA, e e aplicada AQUI porque este e o unico lugar
@@ -120,6 +148,15 @@ public class Waves implements Runnable {
             // nivel de fabrica na sala vinte sem nada acusando.
             if (e instanceof com.retronova.game.objects.entities.enemies.Enemy bicho) {
                 bicho.escalarPara(this.nivel);
+                if (!chefe) {
+                    bicho.escalarVida(VIDA_HORDA);
+                    bicho.evoluir(getSeconds());
+                    // Elite: 3% no inicio da onda, subindo ate ~9% no fim.
+                    double chanceElite = 0.03 + 0.001 * getSeconds();
+                    if (Engine.RAND.nextDouble() < chanceElite) {
+                        bicho.tornarElite();
+                    }
+                }
             }
             lista.add(e);
         }
@@ -128,11 +165,27 @@ public class Waves implements Runnable {
 
     private synchronized List<Entity> spawner(List<Entity> entidades) {
         List<Entity> list = new ArrayList<>();
+        int largura = gameMap.getBounds().width / GameObject.SIZE();
+        int altura = gameMap.getBounds().height / GameObject.SIZE();
+        int tentativas = 0;
         while (!entidades.isEmpty()){
-            int x = Engine.RAND.nextInt(gameMap.getBounds().width / GameObject.SIZE());
-            int y = Engine.RAND.nextInt(gameMap.getBounds().height / GameObject.SIZE());
+            int x, y;
+            // Primeiro tenta o anel em volta do gato, para a horda chegar de fora
+            // da tela e logo; se a arena nao tiver chao ali, cai no sorteio antigo.
+            if (tentativas++ < 200 && Game.getPlayer() != null) {
+                double ang = Engine.RAND.nextDouble() * Math.PI * 2;
+                double dist = ANEL_MIN + Engine.RAND.nextDouble() * (ANEL_MAX - ANEL_MIN);
+                x = (int) (Game.getPlayer().getX() / GameObject.SIZE() + Math.cos(ang) * dist);
+                y = (int) (Game.getPlayer().getY() / GameObject.SIZE() + Math.sin(ang) * dist);
+                if (x < 0 || y < 0 || x >= largura || y >= altura) {
+                    continue;
+                }
+            } else {
+                x = Engine.RAND.nextInt(largura);
+                y = Engine.RAND.nextInt(altura);
+            }
             Tile tile = gameMap.getTile(x ,y);
-            if(!tile.isSolid() && !(tile instanceof Void)){
+            if(tile != null && !tile.isSolid() && !(tile instanceof Void)){
                 Entity e = entidades.getFirst();
                 e.setX(x * GameObject.SIZE());
                 e.setY(y * GameObject.SIZE());
@@ -150,11 +203,14 @@ public class Waves implements Runnable {
 
     public void tick() {
         periodic();
-        if(listAppend != null && !listAppend.isEmpty()) {
+        // Grupo vazio (o resto de uma fatia de chefe) tambem conta como grupo:
+        // senao a contagem empacava e a onda nunca passava para a fatia seguinte.
+        if(listAppend != null) {
             Game.getMap().putAll(listAppend);
-            listAppend.clear();
+            listAppend = null;
             synchronized (this) {
-                step++;
+                grupo++;
+                step = Math.min(grupo / GRUPOS_POR_FATIA, amount.length - 1);
             }
         }
     }

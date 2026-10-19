@@ -10,6 +10,15 @@ public class Main {
         if(os.contains("win")) {
             System.setProperty("sun.java2d.uiScale", "1.0");
         }
+        // OPENGL AQUI, ANTES DE QUALQUER COISA DO AWT. A Window ligava esta mesma
+        // propriedade, mas depois de o Java2D ja ter escolhido o pipeline — e ele
+        // escolhe uma vez so. Resultado: o jogo inteiro desenhava em software.
+        // Medido nesta maquina, ampliar a tela com suavizacao custava 30 ms em
+        // software e 0,3 ms em OpenGL. Quem precisar desligar (driver ruim) passa
+        // -Dsun.java2d.opengl=false na linha de comando, que tem precedencia.
+        if (System.getProperty("sun.java2d.opengl") == null) {
+            System.setProperty("sun.java2d.opengl", "true");
+        }
         SwingUtilities.invokeLater(Engine::new);
     }
 }

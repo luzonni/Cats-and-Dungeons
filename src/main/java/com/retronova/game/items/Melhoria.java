@@ -61,8 +61,8 @@ public enum Melhoria {
             -1.5, -3, -5, -8),
 
     /** Sorte: alimenta a esquiva e o peso da experiência que cai. */
-    INSTINTO("Instinct", "Luck", Modifiers.Luck, Formato.DECIMAL,
-            0.10, 0.20, 0.35, 0.60),
+    INSTINTO("Instinct", "Luck", Modifiers.Luck, Formato.INTEIRO,
+            1, 2, 4, 7),
 
     /**
      * A carta que melhora as PRÓXIMAS cartas.

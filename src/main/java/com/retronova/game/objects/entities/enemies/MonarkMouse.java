@@ -24,7 +24,7 @@ public class MonarkMouse extends Enemy {
         loadSprites("monarkmouse");
         setSolid();
         setLife(120);
-        setSpeed(1.1);
+        setSpeed(1.8);
         setXpWeight(11d);
         // O HEAVY GANHA ARMADURA. E o papel dele: nao ser rapido nem esperto, e sim
         // demorar a cair. Antes isso seria feito com resistencia, e resistencia

@@ -345,10 +345,26 @@ public abstract class GameMap {
     public void depth() {
         entities.sort(Entity.Depth);
         particles.sort(Particle.Depth);
+        retrato = null;
     }
 
+    /**
+     * Copia imutavel da lista, reaproveitada ate a lista mudar.
+     *
+     * Copiar a cada chamada era o custo escondido da horda: toda arma, todo
+     * projetil e todo "inimigo mais proximo" pede a lista, varias vezes por tick, e
+     * cada pedido copiava os cem bichos — cem vezes cem por quadro. A copia ainda
+     * e necessaria (a Repulsion le em outra thread), mas uma por mudanca basta.
+     */
+    private volatile List<Entity> retrato;
+
     public List<Entity> getEntities() {
-        return List.copyOf(this.entities);
+        List<Entity> r = retrato;
+        if (r == null) {
+            r = List.copyOf(this.entities);
+            retrato = r;
+        }
+        return r;
     }
 
     public <T extends Entity> List<T> getEntities(Class<T> type) {
@@ -371,10 +387,12 @@ public abstract class GameMap {
 
     public void put(Entity e) {
         entities.add(e);
+        retrato = null;
     }
 
     public void putAll(List<Entity> e) {
         this.entities.addAll(e);
+        retrato = null;
     }
 
     public boolean put(Particle p) {
@@ -383,6 +401,7 @@ public abstract class GameMap {
 
     public void remove(Entity e) {
         this.entities.remove(e);
+        retrato = null;
     }
 
     public void remove(Particle p) {

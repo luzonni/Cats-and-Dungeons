@@ -76,6 +76,61 @@ public abstract class Projetil extends Utility {
         this.antesY = centroY;
     }
 
+    // ------------------------------------------------------------- rastro
+
+    /**
+     * As ultimas posicoes do miolo, para o rastro.
+     *
+     * A flecha era um recorte de pixel saltando de posicao em posicao. O rastro e
+     * o que o olho espera ver de algo rapido — o borrao de movimento —, e e ele
+     * que faz o tiro parecer VOAR em vez de teletransportar a cada quadro.
+     */
+    private static final int PONTOS = 7;
+    private final double[] rastroX = new double[PONTOS];
+    private final double[] rastroY = new double[PONTOS];
+    private int gravados;
+
+    @Override
+    public void preTick() {
+        super.preTick();
+        System.arraycopy(rastroX, 0, rastroX, 1, PONTOS - 1);
+        System.arraycopy(rastroY, 0, rastroY, 1, PONTOS - 1);
+        rastroX[0] = meioX();
+        rastroY[0] = meioY();
+        gravados = Math.min(PONTOS, gravados + 1);
+    }
+
+    /** Cor do rastro. Cada tiro pode trocar. */
+    protected java.awt.Color corDoRastro() {
+        return new java.awt.Color(255, 244, 220);
+    }
+
+    /**
+     * Desenha o rastro: um traco que afina e some, da ponta para tras. Suavizado
+     * mesmo com a opcao de graficos desligada — e uma linha, nao um sprite.
+     */
+    public void renderRastro(java.awt.Graphics2D g) {
+        if (gravados < 2) {
+            return;
+        }
+        java.awt.Graphics2D r = (java.awt.Graphics2D) g.create();
+        r.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+                java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        java.awt.Color c = corDoRastro();
+        float largura = (float) (larguraEmPixels() * 0.55);
+        double px = meioX(), py = meioY();
+        for (int i = 0; i < gravados; i++) {
+            float t = 1f - (i + 1f) / (gravados + 1f);           // 1 na ponta, 0 no fim
+            r.setStroke(new java.awt.BasicStroke(Math.max(0.5f, largura * t),
+                    java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+            r.setColor(new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (150 * t)));
+            r.draw(new Line2D.Double(px, py, rastroX[i], rastroY[i]));
+            px = rastroX[i];
+            py = rastroY[i];
+        }
+        r.dispose();
+    }
+
     protected double meioX() {
         return getX() + getWidth() / 2d;
     }

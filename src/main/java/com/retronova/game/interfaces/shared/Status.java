@@ -92,7 +92,7 @@ public class Status implements Activity {
         g.drawImage(player.getSprite(0), points.get("player").x, points.get("player").y,
                 lado, lado, Engine.window);
         renderString((int)player.getLife()+"/"+(int)player.getLifeSize(), points.get("life"), g);
-        renderString((int)(player.getLuck()*100d)+"%", points.get("luck"), g);
+        renderString(String.valueOf((int) player.getLuck()), points.get("luck"), g);
         renderString(String.valueOf(player.getLevel()), points.get("level"), g);
         renderString("$ "+player.getMoney(), points.get("money"), g);
         renderString(String.valueOf(player.getDamage()), points.get("damage"), g);

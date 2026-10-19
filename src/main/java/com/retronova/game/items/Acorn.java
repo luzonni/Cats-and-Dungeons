@@ -18,7 +18,7 @@ public class Acorn extends Consumable {
     public void consume() {
         Player player = Game.getPlayer();
         player.addEffect("Acorn regeneration", (e) -> {
-            if(e.getLife() < e.getLifeSize() && Engine.RAND.nextDouble() <= player.getLuck())
+            if(e.getLife() < e.getLifeSize() && Engine.RAND.nextDouble() <= player.chanceDeSorte())
                 e.setLife(e.getLife()+0.15d);
         }, 60);
         player.addModifier(Modifiers.Dash, 20);

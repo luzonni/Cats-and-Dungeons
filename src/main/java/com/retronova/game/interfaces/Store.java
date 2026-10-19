@@ -70,6 +70,9 @@ public class Store implements Activity {
         this.positionStore.setLocation(w/2 - store.largura()/2, h/2 - store.altura()/2);
         // O rodapé desceu junto com o painel: duas fileiras a mais de 16 pixels.
         int rodape = 72 + 16 * (FILEIRAS - 3);
+        // Tamanho refeito aqui, e nao so no construtor: senao mudar "HUD size" com a
+        // loja aberta deixava o botao no tamanho velho.
+        this.buttonBuy.setSize(23 * Configs.HudScale(), 14 * Configs.HudScale());
         this.buttonBuy.setLocation(positionStore.x + 95 * Configs.HudScale(), positionStore.y + rodape * Configs.HudScale());
         for(int y = 0; y < FILEIRAS; y++)
             for(int x = 0; x < COLUNAS; x++) {

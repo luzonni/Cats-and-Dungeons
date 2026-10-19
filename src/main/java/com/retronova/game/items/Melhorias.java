@@ -1,6 +1,7 @@
 package com.retronova.game.items;
 
 import com.retronova.engine.Engine;
+import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
 
 import java.util.ArrayList;
@@ -144,7 +145,64 @@ public class Melhorias {
             saida.add(new int[]{e.getKey().ordinal(), e.getValue(),
                     (int) Math.round(soma * 1000)});
         }
+        for (Map.Entry<Modifiers, Integer> e : pontos.entrySet()) {
+            double soma = somasDePontos.getOrDefault(e.getKey(), 0d);
+            saida.add(new int[]{BASE_PONTOS + e.getKey().ordinal(), e.getValue(),
+                    (int) Math.round(soma * 1000)});
+        }
+        for (Map.Entry<ArmaExtra, Integer> e : armas.entrySet()) {
+            saida.add(new int[]{BASE_ARMAS + e.getKey().ordinal(), e.getValue(), 0});
+        }
         return saida.toArray(new int[0][]);
+    }
+
+    // ------------------------------------------------------ pontos de nivel
+
+    /**
+     * Pontos de atributo, ganhos ao subir de nivel. Sem desgaste: cada ponto vale
+     * o mesmo, porque o custo ja cresce na curva de XP.
+     *
+     * Moram aqui para viajar no mesmo save das melhorias: gravados com o ordinal
+     * do modificador somado a BASE_PONTOS, que nenhuma melhoria alcanca. Saves
+     * antigos nao tem essas linhas e continuam abrindo.
+     */
+    private static final int BASE_PONTOS = 1000;
+    private final Map<Modifiers, Integer> pontos = new EnumMap<>(Modifiers.class);
+    private final Map<Modifiers, Double> somasDePontos = new EnumMap<>(Modifiers.class);
+
+    public void aplicarPonto(Player gato, Modifiers atributo, double valor) {
+        gato.addModifier(atributo, valor);
+        pontos.merge(atributo, 1, Integer::sum);
+        somasDePontos.merge(atributo, valor, Double::sum);
+    }
+
+    public int pontos(Modifiers atributo) {
+        return pontos.getOrDefault(atributo, 0);
+    }
+
+    // ------------------------------------------------------- armas extras
+
+    /** Armas extras e o nivel de cada uma. Gravadas com BASE_ARMAS + ordinal. */
+    private static final int BASE_ARMAS = 2000;
+    private final Map<ArmaExtra, Integer> armas = new EnumMap<>(ArmaExtra.class);
+
+    public int nivel(ArmaExtra arma) {
+        return armas.getOrDefault(arma, 0);
+    }
+
+    public void subirArma(ArmaExtra arma) {
+        armas.merge(arma, 1, (a, b) -> Math.min(ArmaExtra.NIVEL_MAXIMO, a + b));
+    }
+
+    /** Armas que ainda podem sair na roleta: as que nao chegaram ao maximo. */
+    public List<ArmaExtra> armasDisponiveis() {
+        List<ArmaExtra> lista = new ArrayList<>();
+        for (ArmaExtra a : ArmaExtra.values()) {
+            if (nivel(a) < ArmaExtra.NIVEL_MAXIMO) {
+                lista.add(a);
+            }
+        }
+        return lista;
     }
 
     /**
@@ -164,6 +222,25 @@ public class Melhorias {
                 continue;
             }
             int ordinal = linha[0];
+            if (ordinal >= BASE_ARMAS) {
+                ArmaExtra[] todasArmas = ArmaExtra.values();
+                int a = ordinal - BASE_ARMAS;
+                if (a < todasArmas.length && linha[1] > 0) {
+                    armas.put(todasArmas[a], Math.min(ArmaExtra.NIVEL_MAXIMO, linha[1]));
+                }
+                continue;
+            }
+            if (ordinal >= BASE_PONTOS) {
+                Modifiers[] mods = Modifiers.values();
+                int m = ordinal - BASE_PONTOS;
+                if (m < mods.length && linha[1] > 0) {
+                    double soma = linha[2] / 1000d;
+                    gato.addModifier(mods[m], soma);
+                    pontos.put(mods[m], linha[1]);
+                    somasDePontos.put(mods[m], soma);
+                }
+                continue;
+            }
             if (ordinal < 0 || ordinal >= todas.length) {
                 continue;
             }

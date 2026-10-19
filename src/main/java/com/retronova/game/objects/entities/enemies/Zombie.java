@@ -51,13 +51,14 @@ public class Zombie extends Enemy {
         super(ID, x, y, 25);
         loadSprites("mousezombie");
         setLife(40);
-        setSpeed(1);
+        setXpWeight(5d);
+        setSpeed(1.8);
         setWidth(0.5);
         setHeight(0.8);
         addResistances(AttackTypes.Fire, 0.5);
         setSolid();
         this.path = new PathFinder(CHECKER);
-        // O MAIS LENTO GANHA O GOLPE MAIS LENTO. Ele anda a um decimo da
+        // O MAIS LENTO GANHA O GOLPE MAIS LENTO. Ele anda a pouco mais da metade da
         // velocidade do gato; se o bote dele fosse rapido, a unica leitura possivel
         // seria "nao chegue perto", e nao ha decisao nisso. Com preparo pesado, dar
         // a volta nele passa a ser uma jogada.

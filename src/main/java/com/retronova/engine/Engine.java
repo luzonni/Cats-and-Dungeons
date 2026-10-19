@@ -27,6 +27,18 @@ public class Engine implements Runnable {
     private static final int MAX_CATCHUP = 5;
     public static int FRAMES;
     public static int HERTZ;
+    /**
+     * Fracao, de 0 a 1, do caminho ate o proximo tick no instante do quadro.
+     *
+     * A logica anda a 60 Hz fixos; o quadro pode sair a 144 ou 165. Sem isso, um
+     * monitor rapido mostra o mesmo estado repetido entre dois ticks e a animacao
+     * anda aos trancos. Quem anima pode somar alpha() ao seu contador no render.
+     */
+    private static float alpha;
+
+    public static float alpha() {
+        return alpha;
+    }
 
     private static Activity OverView;
     private static List<Activity> stackActivities;
@@ -54,6 +66,23 @@ public class Engine implements Runnable {
         SpriteSheet.load(Engine.resPath.substring(0, Engine.resPath.length() - 1), Configs.GameScale());
         Engine.window = new Window(GameTag);
         heapActivity(new Menu());
+        // BANCADA (-Dcd.bench=true): entra direto numa arena com o Finn, para medir
+        // desempenho sem navegar menus. Espaco 0 nao e um espaco de save valido —
+        // nada e gravado nem apagado; as corridas do jogador ficam intactas.
+        if (Boolean.getBoolean("cd.bench")) {
+            heapActivity(new com.retronova.game.Game(2,
+                    new com.retronova.game.map.arena.Arena(1, 4), 0));
+            // Telas por cima, para conferir o desenho delas sem jogar ate elas.
+            // Abrem depois de um segundo de partida: a chegada do gato fecha
+            // qualquer pausa aberta antes dela.
+            if (Boolean.getBoolean("cd.roleta")) {
+                com.retronova.game.Game.depoisDeUmSegundo =
+                        () -> pause(new com.retronova.game.map.arena.Roleta());
+            } else if (Boolean.getBoolean("cd.nivel")) {
+                com.retronova.game.Game.depoisDeUmSegundo =
+                        () -> pause(new com.retronova.game.map.arena.SubirDeNivel());
+            }
+        }
         start();
         Debugging.init();
     }
@@ -86,6 +115,11 @@ public class Engine implements Runnable {
             }
             Engine.stackActivities.removeLast();
         }
+    }
+
+    /** Ha alguma tela por cima do jogo (pausa, cartas, roleta)? */
+    public static boolean pausado() {
+        return Engine.OverView != null;
     }
 
     /**
@@ -130,10 +164,81 @@ public class Engine implements Runnable {
         Engine.BUFFER = null;
     }
 
+    /** O buffer atual espera o monitor a cada show()? */
+    private static boolean vsync;
+
+    /**
+     * Quantos quadros por segundo mirar. Com a opcao VSync, a taxa REAL do monitor
+     * — mirar 165 num monitor de 144 (ou o contrario) e garantir um quadro
+     * repetido ou perdido a cada poucos. Sem ela, o limite escolhido nas opcoes.
+     */
+    private static int alvoDeQuadros() {
+        return Configs.VSync() ? taxaDoMonitor() : Configs.MaxFrames();
+    }
+
+    private static int taxaCacheada;
+
+    static int taxaDoMonitor() {
+        if (taxaCacheada == 0) {
+            int taxa = DisplayMode.REFRESH_RATE_UNKNOWN;
+            try {
+                GraphicsConfiguration gc = window != null ? window.getGraphicsConfiguration() : null;
+                GraphicsDevice dev = gc != null ? gc.getDevice()
+                        : GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+                taxa = dev.getDisplayMode().getRefreshRate();
+            } catch (Exception ignorado) {
+            }
+            taxaCacheada = taxa > 0 ? taxa : Math.max(60, Configs.MaxFrames());
+            System.out.println("Monitor refresh: " + taxaCacheada + " Hz");
+        }
+        return taxaCacheada;
+    }
+
+    /**
+     * Cria o buffer com VSYNC, para cada quadro sair no instante em que o monitor
+     * atualiza.
+     *
+     * MEDIDO ANTES: 165 quadros por segundo cravados, desenho de 0,7 ms — e ainda
+     * assim a sensacao era de jogo travado. O problema nao era quantos quadros, era
+     * QUANDO: sem vsync o intervalo entre quadros variava de 6 a 9 ms, e num
+     * monitor de 165 Hz isso vira quadro repetido aqui, quadro pulado ali. O olho
+     * le essa irregularidade como engasgo, mesmo com o contador marcando 165.
+     *
+     * A API mora num pacote interno (sun.java2d.pipe.hw) e so funciona no pipeline
+     * OpenGL. Por isso reflexao, e por isso qualquer falha cai no buffer antigo em
+     * silencio: sem vsync o jogo continua jogavel, so menos liso.
+     */
+    private static boolean criarComVSync() {
+        try {
+            Class<?> ext = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities");
+            Class<?> tipo = Class.forName("sun.java2d.pipe.hw.ExtendedBufferCapabilities$VSyncType");
+            Object ligado = null;
+            for (Object c : tipo.getEnumConstants()) {
+                if (c.toString().equals("VSYNC_ON")) {
+                    ligado = c;
+                }
+            }
+            BufferCapabilities base = new BufferCapabilities(
+                    new ImageCapabilities(true), new ImageCapabilities(true),
+                    BufferCapabilities.FlipContents.UNDEFINED);
+            BufferCapabilities caps = (BufferCapabilities) ext
+                    .getConstructor(BufferCapabilities.class, tipo).newInstance(base, ligado);
+            window.createBufferStrategy(2, caps);
+            System.out.println("VSync: on");
+            return true;
+        } catch (Throwable semVSync) {
+            System.out.println("VSync: unavailable (" + semVSync.getClass().getSimpleName() + ")");
+            return false;
+        }
+    }
+
     private Graphics2D getGraphics() {
         if(Engine.BUFFER == null) {
             try {
-                window.createBufferStrategy(3);
+                Engine.vsync = Configs.VSync() && criarComVSync();
+                if (!Engine.vsync) {
+                    window.createBufferStrategy(3);
+                }
                 Engine.BUFFER = window.getBufferStrategy();
             } catch (IllegalStateException aindaNaoExibivel) {
                 //A janela ainda não está pronta; tenta de novo no próximo quadro.
@@ -271,6 +376,7 @@ public class Engine implements Runnable {
                 //Agora recupera o atraso executando ticks em sequência.
                 int ticksExecutados = 0;
                 while (delta_HZ >= 1 && ticksExecutados < MAX_CATCHUP) {
+                    long inicioTick = System.nanoTime();
                     this.tick();
                     if (ACTIVITY_RUNNING && !stackActivities.isEmpty()) {
                         getACTIVITY().tick();
@@ -281,6 +387,7 @@ public class Engine implements Runnable {
                     Hz++;
                     delta_HZ--;
                     ticksExecutados++;
+                    Desempenho.tick(System.nanoTime() - inicioTick, ticksExecutados);
                 }
                 //Atraso grande demais para recuperar: desiste dele em vez de
                 //acumular dívida e entrar em espiral.
@@ -289,11 +396,16 @@ public class Engine implements Runnable {
                 }
 
                 long nowFPS = System.nanoTime();
-                ns_FPS = Engine.T / Math.max(1, Configs.MaxFrames());
+                ns_FPS = Engine.T / Math.max(1, alvoDeQuadros());
                 delta_FPS += (nowFPS - lastTimeFPS) / ns_FPS;
                 lastTimeFPS = nowFPS;
                 boolean desenhou = false;
-                if (delta_FPS >= 1) {
+                // Com vsync o show() ja espera o monitor: o proprio monitor e o
+                // limitador, e um segundo limite por relogio so brigaria com ele
+                // (pulando uma atualizacao de vez em quando — o engasgo de volta).
+                if (delta_FPS >= 1 || vsync) {
+                    alpha = (float) Math.max(0, Math.min(1, delta_HZ));
+                    long inicioRender = System.nanoTime();
                     Graphics2D g = getGraphics();
                     if (g != null) {
                         if (!stackActivities.isEmpty()) {
@@ -305,6 +417,7 @@ public class Engine implements Runnable {
                         render(g);
                         frames++;
                         desenhou = true;
+                        Desempenho.quadro(System.nanoTime() - inicioRender);
                     }
                     //DESCONTA um quadro, não zera. Zerando, a fração que sobrava
                     //de cada volta era jogada fora e o laço nunca alcançava o
@@ -312,13 +425,22 @@ public class Engine implements Runnable {
                     //atraso passar de dois quadros é que ele é abandonado — aí
                     //sim recuperar seria pior do que perder.
                     delta_FPS -= 1;
-                    if (delta_FPS > 2) {
+                    if (delta_FPS > 2 || vsync) {
                         delta_FPS = 0;
                     }
                 }
 
                 //Show fps
                 if (System.currentTimeMillis() - timer >= 1000) {
+                    // VSYNC QUE NAO ESPERA. Alguns drivers aceitam o pedido e o
+                    // ignoram em janela: o show() volta na hora e o jogo dispara a
+                    // milhares de quadros. Medido, nao suposto — e ai o limitador
+                    // de precisao assume, no ritmo do monitor.
+                    if (vsync && frames > taxaDoMonitor() * 1.4) {
+                        vsync = false;
+                        System.out.println("VSync: ignored by the driver, pacing to "
+                                + taxaDoMonitor() + " Hz instead");
+                    }
                     Engine.FRAMES = frames;
                     frames = 0;
                     Engine.HERTZ = Hz;
@@ -327,8 +449,21 @@ public class Engine implements Runnable {
                 }
                 //Só dorme quando não havia nada a fazer; dormir estando atrasado
                 //é exatamente o que impedia o laço de recuperar.
+                //
+                //ESPERA DE PRECISAO. O sleep(1) do Windows dorme de um a dois
+                //milissegundos, ao acaso — e era isso que fazia o intervalo entre
+                //quadros oscilar entre 6 e 9 ms com o contador cravado em 165. O
+                //olho le essa oscilacao como engasgo. Agora so dorme quando falta
+                //bastante para o proximo quadro ou tick; no ultimo trecho gira no
+                //lugar, e o quadro sai na hora certa.
                 if (ticksExecutados == 0 && !desenhou) {
-                    Thread.sleep(1);
+                    double faltaQuadro = (1 - delta_FPS) * ns_FPS;
+                    double faltaTick = (1 - delta_HZ) * ns_HZ;
+                    if (Math.min(faltaQuadro, faltaTick) > 2_000_000) {
+                        Thread.sleep(1);
+                    } else {
+                        Thread.onSpinWait();
+                    }
                 }
             } catch (Exception e) {
                 System.err.println("Exception: " + e.getMessage());

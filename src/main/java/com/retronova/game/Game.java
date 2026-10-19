@@ -273,6 +273,14 @@ public class Game implements Activity {
             count = 0;
             seconds++;
         }
+        guardarPosicoes();
+        quadroDoGato++;
+        if (depoisDeUmSegundo != null && quadroDoGato > 90 && !Engine.pausado()) {
+            Runnable r = depoisDeUmSegundo;
+            depoisDeUmSegundo = null;
+            r.run();
+            return;
+        }
         hud.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause());
@@ -280,7 +288,16 @@ public class Game implements Activity {
         if(KeyBoard.KeyPressed("E")) {
             inter.open();
         }
+        // Nivel novo: abre a escolha de atributo. Um por vez — com varios niveis
+        // pendentes, ela reabre a cada tick ate gastar todos.
+        if (player.niveisPendentes() > 0 && !player.morrendo() && !Engine.pausado()) {
+            Engine.pause(new com.retronova.game.map.arena.SubirDeNivel());
+            return;
+        }
         map.tick();
+        if (!player.morrendo()) {
+            com.retronova.game.objects.entities.Arsenal.tick(player);
+        }
         map.depth();
         List<Entity> entities = map.getEntities();
         for(int i = 0; i < entities.size(); i++) {
@@ -352,7 +369,9 @@ public class Game implements Activity {
         g.setColor(ROCHA);
         g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
         renderWorld(g);
+        long t0 = System.nanoTime();
         hud.render(g);
+        com.retronova.engine.Desempenho.secao("hud", System.nanoTime() - t0);
         apagarNaMorte(g);
     }
 
@@ -382,17 +401,47 @@ public class Game implements Activity {
     private void renderWorld(Graphics2D g) {
         Graphics2D cam = (Graphics2D) g.create();
         cam.setTransform(Camera.getAt());
+        long t = System.nanoTime();
         renderMap(cam);
+        t = medir("mapa", t);
+        List<Entity> entidades = map.getEntities();
+        com.retronova.game.map.Atmosfera.renderSombras(cam, entidades, alphaDoMundo());
+        t = medir("sombras", t);
         renderEntities(cam);
+        t = medir("entidades", t);
         renderParticles(cam);
+        t = medir("particulas", t);
         cam.dispose();
+        com.retronova.game.map.Atmosfera.renderLuz(g, entidades, alphaDoMundo());
+        medir("luz", t);
+    }
+
+    /** Registra quanto o trecho levou e devolve o instante atual. */
+    private static long medir(String trecho, long desde) {
+        long agora = System.nanoTime();
+        com.retronova.engine.Desempenho.secao(trecho, agora - desde);
+        return agora;
     }
 
     private void renderMap(Graphics2D g) {
         Tile[] map = this.map.getMap();
+        // SO O QUE ESTA NA TELA. O teste era contra gCam.getBounds(), que e o
+        // retangulo do MAPA INTEIRO — todo tile passava, e a arena desenhava os
+        // mil e tantos tiles dela a cada quadro, a maioria fora da janela. Agora a
+        // janela e levada de volta para coordenadas do mundo, com dois tiles de
+        // folga para paredes cujo desenho sobe alem do proprio tile.
+        Rectangle visivel;
+        try {
+            visivel = g.getTransform().createInverse().createTransformedShape(
+                    new Rectangle(0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
+            int folga = 2 * com.retronova.game.objects.GameObject.SIZE();
+            visivel.grow(folga, folga);
+        } catch (java.awt.geom.NoninvertibleTransformException semZoom) {
+            visivel = gCam.getBounds();
+        }
         for(int i = 0; i < map.length; i++) {
             Tile tile = map[i];
-            if(tile.getBounds().intersects(gCam.getBounds())) {
+            if(tile.getBounds().intersects(visivel)) {
                 map[i].render(g);
                 if(Debugging.showTileBox) {
                     map[i].renderBounds(i, g);
@@ -438,13 +487,40 @@ public class Game implements Activity {
                     && !chegando.corpoVisivel()) {
                 continue;                 // so o portal, ainda: o corpo vem depois
             }
-            entity.render(g);
+            // Desenha na posicao interpolada: translada o pincel em vez de mexer
+            // no x/y, para tudo que a entidade desenha (arma na mao, barra de
+            // vida, aura) andar junto com ela.
+            double[] d = entity.deslocamentoNoQuadro(alphaDoMundo());
+            g.translate(d[0], d[1]);
+            if (entity instanceof Enemy elite) {
+                elite.renderAura(g);
+            }
+            if (entity instanceof com.retronova.game.objects.entities.utilities.Projetil tiro) {
+                tiro.renderRastro(g);
+            }
+            if (entity instanceof Enemy bicho) {
+                java.awt.geom.AffineTransform antes = g.getTransform();
+                animarBicho(g, bicho);
+                entity.render(g);
+                g.setTransform(antes);
+            } else if (entity == player && !player.morrendo()) {
+                java.awt.geom.AffineTransform antes = g.getTransform();
+                animarGato(g, player);
+                entity.render(g);
+                g.setTransform(antes);
+            } else {
+                entity.render(g);
+            }
+            if (entity == player && !player.morrendo()) {
+                com.retronova.game.objects.entities.Arsenal.render(g, player);
+            }
             if(entity instanceof Enemy enemy) {
                 enemy.renderLife(g);
             }
             if(Debugging.showEntityHitBox) {
                 entity.renderBounds(g);
             }
+            g.translate(-d[0], -d[1]);
         }
         // A linha que a arma usou para decidir se atirava: verde quer dizer "ha
         // caminho", vermelha quer dizer "nao ha".
@@ -462,10 +538,119 @@ public class Game implements Activity {
         List<Particle> particles = map.getParticles();
         for(int i = 0; i < particles.size(); i++) {
             Particle p = particles.get(i);
+            double[] d = p.deslocamentoNoQuadro(alphaDoMundo());
+            g.translate(d[0], d[1]);
             p.render(g);
             if(Debugging.showParticleHitBox) {
                 p.renderBounds(g);
             }
+            g.translate(-d[0], -d[1]);
+        }
+    }
+
+    /**
+     * Vida no desenho dos bichos, sem precisar de quadro novo de arte.
+     *
+     * A folha dos ratos tem dois ou tres quadros, e eles andavam deslizando pelo
+     * chao como recortes de papel. Aqui o corpo ganha peso: quica a cada passo,
+     * achata e estica (squash & stretch), balanca de um lado para o outro,
+     * respira parado, e da um tranco quando apanha. Tudo em volta dos PES, para
+     * o bicho nao sair do lugar em que a sombra esta.
+     *
+     * A fase vem da identidade de cada bicho, para a horda nao marchar em
+     * uniao — cem ratos pulando no mesmo compasso parecem uma coreografia.
+     */
+    private static void animarBicho(Graphics2D g, Enemy bicho) {
+        int s = com.retronova.engine.Configs.GameScale();
+        double t = System.nanoTime() / 1e9;
+        double fase = (System.identityHashCode(bicho) % 1000) / 1000.0 * Math.PI * 2;
+        // Quanto ele esta andando, de 0 a 1.
+        double andando = Engine.pausado() ? 0 : Math.min(1, bicho.passoNoTick() / (0.6 * s));
+
+        double passo = t * 11 + fase;
+        double quique = Math.abs(Math.sin(passo)) * 2.2 * s * andando;
+        double estica = 1 + 0.08 * Math.sin(passo * 2) * andando
+                + 0.035 * Math.sin(t * 3 + fase) * (1 - andando);   // respirar parado
+        double inclina = 0.10 * Math.sin(passo) * andando;
+
+        // O tranco do golpe: alarga e achata, voltando em dez ticks.
+        float impacto = bicho.impacto();
+        double sx = (1 / estica) * (1 + 0.28 * impacto);
+        double sy = estica * (1 - 0.18 * impacto);
+
+        double pesX = bicho.getX() + bicho.getWidth() / 2.0;
+        double pesY = bicho.getY() + bicho.getHeight();
+        g.translate(pesX, pesY - quique);
+        g.rotate(inclina);
+        g.scale(sx, sy);
+        g.translate(-pesX, -pesY);
+    }
+
+    /** Gancho do modo de bancada (Engine, -Dcd.bench): roda uma vez, no tick 90. */
+    public static Runnable depoisDeUmSegundo;
+
+    /** Lado para o qual o gato olhava, e quando ele virou — para animar a virada. */
+    private int ladoAnterior = 0;
+    private long viradaEm = -100;
+    private long quadroDoGato;
+
+    /**
+     * O gato ganha peso sem mexer na passada desenhada na folha.
+     *
+     * A folha ja tem o balanco da caminhada (cabeca desce no contato, sobe na
+     * passada), e deslizar o sprite inteiro desfaria isso — o rabo e a pata
+     * apoiada sairiam do chao. Entao aqui so entra o que a folha NAO tem: a
+     * inclinacao para o lado em que ele corre, um achata-estica leve ancorado nos
+     * pes, e a VIRADA — antes o espelho trocava num quadro so, e o gato "piscava"
+     * de lado; agora ele se aperta e abre, como quem gira o corpo.
+     */
+    private void animarGato(Graphics2D g, Player gato) {
+        int s = com.retronova.engine.Configs.GameScale();
+        double t = System.nanoTime() / 1e9;
+        boolean parado = Engine.pausado();
+        double dx = -gato.deslocamentoNoQuadro(0f)[0];
+        double andando = parado ? 0 : Math.min(1, gato.passoNoTick() / (0.8 * s));
+
+        int lado = gato.getLadoDoPasso();
+        if (lado != ladoAnterior) {
+            if (ladoAnterior != 0) {
+                viradaEm = quadroDoGato;
+            }
+            ladoAnterior = lado;
+        }
+        double virada = Math.min(1, (quadroDoGato - viradaEm + Engine.alpha()) / 7.0);
+        double aperto = 0.35 + 0.65 * (1 - Math.pow(1 - virada, 3));   // ease-out
+
+        double estica = 1 + 0.045 * Math.sin(t * 15) * andando
+                + 0.02 * Math.sin(t * 2.6) * (1 - andando);             // respirar parado
+        double inclina = parado ? 0 : Math.max(-1, Math.min(1, dx / (2.0 * s))) * 0.07;
+
+        double pesX = gato.getX() + gato.getWidth() / 2.0;
+        double pesY = gato.getY() + gato.getHeight();
+        g.translate(pesX, pesY);
+        g.rotate(inclina);
+        g.scale(aperto / estica, estica);
+        g.translate(-pesX, -pesY);
+    }
+
+    /**
+     * Fracao do tick para interpolar o mundo. Com uma tela por cima (pausa,
+     * cartas, roleta) o mundo esta parado: usar a fracao do relogio faria tudo
+     * tremer entre a posicao anterior e a atual.
+     */
+    private static float alphaDoMundo() {
+        return Engine.pausado() ? 1f : Engine.alpha();
+    }
+
+    /** Guarda a posicao de todos antes do tick, para o render interpolar. */
+    private void guardarPosicoes() {
+        List<Entity> entities = map.getEntities();
+        for (int i = 0; i < entities.size(); i++) {
+            entities.get(i).guardarPosicaoAnterior();
+        }
+        List<Particle> particles = map.getParticles();
+        for (int i = 0; i < particles.size(); i++) {
+            particles.get(i).guardarPosicaoAnterior();
         }
     }
 

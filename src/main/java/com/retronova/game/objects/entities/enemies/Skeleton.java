@@ -19,6 +19,7 @@ public class Skeleton extends Enemy {
         super(ID, x, y, 25);
         loadSprites("mouseskeleton");
         setLife(60);
+        setXpWeight(6d);
         setSpeed(3);
         // AS RESISTENCIAS DE TIPO DE ARMA SAIRAM. Ele resistia a Piercing em 0,9
         // e a Poison em 0,8 — e Piercing e o dano do ARCO. Enquanto todo gato podia

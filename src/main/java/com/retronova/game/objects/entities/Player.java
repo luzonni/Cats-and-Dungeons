@@ -791,7 +791,7 @@ public class Player extends Entity {
 
     public BufferedImage getSprite(int index) {
         getSheet().setIndex(index);
-        return getSheet().getSprite();
+        return com.retronova.engine.graphics.Acelerada.de(getSheet().getSprite());
     }
 
     @Override
@@ -871,7 +871,7 @@ public class Player extends Entity {
         }
         this.desdeODano = 0;
         if (hasModifier(Modifiers.Dodge)) {
-            double percent = valueModifier(Modifiers.Dodge) + getLuck() * 0.10d;
+            double percent = valueModifier(Modifiers.Dodge) + chanceDeSorte() * 0.10d;
             double a = Engine.RAND.nextDouble(1d);
             if (a <= percent) {
                 Game.getMap().put(new Word("Dodge", getX() + getWidth() / 2d, getY() + getHeight() / 2d, 1));
@@ -899,6 +899,28 @@ public class Player extends Entity {
             return l;
         }
         return luck;
+    }
+
+    /**
+     * A sorte em PONTOS (o que o jogador ve e sobe) convertida em chance de 0 a 1.
+     *
+     * Pontos e nao porcentagem para escalar sem teto: dez pontos dao 50%, vinte
+     * dao 67%, cem dao 91% — cada ponto vale um pouco menos que o anterior, e
+     * nenhuma quantidade chega a 100%. Assim da para empilhar sorte a corrida
+     * inteira sem que ela vire certeza e quebre esquiva, bau e dano.
+     */
+    public double chanceDeSorte() {
+        double pontos = getLuck();
+        return pontos / (pontos + 10);
+    }
+
+    /**
+     * Chance de um bicho comum largar bau ao morrer. Mesma curva, mais lenta:
+     * seis pontos dao ~5,7%, trinta dao ~23%.
+     */
+    public double chanceDeBau() {
+        double pontos = getLuck();
+        return pontos / (pontos + 100);
     }
 
     public void setRangeOfColect(double range){
@@ -958,17 +980,37 @@ public class Player extends Entity {
         while(getXp() >= getXpLength()) { //caso ganhe um xp com peso muito alto, o nivel vai aumentar até o chegar no nivel considerado
             this.XP -= getXpLength();
             this.level++;
+            // Cada nivel vira um ponto de atributo para gastar. A tela abre no
+            // proximo tick do jogo — ver Game.tick e SubirDeNivel.
+            this.niveisPendentes++;
         }
+    }
+
+    /** Niveis ganhos cujo ponto de atributo ainda nao foi escolhido. */
+    private int niveisPendentes;
+
+    public int niveisPendentes() {
+        return niveisPendentes;
+    }
+
+    public void gastarNivel() {
+        niveisPendentes = Math.max(0, niveisPendentes - 1);
     }
 
     public double getXp() {
         return this.XP;
     }
 
+    /**
+     * Quanto XP falta para o proximo nivel.
+     *
+     * Curta no comeco e crescendo devagar, no ritmo de horda: os primeiros niveis
+     * saem em poucas mortes, para o bau aparecer cedo e o jogador entender o
+     * laco. Antes o primeiro nivel pedia 75 e o segundo 157 — com o rato dando
+     * dois ou tres de XP, era nivel a cada minuto, e subir nao era evento.
+     */
     public double getXpLength() {
-        if(getLevel() == 0)
-            return 75;
-        return getLevel() * 23.74 + 100 * getLevel()*1.33;
+        return 15 + getLevel() * 10 + getLevel() * getLevel() * 0.8;
     }
 
     public int getMoney() {

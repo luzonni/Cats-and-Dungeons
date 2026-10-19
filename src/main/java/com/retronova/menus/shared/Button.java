@@ -70,7 +70,18 @@ public class Button {
      * ponteiro em vez de trocar de sprite.
      */
     private float realce;
+    /** Para onde o realce esta indo, para o render adiantar a fracao do tick. */
+    private float alvoRealce;
     private static final float VELOCIDADE_REALCE = 0.2f;
+
+    /** Realce interpolado entre ticks, para a rampa fluir acima de 60 FPS. */
+    private float realceNoQuadro() {
+        if (realce == alvoRealce) {
+            return realce;
+        }
+        float r = realce + Math.signum(alvoRealce - realce) * VELOCIDADE_REALCE * Engine.alpha();
+        return Math.max(0f, Math.min(1f, r));
+    }
 
     public Button(int x, int y, int width, int height, String text, Consumer<Button> onClick) {
         this.bounds = new Rectangle(x, y, width, height);
@@ -118,6 +129,7 @@ public class Button {
         }
 
         float alvo = (hovered || focused) ? 1f : 0f;
+        alvoRealce = alvo;
         if (realce != alvo) {
             realce += Math.signum(alvo - realce) * VELOCIDADE_REALCE;
             realce = Math.max(0f, Math.min(1f, realce));
@@ -154,6 +166,7 @@ public class Button {
      * botoes parece instavel a cada passagem do mouse.
      */
     private Rectangle realcado(int scale) {
+        float realce = realceNoQuadro();
         if (realce <= 0f) {
             return bounds;
         }
@@ -170,6 +183,7 @@ public class Button {
      * para cada botao da tela.
      */
     private void desenharBrilho(Graphics2D g2, Rectangle r, int scale) {
+        float realce = realceNoQuadro();
         if (realce <= 0.02f) {
             return;
         }

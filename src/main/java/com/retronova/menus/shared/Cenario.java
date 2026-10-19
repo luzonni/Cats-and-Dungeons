@@ -75,6 +75,8 @@ public class Cenario {
     public void render(Graphics2D g) {
         int w = Engine.window.getWidth();
         int h = Engine.window.getHeight();
+        // Tempo do QUADRO, nao do tick: a bruma corre liso acima de 60 FPS.
+        float tempo = this.tempo + Engine.alpha() / 60f;
         preparar(w, h);
 
         // 1. A ilustração, parada e no enquadramento original.
@@ -136,7 +138,8 @@ public class Cenario {
      * uma cena impressa.
      */
     private void desenharLuz(Graphics2D g, int w, int h) {
-        float pulso = 0.55f + 0.45f * (float) ((1 + Math.sin(tempo * 0.7)) / 2);
+        float t = tempo + Engine.alpha() / 60f;
+        float pulso = 0.55f + 0.45f * (float) ((1 + Math.sin(t * 0.7)) / 2);
         Point2D centro = new Point2D.Float(w * LUA_X, h * LUA_Y);
         float raio = Math.max(w, h) * 0.34f * (0.92f + 0.08f * pulso);
         int alfa = (int) (58 * pulso);
@@ -210,7 +213,7 @@ public class Cenario {
             }
             int a = (int) (p.alfa * 255);
             g2.setColor(new Color(236, 240, 255, Math.max(0, Math.min(255, a))));
-            g2.fillRect((int) p.x, (int) p.y, p.tamanho, p.tamanho);
+            g2.fillRect((int) p.x, (int) (p.y - p.vy * Engine.alpha()), p.tamanho, p.tamanho);
         }
         g2.dispose();
     }

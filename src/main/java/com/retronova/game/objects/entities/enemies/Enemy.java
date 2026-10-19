@@ -214,6 +214,7 @@ public abstract class Enemy extends Entity implements Nascente {
     @Override
     public void postTick() {
         super.postTick();
+        desdeOApanhar++;
         if(tookDamage) {
             countTookDamage++;
             if(countTookDamage > 50) {
@@ -287,7 +288,8 @@ public abstract class Enemy extends Entity implements Nascente {
             jogador.reagirAoGolpe();
         }
         Player player = Game.getPlayer();
-        damage *= Engine.RAND.nextDouble() + player.getLuck();
+        // Variacao do golpe: 75% a 125%, mais ate +50% conforme a sorte.
+        damage *= 0.75 + Engine.RAND.nextDouble() * 0.5 + player.chanceDeSorte() * 0.5;
         // A ARMADURA COME O GOLPE ANTES DA VIDA, e o que sobra passa.
         //
         // O EXCEDENTE PASSAR e deliberado: sem isso, um golpe enorme contra uma
@@ -305,6 +307,7 @@ public abstract class Enemy extends Entity implements Nascente {
         }
         super.strike(type, damage);
         this.tookDamage = true;
+        this.desdeOApanhar = 0;
         double x = getX() + Engine.RAND.nextDouble(getWidth());
         double y = getY() + Engine.RAND.nextDouble(getHeight());
         particle.setX(x);
@@ -324,10 +327,126 @@ public abstract class Enemy extends Entity implements Nascente {
             float quanto = restante() / (float) NASCENDO;
             return Expressao.clarao(currentSprite, quanto);
         }
-        if(tookDamage) {
-            currentSprite = DrawSprite.draw(currentSprite, new Color(122, 19, 17));
+        // CLARAO BRANCO CURTO, e nao vermelho-escuro longo. O tingimento antigo
+        // durava 50 ticks e ESCURECIA o bicho: numa horda em que todos apanham, a
+        // tela inteira ficava cor de sangue seco e os ratos sumiam no chao. Branco
+        // por um decimo de segundo diz "acertou" e devolve o bicho com a cor dele.
+        if (desdeOApanhar < CLARAO) {
+            currentSprite = Expressao.clarao(currentSprite, 1f - desdeOApanhar / (float) CLARAO);
         }
-        return currentSprite;
+        return contornado(currentSprite);
+    }
+
+    /** Ticks de clarao branco ao ser atingido. */
+    private static final int CLARAO = 7;
+    /** Ticks desde o ultimo golpe recebido. Comeca alto: ninguem nasce apanhando. */
+    private int desdeOApanhar = 999;
+
+    /**
+     * De 1 (acabou de apanhar) a 0, em dez ticks: quanto o "soco" de escala ainda
+     * deforma o bicho. Lido pelo Game ao desenhar.
+     */
+    public float impacto() {
+        return Math.max(0f, 1f - desdeOApanhar / 10f);
+    }
+
+    /**
+     * O sprite com um contorno escuro de um pixel de arte em volta.
+     *
+     * E o que separa o rato do chao. Os dois tem a mesma familia de cor — cinza,
+     * verde-musgo, marrom —, e sem borda o bicho le como mais uma mancha do piso.
+     * Cacheado por quadro da folha, como os outros tingimentos.
+     */
+    private static BufferedImage contornado(BufferedImage sprite) {
+        return CONTORNOS.computeIfAbsent(sprite, Enemy::contornar);
+    }
+
+    private static final java.util.Map<BufferedImage, BufferedImage> CONTORNOS =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    private static BufferedImage contornar(BufferedImage src) {
+        int t = Math.max(1, com.retronova.engine.Configs.GameScale());
+        int w = src.getWidth(), h = src.getHeight();
+        BufferedImage out = new BufferedImage(w + 2 * t, h + 2 * t, BufferedImage.TYPE_INT_ARGB);
+        int[] px = src.getRGB(0, 0, w, h, null, 0, w);
+        int borda = 0xFF1A0E16;
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if ((px[y * w + x] >>> 24) < 40) {
+                    continue;
+                }
+                // Carimba a borda nas quatro direcoes, a um pixel de arte.
+                for (int[] d : new int[][]{{-t, 0}, {t, 0}, {0, -t}, {0, t}}) {
+                    int ox = x + t + d[0], oy = y + t + d[1];
+                    if ((out.getRGB(ox, oy) >>> 24) == 0) {
+                        out.setRGB(ox, oy, borda);
+                    }
+                }
+            }
+        }
+        Graphics2D g = out.createGraphics();
+        g.drawImage(src, t, t, null);
+        g.dispose();
+        return out;
+    }
+
+    // ------------------------------------------------------------ evolucao
+
+    /**
+     * Bicho de elite: mais vida, mais XP, aura dourada, e larga um bau ao morrer.
+     *
+     * E o pico da horda. No meio de cem ratos iguais, um que brilha e um alvo —
+     * o jogador muda de rota para ir atras dele, e isso e uma decisao a cada
+     * minuto em vez de so andar em circulo.
+     */
+    private boolean elite;
+
+    public void tornarElite() {
+        if (elite) {
+            return;
+        }
+        elite = true;
+        escalarVida(5);
+        setXpWeight(getXpWeight() * 6);
+        setDamage(getDamage() * 1.3);
+        this.danoDoGolpe *= 1.3;
+    }
+
+    public boolean elite() {
+        return elite;
+    }
+
+    /**
+     * A horda endurece com o tempo dentro da onda.
+     *
+     * Antes a dureza so mudava de SALA para sala: dentro da mesma onda, o rato do
+     * segundo cinquenta era igual ao do segundo um, e o gato, que sobe de nivel
+     * no meio da briga, ficava cada vez mais folgado. Agora os bichos crescem
+     * junto — mais vida, mais dano e um pouco mais de pressa a cada segundo.
+     */
+    public void evoluir(int segundos) {
+        if (segundos <= 0) {
+            return;
+        }
+        escalarVida(1 + 0.025 * segundos);
+        double porDano = 1 + 0.01 * segundos;
+        this.danoDoGolpe *= porDano;
+        setDamage(getDamage() * porDano);
+        setSpeed(getSpeed() * Math.min(1.3, 1 + 0.005 * segundos));
+    }
+
+    /** Aura da elite, desenhada por baixo do corpo. */
+    public void renderAura(Graphics2D g) {
+        if (!elite) {
+            return;
+        }
+        float t = (System.nanoTime() % 1_000_000_000_000L) / 1e9f;
+        int alfa = 90 + (int) (50 * Math.sin(t * 6));
+        int r = Math.max(getWidth(), getHeight());
+        int cx = (int) getX() + getWidth() / 2;
+        int cy = (int) getY() + getHeight() / 2;
+        g.setColor(new Color(255, 200, 60, Math.max(0, Math.min(255, alfa))));
+        g.fillOval(cx - r, cy - r, r * 2, r * 2);
     }
 
     protected void setXpWeight(double weight) {
@@ -342,12 +461,27 @@ public abstract class Enemy extends Entity implements Nascente {
     public void die() {
         this.disappear();
         dropXp();
+        // O corpo voa e some, em vez de sumir no quadro seguinte. Mesmo espelho
+        // que os bichos usam no render, para ele nao virar de lado ao morrer.
+        int lado = getPhysical().getOrientation()[0] * -1;
+        BufferedImage corpo = com.retronova.engine.graphics.SpriteHandler.flip(
+                contornado(super.getSprite()), 1, lado == 0 ? -1 : lado);
+        Game.getMap().put(new com.retronova.game.objects.particles.Cadaver(corpo,
+                getX() + (getWidth() - corpo.getWidth()) / 2.0,
+                getY() + getHeight() - corpo.getHeight()));
+        // O BAU VEM DA SORTE. Elite larga sempre; bicho comum, conforme os pontos
+        // de sorte do gato (ver Player.chanceDeBau). Mais sorte, mais roleta.
+        if (elite || Engine.RAND.nextDouble() < Game.getPlayer().chanceDeBau()) {
+            Game.getMap().put(new com.retronova.game.objects.entities.utilities.Bau(getX(), getY()));
+        }
     }
 
     private void dropXp() {
-        double luck = Game.getPlayer().getLuck();
         Xp e = new Xp(getX(), getY());
-        e.setWeight(getXpWeight() * Engine.RAND.nextDouble() * luck);
+        // Menos sorteio: antes ia de zero ao maximo, e metade das mortes rendia
+        // quase nada. Agora vai de metade ao maximo, e a sorte soma em vez de
+        // multiplicar sozinha.
+        e.setWeight(getXpWeight() * (0.5 + Engine.RAND.nextDouble() * 0.5) * (0.5 + Game.getPlayer().chanceDeSorte()));
         Game.getMap().put(e);
         e.getPhysical().addForce("move", 1, Math.PI*2);
     }

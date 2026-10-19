@@ -37,6 +37,47 @@ public abstract class GameObject {
         return this.ID;
     }
 
+    /**
+     * Posicao no tick anterior, para o render interpolar.
+     *
+     * A logica anda a 60 Hz; o quadro pode sair a 165. Desenhar sempre na posicao
+     * do ultimo tick faz o jogo inteiro PARECER 60 FPS num monitor rapido, por
+     * mais quadros que saiam. O Game desloca o desenho de cada objeto da posicao
+     * atual para o ponto entre a anterior e a atual — ver deslocamentoNoQuadro.
+     */
+    private double antX = Double.NaN, antY = Double.NaN;
+
+    public void guardarPosicaoAnterior() {
+        this.antX = this.x;
+        this.antY = this.y;
+    }
+
+    /**
+     * Quanto mover o desenho para ele cair na posicao interpolada, {dx, dy}.
+     * Zero para quem acabou de nascer ou se teletransportou (salto maior que dois
+     * tiles): interpolar um teleporte desenharia o objeto riscando a tela.
+     */
+    public double[] deslocamentoNoQuadro(float alpha) {
+        if (Double.isNaN(antX)) {
+            return new double[]{0, 0};
+        }
+        double dx = x - antX;
+        double dy = y - antY;
+        double limite = 32 * com.retronova.engine.Configs.GameScale();
+        if (dx * dx + dy * dy > limite * limite) {
+            return new double[]{0, 0};
+        }
+        return new double[]{-(1 - alpha) * dx, -(1 - alpha) * dy};
+    }
+
+    /** Quanto andou no ultimo tick, em pixels do mundo. Zero se acabou de nascer. */
+    public double passoNoTick() {
+        if (Double.isNaN(antX)) {
+            return 0;
+        }
+        return Math.hypot(x - antX, y - antY);
+    }
+
     public double getX() {
         return this.x;
     }
@@ -66,7 +107,9 @@ public abstract class GameObject {
     }
 
     public BufferedImage getSprite() {
-        return this.sheet.getSprite();
+        // Copia que vai para a GPU: o quadro cru do Sheeter e um recorte, e
+        // recorte o Java2D desenha sempre na CPU. Ver Acelerada.
+        return com.retronova.engine.graphics.Acelerada.de(this.sheet.getSprite());
     }
 
     public void setX(double newX) {

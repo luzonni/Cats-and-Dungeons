@@ -25,7 +25,7 @@ public class MouseVampire extends Enemy {
         setSolid();
         setLife(60);
         setXpWeight(7d);
-        setSpeed(1.6);
+        setSpeed(2.4);
         // RAPIDO E FRACO: preparo curto, dano baixo, sem empurrao. Ele pressiona,
         // nao pune — e o contraste com o escudeiro e o que faz o jogador precisar
         // OLHAR qual dos dois esta carregando.
