@@ -275,6 +275,12 @@ public class Game implements Activity {
         }
         guardarPosicoes();
         quadroDoGato++;
+        if (depoisDeUmSegundo != null && quadroDoGato > 90 && !Engine.pausado()) {
+            Runnable r = depoisDeUmSegundo;
+            depoisDeUmSegundo = null;
+            r.run();
+            return;
+        }
         hud.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause());
@@ -363,7 +369,9 @@ public class Game implements Activity {
         g.setColor(ROCHA);
         g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
         renderWorld(g);
+        long t0 = System.nanoTime();
         hud.render(g);
+        com.retronova.engine.Desempenho.secao("hud", System.nanoTime() - t0);
         apagarNaMorte(g);
     }
 
@@ -393,13 +401,26 @@ public class Game implements Activity {
     private void renderWorld(Graphics2D g) {
         Graphics2D cam = (Graphics2D) g.create();
         cam.setTransform(Camera.getAt());
+        long t = System.nanoTime();
         renderMap(cam);
+        t = medir("mapa", t);
         List<Entity> entidades = map.getEntities();
         com.retronova.game.map.Atmosfera.renderSombras(cam, entidades, alphaDoMundo());
+        t = medir("sombras", t);
         renderEntities(cam);
+        t = medir("entidades", t);
         renderParticles(cam);
+        t = medir("particulas", t);
         cam.dispose();
         com.retronova.game.map.Atmosfera.renderLuz(g, entidades, alphaDoMundo());
+        medir("luz", t);
+    }
+
+    /** Registra quanto o trecho levou e devolve o instante atual. */
+    private static long medir(String trecho, long desde) {
+        long agora = System.nanoTime();
+        com.retronova.engine.Desempenho.secao(trecho, agora - desde);
+        return agora;
     }
 
     private void renderMap(Graphics2D g) {
@@ -564,6 +585,9 @@ public class Game implements Activity {
         g.scale(sx, sy);
         g.translate(-pesX, -pesY);
     }
+
+    /** Gancho do modo de bancada (Engine, -Dcd.bench): roda uma vez, no tick 90. */
+    public static Runnable depoisDeUmSegundo;
 
     /** Lado para o qual o gato olhava, e quando ele virou — para animar a virada. */
     private int ladoAnterior = 0;

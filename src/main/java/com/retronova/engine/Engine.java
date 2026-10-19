@@ -66,6 +66,23 @@ public class Engine implements Runnable {
         SpriteSheet.load(Engine.resPath.substring(0, Engine.resPath.length() - 1), Configs.GameScale());
         Engine.window = new Window(GameTag);
         heapActivity(new Menu());
+        // BANCADA (-Dcd.bench=true): entra direto numa arena com o Finn, para medir
+        // desempenho sem navegar menus. Espaco 0 nao e um espaco de save valido —
+        // nada e gravado nem apagado; as corridas do jogador ficam intactas.
+        if (Boolean.getBoolean("cd.bench")) {
+            heapActivity(new com.retronova.game.Game(2,
+                    new com.retronova.game.map.arena.Arena(1, 4), 0));
+            // Telas por cima, para conferir o desenho delas sem jogar ate elas.
+            // Abrem depois de um segundo de partida: a chegada do gato fecha
+            // qualquer pausa aberta antes dela.
+            if (Boolean.getBoolean("cd.roleta")) {
+                com.retronova.game.Game.depoisDeUmSegundo =
+                        () -> pause(new com.retronova.game.map.arena.Roleta());
+            } else if (Boolean.getBoolean("cd.nivel")) {
+                com.retronova.game.Game.depoisDeUmSegundo =
+                        () -> pause(new com.retronova.game.map.arena.SubirDeNivel());
+            }
+        }
         start();
         Debugging.init();
     }
@@ -359,6 +376,7 @@ public class Engine implements Runnable {
                 //Agora recupera o atraso executando ticks em sequência.
                 int ticksExecutados = 0;
                 while (delta_HZ >= 1 && ticksExecutados < MAX_CATCHUP) {
+                    long inicioTick = System.nanoTime();
                     this.tick();
                     if (ACTIVITY_RUNNING && !stackActivities.isEmpty()) {
                         getACTIVITY().tick();
@@ -369,6 +387,7 @@ public class Engine implements Runnable {
                     Hz++;
                     delta_HZ--;
                     ticksExecutados++;
+                    Desempenho.tick(System.nanoTime() - inicioTick, ticksExecutados);
                 }
                 //Atraso grande demais para recuperar: desiste dele em vez de
                 //acumular dívida e entrar em espiral.
@@ -386,6 +405,7 @@ public class Engine implements Runnable {
                 // (pulando uma atualizacao de vez em quando — o engasgo de volta).
                 if (delta_FPS >= 1 || vsync) {
                     alpha = (float) Math.max(0, Math.min(1, delta_HZ));
+                    long inicioRender = System.nanoTime();
                     Graphics2D g = getGraphics();
                     if (g != null) {
                         if (!stackActivities.isEmpty()) {
@@ -397,6 +417,7 @@ public class Engine implements Runnable {
                         render(g);
                         frames++;
                         desenhou = true;
+                        Desempenho.quadro(System.nanoTime() - inicioRender);
                     }
                     //DESCONTA um quadro, não zera. Zerando, a fração que sobrava
                     //de cada volta era jogada fora e o laço nunca alcançava o
