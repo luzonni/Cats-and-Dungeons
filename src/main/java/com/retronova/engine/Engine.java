@@ -100,6 +100,11 @@ public class Engine implements Runnable {
         }
     }
 
+    /** Ha alguma tela por cima do jogo (pausa, cartas, roleta)? */
+    public static boolean pausado() {
+        return Engine.OverView != null;
+    }
+
     /**
      * Chame essa função com uma UI para pausar a activity atual e sobrepor outra activity
      * Pausar a activity atual não impede a renderização, apenas os ticks...

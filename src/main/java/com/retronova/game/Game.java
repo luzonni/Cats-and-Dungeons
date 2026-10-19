@@ -280,6 +280,12 @@ public class Game implements Activity {
         if(KeyBoard.KeyPressed("E")) {
             inter.open();
         }
+        // Nivel novo: abre a escolha de atributo. Um por vez — com varios niveis
+        // pendentes, ela reabre a cada tick ate gastar todos.
+        if (player.niveisPendentes() > 0 && !player.morrendo() && !Engine.pausado()) {
+            Engine.pause(new com.retronova.game.map.arena.SubirDeNivel());
+            return;
+        }
         map.tick();
         map.depth();
         List<Entity> entities = map.getEntities();

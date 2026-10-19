@@ -980,17 +980,37 @@ public class Player extends Entity {
         while(getXp() >= getXpLength()) { //caso ganhe um xp com peso muito alto, o nivel vai aumentar até o chegar no nivel considerado
             this.XP -= getXpLength();
             this.level++;
+            // Cada nivel vira um ponto de atributo para gastar. A tela abre no
+            // proximo tick do jogo — ver Game.tick e SubirDeNivel.
+            this.niveisPendentes++;
         }
+    }
+
+    /** Niveis ganhos cujo ponto de atributo ainda nao foi escolhido. */
+    private int niveisPendentes;
+
+    public int niveisPendentes() {
+        return niveisPendentes;
+    }
+
+    public void gastarNivel() {
+        niveisPendentes = Math.max(0, niveisPendentes - 1);
     }
 
     public double getXp() {
         return this.XP;
     }
 
+    /**
+     * Quanto XP falta para o proximo nivel.
+     *
+     * Curta no comeco e crescendo devagar, no ritmo de horda: os primeiros niveis
+     * saem em poucas mortes, para o bau aparecer cedo e o jogador entender o
+     * laco. Antes o primeiro nivel pedia 75 e o segundo 157 — com o rato dando
+     * dois ou tres de XP, era nivel a cada minuto, e subir nao era evento.
+     */
     public double getXpLength() {
-        if(getLevel() == 0)
-            return 75;
-        return getLevel() * 23.74 + 100 * getLevel()*1.33;
+        return 15 + getLevel() * 10 + getLevel() * getLevel() * 0.8;
     }
 
     public int getMoney() {

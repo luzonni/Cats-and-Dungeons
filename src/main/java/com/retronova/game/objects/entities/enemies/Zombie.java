@@ -51,6 +51,7 @@ public class Zombie extends Enemy {
         super(ID, x, y, 25);
         loadSprites("mousezombie");
         setLife(40);
+        setXpWeight(5d);
         setSpeed(1.8);
         setWidth(0.5);
         setHeight(0.8);
