@@ -23,7 +23,7 @@ public class MouseExplode extends Enemy {
         loadSprites("ratexplode");
         setDamage(33);
         setSolid();
-        setSpeed(2.1d);
+        setSpeed(1.5d);
         setLife(200);
         setXpWeight(12.4d);
     }
@@ -48,7 +48,7 @@ public class MouseExplode extends Enemy {
         // nascia com duzentos de vida e trinta e tres de dano e ficava plantado ate
         // alguem encostar. Como as ondas da sala doze em diante sao feitas dele,
         // metade do jogo era um campo de estatuas.
-        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        double radians = anguloDeCerco();   // fecha o cerco em vez de vir em fila
         getPhysical().addForce("move", getSpeed(), radians);
         if (this.getDistance(player) < GameObject.SIZE() * ALCANCE) {
             acender();

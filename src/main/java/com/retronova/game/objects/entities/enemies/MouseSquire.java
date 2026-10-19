@@ -24,7 +24,7 @@ public class MouseSquire extends Enemy {
         loadSprites("mousesquire");
         setSolid();
         setLife(70);
-        setSpeed(3);
+        setSpeed(2.0);
         // Ver Skeleton para o porque. Aqui havia ainda Poison 1.0 — IMUNIDADE
         // total —, e o arco anuncia "adiciona veneno": o efeito impresso na arma
         // valia exatamente zero contra este bicho, sem nada dizer ao jogador.
@@ -48,7 +48,7 @@ public class MouseSquire extends Enemy {
 
     public void moveIA() {
         Player player = Game.getPlayer();
-        double radians = Math.atan2(player.getY() - getY(), player.getX() - getX());
+        double radians = anguloDeCerco();   // fecha o cerco em vez de vir em fila
         getPhysical().addForce("move", getSpeed(), radians);
 
     }
