@@ -45,4 +45,9 @@ public class ArrowEletric extends Projetil {
     public void render(Graphics2D g) {
         Rotate.apontar(getSprite(), meioX(), meioY(), angle, Rotate.DIAGONAL, g);
     }
+
+    @Override
+    protected Color corDoRastro() {
+        return new Color(120, 220, 255);
+    }
 }

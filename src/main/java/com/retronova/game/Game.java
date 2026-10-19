@@ -274,6 +274,7 @@ public class Game implements Activity {
             seconds++;
         }
         guardarPosicoes();
+        quadroDoGato++;
         hud.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
             Engine.pause(new Pause());
@@ -473,9 +474,17 @@ public class Game implements Activity {
             if (entity instanceof Enemy elite) {
                 elite.renderAura(g);
             }
+            if (entity instanceof com.retronova.game.objects.entities.utilities.Projetil tiro) {
+                tiro.renderRastro(g);
+            }
             if (entity instanceof Enemy bicho) {
                 java.awt.geom.AffineTransform antes = g.getTransform();
                 animarBicho(g, bicho);
+                entity.render(g);
+                g.setTransform(antes);
+            } else if (entity == player && !player.morrendo()) {
+                java.awt.geom.AffineTransform antes = g.getTransform();
+                animarGato(g, player);
                 entity.render(g);
                 g.setTransform(antes);
             } else {
@@ -553,6 +562,50 @@ public class Game implements Activity {
         g.translate(pesX, pesY - quique);
         g.rotate(inclina);
         g.scale(sx, sy);
+        g.translate(-pesX, -pesY);
+    }
+
+    /** Lado para o qual o gato olhava, e quando ele virou — para animar a virada. */
+    private int ladoAnterior = 0;
+    private long viradaEm = -100;
+    private long quadroDoGato;
+
+    /**
+     * O gato ganha peso sem mexer na passada desenhada na folha.
+     *
+     * A folha ja tem o balanco da caminhada (cabeca desce no contato, sobe na
+     * passada), e deslizar o sprite inteiro desfaria isso — o rabo e a pata
+     * apoiada sairiam do chao. Entao aqui so entra o que a folha NAO tem: a
+     * inclinacao para o lado em que ele corre, um achata-estica leve ancorado nos
+     * pes, e a VIRADA — antes o espelho trocava num quadro so, e o gato "piscava"
+     * de lado; agora ele se aperta e abre, como quem gira o corpo.
+     */
+    private void animarGato(Graphics2D g, Player gato) {
+        int s = com.retronova.engine.Configs.GameScale();
+        double t = System.nanoTime() / 1e9;
+        boolean parado = Engine.pausado();
+        double dx = -gato.deslocamentoNoQuadro(0f)[0];
+        double andando = parado ? 0 : Math.min(1, gato.passoNoTick() / (0.8 * s));
+
+        int lado = gato.getLadoDoPasso();
+        if (lado != ladoAnterior) {
+            if (ladoAnterior != 0) {
+                viradaEm = quadroDoGato;
+            }
+            ladoAnterior = lado;
+        }
+        double virada = Math.min(1, (quadroDoGato - viradaEm + Engine.alpha()) / 7.0);
+        double aperto = 0.35 + 0.65 * (1 - Math.pow(1 - virada, 3));   // ease-out
+
+        double estica = 1 + 0.045 * Math.sin(t * 15) * andando
+                + 0.02 * Math.sin(t * 2.6) * (1 - andando);             // respirar parado
+        double inclina = parado ? 0 : Math.max(-1, Math.min(1, dx / (2.0 * s))) * 0.07;
+
+        double pesX = gato.getX() + gato.getWidth() / 2.0;
+        double pesY = gato.getY() + gato.getHeight();
+        g.translate(pesX, pesY);
+        g.rotate(inclina);
+        g.scale(aperto / estica, estica);
         g.translate(-pesX, -pesY);
     }
 
