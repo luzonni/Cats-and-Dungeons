@@ -171,7 +171,7 @@ public final class Atmosfera {
             float forca;
             Color cor = null;  // brilho colorido por cima, alem de abrir a luz
             if (e instanceof Player) {
-                raio = 7.5; forca = 1f;
+                raio = 9.5; forca = 1f;   // visao mais ampla com a camera afastada
             } else if (e instanceof Torch || e instanceof Brazier) {
                 raio = 4.5; forca = 0.95f; cor = new Color(255, 150, 60);
             } else if (e instanceof Bau) {
