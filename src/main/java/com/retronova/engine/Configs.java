@@ -254,11 +254,18 @@ public class Configs {
     private static final int REF_W = 320, REF_H = 180;
 
     /**
-     * Escala da interface. Zero significa automática: a UI acompanha o tamanho
-     * da janela em vez de ficar minúscula em telas grandes.
+     * Escala da interface, no estilo do "GUI Scale" do Minecraft: a preferência
+     * é um tamanho 1, 2 ou 3 (0 = automático, igual ao 2), e não o multiplicador
+     * cru. O tamanho é relativo à janela — 3 é o maior múltiplo que cabe, cada
+     * passo abaixo tira um —, então "1" continua legível num monitor 4K.
+     * Valores antigos fora de 0..3 (o multiplicador cru de antes) viram automático.
      */
     public static int UiScale() {
-        return UiScaleSetting() > 0 ? UiScaleSetting() : autoUiScale();
+        int tamanho = UiScaleSetting();
+        if (tamanho < 1 || tamanho > 3) {
+            tamanho = 2;
+        }
+        return Math.max(2, autoUiScale() - (3 - tamanho));
     }
 
     /** Valor cru da preferência, sem resolver o automático. 0 = automática. */

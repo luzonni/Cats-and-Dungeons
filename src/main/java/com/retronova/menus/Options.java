@@ -38,9 +38,9 @@ import java.util.List;
 public class Options implements Activity {
 
     private static final int[] FPS_VALORES = {30, 60, 120, 144, 165, 240};
-    /** 0 = automática: a escala acompanha o tamanho da janela. */
-    private static final int[] ESCALAS_UI = {0, 2, 3, 4, 5, 6};
-    private static final String[] ROTULOS_ESCALA = {"Auto", "2", "3", "4", "5", "6"};
+    /** Tamanhos de GUI, como no Minecraft. 0 = automático. Ver Configs.UiScale(). */
+    private static final int[] ESCALAS_UI = {0, 1, 2, 3};
+    private static final String[] ROTULOS_ESCALA = {"Auto", "1", "2", "3"};
 
     private final String[] abas = {"Video", "Audio", "Interface"};
     private final List<List<OptionRow>> linhas = new ArrayList<>();
@@ -165,9 +165,9 @@ public class Options implements Activity {
                 .desc("Track for normal arenas. Plays here so you can compare. Boss fights have their own."));
 
         List<OptionRow> ui = new ArrayList<>();
-        ui.add(OptionRow.cycle("Text size", Options::indiceEscala,
+        ui.add(OptionRow.cycle("GUI size", Options::indiceEscala,
                 v -> Configs.setUiScale(ESCALAS_UI[v]), ROTULOS_ESCALA)
-                .desc("Scale of menus, buttons and text. Auto follows the window size."));
+                .desc("Size of menus, buttons and text: 1 small, 2 normal, 3 large. Auto = 2."));
         ui.add(OptionRow.stepper("HUD size", Configs::HudScale, Configs::setHudScale, 2, 6, 1)
                 .desc("Scale of the in-game interface: life bar, hotbar, inventory and shop."));
         ui.add(OptionRow.toggle("Show hitboxes",
