@@ -871,7 +871,7 @@ public class Player extends Entity {
         }
         this.desdeODano = 0;
         if (hasModifier(Modifiers.Dodge)) {
-            double percent = valueModifier(Modifiers.Dodge) + getLuck() * 0.10d;
+            double percent = valueModifier(Modifiers.Dodge) + chanceDeSorte() * 0.10d;
             double a = Engine.RAND.nextDouble(1d);
             if (a <= percent) {
                 Game.getMap().put(new Word("Dodge", getX() + getWidth() / 2d, getY() + getHeight() / 2d, 1));
@@ -899,6 +899,28 @@ public class Player extends Entity {
             return l;
         }
         return luck;
+    }
+
+    /**
+     * A sorte em PONTOS (o que o jogador ve e sobe) convertida em chance de 0 a 1.
+     *
+     * Pontos e nao porcentagem para escalar sem teto: dez pontos dao 50%, vinte
+     * dao 67%, cem dao 91% — cada ponto vale um pouco menos que o anterior, e
+     * nenhuma quantidade chega a 100%. Assim da para empilhar sorte a corrida
+     * inteira sem que ela vire certeza e quebre esquiva, bau e dano.
+     */
+    public double chanceDeSorte() {
+        double pontos = getLuck();
+        return pontos / (pontos + 10);
+    }
+
+    /**
+     * Chance de um bicho comum largar bau ao morrer. Mesma curva, mais lenta:
+     * seis pontos dao ~5,7%, trinta dao ~23%.
+     */
+    public double chanceDeBau() {
+        double pontos = getLuck();
+        return pontos / (pontos + 100);
     }
 
     public void setRangeOfColect(double range){

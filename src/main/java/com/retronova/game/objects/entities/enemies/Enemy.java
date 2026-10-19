@@ -287,7 +287,8 @@ public abstract class Enemy extends Entity implements Nascente {
             jogador.reagirAoGolpe();
         }
         Player player = Game.getPlayer();
-        damage *= Engine.RAND.nextDouble() + player.getLuck();
+        // Variacao do golpe: 75% a 125%, mais ate +50% conforme a sorte.
+        damage *= 0.75 + Engine.RAND.nextDouble() * 0.5 + player.chanceDeSorte() * 0.5;
         // A ARMADURA COME O GOLPE ANTES DA VIDA, e o que sobra passa.
         //
         // O EXCEDENTE PASSAR e deliberado: sem isso, um golpe enorme contra uma
@@ -345,9 +346,11 @@ public abstract class Enemy extends Entity implements Nascente {
     }
 
     private void dropXp() {
-        double luck = Game.getPlayer().getLuck();
         Xp e = new Xp(getX(), getY());
-        e.setWeight(getXpWeight() * Engine.RAND.nextDouble() * luck);
+        // Menos sorteio: antes ia de zero ao maximo, e metade das mortes rendia
+        // quase nada. Agora vai de metade ao maximo, e a sorte soma em vez de
+        // multiplicar sozinha.
+        e.setWeight(getXpWeight() * (0.5 + Engine.RAND.nextDouble() * 0.5) * (0.5 + Game.getPlayer().chanceDeSorte()));
         Game.getMap().put(e);
         e.getPhysical().addForce("move", 1, Math.PI*2);
     }

@@ -579,8 +579,8 @@ public class Personagens implements Activity {
                         p.getDamage() / teto(20, Player::getDamage)),
                 new Atributo("SPD", String.format(java.util.Locale.ROOT, "%.1f", p.getSpeed()),
                         p.getSpeed() / teto(5, Player::getSpeed)),
-                new Atributo("LUCK", Math.round(p.getLuck() * 100) + "%",
-                        p.getLuck() / teto(1, Player::getLuck)));
+                new Atributo("LUCK", String.valueOf(Math.round(p.getLuck())),
+                        p.getLuck() / teto(10, Player::getLuck)));
     }
 
     /**

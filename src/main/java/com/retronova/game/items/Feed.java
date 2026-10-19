@@ -11,7 +11,7 @@ public class Feed extends Consumable {
 
     Feed(int id) {
         super(id, "Feed", "feed");
-        addSpecifications("Add 10 points of life", "Less 10% os luck", "plus +1 bag slot", "plus +1 hotbar slotf");
+        addSpecifications("Add 10 points of life", "Minus 1 luck point", "plus +1 bag slot", "plus +1 hotbar slotf");
         if(Engine.RAND.nextBoolean())
             plusIndexSprite();
     }
@@ -20,7 +20,7 @@ public class Feed extends Consumable {
     public void consume() {
         Player player = Game.getPlayer();
         player.addModifier(Modifiers.Life, 10);
-        player.addModifier(Modifiers.Luck, -0.1);
+        player.addModifier(Modifiers.Luck, -1);   // um ponto de sorte
         player.getInventory().plusBag(1);
         player.getInventory().plusHotbar(1);
         player.addPassive(this);

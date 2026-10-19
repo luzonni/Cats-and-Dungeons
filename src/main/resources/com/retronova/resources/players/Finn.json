@@ -11,7 +11,7 @@
     "life": 55,
     "damage": 9,
     "speed": 3.4,
-    "luck": 0.9,
+    "luck": 9,
     "attackSpeed": 18,
     "range": 9,
     "bagSize": 5,
