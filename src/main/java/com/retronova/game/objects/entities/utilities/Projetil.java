@@ -115,17 +115,29 @@ public abstract class Projetil extends Utility {
      * projetil so o cola girado entre a cauda e a ponta — um quad de textura na
      * GPU. O suave vem do degrade e da filtragem bilinear, de graca.
      */
+    /** Disparado por um inimigo: pode ferir o gato. */
+    public boolean hostil() {
+        return dono instanceof com.retronova.game.objects.entities.enemies.Enemy;
+    }
+
     public void renderRastro(java.awt.Graphics2D g) {
+        double px = meioX(), py = meioY();
+        // Tiro de inimigo leva brilho vermelho na ponta, mesmo parado: e o mesmo
+        // codigo de cor das sombras e bordas dos bichos — vermelho machuca.
+        if (hostil()) {
+            int r = (int) (larguraEmPixels() * 1.6);
+            g.setColor(new java.awt.Color(255, 40, 50, 90));
+            g.fillOval((int) px - r, (int) py - r, r * 2, r * 2);
+        }
         if (gravados < 2) {
             return;
         }
-        double px = meioX(), py = meioY();
         double cx = rastroX[gravados - 1], cy = rastroY[gravados - 1];
         double comprimento = Math.hypot(px - cx, py - cy);
         if (comprimento < 1) {
             return;
         }
-        java.awt.image.BufferedImage risco = risco(corDoRastro());
+        java.awt.image.BufferedImage risco = risco(hostil() ? new java.awt.Color(255, 60, 60) : corDoRastro());
         double largura = larguraEmPixels() * 0.7;
         java.awt.geom.AffineTransform antes = g.getTransform();
         Object filtro = g.getRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION);
