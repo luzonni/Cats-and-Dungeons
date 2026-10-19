@@ -331,6 +331,65 @@ public abstract class Enemy extends Entity implements Nascente {
         return currentSprite;
     }
 
+    // ------------------------------------------------------------ evolucao
+
+    /**
+     * Bicho de elite: mais vida, mais XP, aura dourada, e larga um bau ao morrer.
+     *
+     * E o pico da horda. No meio de cem ratos iguais, um que brilha e um alvo —
+     * o jogador muda de rota para ir atras dele, e isso e uma decisao a cada
+     * minuto em vez de so andar em circulo.
+     */
+    private boolean elite;
+
+    public void tornarElite() {
+        if (elite) {
+            return;
+        }
+        elite = true;
+        escalarVida(5);
+        setXpWeight(getXpWeight() * 6);
+        setDamage(getDamage() * 1.3);
+        this.danoDoGolpe *= 1.3;
+    }
+
+    public boolean elite() {
+        return elite;
+    }
+
+    /**
+     * A horda endurece com o tempo dentro da onda.
+     *
+     * Antes a dureza so mudava de SALA para sala: dentro da mesma onda, o rato do
+     * segundo cinquenta era igual ao do segundo um, e o gato, que sobe de nivel
+     * no meio da briga, ficava cada vez mais folgado. Agora os bichos crescem
+     * junto — mais vida, mais dano e um pouco mais de pressa a cada segundo.
+     */
+    public void evoluir(int segundos) {
+        if (segundos <= 0) {
+            return;
+        }
+        escalarVida(1 + 0.025 * segundos);
+        double porDano = 1 + 0.01 * segundos;
+        this.danoDoGolpe *= porDano;
+        setDamage(getDamage() * porDano);
+        setSpeed(getSpeed() * Math.min(1.3, 1 + 0.005 * segundos));
+    }
+
+    /** Aura da elite, desenhada por baixo do corpo. */
+    public void renderAura(Graphics2D g) {
+        if (!elite) {
+            return;
+        }
+        float t = (System.nanoTime() % 1_000_000_000_000L) / 1e9f;
+        int alfa = 90 + (int) (50 * Math.sin(t * 6));
+        int r = Math.max(getWidth(), getHeight());
+        int cx = (int) getX() + getWidth() / 2;
+        int cy = (int) getY() + getHeight() / 2;
+        g.setColor(new Color(255, 200, 60, Math.max(0, Math.min(255, alfa))));
+        g.fillOval(cx - r, cy - r, r * 2, r * 2);
+    }
+
     protected void setXpWeight(double weight) {
         this.xpWeight = weight;
     }
@@ -343,6 +402,11 @@ public abstract class Enemy extends Entity implements Nascente {
     public void die() {
         this.disappear();
         dropXp();
+        // O BAU VEM DA SORTE. Elite larga sempre; bicho comum, conforme os pontos
+        // de sorte do gato (ver Player.chanceDeBau). Mais sorte, mais roleta.
+        if (elite || Engine.RAND.nextDouble() < Game.getPlayer().chanceDeBau()) {
+            Game.getMap().put(new com.retronova.game.objects.entities.utilities.Bau(getX(), getY()));
+        }
     }
 
     private void dropXp() {

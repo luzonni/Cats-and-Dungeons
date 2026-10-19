@@ -447,6 +447,9 @@ public class Game implements Activity {
                     && !chegando.corpoVisivel()) {
                 continue;                 // so o portal, ainda: o corpo vem depois
             }
+            if (entity instanceof Enemy elite) {
+                elite.renderAura(g);
+            }
             entity.render(g);
             if (entity == player && !player.morrendo()) {
                 com.retronova.game.objects.entities.Arsenal.render(g, player);

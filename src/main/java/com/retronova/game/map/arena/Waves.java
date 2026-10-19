@@ -150,6 +150,12 @@ public class Waves implements Runnable {
                 bicho.escalarPara(this.nivel);
                 if (!chefe) {
                     bicho.escalarVida(VIDA_HORDA);
+                    bicho.evoluir(getSeconds());
+                    // Elite: 3% no inicio da onda, subindo ate ~9% no fim.
+                    double chanceElite = 0.03 + 0.001 * getSeconds();
+                    if (Engine.RAND.nextDouble() < chanceElite) {
+                        bicho.tornarElite();
+                    }
                 }
             }
             lista.add(e);
