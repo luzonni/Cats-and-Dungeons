@@ -287,6 +287,9 @@ public class Game implements Activity {
             return;
         }
         map.tick();
+        if (!player.morrendo()) {
+            com.retronova.game.objects.entities.Arsenal.tick(player);
+        }
         map.depth();
         List<Entity> entities = map.getEntities();
         for(int i = 0; i < entities.size(); i++) {
@@ -445,6 +448,9 @@ public class Game implements Activity {
                 continue;                 // so o portal, ainda: o corpo vem depois
             }
             entity.render(g);
+            if (entity == player && !player.morrendo()) {
+                com.retronova.game.objects.entities.Arsenal.render(g, player);
+            }
             if(entity instanceof Enemy enemy) {
                 enemy.renderLife(g);
             }

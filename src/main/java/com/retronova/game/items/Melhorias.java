@@ -150,6 +150,9 @@ public class Melhorias {
             saida.add(new int[]{BASE_PONTOS + e.getKey().ordinal(), e.getValue(),
                     (int) Math.round(soma * 1000)});
         }
+        for (Map.Entry<ArmaExtra, Integer> e : armas.entrySet()) {
+            saida.add(new int[]{BASE_ARMAS + e.getKey().ordinal(), e.getValue(), 0});
+        }
         return saida.toArray(new int[0][]);
     }
 
@@ -177,6 +180,31 @@ public class Melhorias {
         return pontos.getOrDefault(atributo, 0);
     }
 
+    // ------------------------------------------------------- armas extras
+
+    /** Armas extras e o nivel de cada uma. Gravadas com BASE_ARMAS + ordinal. */
+    private static final int BASE_ARMAS = 2000;
+    private final Map<ArmaExtra, Integer> armas = new EnumMap<>(ArmaExtra.class);
+
+    public int nivel(ArmaExtra arma) {
+        return armas.getOrDefault(arma, 0);
+    }
+
+    public void subirArma(ArmaExtra arma) {
+        armas.merge(arma, 1, (a, b) -> Math.min(ArmaExtra.NIVEL_MAXIMO, a + b));
+    }
+
+    /** Armas que ainda podem sair na roleta: as que nao chegaram ao maximo. */
+    public List<ArmaExtra> armasDisponiveis() {
+        List<ArmaExtra> lista = new ArrayList<>();
+        for (ArmaExtra a : ArmaExtra.values()) {
+            if (nivel(a) < ArmaExtra.NIVEL_MAXIMO) {
+                lista.add(a);
+            }
+        }
+        return lista;
+    }
+
     /**
      * Devolve o que estava gravado.
      *
@@ -194,6 +222,14 @@ public class Melhorias {
                 continue;
             }
             int ordinal = linha[0];
+            if (ordinal >= BASE_ARMAS) {
+                ArmaExtra[] todasArmas = ArmaExtra.values();
+                int a = ordinal - BASE_ARMAS;
+                if (a < todasArmas.length && linha[1] > 0) {
+                    armas.put(todasArmas[a], Math.min(ArmaExtra.NIVEL_MAXIMO, linha[1]));
+                }
+                continue;
+            }
             if (ordinal >= BASE_PONTOS) {
                 Modifiers[] mods = Modifiers.values();
                 int m = ordinal - BASE_PONTOS;
