@@ -23,7 +23,7 @@ public class MouseExplode extends Enemy {
         loadSprites("ratexplode");
         setDamage(33);
         setSolid();
-        setSpeed(1.3d);
+        setSpeed(2.1d);
         setLife(200);
         setXpWeight(12.4d);
     }
