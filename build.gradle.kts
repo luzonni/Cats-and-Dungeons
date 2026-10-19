@@ -52,6 +52,9 @@ dependencies {
 
 application {
     mainClass = "com.retronova.Main"
+    // VSync: a API que faz o quadro esperar o monitor (ExtendedBufferCapabilities)
+    // mora num pacote interno do java.desktop. Ver Engine.getGraphics.
+    applicationDefaultJvmArgs = listOf("--add-exports=java.desktop/sun.java2d.pipe.hw=ALL-UNNAMED")
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -142,6 +145,7 @@ tasks.register<Jar>("fatJar") {
     archiveClassifier = "all"
     manifest {
         attributes["Main-Class"] = application.mainClass.get()
+        attributes["Add-Exports"] = "java.desktop/sun.java2d.pipe.hw"
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(sourceSets.main.get().output)

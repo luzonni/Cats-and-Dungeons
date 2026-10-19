@@ -38,6 +38,7 @@ public class Configs {
         DEFAULTS.clear();
         DEFAULTS.put("vignette", true);
         DEFAULTS.put("lighting", true);
+        DEFAULTS.put("vsync", true);
         DEFAULTS.put("fullscreen", false);
         DEFAULTS.put("SCALE", 4);
         DEFAULTS.put("UISCALE", 0);        // 0 = automática, ver autoUiScale()
@@ -231,6 +232,18 @@ public class Configs {
     public static void setLighting(boolean lighting) {
         VALUES.put("lighting", lighting);
         update();
+    }
+
+    /** Quadro sincronizado com o monitor. Ver Engine.criarComVSync. */
+    public static boolean VSync() {
+        Object v = VALUES.get("vsync");
+        return v == null || (boolean) v;
+    }
+
+    public static void setVSync(boolean vsync) {
+        VALUES.put("vsync", vsync);
+        update();
+        Engine.invalidateBuffer();   // o buffer e recriado no proximo quadro
     }
 
     public static boolean Fullscreen() {

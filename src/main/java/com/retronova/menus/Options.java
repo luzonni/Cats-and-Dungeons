@@ -133,6 +133,9 @@ public class Options implements Activity {
         video.add(OptionRow.toggle("Vignette",
                 () -> Configs.Vignette() ? 1 : 0, v -> Configs.setVignette(v != 0))
                 .desc("Darkens the corners of the screen during gameplay, to focus the eye on the center."));
+        video.add(OptionRow.toggle("VSync",
+                () -> Configs.VSync() ? 1 : 0, v -> Configs.setVSync(v != 0))
+                .desc("Shows each frame exactly when the monitor refreshes. Smoothest motion; overrides the frame rate limit."));
         video.add(OptionRow.toggle("Lighting",
                 () -> Configs.Lighting() ? 1 : 0, v -> Configs.setLighting(v != 0))
                 .desc("Soft shadows under everything and dynamic light from the cat, torches and chests."));
