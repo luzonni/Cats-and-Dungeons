@@ -331,6 +331,11 @@ public class Game implements Activity {
                 // dez vezes deixa de valer no primeiro bicho novo.
                 if (bicho.getDistance(player)
                         > Enemy.COLEIRA_EM_TILES * com.retronova.game.objects.GameObject.SIZE()) {
+                    // Na arena aberta, quem ficou para tras volta para perto do
+                    // gato (fora da tela) em vez de ficar parado la longe.
+                    if (bicho.alvoAutomatico() && map instanceof com.retronova.game.map.arena.Arena arena) {
+                        arena.trazerDePerto(bicho);
+                    }
                     continue;
                 }
             }

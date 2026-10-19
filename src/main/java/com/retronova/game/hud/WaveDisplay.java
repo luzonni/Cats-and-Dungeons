@@ -58,7 +58,13 @@ public class WaveDisplay {
 
         int xLevel = x + 25 * Configs.HudScale();
         int yLevel = y + 7 * Configs.HudScale();
-        String level = "Level: " + (Game.getGame().getLevel()+1);
+        // Na corrida sem fim nao ha sala nem fatia de onda: o que importa e quanto
+        // tempo o gato aguenta e quantos ja derrubou.
+        boolean semFim = Game.getWave().semFim();
+        int seg = Game.getWave().getSeconds();
+        String level = semFim
+                ? String.format("Time: %02d:%02d", seg / 60, seg % 60)
+                : "Level: " + (Game.getGame().getLevel()+1);
         g.setColor(Palette.DEEP);
         g.drawString(level, xLevel + Configs.HudScale(), yLevel + Configs.HudScale());
         g.setColor(Color.white);
@@ -66,7 +72,9 @@ public class WaveDisplay {
 
         int xCount = x + 25 * Configs.HudScale();
         int yCount = y + 13 * Configs.HudScale();
-        String count = "Spawns: " + Game.getWave().currentSpawn() + " / " + Game.getWave().amountSpawns();
+        String count = semFim
+                ? "Kills: " + Game.getWave().abates()
+                : "Spawns: " + Game.getWave().currentSpawn() + " / " + Game.getWave().amountSpawns();
         g.setColor(Palette.DEEP);
         g.drawString(count, xCount + Configs.HudScale(), yCount + Configs.HudScale());
         g.setColor(Color.white);

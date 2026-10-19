@@ -74,7 +74,11 @@ public class Arena extends GameMap {
      * e era.
      */
     public Arena(int difficult, int nivel) {
-        super(planta(difficult, nivel));
+        // A dificuldade normal e a cisterna GERADA: maior e diferente a cada sala.
+        // As outras seguem nos mapas desenhados a mao. Ver Gerador.
+        super(difficult == 0
+                ? Gerador.cisterna(Engine.RAND.nextLong())
+                : GameMap.deArquivo(planta(difficult, nivel)));
         this.ended = false;
         this.waves = new Waves(this, nivel, difficult);
         Sound.stop(Musics.Room);
@@ -360,6 +364,8 @@ public class Arena extends GameMap {
         tickCamera();
         ajustarTrilha();
         esperarATransmutacao();
+        manterQuebraveis();
+        oferecerElemento();
         if(waves.ended() && !ended && enemiesEmpty()) {
             ended = true;
             abrirRecompensa();
@@ -518,6 +524,85 @@ public class Arena extends GameMap {
      * a camera vai embora mostrar a saida.
      */
     private boolean esperandoTransmutacao;
+
+    // ------------------------------------------------- escolha do elemento
+
+    private boolean elementoOferecido;
+
+    /**
+     * Na corrida sem fim nao ha "fim da primeira sala", que era quando o elemento
+     * era escolhido. Ele passa a ser oferecido aos 45 segundos: cedo o bastante
+     * para definir a corrida, tarde o bastante para o jogador ja ter sentido a arma.
+     */
+    private void oferecerElemento() {
+        if (elementoOferecido || !waves.semFim() || waves.getSeconds() < 45 || Engine.pausado()
+                || Game.getPlayer().elemento() != com.retronova.game.items.Elemento.NENHUM) {
+            return;
+        }
+        elementoOferecido = true;
+        Engine.pause(new EscolhaDeElemento(com.retronova.game.Corrida::gravar));
+    }
+
+    // ------------------------------------------------------ quebraveis
+
+    /** Quantos quebraveis manter perto do gato, e o que conta como "perto". */
+    private static final int QUEBRAVEIS_PERTO = 7;
+    private static final double RAIO_PERTO_EM_TILES = 22;
+    /** Longe disto, o quebravel e recolhido: o gato ja passou por ali. */
+    private static final double RAIO_DE_RECOLHER_EM_TILES = 45;
+    private int ateRepor;
+
+    /**
+     * Mantem caixotes e barris aparecendo em volta do gato enquanto ele anda.
+     *
+     * No campo aberto nao da para espalhar tudo de uma vez: ou seriam centenas
+     * pelo mapa, ou o gato andaria minutos sem achar nenhum. Entao a arena
+     * garante um punhado sempre por perto, nascendo FORA da tela — o jogador
+     * nunca ve um aparecer, so encontra — e recolhe os que ficaram muito para
+     * tras. Andar passa a render alguma coisa em qualquer direcao.
+     */
+    private void manterQuebraveis() {
+        if (--ateRepor > 0 || Game.getPlayer() == null) {
+            return;
+        }
+        ateRepor = 90;
+        com.retronova.game.objects.entities.Player gato = Game.getPlayer();
+        int tile = GameObject.SIZE();
+        int perto = 0;
+        for (Enemy e : getEntities(Enemy.class)) {
+            if (e.alvoAutomatico()) {
+                continue;
+            }
+            double d = e.getDistance(gato) / tile;
+            if (d > RAIO_DE_RECOLHER_EM_TILES) {
+                e.disappear();
+            } else if (d <= RAIO_PERTO_EM_TILES) {
+                perto++;
+            }
+        }
+        if (perto < QUEBRAVEIS_PERTO) {
+            java.awt.Point p = waves.lugarForaDaTela(1.2);
+            if (p != null) {
+                put(new com.retronova.game.objects.entities.enemies.Quebravel(
+                        p.x * (double) tile, p.y * (double) tile, Engine.RAND.nextDouble() < 0.35));
+            }
+        }
+    }
+
+    /**
+     * Traz de volta um bicho que ficou para tras: ele reaparece logo fora da tela,
+     * em volta do gato. E o que o Vampire Survivors faz — no campo aberto o
+     * jogador pode correr para longe, e a horda nao pode ficar perdida la atras.
+     */
+    public void trazerDePerto(Enemy bicho) {
+        java.awt.Point p = waves.lugarForaDaTela(1.05);
+        if (p != null) {
+            int tile = GameObject.SIZE();
+            bicho.setX(p.x * (double) tile);
+            bicho.setY(p.y * (double) tile);
+            bicho.getPhysical().parar();
+        }
+    }
 
     boolean enemiesEmpty() {
         // Objetos quebraveis sao Enemy para apanhar das armas, mas nao seguram a onda.

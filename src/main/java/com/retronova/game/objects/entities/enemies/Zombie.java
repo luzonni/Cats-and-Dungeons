@@ -104,6 +104,14 @@ public class Zombie extends Enemy {
         // A rota vai ao PONTO DE CERCO, e nao ao centro do gato: cada zumbi chega
         // pelo proprio flanco. Colado no gato, o ponto e o proprio gato.
         java.awt.geom.Point2D cerco = pontoDeCerco();
+        // CAMPO ABERTO DISPENSA O A*. Na corrida sem fim o mapa nao tem paredes no
+        // caminho, e buscar rota para cada zumbi a cada terco de segundo era o maior
+        // custo da logica com a horda cheia — para chegar ao mesmo lugar que a reta.
+        if (Game.getMap() instanceof com.retronova.game.map.arena.Arena arena
+                && arena.getWaves().semFim()) {
+            getPhysical().addForce("a_star", getSpeed(), anguloDeCerco());
+            return;
+        }
         if (++desdeARota >= REFAZER || path.isEmpty()) {
             desdeARota = 0;
             path.buildPath(emTiles(aqui.x, aqui.y),

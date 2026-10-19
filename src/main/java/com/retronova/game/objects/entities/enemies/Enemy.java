@@ -526,6 +526,9 @@ public abstract class Enemy extends Entity implements Nascente {
         dropXp();
         if (alvoAutomatico()) {
             com.retronova.game.objects.entities.Furia.somarMorte();
+            if (Game.getMap() instanceof com.retronova.game.map.arena.Arena arena) {
+                arena.getWaves().contarAbate();
+            }
         }
         if (elite) {
             com.retronova.game.map.Camera.tremer(6);   // elite cai com peso

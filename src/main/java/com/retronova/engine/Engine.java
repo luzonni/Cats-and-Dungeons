@@ -71,7 +71,7 @@ public class Engine implements Runnable {
         // nada e gravado nem apagado; as corridas do jogador ficam intactas.
         if (Boolean.getBoolean("cd.bench")) {
             heapActivity(new com.retronova.game.Game(2,
-                    new com.retronova.game.map.arena.Arena(1, 4), 0));
+                    new com.retronova.game.map.arena.Arena(0, 4), 0));
             // Telas por cima, para conferir o desenho delas sem jogar ate elas.
             // Abrem depois de um segundo de partida: a chegada do gato fecha
             // qualquer pausa aberta antes dela.
