@@ -128,8 +128,8 @@ public class Options implements Activity {
         video.add(OptionRow.toggle("Smooth graphics",
                 () -> Configs.isNeatGraphics() ? 1 : 0, v -> Configs.setNeatGraphics(v != 0))
                 .desc("Antialiasing and smooth filtering. Softens the pixel art; off keeps the sharp look."));
-        video.add(OptionRow.stepper("Camera zoom", Configs::Zoom, Configs::setZoom, 100, 160, 10, "%")
-                .desc("Quao perto a camera fica do gato. Mais perto, mais imersao; mais longe, mais campo de visao."));
+        video.add(OptionRow.stepper("Camera zoom", Configs::Zoom, Configs::setZoom, 70, 160, 10, "%")
+                .desc("How close the camera is to the cat. Lower shows more of the arena; higher is more immersive."));
         video.add(OptionRow.toggle("Vignette",
                 () -> Configs.Vignette() ? 1 : 0, v -> Configs.setVignette(v != 0))
                 .desc("Darkens the corners of the screen during gameplay, to focus the eye on the center."));
