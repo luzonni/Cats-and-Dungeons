@@ -520,8 +520,13 @@ public class Arena extends GameMap {
     private boolean esperandoTransmutacao;
 
     boolean enemiesEmpty() {
-        List<Enemy> entities = Game.getMap().getEntities(Enemy.class);
-        return entities.isEmpty();
+        // Objetos quebraveis sao Enemy para apanhar das armas, mas nao seguram a onda.
+        for (Enemy e : Game.getMap().getEntities(Enemy.class)) {
+            if (e.alvoAutomatico()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

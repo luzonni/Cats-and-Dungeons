@@ -593,8 +593,10 @@ public class Game implements Activity {
 
         double passo = t * 11 + fase;
         double quique = Math.abs(Math.sin(passo)) * 2.2 * s * andando;
+        // Caixote nao respira: objeto quebravel so da o tranco ao apanhar.
+        double respira = bicho.alvoAutomatico() ? 0.035 : 0;
         double estica = 1 + 0.08 * Math.sin(passo * 2) * andando
-                + 0.035 * Math.sin(t * 3 + fase) * (1 - andando);   // respirar parado
+                + respira * Math.sin(t * 3 + fase) * (1 - andando);   // respirar parado
         double inclina = 0.10 * Math.sin(passo) * andando;
 
         // O tranco do golpe: alarga e achata, voltando em dez ticks.

@@ -604,7 +604,7 @@ public abstract class Item {
             // Quem ainda esta nascendo NAO E ALVO. Sem esta linha a mira gruda num
             // bicho invulneravel e a arma fica descarregando no vazio enquanto os
             // que ja nasceram avancam — pior do que nao mirar em nada.
-            if (e.nascendo()) {
+            if (e.nascendo() || !e.alvoAutomatico()) {
                 continue;
             }
             double d = e.getDistance(jogador);
@@ -627,8 +627,20 @@ public abstract class Item {
      * impede e o tiro sair, nao o cano acompanhar.
      */
     protected static Enemy alvoParaMirar(Player jogador, double alcanceEmTiles) {
-        Enemy perto = jogador.getNearest(alcanceEmTiles, Enemy.class);
-        return perto != null && perto.nascendo() ? null : perto;
+        // Objeto quebravel nao entra na mira: a arma aponta para a ameaca.
+        Enemy perto = null;
+        double menor = GameObject.SIZE() * alcanceEmTiles;
+        for (Enemy e : Game.getMap().getEntities(Enemy.class)) {
+            if (e.nascendo() || !e.alvoAutomatico()) {
+                continue;
+            }
+            double d = e.getDistance(jogador);
+            if (d < menor) {
+                menor = d;
+                perto = e;
+            }
+        }
+        return perto;
     }
 
     /**

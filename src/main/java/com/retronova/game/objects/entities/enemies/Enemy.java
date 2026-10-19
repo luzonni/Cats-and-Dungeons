@@ -93,6 +93,11 @@ public abstract class Enemy extends Entity implements Nascente {
         return nascendo > 0;
     }
 
+    /** Para quem ja esta no mapa desde o comeco (objetos): sem portal de chegada. */
+    protected void nascerPronto() {
+        this.nascendo = 0;
+    }
+
     /**
      * A DISTANCIA EM QUE O BICHO DESISTE, em tiles.
      *
@@ -161,6 +166,15 @@ public abstract class Enemy extends Entity implements Nascente {
         java.awt.geom.Point2D alvo = pontoDeCerco();
         return Math.atan2(alvo.getY() - (getY() + getHeight() / 2.0),
                 alvo.getX() - (getX() + getWidth() / 2.0));
+    }
+
+    /**
+     * Se este alvo entra na mira automatica das armas e na contagem da onda.
+     * Objetos quebraveis respondem nao: apanham de tudo, mas ninguem mira neles e
+     * eles nao seguram a onda aberta.
+     */
+    public boolean alvoAutomatico() {
+        return true;
     }
 
     /**

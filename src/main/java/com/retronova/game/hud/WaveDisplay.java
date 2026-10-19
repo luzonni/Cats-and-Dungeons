@@ -25,7 +25,8 @@ public class WaveDisplay {
 
     public void tick() {
         this.position.setLocation(Engine.window.getWidth()/2, Configs.Margin());
-        this.amountOfEnemies = Game.getMap().getEntities(Enemy.class).size();
+        this.amountOfEnemies = (int) Game.getMap().getEntities(Enemy.class).stream()
+                .filter(Enemy::alvoAutomatico).count();
     }
 
     public void render(Graphics2D g) {
