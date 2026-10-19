@@ -99,7 +99,9 @@ public abstract class GameObject {
     }
 
     public BufferedImage getSprite() {
-        return this.sheet.getSprite();
+        // Copia que vai para a GPU: o quadro cru do Sheeter e um recorte, e
+        // recorte o Java2D desenha sempre na CPU. Ver Acelerada.
+        return com.retronova.engine.graphics.Acelerada.de(this.sheet.getSprite());
     }
 
     public void setX(double newX) {

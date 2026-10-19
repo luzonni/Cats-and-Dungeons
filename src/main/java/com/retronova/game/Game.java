@@ -400,9 +400,23 @@ public class Game implements Activity {
 
     private void renderMap(Graphics2D g) {
         Tile[] map = this.map.getMap();
+        // SO O QUE ESTA NA TELA. O teste era contra gCam.getBounds(), que e o
+        // retangulo do MAPA INTEIRO — todo tile passava, e a arena desenhava os
+        // mil e tantos tiles dela a cada quadro, a maioria fora da janela. Agora a
+        // janela e levada de volta para coordenadas do mundo, com dois tiles de
+        // folga para paredes cujo desenho sobe alem do proprio tile.
+        Rectangle visivel;
+        try {
+            visivel = g.getTransform().createInverse().createTransformedShape(
+                    new Rectangle(0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
+            int folga = 2 * com.retronova.game.objects.GameObject.SIZE();
+            visivel.grow(folga, folga);
+        } catch (java.awt.geom.NoninvertibleTransformException semZoom) {
+            visivel = gCam.getBounds();
+        }
         for(int i = 0; i < map.length; i++) {
             Tile tile = map[i];
-            if(tile.getBounds().intersects(gCam.getBounds())) {
+            if(tile.getBounds().intersects(visivel)) {
                 map[i].render(g);
                 if(Debugging.showTileBox) {
                     map[i].renderBounds(i, g);

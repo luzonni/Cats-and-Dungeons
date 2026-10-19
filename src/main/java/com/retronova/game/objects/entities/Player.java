@@ -791,7 +791,7 @@ public class Player extends Entity {
 
     public BufferedImage getSprite(int index) {
         getSheet().setIndex(index);
-        return getSheet().getSprite();
+        return com.retronova.engine.graphics.Acelerada.de(getSheet().getSprite());
     }
 
     @Override
