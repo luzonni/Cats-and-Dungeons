@@ -35,6 +35,13 @@ public class Menu implements Activity {
 
     private final Confirm confirmacao = new Confirm();
 
+    /** Duracao, em ticks, da saida dos botoes antes de abrir Options. */
+    private static final int DURACAO_TRANSICAO = 30;
+    /** Atraso entre um botao e o seguinte comecar a sair. */
+    private static final int ATRASO_POR_BOTAO = 5;
+    /** Tick atual da transicao para Options; -1 quando nao ha transicao. */
+    private int transicao = -1;
+
     public Menu() {
         this.botoes = new ArrayList<>();
         criarBotoes();
@@ -63,7 +70,7 @@ public class Menu implements Activity {
         botoes.add(new Button(0, 0, 0, 0, "Play",
                 b -> Engine.heapActivity(new Saves())).primary());
         botoes.add(new Button(0, 0, 0, 0, "Options",
-                b -> Engine.heapActivity(new Options())));
+                b -> transicao = 0));
         //Sair pela pausa já perguntava; aqui fechava direto. Mesmo diálogo nos dois.
         botoes.add(new Button(0, 0, 0, 0, "Quit",
                 b -> confirmacao.perguntar("Do you want to quit?", Engine::CLOSE)));
@@ -88,6 +95,15 @@ public class Menu implements Activity {
         posicionarBotoes();
         // O cenario anima mesmo com o dialogo aberto: e fundo, nao interface.
         cenario.tick();
+
+        // Durante a saida, nada reage: so a animacao anda ate abrir Options.
+        if (transicao >= 0) {
+            if (++transicao >= DURACAO_TRANSICAO) {
+                transicao = -1;
+                Engine.heapActivity(new Options());
+            }
+            return;
+        }
 
         // O diálogo tem prioridade: enquanto aberto, os botões de trás não reagem.
         if (confirmacao.tick()) {
@@ -118,11 +134,45 @@ public class Menu implements Activity {
     @Override
     public void render(Graphics2D g) {
         cenario.render(g);
-        for (Button botao : botoes) {
-            botao.render(g);
+        for (int i = 0; i < botoes.size(); i++) {
+            int dx = deslocamentoDeSaida(i);
+            g.translate(dx, 0);
+            botoes.get(i).render(g);
+            g.translate(-dx, 0);
         }
         desenharVersao(g);
+        desenharEscurecimento(g);
         confirmacao.render(g);
+    }
+
+    /**
+     * Quanto o botao i ja andou para fora da tela. Eles saem em cascata, alternando
+     * os lados, com aceleracao (ease-in) para parecer que sao puxados.
+     */
+    private int deslocamentoDeSaida(int i) {
+        if (transicao < 0) {
+            return 0;
+        }
+        int duracao = DURACAO_TRANSICAO - ATRASO_POR_BOTAO * (botoes.size() - 1);
+        double t = Math.clamp((transicaoNoQuadro() - i * ATRASO_POR_BOTAO) / duracao, 0, 1);
+        double distancia = Engine.window.getWidth() / 2.0 + Button.preferredWidth();
+        int lado = i % 2 == 0 ? -1 : 1;
+        return (int) (lado * distancia * t * t * t);
+    }
+
+    /** Escurece a tela junto com a saida, para Options entrar sem corte seco. */
+    private void desenharEscurecimento(Graphics2D g) {
+        if (transicao < 0) {
+            return;
+        }
+        int alfa = (int) Math.min(200, 200 * transicaoNoQuadro() / DURACAO_TRANSICAO);
+        g.setColor(new Color(0, 0, 0, alfa));
+        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
+    }
+
+    /** Progresso da transicao interpolado entre ticks, para fluir acima de 60 FPS. */
+    private double transicaoNoQuadro() {
+        return transicao + Engine.alpha();
     }
 
     /**
