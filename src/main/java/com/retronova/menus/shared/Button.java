@@ -5,6 +5,7 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.NineSlice;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
@@ -236,11 +237,7 @@ public class Button {
             y += scale;
         }
 
-        g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(text, x, y + scale);   // sombra dura, no estilo do resto da UI
-        g.setColor(Palette.TEXT);
-        g.drawString(text, x, y);
+        TextFx.draw(g, text, fonte, x, y, Palette.TEXT, scale);
         g.dispose();
     }
 

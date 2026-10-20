@@ -3,6 +3,7 @@ package com.retronova.menus.shared;
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
@@ -245,10 +246,7 @@ public class OptionRow {
         }
 
         g.setFont(fonteLabel);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(label, bounds.x + s, baseTexto + s);
-        g.setColor(focado ? Palette.TEXT : Palette.LIGHT);
-        g.drawString(label, bounds.x, baseTexto);
+        TextFx.draw(g, label, bounds.x, baseTexto, focado ? Palette.TEXT : Palette.LIGHT, s);
 
         if (kind == Kind.TOGGLE) {
             desenharToggle(g, s);
@@ -302,10 +300,7 @@ public class OptionRow {
         }
         g.setFont(f);
         int tx = x + (largura - w) / 2;
-        g.setColor(Palette.OUTLINE);
-        g.drawString(texto, tx + s, baseTexto + s);
-        g.setColor(Palette.TEXT);
-        g.drawString(texto, tx, baseTexto);
+        TextFx.draw(g, texto, tx, baseTexto, Palette.TEXT, s);
         g.setFont(fonte);
     }
 

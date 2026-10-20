@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -433,13 +434,13 @@ public class SubirDeNivel implements Activity {
     }
 
     private static void centro(Graphics2D g, String texto, Font fonte, int cx, int y, Color cor) {
-        centro(g, texto, fonte, cx, y, cor, false, 1);
+        centro(g, texto, fonte, cx, y, cor, true, Configs.UiScale());
     }
 
     private static void centro(Graphics2D g, String texto, Font fonte, int cx, int y, Color cor,
                                boolean comContorno, int s) {
         int x = cx - FontHandler.getWidth(texto, fonte) / 2;
-        if (comContorno) {
+        if (comContorno && escuro(cor) == false) {
             contornado(g, texto, fonte, x, y, cor, s);
             return;
         }
@@ -451,14 +452,12 @@ public class SubirDeNivel implements Activity {
     }
 
     private static void contornado(Graphics2D g, String texto, Font fonte, int x, int y, Color cor, int s) {
-        g.setFont(fonte);
-        int c = Math.max(1, s / 2 + 1);
-        g.setColor(new Color(0x0A0610));
-        for (int[] d : new int[][]{{-c, 0}, {c, 0}, {0, -c}, {0, c}, {c, c}}) {
-            g.drawString(texto, x + d[0], y + d[1]);
-        }
-        g.setColor(cor);
-        g.drawString(texto, x, y);
+        TextFx.draw(g, texto, fonte, x, y, cor, s);
+    }
+
+    /** Texto escuro (o rotulo sobre a faixa colorida) nao leva contorno escuro. */
+    private static boolean escuro(Color c) {
+        return c.getRed() + c.getGreen() + c.getBlue() < 180;
     }
 
     @Override

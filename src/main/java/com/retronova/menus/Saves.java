@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -428,10 +429,7 @@ public class Saves implements Activity {
     private void escrever(Graphics2D g, String texto, int x, int y,
                           Color cor, int s, Font fonte) {
         g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(texto, x + s, y + s);
-        g.setColor(cor);
-        g.drawString(texto, x, y);
+        TextFx.draw(g, texto, x, y, cor, s);
     }
 
     @Override

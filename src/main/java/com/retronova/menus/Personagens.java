@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -113,11 +114,11 @@ public class Personagens implements Activity {
      * de rabo. Com o recorte não existe o que sobrar — o que não é cabeça não
      * está mais na imagem.
      *
-     * A caixa vai da ponta da orelha (linha 0) ao queixo (linha 8), e da coluna 0
+     * A caixa vai da ponta da orelha (linha 0) ao queixo (linha 9), e da coluna 0
      * à 14, que é a largura máxima da cabeça. É o mesmo enquadramento do logotipo
      * do jogo.
      */
-    private static final int CABECA_LARGURA = 15, CABECA_ALTURA = 9;
+    private static final int CABECA_LARGURA = 15, CABECA_ALTURA = 10;
 
     private final Player[] players = new Player[3];
     private final Rectangle[] miniaturas = new Rectangle[3];
@@ -888,12 +889,40 @@ public class Personagens implements Activity {
         gs.dispose();
     }
 
-    /** Recorta a cabeça do sprite. Ver {@link #CABECA_LARGURA}. */
+    /**
+     * Recorta a cabeça do sprite e a contorna. Ver {@link #CABECA_LARGURA}.
+     *
+     * O contorno CLARO de um pixel em volta da silhueta é o que separa o gato preto do
+     * fundo escuro da miniatura; sem ele a coroa e as orelhas sumiam. A imagem
+     * ganha um pixel de folga de cada lado para o contorno não ser cortado.
+     */
     private static BufferedImage cabeca(BufferedImage sprite) {
         int w = Math.min(CABECA_LARGURA, sprite.getWidth());
         int h = Math.min(CABECA_ALTURA, sprite.getHeight());
-        BufferedImage o = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        o.createGraphics().drawImage(sprite.getSubimage(0, 0, w, h), 0, 0, null);
+        BufferedImage o = new BufferedImage(w + 2, h + 2, BufferedImage.TYPE_INT_ARGB);
+        int contorno = Palette.LIGHT.getRGB();
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if ((sprite.getRGB(x, y) >>> 24) < 128) {
+                    continue;
+                }
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dx = -1; dx <= 1; dx++) {
+                        if ((o.getRGB(x + 1 + dx, y + 1 + dy) >>> 24) == 0) {
+                            o.setRGB(x + 1 + dx, y + 1 + dy, contorno);
+                        }
+                    }
+                }
+            }
+        }
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int p = sprite.getRGB(x, y);
+                if ((p >>> 24) >= 128) {
+                    o.setRGB(x + 1, y + 1, p);
+                }
+            }
+        }
         return o;
     }
 
@@ -944,10 +973,7 @@ public class Personagens implements Activity {
     private void texto(Graphics2D g, String txt, Font fonte, int x, int y, Color cor) {
         int s = Configs.UiScale();
         g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(txt, x + s, y + s);
-        g.setColor(cor);
-        g.drawString(txt, x, y);
+        TextFx.draw(g, txt, x, y, cor, s);
     }
 
     @Override

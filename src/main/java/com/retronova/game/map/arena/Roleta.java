@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -419,8 +420,7 @@ public class Roleta implements Activity {
                 g.drawString(texto, cx - tw / 2 + k * s / 2, ly + lh / 2 + 6 * s + j * s / 2);
             }
         }
-        g.setColor(neon);
-        g.drawString(texto, cx - tw / 2, ly + lh / 2 + 6 * s);
+        TextFx.draw(g, texto, fonte, cx - tw / 2, ly + lh / 2 + 6 * s, neon, s);
 
         // Moldura da janela dos rolos.
         g.setColor(OURO_ESCURO);
@@ -703,15 +703,7 @@ public class Roleta implements Activity {
      */
     private static void contornado(Graphics2D g, String texto, Font fonte, int x, int y,
                                    Color cor, int s) {
-        g.setFont(fonte);
-        int c = Math.max(1, s / 2 + 1);
-        g.setColor(new Color(0x0A0610));
-        g.drawString(texto, x + c, y + c * 2);
-        for (int[] d : new int[][]{{-c, 0}, {c, 0}, {0, -c}, {0, c}, {-c, -c}, {c, c}, {-c, c}, {c, -c}}) {
-            g.drawString(texto, x + d[0], y + d[1]);
-        }
-        g.setColor(cor);
-        g.drawString(texto, x, y);
+        TextFx.draw(g, texto, fonte, x, y, cor, s);
     }
 
     private static Color clarear(Color c) {
@@ -722,12 +714,8 @@ public class Roleta implements Activity {
     /** Texto com sombra; centrado em x, ou a partir de x. */
     private static void texto(Graphics2D g, String texto, Font fonte, int x, int y, Color cor,
                               boolean aEsquerda) {
-        g.setFont(fonte);
         int px = aEsquerda ? x : x - FontHandler.getWidth(texto, fonte) / 2;
-        g.setColor(new Color(0, 0, 0, Math.min(200, cor.getAlpha())));
-        g.drawString(texto, px + 1, y + 1);
-        g.setColor(cor);
-        g.drawString(texto, px, y);
+        TextFx.draw(g, texto, fonte, px, y, cor, Configs.UiScale());
     }
 
     @Override
