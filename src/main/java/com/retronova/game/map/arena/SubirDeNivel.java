@@ -11,427 +11,452 @@ import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
+import com.retronova.game.items.ArmaExtra;
+import com.retronova.game.items.Melhorias;
+import com.retronova.game.items.Passiva;
+import com.retronova.game.items.Raridade;
 import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Function;
 
 /**
- * Subiu de nivel: escolha um atributo para melhorar.
+ * Subiu de nivel: tres cartas sorteadas, uma leva.
  *
- * Cada nivel e um ponto, e o jogador decide onde ele entra. Os cinco atributos
- * estao sempre na mesa — a sorte mora no bau; o nivel e onde se constroi o gato.
+ * A VERSAO ANTERIOR MOSTRAVA SEMPRE OS MESMOS CINCO ATRIBUTOS. Bonita, mas sem
+ * decisao: depois de tres niveis o jogador ja sabia o que ia escolher, e subir de
+ * nivel virava um clique. Agora a mao e SORTEADA de um baralho maior — os
+ * atributos, sete passivas e o proximo nivel das armas extras que o gato ja tem
+ * — e cada carta de atributo tem raridade (quanto vale). A pergunta passa a ser
+ * "o que esta corrida precisa AGORA?", e duas corridas nunca sobem igual.
  *
- * UMA LISTA, E NAO CINCO CARTAS. Cartas lado a lado tinham largura de sobra para
- * "Luck" e falta para "Attack speed", e o numero vazava. Em linhas, cada atributo
- * tem a largura do painel inteiro, e a leitura vira a de uma ficha: icone, nome,
- * antes e depois. O "depois" e o que decide — ver o numero mudar e o premio.
+ * Duas valvulas, contadas por corrida: TROCAR (sorteia outra mao) e PULAR (cura
+ * um pouco em vez de escolher). Sao poucas de proposito — uma decisao a mais, nao
+ * uma saida para nunca decidir.
+ *
+ * A faixa da BUILD no rodape mostra armas e passivas com os niveis: escolher
+ * sabendo o que ja se tem, e ver as evolucoes chegando (ver Evolucao).
  */
 public class SubirDeNivel implements Activity {
 
-    /**
-     * @param exibir converte o valor cru do atributo no que o jogador le
-     * @param icone  desenho 7x7 em texto: '#' cor do atributo, '+' realce
-     */
-    private record Atributo(String nome, Modifiers mod, double ganho,
-                            Function<Player, Double> atual, Function<Double, String> exibir,
-                            Color cor, String[] icone) {
+    /** Trocas e pulos que ainda restam nesta corrida. */
+    private static int trocas, pulos;
+    private static final int TROCAS = 2, PULOS = 1;
+
+    /** Partida nova: valvulas cheias. Chamado por Estatisticas.reiniciar. */
+    public static void reiniciar() {
+        trocas = TROCAS;
+        pulos = PULOS;
     }
 
-    private static String inteiro(double v) {
-        return String.valueOf(Math.round(v));
+    /** O que uma carta faz e como ela se apresenta. */
+    private record Carta(String rotulo, String icone, String nome, String efeito,
+                         Color cor, Runnable aplicar) {
     }
 
-    private static String umaCasa(double v) {
-        return String.format(Locale.ROOT, "%.1f", v);
-    }
-
-    /** O intervalo em ticks lido como golpes por segundo: mais e melhor. */
-    private static String porSegundo(double ticks) {
-        return String.format(Locale.ROOT, "%.1f/s", 60.0 / Math.max(1, ticks));
-    }
-
-    private static final List<Atributo> ATRIBUTOS = List.of(
-            new Atributo("Health", Modifiers.Life, 10, Player::getLifeSize,
-                    SubirDeNivel::inteiro, new Color(0xE0475F), new String[]{
-                    ".##.##.",
-                    "#++####",
-                    "#+#####",
-                    "#######",
-                    ".#####.",
-                    "..###..",
-                    "...#..."}),
-            new Atributo("Damage", Modifiers.Damage, 2, Player::getDamage,
-                    SubirDeNivel::inteiro, new Color(0xF5933D), new String[]{
-                    ".....##",
-                    "....#+#",
-                    "...#+#.",
-                    "#.#+#..",
-                    ".###...",
-                    ".##....",
-                    "#..#..."}),
-            new Atributo("Move speed", Modifiers.Speed, 0.2, Player::getSpeed,
-                    SubirDeNivel::umaCasa, new Color(0x4FC3E8), new String[]{
-                    "..##...",
-                    "..#+#..",
-                    "..##...",
-                    "..##...",
-                    ".###...",
-                    "######.",
-                    "#######"}),
-            // Cadencia e intervalo em ticks: melhorar e DIMINUIR, como em Melhoria.
-            new Atributo("Attack speed", Modifiers.AttackSpeed, -1, Player::getAttackSpeed,
-                    SubirDeNivel::porSegundo, new Color(0xB57CF0), new String[]{
-                    "...###.",
-                    "..###..",
-                    ".###...",
-                    "######.",
-                    "...###.",
-                    "..###..",
-                    ".##...."}),
-            new Atributo("Luck", Modifiers.Luck, 1, Player::getLuck,
-                    SubirDeNivel::inteiro, new Color(0x6BD66B), new String[]{
-                    ".##.##.",
-                    "#+####.",
-                    "#######",
-                    ".#####.",
-                    "#######",
-                    "#+##.##",
-                    ".##..#."})
-    );
-
-    private final List<Rectangle> linhas = new ArrayList<>();
-    private Rectangle painel = new Rectangle();
-    private int foco = 0;
+    private final List<Carta> mao = new ArrayList<>();
+    private final List<Rectangle> caixas = new ArrayList<>();
+    private Rectangle botaoTrocar = new Rectangle(), botaoPular = new Rectangle();
+    private int foco = -1;
     private int tempo;
-    private static final int ENTRADA = 14;
+    private int escolhido = -1;
+    private int fechando;
+    private static final int ENTRADA = 26;
+    private static final int FECHAR = 18;
+
+    public SubirDeNivel() {
+        sortearMao();
+    }
+
+    // ------------------------------------------------------------- baralho
+
+    private static final double[] PELA_RARIDADE = {1.0, 1.5, 2.2, 3.2};
+
+    private void sortearMao() {
+        Player gato = Game.getPlayer();
+        Melhorias m = gato.getMelhorias();
+        double promocao = gato.hasModifier(Modifiers.Fortune) ? gato.valueModifier(Modifiers.Fortune) : 0;
+        List<Carta> baralho = new ArrayList<>();
+        List<Double> pesos = new ArrayList<>();
+
+        // Armas extras que o gato ja tem e ainda sobem: as mais desejadas.
+        for (ArmaExtra a : ArmaExtra.values()) {
+            int n = m.nivel(a);
+            if (n > 0 && n < ArmaExtra.NIVEL_MAXIMO) {
+                baralho.add(new Carta("WEAPON LV " + (n + 1), a.name(), a.nome(), a.efeito(n + 1), a.cor(),
+                        () -> m.subirArma(a)));
+                pesos.add(3.0);
+            }
+        }
+        // Passivas: metade de cada evolucao.
+        for (Passiva p : Passiva.values()) {
+            int n = m.nivel(p);
+            if (n < Passiva.NIVEL_MAXIMO) {
+                String rotulo = n == 0 ? "NEW PASSIVE" : "PASSIVE LV " + (n + 1);
+                baralho.add(new Carta(rotulo, p.name(), p.nome(), p.efeitoDeUmNivel(), p.cor(),
+                        () -> m.subirPassiva(gato, p)));
+                pesos.add(2.0);
+            }
+        }
+        // Atributos, com raridade: a mesma carta vale mais quando sai rara.
+        Object[][] atributos = {
+                {"Health", "VIGOR", Modifiers.Life, 10.0, "+%.0f max health", new Color(0xE0475F)},
+                {"Damage", "FURIA", Modifiers.Damage, 2.0, "+%.0f damage", new Color(0xF5933D)},
+                {"Move speed", "PATAS", Modifiers.Speed, 0.2, "+%.1f move speed", new Color(0x4FC3E8)},
+                {"Attack speed", "FRENESI", Modifiers.AttackSpeed, -1.0, "%.0f ticks between attacks", new Color(0xB57CF0)},
+                {"Luck", "INSTINTO", Modifiers.Luck, 1.0, "+%.0f luck", new Color(0x6BD66B)},
+        };
+        for (Object[] at : atributos) {
+            Raridade r = Raridade.sortear(promocao);
+            double valor = (double) at[3] * PELA_RARIDADE[r.ordinal()];
+            if (at[2] == Modifiers.Life || at[2] == Modifiers.Damage || at[2] == Modifiers.Luck
+                    || at[2] == Modifiers.AttackSpeed) {
+                valor = Math.round(valor);
+            }
+            double v = valor;
+            Modifiers mod = (Modifiers) at[2];
+            baralho.add(new Carta(r.rotulo().toUpperCase(Locale.ROOT), (String) at[1], (String) at[0],
+                    String.format(Locale.ROOT, (String) at[4], v), r == Raridade.COMUM ? (Color) at[5] : r.cor(),
+                    () -> {
+                        m.aplicarPonto(gato, mod, v);
+                        if (mod == Modifiers.Life) {
+                            gato.setLife(gato.getLife() + v);   // a vida nova ja vem cheia
+                        }
+                    }));
+            pesos.add(1.5);
+        }
+
+        mao.clear();
+        for (int i = 0; i < 3 && !baralho.isEmpty(); i++) {
+            double total = pesos.stream().mapToDouble(Double::doubleValue).sum();
+            double sorteio = Engine.RAND.nextDouble() * total;
+            int k = 0;
+            while (k < pesos.size() - 1 && (sorteio -= pesos.get(k)) > 0) {
+                k++;
+            }
+            mao.add(baralho.remove(k));
+            pesos.remove(k);
+        }
+    }
+
+    // --------------------------------------------------------------- tick
 
     @Override
     public void tick() {
         tempo++;
         posicionar();
-        // Ja escolheu: so a animacao de confirmacao anda, e depois fecha.
         if (escolhido >= 0) {
             if (++fechando >= FECHAR) {
-                // Varios niveis de uma vez: a tela reabre pelo Game.tick.
-                Engine.pause(null);
+                Engine.pause(null);   // varios niveis: a tela reabre pelo Game.tick
             }
             return;
         }
         if (tempo < ENTRADA) {
             return;
         }
-        for (int i = 0; i < linhas.size(); i++) {
-            if (linhas.get(i).contains(Mouse.getX(), Mouse.getY())) {
+        for (int i = 0; i < caixas.size(); i++) {
+            if (caixas.get(i).contains(Mouse.getX(), Mouse.getY())) {
                 if (foco != i) {
                     Sound.play(Sounds.Hover);
                 }
                 foco = i;
                 Engine.window.pointing();
-                if (Mouse.clickOn(Mouse_Button.LEFT, linhas.get(i))) {
+                if (Mouse.clickOn(Mouse_Button.LEFT, caixas.get(i))) {
                     escolher(i);
                     return;
                 }
             }
         }
-        for (int i = 0; i < ATRIBUTOS.size(); i++) {
+        for (int i = 0; i < mao.size(); i++) {
             if (KeyBoard.KeyPressed(String.valueOf(i + 1))) {
                 escolher(i);
                 return;
             }
         }
-        if (KeyBoard.KeyPressed("Down") || KeyBoard.KeyPressed("S")) {
-            foco = (foco + 1) % ATRIBUTOS.size();
+        if (KeyBoard.KeyPressed("Right") || KeyBoard.KeyPressed("D")) {
+            foco = foco < 0 ? 0 : (foco + 1) % mao.size();
             Sound.play(Sounds.Hover);
-        } else if (KeyBoard.KeyPressed("Up") || KeyBoard.KeyPressed("W")) {
-            foco = foco <= 0 ? ATRIBUTOS.size() - 1 : foco - 1;
+        } else if (KeyBoard.KeyPressed("Left") || KeyBoard.KeyPressed("A")) {
+            foco = foco <= 0 ? mao.size() - 1 : foco - 1;
             Sound.play(Sounds.Hover);
-        } else if (KeyBoard.KeyPressed("Enter")) {
+        } else if (KeyBoard.KeyPressed("Enter") && foco >= 0) {
             escolher(foco);
+        }
+        if (trocas > 0 && (KeyBoard.KeyPressed("Q") || Mouse.clickOn(Mouse_Button.LEFT, botaoTrocar))) {
+            trocas--;
+            sortearMao();
+            tempo = ENTRADA / 2;     // as cartas viram de novo
+            Sound.play(Sounds.Button);
+        } else if (pulos > 0 && (KeyBoard.KeyPressed("E") || Mouse.clickOn(Mouse_Button.LEFT, botaoPular))) {
+            pulos--;
+            Player gato = Game.getPlayer();
+            gato.setLife(Math.min(gato.getLifeSize(), gato.getLife() + gato.getLifeSize() * 0.15));
+            gato.gastarNivel();
+            Sound.play(Sounds.Button);
+            Engine.pause(null);
         }
     }
 
     private void escolher(int i) {
-        Player gato = Game.getPlayer();
-        Atributo a = ATRIBUTOS.get(i);
-        gato.getMelhorias().aplicarPonto(gato, a.mod(), a.ganho());
-        if (a.mod() == Modifiers.Life) {
-            gato.setLife(gato.getLife() + a.ganho());   // a vida nova ja vem cheia
-        }
-        gato.gastarNivel();
+        mao.get(i).aplicar().run();
+        Game.getPlayer().gastarNivel();
         Sound.play(Sounds.Conquista);
-        // O efeito ja valeu; a tela fica mais um instante para MOSTRAR a escolha.
-        // Fechar no mesmo quadro do clique fazia a decisao nao ter momento.
-        this.escolhido = i;
-        this.foco = i;
+        escolhido = i;
+        foco = i;
     }
 
-    /** A linha escolhida, ou -1. */
-    private int escolhido = -1;
-    private int fechando;
-    private static final int FECHAR = 16;
+    // ------------------------------------------------------------- medidas
+
+    /** Escala da tela: a da interface, reduzida se nao couber na janela. */
+    private int escala() {
+        int cabe = Math.max(1, (Engine.window.getHeight() - 20) / 225);
+        return Math.max(1, Math.min(Configs.UiScale(), cabe));
+    }
 
     private void posicionar() {
-        int s = Configs.UiScale();
-        int largura = 230 * s;
-        int alturaLinha = 20 * s;
-        int espaco = 3 * s;
-        int topo = 42 * s;           // faixa do titulo dentro do painel
-        int rodape = 14 * s;
-        int altura = topo + ATRIBUTOS.size() * (alturaLinha + espaco) - espaco + rodape;
-        int x = Engine.window.getWidth() / 2 - largura / 2;
-        int y = Engine.window.getHeight() / 2 - altura / 2;
-        painel = new Rectangle(x, y, largura, altura);
-        linhas.clear();
-        for (int i = 0; i < ATRIBUTOS.size(); i++) {
-            linhas.add(new Rectangle(x + 8 * s, y + topo + i * (alturaLinha + espaco),
-                    largura - 16 * s, alturaLinha));
+        int s = escala();
+        int cw = 88 * s, ch = 128 * s, vao = 10 * s;
+        int total = mao.size() * cw + (mao.size() - 1) * vao;
+        int x = Engine.window.getWidth() / 2 - total / 2;
+        int y = Engine.window.getHeight() / 2 - ch / 2 - 6 * s;
+        caixas.clear();
+        for (int i = 0; i < mao.size(); i++) {
+            caixas.add(new Rectangle(x + i * (cw + vao), y, cw, ch));
         }
+        int by = y + ch + 10 * s, bw = 70 * s, bh = 14 * s;
+        botaoTrocar = new Rectangle(Engine.window.getWidth() / 2 - bw - 5 * s, by, bw, bh);
+        botaoPular = new Rectangle(Engine.window.getWidth() / 2 + 5 * s, by, bw, bh);
     }
+
+    // ------------------------------------------------------------- desenho
 
     @Override
     public void render(Graphics2D g) {
         int w = Engine.window.getWidth();
         int h = Engine.window.getHeight();
-        int s = Configs.UiScale();
-        if (linhas.isEmpty()) {
+        int s = escala();
+        if (caixas.isEmpty()) {
             posicionar();
         }
-        float entrada = Math.min(1f, (tempo + Engine.alpha()) / ENTRADA);
-        // Ease-out: o painel sobe rapido e assenta.
-        float suave = 1 - (1 - entrada) * (1 - entrada) * (1 - entrada);
-
-        // Saida: tudo some junto nos ultimos ticks da confirmacao.
+        float a = Engine.alpha();
+        double quadro = tempo + a;
         float saida = escolhido < 0 ? 1f
-                : 1f - Math.max(0f, (fechando + Engine.alpha() - FECHAR * 0.5f) / (FECHAR * 0.5f));
-        saida = Math.clamp(saida, 0f, 1f);
-        java.awt.Composite compOriginal = g.getComposite();
+                : Math.clamp(1f - (fechando + a - FECHAR * 0.5f) / (FECHAR * 0.5f), 0f, 1f);
+        Composite original = g.getComposite();
 
-        g.setColor(new Color(Palette.VEIL.getRed(), Palette.VEIL.getGreen(),
-                Palette.VEIL.getBlue(), (int) (Palette.VEIL.getAlpha() * entrada * saida)));
+        float veu = Math.min(1f, (float) quadro / 12f) * saida;
+        g.setColor(new Color(10, 6, 18, (int) (215 * veu)));
         g.fillRect(0, 0, w, h);
-        g.setComposite(java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, saida));
-
-        int dy = (int) ((1 - suave) * 24 * s);
-        g.translate(0, dy);
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida));
 
         Player gato = Game.getPlayer();
-        Rectangle p = painel;
-        double quadro = tempo + Engine.alpha();
-
-        // Sombra projetada do painel, macia: tres camadas que se alargam.
-        for (int k = 3; k >= 1; k--) {
-            g.setColor(new Color(0, 0, 0, 40));
-            g.fillRect(p.x - k * s, p.y + (3 + k) * s, p.width + 2 * k * s, p.height + k * s);
+        Rectangle primeira = caixas.getFirst();
+        // Titulo com halo dourado pulsando.
+        Font titulo = FontHandler.font(FontHandler.Game, 16f * s);
+        String texto = "LEVEL " + gato.getLevel() + "!";
+        int tw = FontHandler.getWidth(texto, titulo);
+        int ty = primeira.y - 20 * s;
+        double pulso = 0.5 + 0.5 * Math.sin(quadro * 0.12);
+        g.setFont(titulo);
+        g.setColor(new Color(255, 200, 60, (int) (50 + 40 * pulso)));
+        for (int d = -2; d <= 2; d += 2) {
+            g.drawString(texto, w / 2 - tw / 2 + d * s / 2, ty + d * s / 2);
         }
-        // Painel: contorno, corpo em gradiente, e uma faixa de titulo mais escura.
-        g.setColor(Palette.DARKEST);
-        g.fillRect(p.x - 2 * s, p.y - 2 * s, p.width + 4 * s, p.height + 4 * s);
-        g.setColor(Palette.OUTLINE);
-        g.fillRect(p.x - s, p.y - s, p.width + 2 * s, p.height + 2 * s);
-        g.setPaint(new java.awt.GradientPaint(0, p.y, Palette.DEEP.brighter(), 0, p.y + p.height, Palette.DEEP));
-        g.fillRect(p.x, p.y, p.width, p.height);
-        g.setPaint(new java.awt.GradientPaint(0, p.y, new Color(0x2C2440), 0, p.y + 36 * s, Palette.OUTLINE));
-        g.fillRect(p.x, p.y, p.width, 36 * s);
-        g.setColor(new Color(255, 214, 90, 90));           // filete dourado sob o titulo
-        g.fillRect(p.x + 12 * s, p.y + 36 * s, p.width - 24 * s, s);
-
-        estrelas(g, p, s, quadro);
-
-        // Titulo, com um reflexo de luz cruzando as letras de tempos em tempos.
-        Font titulo = FontHandler.font(FontHandler.Game, 14f * s);
-        String texto = "LEVEL UP!";
-        Color ouro = new Color(255, 214, 90);
-        int tx0 = p.x + p.width / 2 - FontHandler.getWidth(texto, titulo) / 2;
-        int ty0 = p.y + 18 * s;
-        centro(g, texto, titulo, p.x + p.width / 2, ty0, ouro);
-        reflexo(g, texto, titulo, tx0, ty0, quadro, s);
+        contornado(g, texto, titulo, w / 2 - tw / 2, ty, new Color(255, 214, 90), s);
         Font sub = FontHandler.font(FontHandler.Septem, 6f * s);
-        String resto = "Level " + gato.getLevel() + "  -  choose an attribute"
-                + (gato.niveisPendentes() > 1 ? "  (" + gato.niveisPendentes() + " points)" : "");
-        centro(g, resto, sub, p.x + p.width / 2, p.y + 30 * s, Palette.ACCENT);
+        String resto = gato.niveisPendentes() > 1
+                ? "Choose one  (" + gato.niveisPendentes() + " level-ups waiting)" : "Choose one";
+        centro(g, resto, sub, w / 2, ty + 11 * s, Palette.ACCENT);
 
-        Font nome = FontHandler.font(FontHandler.Game, 8f * s);
-        Font numero = FontHandler.font(FontHandler.Game, 7f * s);
-        Font tecla = FontHandler.font(FontHandler.Septem, 6f * s);
-        for (int i = 0; i < ATRIBUTOS.size(); i++) {
-            Atributo a = ATRIBUTOS.get(i);
-            Rectangle r = linhas.get(i);
-            // Entrada em cascata: cada linha chega um pouco depois da anterior.
-            float chegada = Math.clamp(entrada * 1.8f - i * 0.15f, 0f, 1f);
-            float chegadaSuave = 1 - (1 - chegada) * (1 - chegada);
-            int dx = (int) ((1 - chegadaSuave) * -20 * s);
-            boolean sob = i == foco;
-            boolean eleito = i == escolhido;
-            // As outras linhas apagam enquanto a escolhida se destaca.
-            if (escolhido >= 0 && !eleito) {
-                float apaga = Math.min(1f, (fechando + Engine.alpha()) / 6f);
-                g.setComposite(java.awt.AlphaComposite.getInstance(
-                        java.awt.AlphaComposite.SRC_OVER, saida * (1 - apaga * 0.8f)));
-            }
-            int x = r.x + dx + (sob ? 3 * s : 0);
-            double pulso = 0.5 + 0.5 * Math.sin(quadro * 0.18);
-
-            // Brilho pulsante em volta da linha em foco, na cor do atributo.
-            if (sob) {
-                for (int k = 3; k >= 1; k--) {
-                    int a0 = (int) ((35 + 45 * pulso) / k);
-                    g.setColor(new Color(a.cor().getRed(), a.cor().getGreen(), a.cor().getBlue(), a0));
-                    g.fillRect(x - (k + 1) * s, r.y - (k + 1) * s, r.width + 2 * (k + 1) * s, r.height + 2 * (k + 1) * s);
-                }
-                // A setinha, balancando, apontando para a linha.
-                int ax = r.x - 9 * s + (int) (Math.sin(quadro * 0.25) * 2 * s);
-                int ay = r.y + r.height / 2;
-                g.setColor(a.cor());
-                g.fillPolygon(new int[]{ax, ax + 5 * s, ax}, new int[]{ay - 4 * s, ay, ay + 4 * s}, 3);
-            }
-            g.setColor(Palette.OUTLINE);
-            g.fillRect(x - s, r.y - s, r.width + 2 * s, r.height + 2 * s);
-            // Corpo em gradiente, com filete claro em cima e escuro embaixo: relevo.
-            Color topo = sob ? Palette.LIGHT : Palette.MAIN.brighter();
-            Color baixo = sob ? Palette.MAIN.brighter() : Palette.MAIN;
-            g.setPaint(new java.awt.GradientPaint(0, r.y, topo, 0, r.y + r.height, baixo));
-            g.fillRect(x, r.y, r.width, r.height);
-            g.setColor(new Color(255, 255, 255, sob ? 70 : 35));
-            g.fillRect(x, r.y, r.width, s);
-            g.setColor(new Color(0, 0, 0, 60));
-            g.fillRect(x, r.y + r.height - s, r.width, s);
-            // Clarao branco na linha escolhida, no instante da confirmacao.
-            if (eleito) {
-                float flash = Math.max(0f, 1f - (fechando + Engine.alpha()) / 8f);
-                g.setColor(new Color(255, 255, 255, (int) (200 * flash)));
-                g.fillRect(x, r.y, r.width, r.height);
-            }
-            // Tarja da cor do atributo na esquerda; mais larga sob o foco.
-            g.setColor(a.cor());
-            g.fillRect(x, r.y, sob ? 4 * s : 2 * s, r.height);
-
-            // Icone num quadrado escuro (tingido da cor do atributo sob o foco).
-            int lado = r.height - 6 * s;
-            int ix = x + 7 * s;
-            int iy = r.y + 3 * s;
-            g.setColor(Palette.OUTLINE);
-            g.fillRect(ix, iy, lado, lado);
-            if (sob) {
-                g.setColor(new Color(a.cor().getRed(), a.cor().getGreen(), a.cor().getBlue(), 50));
-                g.fillRect(ix, iy, lado, lado);
-            }
-            int tamIcone = 7 * 2 * s;
-            desenharIcone(g, a.icone(), a.cor(), ix + (lado - tamIcone) / 2,
-                    iy + (lado - tamIcone) / 2, s);
-
-            int base = r.y + r.height / 2 + 3 * s;
-            esquerda(g, a.nome(), nome, ix + lado + 6 * s, base, Palette.TEXT);
-
-            // Antes -> depois, alinhado a direita.
-            double agora = a.atual().apply(gato);
-            String antes = a.exibir().apply(agora);
-            String depois = a.exibir().apply(agora + a.ganho());
-            int direita = x + r.width - 18 * s;
-            int ld = FontHandler.getWidth(depois, numero);
-            int lseta = FontHandler.getWidth(" > ", numero);
-            int la = FontHandler.getWidth(antes, numero);
-            esquerda(g, depois, numero, direita - ld, base, a.cor());
-            esquerda(g, " > ", numero, direita - ld - lseta, base, Palette.ACCENT);
-            esquerda(g, antes, numero, direita - ld - lseta - la, base,
-                    sob ? Palette.TEXT : Palette.ACCENT);
-
-            // A tecla de atalho, num quadradinho.
-            String t = String.valueOf(i + 1);
-            int tq = 9 * s;
-            int tx = x + r.width - tq - 4 * s;
-            int ty = r.y + (r.height - tq) / 2;
-            g.setColor(Palette.OUTLINE);
-            g.fillRect(tx, ty, tq, tq);
-            centro(g, t, tecla, tx + tq / 2, ty + tq / 2 + 2 * s, sob ? a.cor() : Palette.ACCENT);
-            g.setComposite(java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, saida));
+        for (int i = 0; i < mao.size(); i++) {
+            desenharCarta(g, i, s, quadro, saida);
         }
-
-        Font dica = FontHandler.font(FontHandler.Septem, 5f * s);
-        centro(g, "Click, press 1-5, or use arrows + Enter", dica, p.x + p.width / 2,
-                p.y + p.height - 5 * s, Palette.LIGHT);
-        g.translate(0, -dy);
-        g.setComposite(compOriginal);
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida));
+        desenharBotao(g, botaoTrocar, "[Q] Reroll (" + trocas + ")", trocas > 0, s);
+        desenharBotao(g, botaoPular, "[E] Skip (" + pulos + ")", pulos > 0, s);
+        desenharBuild(g, gato, s, botaoTrocar.y + botaoTrocar.height + 12 * s, w);
+        g.setComposite(original);
     }
 
-    /**
-     * Estrelinhas de quatro pontas piscando em volta do painel. Posicoes fixas
-     * (sementes por indice) e fase propria: cintilam, nao andam.
-     */
-    private static void estrelas(Graphics2D g, Rectangle p, int s, double quadro) {
-        java.util.Random r = new java.util.Random(7);
-        for (int i = 0; i < 14; i++) {
-            int x = p.x - 14 * s + r.nextInt(p.width + 28 * s);
-            int y = p.y - 12 * s + r.nextInt(30 * s);
-            if (i % 2 == 1) {
-                y = p.y + p.height - 10 * s + r.nextInt(22 * s);
-            }
-            double brilho = Math.sin(quadro * 0.08 + i * 1.7);
-            if (brilho <= 0) {
-                continue;
-            }
-            int tam = (int) (brilho * 3 * s) + s;
-            g.setColor(new Color(255, 230, 150, (int) (200 * brilho)));
-            g.fillRect(x - tam, y - s / 2, tam * 2, Math.max(1, s));
-            g.fillRect(x - s / 2, y - tam, Math.max(1, s), tam * 2);
-        }
-    }
-
-    /**
-     * O reflexo que atravessa o titulo: uma faixa clara inclinada, recortada no
-     * formato das letras. Passa a cada tres segundos, rapido.
-     */
-    private static void reflexo(Graphics2D g, String texto, Font fonte, int x, int y,
-                                double quadro, int s) {
-        double ciclo = (quadro % 180) / 40.0;      // 0..1 durante a passagem
-        if (ciclo > 1) {
+    private void desenharCarta(Graphics2D g, int i, int s, double quadro, float saida) {
+        Carta c = mao.get(i);
+        Rectangle r = caixas.get(i);
+        // Entrada: cada carta vira (escala horizontal de 0 a 1) um pouco depois da anterior.
+        double t = Math.clamp((quadro - i * 5) / 12.0, 0, 1);
+        double c1 = 1.5, c3 = c1 + 1;
+        double vira = t <= 0 ? 0 : 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+        if (vira <= 0.02) {
             return;
         }
-        java.awt.Shape letras = fonte.createGlyphVector(g.getFontRenderContext(), texto)
-                .getOutline(x, y);
-        Graphics2D r = (Graphics2D) g.create();
-        r.clip(letras);
-        java.awt.Rectangle b = letras.getBounds();
-        int faixa = 8 * s;
-        int fx = (int) (b.x - faixa * 2 + ciclo * (b.width + faixa * 4));
-        r.setColor(new Color(255, 255, 255, 170));
-        r.fillPolygon(new int[]{fx, fx + faixa, fx + faixa - b.height, fx - b.height},
-                new int[]{b.y, b.y, b.y + b.height, b.y + b.height}, 4);
-        r.dispose();
-    }
+        boolean sob = i == foco;
+        boolean eleita = i == escolhido;
+        if (escolhido >= 0 && !eleita) {
+            float apaga = (float) Math.min(1, (fechando + Engine.alpha()) / 6.0);
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida * (1 - apaga * 0.85f)));
+        }
+        double sobe = sob ? 5 * s : 0;
+        double cresce = eleita ? 1 + 0.08 * Math.sin(Math.min(1, fechando / 8.0) * Math.PI) : 1;
+        java.awt.geom.AffineTransform antes = g.getTransform();
+        g.translate(r.getCenterX(), r.getCenterY() - sobe);
+        g.scale(vira * cresce, cresce);
+        g.translate(-r.getCenterX(), -r.getCenterY());
 
-    /** Desenha um icone 7x7 de texto, cada celula com 2 pixels de UI. */
-    private static void desenharIcone(Graphics2D g, String[] icone, Color cor, int x, int y, int s) {
-        int c = 2 * s;
-        Color realce = cor.brighter();
-        for (int ly = 0; ly < icone.length; ly++) {
-            for (int lx = 0; lx < icone[ly].length(); lx++) {
-                char ch = icone[ly].charAt(lx);
-                if (ch == '.') {
-                    continue;
-                }
-                g.setColor(ch == '+' ? Color.WHITE : (ch == '#' ? cor : realce));
-                g.fillRect(x + lx * c, y + ly * c, c, c);
+        int x = r.x, y = r.y, cw = r.width, ch = r.height;
+        Color cor = c.cor();
+        if (sob || eleita) {
+            double brilho = 0.5 + 0.5 * Math.sin(quadro * 0.2);
+            for (int k = 3; k >= 1; k--) {
+                g.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), (int) ((45 + 45 * brilho) / k)));
+                g.fillRoundRect(x - 3 * k * s, y - 3 * k * s, cw + 6 * k * s, ch + 6 * k * s, 14 * s, 14 * s);
             }
         }
+        g.setColor(new Color(0, 0, 0, 90));
+        g.fillRoundRect(x + 2 * s, y + 4 * s, cw, ch, 10 * s, 10 * s);
+        g.setColor(new Color(0x0E0A14));
+        g.fillRoundRect(x - 2 * s, y - 2 * s, cw + 4 * s, ch + 4 * s, 12 * s, 12 * s);
+        g.setPaint(new GradientPaint(0, y, new Color(0x2E2546), 0, y + ch, new Color(0x15101F)));
+        g.fillRoundRect(x, y, cw, ch, 10 * s, 10 * s);
+        // Faixa do rotulo (raridade, ou PASSIVE / WEAPON).
+        g.setColor(cor);
+        g.fillRoundRect(x, y, cw, 13 * s, 10 * s, 10 * s);
+        g.fillRect(x, y + 7 * s, cw, 6 * s);
+        Font rotulo = FontHandler.font(FontHandler.Septem, 6f * s);
+        centro(g, c.rotulo(), rotulo, x + cw / 2, y + 10 * s, new Color(0x14081C));
+
+        // Icone grande num medalhao claro.
+        int cel = 4 * s;
+        int lado = Icones.lado(cel);
+        int ix = x + (cw - lado) / 2, iy = y + 22 * s;
+        g.setColor(new Color(0xF4EBDD));
+        g.fillRoundRect(ix - 5 * s, iy - 5 * s, lado + 10 * s, lado + 10 * s, 12 * s, 12 * s);
+        g.setColor(cor);
+        g.drawRoundRect(ix - 5 * s, iy - 5 * s, lado + 10 * s, lado + 10 * s, 12 * s, 12 * s);
+        Icones.desenhar(g, c.icone(), cor.darker(), ix, iy, cel);
+
+        Font nome = FontHandler.font(FontHandler.Game, 9f * s);
+        int ny = iy + lado + 18 * s;
+        for (String linha : quebrar(c.nome(), nome, cw - 8 * s)) {
+            centro(g, linha, nome, x + cw / 2, ny, Color.WHITE, true, s);
+            ny += 11 * s;
+        }
+        Font efeito = FontHandler.font(FontHandler.Septem, 6f * s);
+        ny += 2 * s;
+        Color corEfeito = new Color(Math.min(255, cor.getRed() + 80), Math.min(255, cor.getGreen() + 80),
+                Math.min(255, cor.getBlue() + 80));
+        for (String linha : quebrar(c.efeito(), efeito, cw - 10 * s)) {
+            centro(g, linha, efeito, x + cw / 2, ny, corEfeito, true, s);
+            ny += 8 * s;
+        }
+        // Tecla de atalho no pe da carta.
+        Font tecla = FontHandler.font(FontHandler.Septem, 6f * s);
+        int tq = 10 * s;
+        g.setColor(new Color(0x0E0A14));
+        g.fillRoundRect(x + cw / 2 - tq / 2, y + ch - tq - 4 * s, tq, tq, 4 * s, 4 * s);
+        centro(g, String.valueOf(i + 1), tecla, x + cw / 2, y + ch - 6 * s, sob ? cor : Palette.ACCENT);
+        if (eleita && fechando < 8) {
+            g.setColor(new Color(255, 255, 255, (int) (200 * (1 - fechando / 8.0))));
+            g.fillRoundRect(x, y, cw, ch, 10 * s, 10 * s);
+        }
+        g.setTransform(antes);
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida));
+    }
+
+    private void desenharBotao(Graphics2D g, Rectangle r, String texto, boolean ativo, int s) {
+        boolean sob = ativo && r.contains(Mouse.getX(), Mouse.getY());
+        g.setColor(new Color(0x0E0A14));
+        g.fillRoundRect(r.x - s, r.y - s, r.width + 2 * s, r.height + 2 * s, 8 * s, 8 * s);
+        g.setColor(!ativo ? new Color(0x2A2438) : sob ? Palette.LIGHT : Palette.MAIN);
+        g.fillRoundRect(r.x, r.y, r.width, r.height, 8 * s, 8 * s);
+        Font f = FontHandler.font(FontHandler.Septem, 6f * s);
+        centro(g, texto, f, r.x + r.width / 2, r.y + r.height / 2 + 3 * s, ativo ? Color.WHITE : Palette.LIGHT);
+    }
+
+    /** A build atual: armas e passivas, com nivel; evoluidas com uma estrela. */
+    private void desenharBuild(Graphics2D g, Player gato, int s, int y, int w) {
+        Melhorias m = gato.getMelhorias();
+        List<Object[]> itens = new ArrayList<>();
+        for (var e : m.armas().entrySet()) {
+            String sufixo = m.evoluiu(e.getKey()) ? "*" : String.valueOf(e.getValue());
+            itens.add(new Object[]{e.getKey().name(), e.getKey().cor(), sufixo});
+        }
+        for (var e : m.passivas().entrySet()) {
+            itens.add(new Object[]{e.getKey().name(), e.getKey().cor(), String.valueOf(e.getValue())});
+        }
+        if (itens.isEmpty()) {
+            return;
+        }
+        int cel = Math.max(1, 2 * s);
+        int lado = Icones.lado(cel);
+        int passo = lado + 12 * s;
+        int x = w / 2 - (itens.size() * passo) / 2;
+        Font f = FontHandler.font(FontHandler.Septem, 6f * s);
+        Font rotulo = FontHandler.font(FontHandler.Septem, 5f * s);
+        centro(g, "YOUR BUILD", rotulo, w / 2, y - 3 * s, Palette.LIGHT);
+        for (Object[] it : itens) {
+            g.setColor(new Color(0x1A1428));
+            g.fillRoundRect(x, y, lado + 6 * s, lado + 6 * s, 6 * s, 6 * s);
+            Icones.desenhar(g, (String) it[0], (Color) it[1], x + 3 * s, y + 3 * s, cel);
+            String nivel = (String) it[2];
+            contornado(g, nivel, f, x + lado + 2 * s, y + lado + 6 * s,
+                    "*".equals(nivel) ? new Color(255, 214, 90) : Color.WHITE, s);
+            x += passo;
+        }
+    }
+
+    // ------------------------------------------------------------- texto
+
+    private static List<String> quebrar(String texto, Font fonte, int largura) {
+        List<String> linhas = new ArrayList<>();
+        StringBuilder atual = new StringBuilder();
+        for (String palavra : texto.split(" ")) {
+            String tentativa = atual.isEmpty() ? palavra : atual + " " + palavra;
+            if (FontHandler.getWidth(tentativa, fonte) > largura && !atual.isEmpty()) {
+                linhas.add(atual.toString());
+                atual = new StringBuilder(palavra);
+            } else {
+                atual = new StringBuilder(tentativa);
+            }
+        }
+        if (!atual.isEmpty()) {
+            linhas.add(atual.toString());
+        }
+        return linhas;
     }
 
     private static void centro(Graphics2D g, String texto, Font fonte, int cx, int y, Color cor) {
-        int lg = FontHandler.getWidth(texto, fonte);
-        esquerda(g, texto, fonte, cx - lg / 2, y, cor);
+        centro(g, texto, fonte, cx, y, cor, false, 1);
     }
 
-    private static void esquerda(Graphics2D g, String texto, Font fonte, int x, int y, Color cor) {
+    private static void centro(Graphics2D g, String texto, Font fonte, int cx, int y, Color cor,
+                               boolean comContorno, int s) {
+        int x = cx - FontHandler.getWidth(texto, fonte) / 2;
+        if (comContorno) {
+            contornado(g, texto, fonte, x, y, cor, s);
+            return;
+        }
         g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
+        g.setColor(new Color(0, 0, 0, 160));
         g.drawString(texto, x + 1, y + 1);
+        g.setColor(cor);
+        g.drawString(texto, x, y);
+    }
+
+    private static void contornado(Graphics2D g, String texto, Font fonte, int x, int y, Color cor, int s) {
+        g.setFont(fonte);
+        int c = Math.max(1, s / 2 + 1);
+        g.setColor(new Color(0x0A0610));
+        for (int[] d : new int[][]{{-c, 0}, {c, 0}, {0, -c}, {0, c}, {c, c}}) {
+            g.drawString(texto, x + d[0], y + d[1]);
+        }
         g.setColor(cor);
         g.drawString(texto, x, y);
     }

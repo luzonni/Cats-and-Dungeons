@@ -24,6 +24,7 @@ public final class Estatisticas {
     private static int maiorHorda;
 
     public static void reiniciar() {
+        com.retronova.game.map.arena.SubirDeNivel.reiniciar();
         fonte = MAO;
         danoPorFonte.clear();
         baus = 0;
