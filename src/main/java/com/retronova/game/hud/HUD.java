@@ -4,6 +4,8 @@ import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.engine.graphics.SpriteHandler;
@@ -45,8 +47,8 @@ public class HUD implements Activity {
      * resolve, tem de refazer os recortes quando "HUD size" muda.
      */
     private void recriar() {
-        int s = Configs.HudScale();
-        this.escalaAplicada = s;
+        this.escalaAplicada = Configs.HudScale();
+        int s = escalaDoRetrato();
         SpriteHandler sheetBust = new SpriteHandler("ui", "bust", s);
         SpriteHandler sheetBottle = new SpriteHandler("ui", "lifebottle", s);
         int indexBust = 0;
@@ -115,7 +117,7 @@ public class HUD implements Activity {
     private void bust(Graphics2D g) {
         int x = Configs.Margin();
         int y = Configs.Margin();
-        g.drawImage(this.chains, x, y - (this.frameBust.getHeight() - Configs.HudScale()), null);
+        g.drawImage(this.chains, x, y - (this.frameBust.getHeight() - escalaDoRetrato()), null);
         g.drawImage(this.frameBust, x, y, null);
         g.drawImage(this.bust, x, y, null);
     }
@@ -125,11 +127,12 @@ public class HUD implements Activity {
         int x = Configs.Margin() + this.frameBust.getWidth();
         int y = Configs.Margin();
         g.drawImage(bottle[indexBottle], x, y, Engine.window);
-        int w = Configs.HudScale() * 36;
-        int h = Configs.HudScale() * 4;
+        int s = escalaDoRetrato();
+        int w = s * 36;
+        int h = s * 5;
         int xx = x + bottle[indexBottle].getWidth();
         int yy = y + bottle[indexBottle].getHeight()/2;
-        g.setStroke(new BasicStroke(Configs.HudScale()));
+        g.setStroke(new BasicStroke(s));
         g.drawImage(this.chains, xx + w/2 - chains.getWidth()/2, yy - this.chains.getHeight(), null);
         g.setColor(new Color(135, 35, 65));
         g.fillRect(xx, yy, w, h);
@@ -138,6 +141,22 @@ public class HUD implements Activity {
         g.fillRect(xx, yy, (int)lifeWidth, h);
         g.setColor(new Color(9, 18, 44));
         g.drawRect(xx, yy, w, h);
+        // O número em cima da barra: a barra diz "quanto", o número diz "quanto mesmo".
+        String vida = (int) Math.ceil(Math.max(0, player.getLife())) + "/" + (int) player.getLifeSize();
+        Font fonte = FontHandler.font(FontHandler.Game, Configs.HudScale() * 8);
+        int fw = FontHandler.getWidth(vida, fonte);
+        int fh = FontHandler.getHeight(vida, fonte);
+        TextFx.draw(g, vida, fonte, xx + w / 2 - fw / 2, yy + h / 2 + fh / 2, Palette.TEXT, Configs.HudScale());
+    }
+
+    /**
+     * Retrato e vida no dobro da escala da HUD.
+     *
+     * Na escala normal o gato e a barra ficavam do tamanho de um icone, e sao as
+     * duas coisas que o jogador mais precisa ler de relance no meio da horda.
+     */
+    private static int escalaDoRetrato() {
+        return Configs.HudScale() * 2;
     }
 
     private void renderXpBar(Graphics2D g) {
@@ -160,10 +179,10 @@ public class HUD implements Activity {
         g2.fillArc(x - Configs.HudScale(), y - Configs.HudScale(), size + Configs.HudScale() *2, size + Configs.HudScale() *2, 90, percent);
         g2.setColor(new Color(9, 18, 44));
         g2.fillOval(x, y, size, size);
-        g2.setColor(Color.black);
-        g2.drawString(value, x + size/2 - wf/2 + Configs.HudScale(), y + size/2 + hf/2 + Configs.HudScale());
-        g2.setColor(Color.white);
-        g2.drawString(value, x + size/2 - wf/2, y + size/2 + hf/2);
+        // O circulo e suavizado, o numero nao: o mesmo acabamento do texto da GUI.
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+        TextFx.draw(g2, value, x + size/2 - wf/2, y + size/2 + hf/2, Palette.TEXT, Configs.HudScale());
         g2.dispose();
     }
 

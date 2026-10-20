@@ -36,5 +36,7 @@ public enum EntityIDs {
     Bed,
     Anvil,
     Entrance,
+    // Chefe final da corrida, aos 30 minutos. No fim da lista: o ID é o ordinal.
+    RatoRei,
 
 }
