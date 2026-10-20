@@ -382,8 +382,11 @@ public abstract class Enemy extends Entity implements Nascente {
         double y = getY() + Engine.RAND.nextDouble(getHeight());
         particle.setX(x);
         particle.setY(y);
-        if(damage >= 1d)
-            Game.getMap().put(new Word((int) damage + (critico ? "!" : ""), x, y, 1));
+        if (damage >= 1d) {
+            Game.getMap().put(critico
+                    ? new com.retronova.game.objects.particles.Critico((int) damage, x, y)
+                    : new Word(String.valueOf((int) damage), x, y, 1));
+        }
         Game.getMap().put(particle);
     }
 
