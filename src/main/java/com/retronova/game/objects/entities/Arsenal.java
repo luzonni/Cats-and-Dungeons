@@ -2,6 +2,7 @@ package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
 import com.retronova.game.items.ArmaExtra;
 import com.retronova.game.items.Melhorias;
@@ -39,6 +40,14 @@ public final class Arsenal {
 
     // ------------------------------------------------------------ numeros
 
+    private static double area() {
+        return Bonus.area(Game.getPlayer());
+    }
+
+    private static boolean evoluiu(ArmaExtra arma) {
+        return Game.getPlayer().getMelhorias().evoluiu(arma);
+    }
+
     private static int bolas(int nivel) {
         return nivel <= 0 ? 0 : 1 + nivel / 2;                 // 1,2,2,3,3
     }
@@ -48,7 +57,7 @@ public final class Arsenal {
     }
 
     private static double raioAura(int nivel) {
-        return (1.4 + 0.3 * nivel) * GameObject.SIZE();
+        return (1.4 + 0.3 * nivel) * GameObject.SIZE() * area() * (evoluiu(ArmaExtra.AURA) ? 1.5 : 1);
     }
 
     // -------------------------------------------------------------- tick
@@ -69,22 +78,28 @@ public final class Arsenal {
         int s = Configs.GameScale();
 
         if (novelo > 0) {
-            double dano = 5 + 2 * novelo + gato.getDamage() * 0.35;
+            Estatisticas.fonte(evoluiu(ArmaExtra.NOVELO) ? "Giant Yarn" : ArmaExtra.NOVELO.nome());
+            double dano = (5 + 2 * novelo + gato.getDamage() * 0.35) * (evoluiu(ArmaExtra.NOVELO) ? 2 : 1);
+            int meio = (evoluiu(ArmaExtra.NOVELO) ? 6 : 4) * s;
             for (double[] p : posicoesNovelo(cx, cy, novelo, 0)) {
-                Rectangle r = new Rectangle((int) p[0] - 4 * s, (int) p[1] - 4 * s, 8 * s, 8 * s);
+                Rectangle r = new Rectangle((int) p[0] - meio, (int) p[1] - meio, meio * 2, meio * 2);
                 acertar(bichos, r, 0, 18, dano, AttackTypes.Impact, 0, cx, cy);
             }
         }
         if (grimorio > 0) {
-            double dano = 9 + 3 * grimorio + gato.getDamage() * 0.5;
-            double empurrao = grimorio >= 4 ? 7 : 4;
+            Estatisticas.fonte(evoluiu(ArmaExtra.GRIMORIO) ? "Ancient Tome" : ArmaExtra.GRIMORIO.nome());
+            double dano = (9 + 3 * grimorio + gato.getDamage() * 0.5) * (evoluiu(ArmaExtra.GRIMORIO) ? 2 : 1);
+            double empurrao = (grimorio >= 4 ? 7 : 4) + (evoluiu(ArmaExtra.GRIMORIO) ? 3 : 0);
             for (double[] p : posicoesGrimorio(cx, cy, grimorio, 0)) {
                 Rectangle r = new Rectangle((int) p[0] - 5 * s, (int) p[1] - 6 * s, 10 * s, 12 * s);
                 acertar(bichos, r, 1, 30, dano, AttackTypes.Sorcery, empurrao, cx, cy);
             }
         }
-        if (aura > 0 && tempo % Math.max(20, 42 - 4 * aura) == 0) {
-            double dano = 3 + 1.8 * aura + gato.getDamage() * 0.15;
+        if (aura > 0 && tempo % Math.max(12, (int) ((42 - 4 * aura) * Bonus.pressa(gato))) == 0) {
+            boolean sagrado = evoluiu(ArmaExtra.AURA);
+            Estatisticas.fonte(sagrado ? "Holy Catnip" : ArmaExtra.AURA.nome());
+            double dano = (3 + 1.8 * aura + gato.getDamage() * 0.15) * (sagrado ? 2 : 1);
+            int curados = 0;
             double raio = raioAura(aura);
             for (Enemy e : bichos) {
                 if (e.nascendo()) {
@@ -94,9 +109,14 @@ public final class Arsenal {
                 double dy = e.getY() + e.getHeight() / 2.0 - cy;
                 if (dx * dx + dy * dy < raio * raio) {
                     e.strike(AttackTypes.Poison, dano);
+                    // Catnip Sagrado: cada bicho queimado devolve um pouco de vida (ate 3 por pulso).
+                    if (sagrado && curados++ < 3) {
+                        gato.setLife(Math.min(gato.getLifeSize(), gato.getLife() + 0.5));
+                    }
                 }
             }
         }
+        Estatisticas.fonte(null);   // de volta a arma da mao
     }
 
     private static void acertar(List<Enemy> bichos, Rectangle area, int arma, int intervalo,
@@ -123,7 +143,7 @@ public final class Arsenal {
 
     private static double[][] posicoesNovelo(double cx, double cy, int nivel, float alpha) {
         int n = bolas(nivel);
-        double raio = 1.7 * GameObject.SIZE();
+        double raio = 1.7 * GameObject.SIZE() * area();
         double giro = (tempo + alpha) * 0.085;
         double[][] p = new double[n][];
         for (int i = 0; i < n; i++) {
@@ -135,7 +155,7 @@ public final class Arsenal {
 
     private static double[][] posicoesGrimorio(double cx, double cy, int nivel, float alpha) {
         int n = livros(nivel);
-        double raio = 2.7 * GameObject.SIZE();
+        double raio = 2.7 * GameObject.SIZE() * area() * (evoluiu(ArmaExtra.GRIMORIO) ? 1.25 : 1);
         double giro = -(tempo + alpha) * 0.05;    // ao contrario do novelo
         double[][] p = new double[n][];
         for (int i = 0; i < n; i++) {
@@ -186,7 +206,7 @@ public final class Arsenal {
     }
 
     private static void desenharNovelo(Graphics2D g, int x, int y, int s, double giro) {
-        int r = 4 * s;
+        int r = (evoluiu(ArmaExtra.NOVELO) ? 6 : 4) * s;   // Novelo Gigante: bolas maiores
         g.setColor(new Color(0x7A2A4A));
         g.fillOval(x - r - s, y - r - s, (r + s) * 2, (r + s) * 2);
         g.setColor(new Color(0xFF6FA8));

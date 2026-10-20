@@ -698,6 +698,12 @@ public class Personagens implements Activity {
         }
 
         texto(g, p.getPapel().toUpperCase(), m.papel(), x, y, new Color(255, 255, 255, 150));
+        // A habilidade propria do gato, logo depois do papel (ver Bonus).
+        String habilidade = com.retronova.game.objects.entities.Bonus.habilidade(p.getName());
+        if (!habilidade.isEmpty()) {
+            int depois = x + FontHandler.getWidth(p.getPapel().toUpperCase() + "  ", m.papel());
+            texto(g, habilidade.toUpperCase(), m.papel(), depois, y, new Color(0xB57CF0));
+        }
 
         y += m.entreLinhas() * 2;
         for (String linha : m.lores()) {

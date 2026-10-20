@@ -5,6 +5,7 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
+import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
 import com.retronova.game.map.Camera;
 import com.retronova.game.objects.GameObject;
@@ -76,7 +77,8 @@ public final class Furia {
             return;
         }
         onda++;
-        double raio = raio(onda) * GameObject.SIZE();
+        double raio = raio(onda) * GameObject.SIZE() * Bonus.area(gato);
+        Estatisticas.fonte("Feline Fury");
         double dano = 30 + gato.getDamage() * 3;
         List<Enemy> bichos = Game.getMap().getEntities(Enemy.class);
         for (Enemy e : bichos) {
@@ -91,6 +93,7 @@ public final class Furia {
                 e.getPhysical().addForce("furia", 9, Math.atan2(ey - origemY, ex - origemX));
             }
         }
+        Estatisticas.fonte(null);
         if (onda >= DURACAO) {
             onda = -1;
             atingidos.clear();
@@ -121,7 +124,7 @@ public final class Furia {
             return;
         }
         double t = onda + (Engine.pausado() ? 0 : Engine.alpha());
-        double r = raio(t) * GameObject.SIZE();
+        double r = raio(t) * GameObject.SIZE() * Bonus.area(Game.getPlayer());
         float vida = (float) Math.max(0, 1 - t / DURACAO);
         int s = Configs.GameScale();
         Graphics2D o = (Graphics2D) g.create();

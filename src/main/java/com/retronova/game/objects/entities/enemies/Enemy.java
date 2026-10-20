@@ -363,11 +363,18 @@ public abstract class Enemy extends Entity implements Nascente {
         // golpe que nao produz nada na tela le como golpe que nao aconteceu, e o
         // jogador conclui que a arma esta quebrada em vez de que o bicho esta duro
         // — e a barra amarela esta logo ali dizendo o contrario.
+        // CRITICO: dano em dobro, e o numero sai com exclamacao. A chance vem de
+        // Bonus (passiva Critico, habilidade do Finn e um pouco da sorte).
+        boolean critico = Engine.RAND.nextDouble() < com.retronova.game.objects.entities.Bonus.critico(player);
+        if (critico) {
+            damage *= 2;
+        }
         if (armadura > 0) {
             double sobra = damage - armadura;
             armadura = Math.max(0, armadura - damage);
             damage = Math.max(0, sobra);
         }
+        com.retronova.game.Estatisticas.dano(Math.min(damage, Math.max(0, getLife())));
         super.strike(type, damage);
         this.tookDamage = true;
         this.desdeOApanhar = 0;
@@ -376,7 +383,7 @@ public abstract class Enemy extends Entity implements Nascente {
         particle.setX(x);
         particle.setY(y);
         if(damage >= 1d)
-            Game.getMap().put(new Word(String.valueOf((int)damage), x, y, 1));
+            Game.getMap().put(new Word((int) damage + (critico ? "!" : ""), x, y, 1));
         Game.getMap().put(particle);
     }
 
@@ -556,11 +563,22 @@ public abstract class Enemy extends Entity implements Nascente {
     }
 
     private void dropXp() {
-        Xp e = new Xp(getX(), getY());
         // Menos sorteio: antes ia de zero ao maximo, e metade das mortes rendia
         // quase nada. Agora vai de metade ao maximo, e a sorte soma em vez de
         // multiplicar sozinha.
-        e.setWeight(getXpWeight() * (0.5 + Engine.RAND.nextDouble() * 0.5) * (0.5 + Game.getPlayer().chanceDeSorte()));
+        double peso = getXpWeight() * (0.5 + Engine.RAND.nextDouble() * 0.5) * (0.5 + Game.getPlayer().chanceDeSorte());
+        // GEMAS SE FUNDEM. Com o ima limitado, gema nao coletada fica no chao; numa
+        // corrida longa seriam centenas de entidades. A nova soma o peso numa gema
+        // parada a menos de um tile e meio, em vez de nascer.
+        double perto = 1.5 * com.retronova.game.objects.GameObject.SIZE();
+        for (Xp outra : Game.getMap().getEntities(Xp.class)) {
+            if (outra.parada() && outra.getDistance(this) < perto) {
+                outra.setWeight(outra.getWeight() + peso);
+                return;
+            }
+        }
+        Xp e = new Xp(getX(), getY());
+        e.setWeight(peso);
         Game.getMap().put(e);
         e.getPhysical().addForce("move", 1, Math.PI*2);
     }

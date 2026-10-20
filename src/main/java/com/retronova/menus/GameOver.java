@@ -6,78 +6,48 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.engine.inputs.mouse.Mouse;
+import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
+import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
+import com.retronova.game.Meta;
 import com.retronova.game.map.room.Room;
+import com.retronova.game.objects.entities.Bonus;
 import com.retronova.menus.shared.Button;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
- * A tela de fim de partida.
+ * Fim de corrida: o resumo do que aconteceu e a loja do que fica.
  *
- * O QUE ELA ERA. Preto cheio, "Game Over" em branco no meio, e uma linha piscando
- * pedindo ESC. Preto puro e branco puro nao aparecem em lugar nenhum da paleta do
- * jogo; a fonte era a certa, mas todo o resto vinha de outro lugar — e o resultado
- * era a unica tela que nao parecia do mesmo jogo que as outras. A pausa e as
- * opcoes ja tinham sido refeitas sobre {@link Palette} e sobre {@link Button}, e
- * esta ficou para tras.
- *
- * O QUE MUDA, e por que cada coisa.
- *
- * O FUNDO E O VEU, e nao preto. O mesmo veu da pausa, sobre o mesmo tom de fundo
- * do jogo. Isso ja e metade da diferenca: a tela passa a pertencer a familia.
- *
- * O TITULO GANHA SOMBRA DURA, como o da pausa — contorno deslocado de um pixel de
- * interface. E o tratamento de texto do jogo inteiro, e sem ele o titulo flutua.
- *
- * A LINHA PISCANDO SAI, E ENTRAM BOTOES. Texto piscando pedindo uma tecla e
- * herança de fliperama, e aqui era ainda a unica tela do jogo em que o mouse nao
- * servia para nada. Com os mesmos botoes das outras telas, o jogador reconhece o
- * que fazer sem ler instrucao — e ganha o que faltava de verdade: poder recomecar
- * dali, sem passar pelo menu principal.
- *
- * A ENTRADA E ATRASADA. A tela nasce transparente e ganha corpo em meio segundo,
- * e os botoes so respondem depois disso. Sao duas razoes: a queda do gato acabou
- * de acontecer e merece um instante de silencio antes de virar interface, e
- * qualquer tecla ou clique que o jogador ainda estivesse apertando na hora da
- * morte cairia direto num botao — escolhendo por ele.
+ * ANTES ERA SO "GAME OVER" E DOIS BOTOES. A corrida acabava sem dizer nada — nem
+ * quanto tempo o gato aguentou, nem que arma carregou a build — e nada passava
+ * para a proxima. Agora a tela fecha a corrida com os numeros dela (tempo,
+ * abates, nivel, baus, maior horda e o dano de cada arma em barras) e abre a
+ * loja de upgrades permanentes com o ouro ganho (ver Meta). E o momento em que
+ * a derrota vira "so mais uma".
  */
 public class GameOver implements Activity {
 
-    /** Quadros ate a tela estar inteira, e ate ela aceitar comando. */
     private static final int ENTRADA = 30;
 
     private final List<Button> botoes = new ArrayList<>();
+    private final List<Rectangle> linhasDaLoja = new ArrayList<>();
     private int foco = -1;
     private int entrando;
+    private int brilhoDaCompra = -1, desdeACompra;
 
-    /**
-     * O titulo pisca, como na versao antiga da tela.
-     *
-     * Contado em QUADROS e nao em relogio: a versao anterior comparava
-     * System.currentTimeMillis a cada passagem, o que faz o piscar andar num ritmo
-     * proprio, independente do jogo. Preso ao tick ele bate com tudo o mais que se
-     * move na tela, e continua igual se a maquina engasgar.
-     *
-     * Meio segundo aceso, meio apagado. Menos que isso vira tremor; mais, vira
-     * espera.
-     */
-    private static final int PISCA = 30;
-    private int relogioDoPisca;
-    private boolean titutoVisivel = true;
-
-    /** Com qual gato a partida perdida foi jogada. */
     private final int gato;
-
-    /** Em que espaco a corrida perdida morava. O "Try Again" recomeca no mesmo. */
     private final int espaco;
 
     public GameOver(int gato, int espaco) {
@@ -90,36 +60,38 @@ public class GameOver implements Activity {
         posicionar();
     }
 
-    /**
-     * Comeca uma partida NOVA, e nao um restart.
-     *
-     * Game.restart() serve a pausa, onde a partida ainda esta viva por baixo: ele
-     * pede a interface do jogo em andamento para descartar. Aqui nao ha jogo em
-     * andamento — o gameOver ja o tinha dispensado antes desta tela subir — e a
-     * chamada estourava com "a activity atual nao e um jogo". O caminho certo e o
-     * mesmo da selecao de personagem: montar um jogo do zero com o gato escolhido.
-     */
     private void reiniciar() {
         Sound.stopAll();
         Engine.heapActivity(new Game(gato, new Room("beginning"), espaco), () -> { });
     }
 
+    private int escala() {
+        int cabe = Math.max(1, (Engine.window.getHeight() - 20) / 210);
+        return Math.max(1, Math.min(Configs.UiScale(), cabe));
+    }
+
+    private Rectangle painelResumo, painelLoja;
+
     private void posicionar() {
-        // AS MEDIDAS DO PROPRIO BOTAO, e nao numeros escolhidos aqui.
-        //
-        // Eu tinha cravado noventa por dezoito, e era pequeno demais e deformado:
-        // a moldura do botao e uma imagem de nove fatias, entao ela so fica certa
-        // no tamanho para o qual foi cortada. Fora dele, os cantos esticam — era
-        // aquele contorno errado no alto de cada botao. A pausa e o menu ja pediam
-        // a medida ao Button; esta tela nao pedia.
-        int s = Configs.UiScale();
+        int s = escala();
+        int w = Engine.window.getWidth(), h = Engine.window.getHeight();
+        int pw = 150 * s, ph = 140 * s, vao = 10 * s;
+        int x0 = w / 2 - pw - vao / 2;
+        int y0 = h / 2 - ph / 2 - 8 * s;
+        painelResumo = new Rectangle(x0, y0, pw, ph);
+        painelLoja = new Rectangle(w / 2 + vao / 2, y0, pw, ph);
+        linhasDaLoja.clear();
+        Meta.Permanente[] todos = Meta.Permanente.values();
+        for (int i = 0; i < todos.length; i++) {
+            linhasDaLoja.add(new Rectangle(painelLoja.x + 6 * s, painelLoja.y + 34 * s + i * 20 * s,
+                    painelLoja.width - 12 * s, 17 * s));
+        }
         int largura = Button.preferredWidth();
         int altura = Button.preferredHeight();
-        int espaco = altura + 4 * s;
-        int x = Engine.window.getWidth() / 2 - largura / 2;
-        int y = Engine.window.getHeight() / 2 + 6 * s;
+        int by = y0 + ph + 10 * s;
+        int bx = w / 2 - largura - 4 * s;
         for (int i = 0; i < botoes.size(); i++) {
-            botoes.get(i).setBounds(new Rectangle(x, y + i * espaco, largura, altura));
+            botoes.get(i).setBounds(new Rectangle(bx + i * (largura + 8 * s), by, largura, altura));
         }
     }
 
@@ -130,24 +102,35 @@ public class GameOver implements Activity {
             entrando++;
             return;
         }
-        if (++relogioDoPisca >= PISCA) {
-            relogioDoPisca = 0;
-            titutoVisivel = !titutoVisivel;
-        }
+        desdeACompra++;
         if (KeyBoard.KeyPressed("Escape")) {
             Engine.heapActivity(new Menu());
             return;
         }
-        navegarPeloTeclado();
-
-        // O MOUSE APAGA O FOCO DE TECLADO, e nao o assume.
-        //
-        // Eu estava fazendo o contrario — passar o mouse marcava foco — e foco
-        // desenha um ANEL em volta do botao. Dai o quadrado que so aparecia aqui:
-        // nas outras telas o anel e exclusivo da navegacao por teclado, e quem usa
-        // o mouse ve apenas o brilho e o realce. Sao duas linguagens diferentes de
-        // "este e o botao da vez", uma para cada dispositivo, e misturar as duas
-        // deixa a tela fora do padrao do resto do jogo.
+        // Loja: clicar numa linha compra o proximo nivel, se houver ouro.
+        Meta.Permanente[] todos = Meta.Permanente.values();
+        for (int i = 0; i < linhasDaLoja.size(); i++) {
+            Rectangle r = linhasDaLoja.get(i);
+            if (r.contains(Mouse.getX(), Mouse.getY())) {
+                Engine.window.pointing();
+                if (Mouse.clickOn(Mouse_Button.LEFT, r)) {
+                    if (Meta.comprar(todos[i])) {
+                        Sound.play(Sounds.Conquista);
+                        brilhoDaCompra = i;
+                        desdeACompra = 0;
+                    } else {
+                        Sound.play(Sounds.Button);
+                    }
+                }
+            }
+        }
+        if (KeyBoard.KeyPressed("Right")) {
+            foco = (foco + 1) % botoes.size();
+        } else if (KeyBoard.KeyPressed("Left")) {
+            foco = (foco <= 0 ? botoes.size() : foco) - 1;
+        } else if (KeyBoard.KeyPressed("Enter") && foco >= 0) {
+            botoes.get(foco).activate();
+        }
         for (int i = 0; i < botoes.size(); i++) {
             Button botao = botoes.get(i);
             botao.tick();
@@ -158,69 +141,164 @@ public class GameOver implements Activity {
         }
     }
 
-    private void navegarPeloTeclado() {
-        if (KeyBoard.KeyPressed("Down")) {
-            foco = (foco + 1) % botoes.size();
-        } else if (KeyBoard.KeyPressed("Up")) {
-            foco = (foco <= 0 ? botoes.size() : foco) - 1;
-        } else if (KeyBoard.KeyPressed("Enter") && foco >= 0) {
-            botoes.get(foco).activate();
-        }
-    }
+    // ------------------------------------------------------------- desenho
 
     @Override
     public void render(Graphics2D g) {
-        float entrada = Math.min(1f, entrando / (float) ENTRADA);
+        float entrada = Math.min(1f, (entrando + Engine.alpha()) / ENTRADA);
         int w = Engine.window.getWidth();
         int h = Engine.window.getHeight();
+        int s = escala();
 
         g.setColor(Palette.DARKEST);
         g.fillRect(0, 0, w, h);
         g.setColor(new Color(Palette.VEIL.getRed(), Palette.VEIL.getGreen(),
                 Palette.VEIL.getBlue(), (int) (Palette.VEIL.getAlpha() * entrada)));
         g.fillRect(0, 0, w, h);
-
         if (entrada < 1f) {
             return;
         }
-        desenharTitulo(g, w, h);
+
+        Font titulo = FontHandler.font(FontHandler.Game, 18f * s);
+        contornadoCentro(g, "RUN OVER", titulo, w / 2, painelResumo.y - 10 * s, new Color(0xE0475F), s);
+
+        desenharResumo(g, s);
+        desenharLoja(g, s);
         for (Button botao : botoes) {
             botao.render(g);
         }
     }
 
-    private void desenharTitulo(Graphics2D g, int w, int h) {
-        int s = Configs.UiScale();
-        Font fonte = FontHandler.font(FontHandler.Game, 28f * s);
-        String titulo = "Game Over";
-        int largura = FontHandler.getWidth(titulo, fonte);
-        int x = w / 2 - largura / 2;
-        int y = h / 2 - 14 * s;
-        // So o TITULO pisca. O risco e a legenda ficam, senao a tela inteira
-        // cintila e o olho nao tem onde descansar enquanto le as opcoes.
-        if (titutoVisivel) {
-            g.setFont(fonte);
-            g.setColor(Palette.OUTLINE);
-            g.drawString(titulo, x + s, y + s);
-            g.setColor(Palette.TEXT);
-            g.drawString(titulo, x, y);
+    private void painel(Graphics2D g, Rectangle p, String titulo, Color cor, int s) {
+        g.setColor(new Color(0, 0, 0, 100));
+        g.fillRoundRect(p.x + 3 * s, p.y + 5 * s, p.width, p.height, 12 * s, 12 * s);
+        g.setColor(new Color(0x0E0A14));
+        g.fillRoundRect(p.x - 2 * s, p.y - 2 * s, p.width + 4 * s, p.height + 4 * s, 14 * s, 14 * s);
+        g.setPaint(new GradientPaint(0, p.y, new Color(0x2E2546), 0, p.y + p.height, new Color(0x15101F)));
+        g.fillRoundRect(p.x, p.y, p.width, p.height, 12 * s, 12 * s);
+        g.setColor(cor);
+        g.fillRoundRect(p.x, p.y, p.width, 14 * s, 12 * s, 12 * s);
+        g.fillRect(p.x, p.y + 7 * s, p.width, 7 * s);
+        Font f = FontHandler.font(FontHandler.Septem, 7f * s);
+        centro(g, titulo, f, p.x + p.width / 2, p.y + 10 * s, new Color(0x14081C));
+    }
+
+    private void desenharResumo(Graphics2D g, int s) {
+        Rectangle p = painelResumo;
+        painel(g, p, "RUN SUMMARY", new Color(0x4FC3E8), s);
+        Font f = FontHandler.font(FontHandler.Septem, 6f * s);
+        Font valor = FontHandler.font(FontHandler.Game, 7f * s);
+        int seg = Estatisticas.segundos();
+        String gato = Estatisticas.gato();
+        String[][] linhas = {
+                {"Cat", gato},
+                {"Time", String.format("%02d:%02d", seg / 60, seg % 60)},
+                {"Kills", String.valueOf(Estatisticas.abates())},
+                {"Level", String.valueOf(Estatisticas.nivel())},
+                {"Chests", String.valueOf(Estatisticas.baus())},
+                {"Peak horde", String.valueOf(Estatisticas.maiorHorda())},
+        };
+        int y = p.y + 26 * s;
+        for (String[] l : linhas) {
+            esquerda(g, l[0], f, p.x + 8 * s, y, Palette.ACCENT);
+            int vw = FontHandler.getWidth(l[1], valor);
+            contornado(g, l[1], valor, p.x + p.width - 8 * s - vw, y, Color.WHITE, s);
+            y += 10 * s;
         }
+        String habilidade = Bonus.habilidade(gato);
+        if (!habilidade.isEmpty()) {
+            centro(g, habilidade, f, p.x + p.width / 2, y, new Color(0xB57CF0));
+        }
+        y += 8 * s;
+        // Dano por arma, em barras proporcionais a maior.
+        Map<String, Double> danos = Estatisticas.danoPorFonte();
+        List<Map.Entry<String, Double>> ordenados = new ArrayList<>(danos.entrySet());
+        ordenados.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
+        double maior = ordenados.isEmpty() ? 1 : Math.max(1, ordenados.getFirst().getValue());
+        Font pequena = FontHandler.font(FontHandler.Septem, 5f * s);
+        for (int i = 0; i < Math.min(4, ordenados.size()); i++) {
+            var e = ordenados.get(i);
+            int bw = (int) ((p.width - 16 * s) * (e.getValue() / maior));
+            g.setColor(new Color(0x3A2E55));
+            g.fillRect(p.x + 8 * s, y, p.width - 16 * s, 7 * s);
+            g.setColor(i == 0 ? new Color(0xFFD23F) : new Color(0x7FD8FF));
+            g.fillRect(p.x + 8 * s, y, bw, 7 * s);
+            String rot = e.getKey() + "  " + Math.round(e.getValue());
+            contornado(g, rot, pequena, p.x + 10 * s, y + 6 * s, Color.WHITE, s);
+            y += 9 * s;
+        }
+    }
 
-        // Um risco sob o titulo, na cor de realce: separa o fim da partida das
-        // escolhas que vem depois dele, sem precisar de mais uma caixa na tela.
-        g.setColor(Palette.LIGHT);
-        g.setStroke(new BasicStroke(s));
-        int meio = w / 2;
-        g.drawLine(meio - largura / 3, y + 5 * s, meio + largura / 3, y + 5 * s);
+    private void desenharLoja(Graphics2D g, int s) {
+        Rectangle p = painelLoja;
+        painel(g, p, "UPGRADES", new Color(0xFFD23F), s);
+        Font f = FontHandler.font(FontHandler.Septem, 6f * s);
+        Font grande = FontHandler.font(FontHandler.Game, 8f * s);
+        String ouro = "Gold: " + Meta.ouro();
+        String ganho = "+" + Estatisticas.ouroGanho() + " this run";
+        contornado(g, ouro, grande, p.x + 8 * s, p.y + 26 * s, new Color(0xFFD23F), s);
+        int gw = FontHandler.getWidth(ganho, f);
+        esquerda(g, ganho, f, p.x + p.width - 8 * s - gw, p.y + 26 * s, Palette.ACCENT);
 
-        Font legenda = FontHandler.font(FontHandler.Game, 9f * s);
-        String texto = "The dungeon keeps the floor.";
-        int lg = FontHandler.getWidth(texto, legenda);
-        g.setFont(legenda);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(texto, meio - lg / 2 + s, y + 15 * s + s);
-        g.setColor(Palette.LIGHT);
-        g.drawString(texto, meio - lg / 2, y + 15 * s);
+        Meta.Permanente[] todos = Meta.Permanente.values();
+        for (int i = 0; i < todos.length; i++) {
+            Meta.Permanente m = todos[i];
+            Rectangle r = linhasDaLoja.get(i);
+            int nivel = Meta.nivel(m);
+            boolean cheio = nivel >= Meta.Permanente.NIVEL_MAXIMO;
+            boolean podeComprar = !cheio && Meta.ouro() >= Meta.preco(m);
+            boolean sob = r.contains(Mouse.getX(), Mouse.getY());
+            g.setColor(sob && podeComprar ? Palette.LIGHT : Palette.MAIN);
+            g.fillRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
+            if (brilhoDaCompra == i && desdeACompra < 20) {
+                g.setColor(new Color(255, 255, 255, (int) (200 * (1 - desdeACompra / 20.0))));
+                g.fillRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
+            }
+            g.setColor(m.cor());
+            g.fillRect(r.x, r.y, 3 * s, r.height);
+            contornado(g, m.nome(), f, r.x + 6 * s, r.y + 7 * s, Color.WHITE, s);
+            esquerda(g, m.efeito(), FontHandler.font(FontHandler.Septem, 5f * s), r.x + 6 * s, r.y + 14 * s, Palette.ACCENT);
+            // Pips de nivel.
+            for (int k = 0; k < Meta.Permanente.NIVEL_MAXIMO; k++) {
+                g.setColor(k < nivel ? m.cor() : new Color(0x1A1428));
+                g.fillRect(r.x + r.width - 62 * s + k * 5 * s, r.y + 4 * s, 4 * s, 4 * s);
+            }
+            String preco = cheio ? "MAX" : Meta.preco(m) + "g";
+            int pw = FontHandler.getWidth(preco, f);
+            contornado(g, preco, f, r.x + r.width - 6 * s - pw, r.y + 14 * s,
+                    cheio ? Palette.LIGHT : podeComprar ? new Color(0xFFD23F) : new Color(0x9A5050), s);
+        }
+        centro(g, "Click to buy. Upgrades apply to every new run.", FontHandler.font(FontHandler.Septem, 5f * s),
+                p.x + p.width / 2, p.y + p.height - 4 * s, Palette.LIGHT);
+    }
+
+    // ------------------------------------------------------------- texto
+
+    private static void esquerda(Graphics2D g, String t, Font f, int x, int y, Color cor) {
+        g.setFont(f);
+        g.setColor(new Color(0, 0, 0, 150));
+        g.drawString(t, x + 1, y + 1);
+        g.setColor(cor);
+        g.drawString(t, x, y);
+    }
+
+    private static void centro(Graphics2D g, String t, Font f, int cx, int y, Color cor) {
+        esquerda(g, t, f, cx - FontHandler.getWidth(t, f) / 2, y, cor);
+    }
+
+    private static void contornado(Graphics2D g, String t, Font f, int x, int y, Color cor, int s) {
+        g.setFont(f);
+        int c = Math.max(1, s / 2);
+        g.setColor(new Color(0x0A0610));
+        for (int[] d : new int[][]{{-c, 0}, {c, 0}, {0, -c}, {0, c}, {c, c}}) {
+            g.drawString(t, x + d[0], y + d[1]);
+        }
+        g.setColor(cor);
+        g.drawString(t, x, y);
+    }
+
+    private static void contornadoCentro(Graphics2D g, String t, Font f, int cx, int y, Color cor, int s) {
+        contornado(g, t, f, cx - FontHandler.getWidth(t, f) / 2, y, cor, s);
     }
 
     @Override

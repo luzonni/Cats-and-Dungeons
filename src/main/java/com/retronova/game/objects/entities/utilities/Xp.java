@@ -44,6 +44,8 @@ public class Xp extends Utility {
     private static final double ARRANCO = 15d;
 
     private int idade;
+    /** Ja entrou no ima uma vez: vem ate o gato mesmo que ele se afaste. */
+    private boolean atraida;
     /** Ticks de vida, so para a animacao da gema (idade para de contar). */
     private int vivo = com.retronova.engine.Engine.RAND.nextInt(100);   // fase propria: as gemas nao flutuam em coro
 
@@ -58,6 +60,11 @@ public class Xp extends Utility {
      * dezenas de orbes azuis da horda.
      */
     private boolean grande;
+
+    /** Ainda nao foi puxada pelo ima: pode receber o peso de outra gema. */
+    public boolean parada() {
+        return !atraida && !grande;
+    }
 
     public Xp grande() {
         this.grande = true;
@@ -136,8 +143,19 @@ public class Xp extends Utility {
         // Assim o orbe magnético continua fazendo diferença sem precisar existir
         // para o sistema funcionar: ele passa a ser "chega mais rápido", que é um
         // efeito honesto, em vez de "chega".
-        double limite = player.getDistance(this) < player.getRangeOfColect()
-                ? ARRANCO : PASSEIO;
+        // O IMA PASSOU A DECIDIR. Com a corrida sem fim e o campo aberto, toda gema
+        // voando ate o gato de qualquer distancia tornava o ima inutil e a coleta
+        // automatica. Agora, como no genero, a gema so vem quando o gato entra no
+        // alcance do ima (5 tiles, mais a passiva Ima e o upgrade permanente) — e
+        // uma vez puxada, vem ate o fim. Andar ate a horda morta e uma escolha, e
+        // o Ima vira uma das cartas mais desejadas.
+        double alcance = player.getRangeOfColect()
+                * com.retronova.game.objects.entities.Bonus.ima(player);
+        if (!atraida && player.getDistance(this) > alcance) {
+            return;
+        }
+        atraida = true;
+        double limite = ARRANCO;
         if(speed < limite) {
             speed += 0.25d;
         } else if(speed > limite) {

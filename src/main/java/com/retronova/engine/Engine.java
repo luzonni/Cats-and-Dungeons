@@ -78,6 +78,12 @@ public class Engine implements Runnable {
             if (Boolean.getBoolean("cd.roleta")) {
                 com.retronova.game.Game.depoisDeUmSegundo =
                         () -> pause(new com.retronova.game.map.arena.Roleta());
+            } else if (Boolean.getBoolean("cd.fim")) {
+                // A tela de fim de corrida, com os numeros de 1s de partida.
+                com.retronova.game.Game.depoisDeUmSegundo = () -> {
+                    com.retronova.game.Estatisticas.encerrar(312, 840, 17, "Finn");
+                    heapActivity(new com.retronova.menus.GameOver(2, 0));
+                };
             } else if (Boolean.getBoolean("cd.nivel")) {
                 com.retronova.game.Game.depoisDeUmSegundo =
                         () -> pause(new com.retronova.game.map.arena.SubirDeNivel());

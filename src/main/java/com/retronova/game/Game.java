@@ -109,6 +109,8 @@ public class Game implements Activity {
         this.changeMap(new Arena(this.difficult, this.level));
         this.hud = new HUD(player);
         com.retronova.game.objects.entities.Furia.reiniciar();
+        Estatisticas.reiniciar();
+        com.retronova.game.objects.entities.Bonus.aplicarNoInicio(player);
         com.retronova.game.objects.entities.ArmasDeArea.reiniciar();
         this.regravarSave = true;
     }
@@ -144,6 +146,8 @@ public class Game implements Activity {
         this.changeMap(map);
         this.hud = new HUD(player);
         com.retronova.game.objects.entities.Furia.reiniciar();
+        Estatisticas.reiniciar();
+        com.retronova.game.objects.entities.Bonus.aplicarNoInicio(player);
         com.retronova.game.objects.entities.ArmasDeArea.reiniciar();
     }
 
@@ -203,6 +207,15 @@ public class Game implements Activity {
         // jogador estava — e sem isso o botao de recomecar nao tem o que recomecar.
         int gato = this.indexPlayer;
         int onde = this.espaco;
+        // Os numeros da corrida para a tela final, e o ouro ja depositado.
+        int segundosDaCorrida = (int) this.seconds, abates = 0;
+        if (map instanceof Arena arena) {
+            abates = arena.getWaves().abates();
+            if (arena.getWaves().semFim()) {
+                segundosDaCorrida = arena.getWaves().getSeconds();
+            }
+        }
+        Estatisticas.encerrar(segundosDaCorrida, abates, player.getLevel(), player.getName());
         Engine.backActivity();
         Engine.heapActivity(new GameOver(gato, onde));
     }
@@ -302,6 +315,7 @@ public class Game implements Activity {
         if (!player.morrendo()) {
             com.retronova.game.objects.entities.Arsenal.tick(player);
             com.retronova.game.objects.entities.Furia.tick(player);
+            com.retronova.game.objects.entities.Bonus.tick(player);
         }
         map.depth();
         List<Entity> entities = map.getEntities();

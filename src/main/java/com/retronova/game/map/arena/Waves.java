@@ -190,6 +190,7 @@ public class Waves implements Runnable {
                 vivos++;
             }
         }
+        com.retronova.game.Estatisticas.horda(vivos);
         int tamanho = 3 + (int) (min * 3) + Engine.RAND.nextInt(3);
         tamanho = Math.min(tamanho, MAX_VIVOS - vivos);
         if (tamanho > 0) {
