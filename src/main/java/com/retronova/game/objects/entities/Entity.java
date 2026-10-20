@@ -163,6 +163,9 @@ public abstract class Entity extends GameObject {
             case Chain -> {
                 return new Chain(ID, x, y, (length >= 3) ? (String) values[2] : "chain");
             }
+            case RatoRei -> {
+                return new com.retronova.game.objects.entities.enemies.RatoRei(ID, x, y);
+            }
             case Torch -> {
                 return new Torch(ID, x, y);
             }

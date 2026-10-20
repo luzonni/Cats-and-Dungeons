@@ -132,6 +132,9 @@ public class Waves implements Runnable {
     private int abates;
     private int ateOProximoGrupo = 60 * 2;
     private int proximoChefe = 1;
+    /** Duração da corrida: quando o relógio chega aqui, nasce o chefe final. */
+    public static final int DURACAO_MINUTOS = 30;
+    private boolean reiNasceu;
     /** Teto de bichos vivos: acima disto a horda espera, e o jogo nao afoga. */
     private static final int MAX_VIVOS = 170;
 
@@ -168,8 +171,13 @@ public class Waves implements Runnable {
     private void tickSemFim() {
         ticksDaCorrida++;
         double min = minutos();
+        // Aos 30 minutos, o fim da corrida: o Rato Rei no lugar do chefe comum.
+        if (!reiNasceu && min >= DURACAO_MINUTOS) {
+            reiNasceu = true;
+            nascerGrupo(1, EntityIDs.RatoRei, true);
+        }
         // Chefe a cada cinco minutos.
-        if (min >= proximoChefe * 5) {
+        if (min >= proximoChefe * 5 && min < DURACAO_MINUTOS) {
             int qual = (proximoChefe - 1) % CHEFES.length;
             proximoChefe++;
             nascerGrupo(1, CHEFES[qual], true);

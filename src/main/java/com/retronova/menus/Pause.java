@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
@@ -132,10 +133,7 @@ public class Pause implements Activity {
         int x = Engine.window.getWidth() / 2 - largura / 2;
         int y = botoes.get(0).getBounds().y - 8 * s;
         g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(titulo, x + s, y + s);
-        g.setColor(Palette.LIGHT);
-        g.drawString(titulo, x, y);
+        TextFx.draw(g, titulo, x, y, Palette.LIGHT, s);
     }
 
     /**
@@ -161,10 +159,7 @@ public class Pause implements Activity {
         Rectangle ultimo = botoes.get(botoes.size() - 1).getBounds();
         int y = ultimo.y + ultimo.height + 10 * s;
         g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(aviso, x + s, y + s);
-        g.setColor(Palette.LIGHT);
-        g.drawString(aviso, x, y);
+        TextFx.draw(g, aviso, x, y, Palette.LIGHT, s);
     }
 
     @Override

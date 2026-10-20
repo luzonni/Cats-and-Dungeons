@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -167,10 +168,7 @@ public class Recompensa implements Activity {
         int lg = FontHandler.getWidth(texto, titulo);
         int ty = caixas.get(0).y - 10 * s;
         g.setFont(titulo);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(texto, w / 2 - lg / 2 + s, ty + s);
-        g.setColor(Palette.TEXT);
-        g.drawString(texto, w / 2 - lg / 2, ty);
+        TextFx.draw(g, texto, w / 2 - lg / 2, ty, Palette.TEXT, s);
 
         for (int i = 0; i < cartas.size(); i++) {
             desenharCarta(g, i, s);
@@ -487,10 +485,7 @@ public class Recompensa implements Activity {
             return;
         }
         g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(texto, x + s, y + s);
-        g.setColor(cor);
-        g.drawString(texto, x, y);
+        TextFx.draw(g, texto, x, y, cor, s);
     }
 
     /**
@@ -516,10 +511,7 @@ public class Recompensa implements Activity {
         g.setFont(fonte);
         int lg = FontHandler.getWidth(texto, fonte);
         int x = caixa.x + caixa.width / 2 - lg / 2;
-        g.setColor(Palette.OUTLINE);
-        g.drawString(texto, x + s, y + s);
-        g.setColor(cor);
-        g.drawString(texto, x, y);
+        TextFx.draw(g, texto, x, y, cor, s);
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.retronova.engine.Debugging;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -399,10 +400,7 @@ public class Options implements Activity {
         int x = Engine.window.getWidth() / 2 - w / 2;
         int y = yTitulo;
         g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(titulo, x + s, y + s);
-        g.setColor(Palette.LIGHT);
-        g.drawString(titulo, x, y);
+        TextFx.draw(g, titulo, x, y, Palette.LIGHT, s);
     }
 
     /** Painel de fundo atrás das linhas. Altura fixa, igual em todas as abas. */
@@ -439,10 +437,7 @@ public class Options implements Activity {
             int h = FontHandler.getHeight(abas[i], fonte);
             int tx = r.x + (r.width - w) / 2;
             int ty = r.y + (r.height + h) / 2;
-            g.setColor(Palette.OUTLINE);
-            g.drawString(abas[i], tx + s, ty + s);
-            g.setColor(ativa ? Palette.TEXT : Palette.LIGHT);
-            g.drawString(abas[i], tx, ty);
+            TextFx.draw(g, abas[i], tx, ty, ativa ? Palette.TEXT : Palette.LIGHT, s);
         }
     }
 
@@ -453,10 +448,7 @@ public class Options implements Activity {
         int x = aplicar.getBounds().x;          // alinhado à esquerda, sob o botão
         int y = aplicar.getBounds().y - 2 * s;
         g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(aviso, x + s, y + s);
-        g.setColor(Palette.LIGHT);
-        g.drawString(aviso, x, y);
+        TextFx.draw(g, aviso, x, y, Palette.LIGHT, s);
     }
 
     /**
@@ -505,10 +497,7 @@ public class Options implements Activity {
         g.setFont(fonte);
         for (int i = 0; i < linhasTexto.size(); i++) {
             int ty = y + pad + (i + 1) * alturaLinha - 2 * s;
-            g.setColor(Palette.OUTLINE);
-            g.drawString(linhasTexto.get(i), x + pad + s, ty + s);
-            g.setColor(Palette.TEXT);
-            g.drawString(linhasTexto.get(i), x + pad, ty);
+            TextFx.draw(g, linhasTexto.get(i), x + pad, ty, Palette.TEXT, s);
         }
     }
 

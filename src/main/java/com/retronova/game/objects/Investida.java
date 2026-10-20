@@ -84,6 +84,18 @@ public final class Investida {
         return new Investida(6, 3, 6, 3);
     }
 
+    /**
+     * Espada: 450 ms, com o CORTE MAIS LONGO que o da leve.
+     *
+     * A leve cruza o arco inteiro em tres ticks. Num golpe reto isso le como
+     * impacto; num golpe que GIRA quase duzentos graus vira sessenta graus por
+     * tick, e a lamina teleporta em vez de varrer. Seis ticks de corte, com a
+     * curva de {@link #avancoSuave}, ainda e rapido e passa a ser movimento.
+     */
+    public static Investida espada() {
+        return new Investida(7, 6, 7, 7);
+    }
+
     /** Média: 550 ms. Lança e haste. */
     public static Investida media() {
         return new Investida(12, 3, 9, 9);
@@ -144,5 +156,44 @@ public final class Investida {
         }
         double f = (t - preparo - corte - extensao) / (double) Math.max(1, recuperacao);
         return 0.85 * (1 - f);
+    }
+
+    /**
+     * O mesmo avanco, mas CONTINUO e com curvas nas emendas, para o desenho.
+     *
+     * O {@link #avanco} anda em degraus de um tick e muda de velocidade de uma
+     * vez entre as fases: o corte comeca e termina a toda, e a 165 Hz cada tick
+     * aparece em dois ou tres quadros iguais seguidos. Aqui o tempo ganha a
+     * fracao entre ticks ({@code alpha}, do Engine) e cada fase tem easing: o
+     * preparo desacelera, o corte acelera e freia (smoothstep com ponta mais
+     * aguda), a sustentacao escorrega e a volta sai e chega devagar.
+     *
+     * So o desenho usa isto. O dano continua no tick inteiro de
+     * {@link #acertaAgora}, para nao sair repetido.
+     */
+    public double avancoSuave(float alpha) {
+        if (t < 0) {
+            return 0;
+        }
+        double tt = Math.min(total(), t + Math.max(0, Math.min(1, alpha)));
+        if (tt < preparo) {
+            double f = tt / preparo;
+            return -(1 - (1 - f) * (1 - f));                 // ease-out
+        }
+        tt -= preparo;
+        if (tt < corte) {
+            double f = tt / corte;
+            double e = f < 0.5 ? 4 * f * f * f : 1 - Math.pow(-2 * f + 2, 3) / 2;  // ease-in-out cubica
+            return -1 + 2 * e;
+        }
+        tt -= corte;
+        if (tt < extensao) {
+            double f = tt / extensao;
+            return 1 - 0.15 * (1 - (1 - f) * (1 - f));      // escorrega e para
+        }
+        tt -= extensao;
+        double f = Math.min(1, tt / Math.max(1, recuperacao));
+        double e = f * f * (3 - 2 * f);                      // smoothstep
+        return 0.85 * (1 - e);
     }
 }

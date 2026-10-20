@@ -4,6 +4,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 
 import java.awt.Font;
@@ -156,10 +157,7 @@ public class Confirm {
         int x = p.x + (p.width - largura) / 2;
         int y = p.y + 8 * s + altura;
         g.setFont(fonte);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(mensagem, x + s, y + s);
-        g.setColor(Palette.TEXT);
-        g.drawString(mensagem, x, y);
+        TextFx.draw(g, mensagem, x, y, Palette.TEXT, s);
 
         Font miuda = fonteDoDetalhe(s);
         g.setFont(miuda);
@@ -167,10 +165,7 @@ public class Confirm {
             y += ALTURA_DO_DETALHE * s;
             int lg = FontHandler.getWidth(linha, miuda);
             int lx = p.x + (p.width - lg) / 2;
-            g.setColor(Palette.OUTLINE);
-            g.drawString(linha, lx + s, y + s);
-            g.setColor(Palette.LIGHT);
-            g.drawString(linha, lx, y);
+            TextFx.draw(g, linha, lx, y, Palette.LIGHT, s);
         }
         g.dispose();
 

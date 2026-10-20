@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -270,10 +271,7 @@ public class EscolhaDeElemento implements Activity {
 
     private void escrever(Graphics2D g, String t, int x, int y, Color cor, int s, Font f) {
         g.setFont(f);
-        g.setColor(Palette.OUTLINE);
-        g.drawString(t, x + s, y + s);
-        g.setColor(cor);
-        g.drawString(t, x, y);
+        TextFx.draw(g, t, x, y, cor, s);
     }
 
     private void escreverADireita(Graphics2D g, String t, int dir, int y,

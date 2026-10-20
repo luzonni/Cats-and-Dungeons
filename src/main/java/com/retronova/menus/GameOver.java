@@ -5,6 +5,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -275,11 +276,15 @@ public class GameOver implements Activity {
     // ------------------------------------------------------------- texto
 
     private static void esquerda(Graphics2D g, String t, Font f, int x, int y, Color cor) {
-        g.setFont(f);
-        g.setColor(new Color(0, 0, 0, 150));
-        g.drawString(t, x + 1, y + 1);
-        g.setColor(cor);
-        g.drawString(t, x, y);
+        // Texto escuro (rótulo sobre faixa colorida) fica sem contorno escuro.
+        if (cor.getRed() + cor.getGreen() + cor.getBlue() < 180) {
+            g.setFont(f);
+            g.setColor(cor);
+            g.drawString(t, x, y);
+            return;
+        }
+        int cabe = Math.max(1, (Engine.window.getHeight() - 20) / 210);
+        TextFx.draw(g, t, f, x, y, cor, Math.max(1, Math.min(Configs.UiScale(), cabe)));
     }
 
     private static void centro(Graphics2D g, String t, Font f, int cx, int y, Color cor) {
@@ -287,14 +292,7 @@ public class GameOver implements Activity {
     }
 
     private static void contornado(Graphics2D g, String t, Font f, int x, int y, Color cor, int s) {
-        g.setFont(f);
-        int c = Math.max(1, s / 2);
-        g.setColor(new Color(0x0A0610));
-        for (int[] d : new int[][]{{-c, 0}, {c, 0}, {0, -c}, {0, c}, {c, c}}) {
-            g.drawString(t, x + d[0], y + d[1]);
-        }
-        g.setColor(cor);
-        g.drawString(t, x, y);
+        TextFx.draw(g, t, f, x, y, cor, s);
     }
 
     private static void contornadoCentro(Graphics2D g, String t, Font f, int cx, int y, Color cor, int s) {

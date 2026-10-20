@@ -4,7 +4,9 @@ import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.graphics.UiSprite;
+import com.retronova.game.map.arena.Waves;
 import com.retronova.game.Game;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.objects.entities.enemies.Enemy;
@@ -44,7 +46,10 @@ public class WaveDisplay {
         int xCenter = x + 12 * Configs.HudScale();
         int yCenter = y + 12 * Configs.HudScale();
         int waveSeconds = Game.getWave().getSeconds();
-        double rad = ((Math.PI*2)/60) * waveSeconds;
+        // Na corrida sem fim o ponteiro da uma volta so: a corrida inteira, ate o chefe.
+        double rad = Game.getWave().semFim()
+                ? (Math.PI * 2) * Math.min(1d, waveSeconds / (Waves.DURACAO_MINUTOS * 60d))
+                : ((Math.PI*2)/60) * waveSeconds;
         int xPole = (int)(xCenter + Math.cos(rad - Math.PI/2) * (6*Configs.HudScale()));
         int yPole = (int)(yCenter + Math.sin(rad - Math.PI/2) * (6*Configs.HudScale()));
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -52,7 +57,34 @@ public class WaveDisplay {
         g2.drawLine(xCenter, yCenter, xPole, yPole);
     }
 
+    /**
+     * Na corrida sem fim o painel e so o relogio: quanto falta ate os 30 minutos,
+     * quando nasce o chefe final. Abates e inimigos vivos saíram — ninguem decide
+     * nada olhando para eles no meio da horda.
+     */
+    private void renderTimer(int x, int y, Graphics2D g) {
+        int s = Configs.HudScale();
+        int total = Waves.DURACAO_MINUTOS * 60;
+        int seg = Game.getWave().getSeconds();
+        boolean chefe = seg >= total;
+        String texto = chefe ? "BOSS!" : String.format("%02d:%02d", seg / 60, seg % 60);
+        Font font = FontHandler.font(FontHandler.Game, s * 8);
+        int alt = FontHandler.getHeight(texto, font);
+        int tx = x + 26 * s;
+        int ty = y + 12 * s + alt / 2;
+        TextFx.draw(g, texto, font, tx, ty, chefe ? Palette.WARN : Palette.TEXT, s);
+        if (!chefe) {
+            Font miuda = FontHandler.font(FontHandler.Septem, s * 6);
+            TextFx.draw(g, "/" + Waves.DURACAO_MINUTOS + ":00", miuda,
+                    tx + FontHandler.getWidth(texto, font) + 2 * s, ty, Palette.LIGHT, s);
+        }
+    }
+
     private void renderValues(int x, int y, Graphics2D g) {
+        if (Game.getWave().semFim()) {
+            renderTimer(x, y, g);
+            return;
+        }
         Font font = FontHandler.font(FontHandler.Septem, Configs.HudScale()*6);
         g.setFont(font);
 
