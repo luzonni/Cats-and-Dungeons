@@ -85,7 +85,13 @@ public class Roleta implements Activity {
         double promocao = gato.hasModifier(Modifiers.Fortune)
                 ? gato.valueModifier(Modifiers.Fortune) : 0;
         Melhorias melhorias = gato.getMelhorias();
-        this.vencedor = sortear(melhorias, promocao);
+        // EVOLUCAO PRONTA SAI GARANTIDA: arma no maximo + passiva parceira fazem o
+        // proximo bau ser dela. E o jackpot de verdade da corrida.
+        com.retronova.game.items.Evolucao evolucao = melhorias.evolucaoDisponivel();
+        this.vencedor = evolucao != null
+                ? new Premio(null, evolucao.arma(), EVOLUCAO)
+                : sortear(melhorias, promocao);
+        com.retronova.game.Estatisticas.bauAberto();
         for (int r = 0; r < 3; r++) {
             List<Premio> rolo = new ArrayList<>();
             for (int i = 0; i < SIMBOLOS; i++) {
@@ -102,13 +108,22 @@ public class Roleta implements Activity {
      * O que a maquina pode dar: uma melhoria de atributo (carta) ou uma arma extra
      * (ou o proximo nivel dela). Uma das duas e nula.
      */
+    /** nivelNovo especial: o premio e a EVOLUCAO da arma. */
+    private static final int EVOLUCAO = -1;
+
     private record Premio(Melhorias.Carta carta, ArmaExtra arma, int nivelNovo) {
 
         Color cor() {
+            if (nivelNovo == EVOLUCAO) {
+                return new Color(0xFFD23F);
+            }
             return arma != null ? arma.cor() : carta.raridade().cor();
         }
 
         String rotulo() {
+            if (nivelNovo == EVOLUCAO) {
+                return "EVOLUTION!";
+            }
             if (arma == null) {
                 return carta.raridade().rotulo();
             }
@@ -116,10 +131,16 @@ public class Roleta implements Activity {
         }
 
         String nome() {
+            if (nivelNovo == EVOLUCAO) {
+                return com.retronova.game.items.Evolucao.de(arma).nome();
+            }
             return arma != null ? arma.nome() : carta.melhoria().nome();
         }
 
         String efeito() {
+            if (nivelNovo == EVOLUCAO) {
+                return com.retronova.game.items.Evolucao.de(arma).descricao();
+            }
             return arma != null ? arma.efeito(nivelNovo) : carta.efeito();
         }
 
@@ -246,7 +267,9 @@ public class Roleta implements Activity {
         }
         if (confirmar && desdeARevelacao > ESPERA_DO_CARTAO + 12) {
             Player gato = Game.getPlayer();
-            if (vencedor.arma() != null) {
+            if (vencedor.nivelNovo() == EVOLUCAO) {
+                gato.getMelhorias().evoluir(com.retronova.game.items.Evolucao.de(vencedor.arma()));
+            } else if (vencedor.arma() != null) {
                 gato.getMelhorias().subirArma(vencedor.arma());
             } else {
                 gato.getMelhorias().aplicar(gato, vencedor.carta().melhoria(),

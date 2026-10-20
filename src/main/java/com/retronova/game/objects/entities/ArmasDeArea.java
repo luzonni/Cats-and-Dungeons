@@ -4,6 +4,7 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
+import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
 import com.retronova.game.items.ArmaExtra;
 import com.retronova.game.items.Melhorias;
@@ -46,19 +47,20 @@ public final class ArmasDeArea {
         int tremor = m.nivel(ArmaExtra.TREMOR);
         int meteoro = m.nivel(ArmaExtra.METEORO);
         if (raio > 0 && --ateRaio <= 0) {
-            ateRaio = Math.max(25, 75 - 9 * raio);
+            ateRaio = (int) Math.max(15, (75 - 9 * raio) * Bonus.pressa(gato));
             dispararRaio(gato, raio);
         }
         if (tremor > 0 && --ateTremor <= 0) {
-            ateTremor = Math.max(70, 170 - 20 * tremor);
+            ateTremor = (int) Math.max(45, (170 - 20 * tremor) * Bonus.pressa(gato));
             dispararTremor(gato, tremor);
         }
         if (meteoro > 0 && --ateMeteoro <= 0) {
-            ateMeteoro = Math.max(50, 130 - 14 * meteoro);
+            ateMeteoro = (int) Math.max(30, (130 - 14 * meteoro) * Bonus.pressa(gato));
             marcarMeteoros(gato, meteoro);
         }
         tickTremores();
         tickMeteoros(gato, meteoro);
+        Estatisticas.fonte(null);   // de volta a arma da mao
         relampagos.removeIf(r -> ++r.idade > Relampago.VIDA);
     }
 
@@ -102,8 +104,10 @@ public final class ArmasDeArea {
      */
     private static void dispararRaio(Player gato, int nivel) {
         int tile = GameObject.SIZE();
-        double dano = 8 + 4 * nivel + gato.getDamage() * 0.4;
-        int saltos = 2 + nivel;
+        boolean tempestade = gato.getMelhorias().evoluiu(ArmaExtra.RAIO);
+        Estatisticas.fonte(tempestade ? "Thunderstorm" : ArmaExtra.RAIO.nome());
+        double dano = (8 + 4 * nivel + gato.getDamage() * 0.4) * (tempestade ? 2 : 1);
+        int saltos = (2 + nivel) * (tempestade ? 2 : 1);
         List<Enemy> livres = alvos();
         double x = cx(gato), y = cy(gato);
         double alcance = 7 * tile;
@@ -174,8 +178,10 @@ public final class ArmasDeArea {
     /** O gato bate no chao: fere e empurra tudo num raio em volta, de uma vez. */
     private static void dispararTremor(Player gato, int nivel) {
         int tile = GameObject.SIZE();
-        double raio = (2.6 + 0.45 * nivel) * tile;
-        double dano = 10 + 5 * nivel + gato.getDamage() * 0.5;
+        boolean terremoto = gato.getMelhorias().evoluiu(ArmaExtra.TREMOR);
+        Estatisticas.fonte(terremoto ? "Earthshaker" : ArmaExtra.TREMOR.nome());
+        double raio = (2.6 + 0.45 * nivel) * tile * Bonus.area(gato) * (terremoto ? 2 : 1);
+        double dano = (10 + 5 * nivel + gato.getDamage() * 0.5) * (terremoto ? 2 : 1);
         double x = cx(gato), y = cy(gato);
         for (Enemy e : alvos()) {
             double d = Math.hypot(cx(e) - x, cy(e) - y);
@@ -223,8 +229,8 @@ public final class ArmasDeArea {
                 perto.add(e);
             }
         }
-        int quantos = 1 + nivel / 2;
-        double raio = (1.4 + 0.2 * nivel) * tile;
+        int quantos = (1 + nivel / 2) * (gato.getMelhorias().evoluiu(ArmaExtra.METEORO) ? 2 : 1);
+        double raio = (1.4 + 0.2 * nivel) * tile * Bonus.area(gato);
         for (int i = 0; i < quantos && !perto.isEmpty(); i++) {
             Enemy alvo = perto.remove(Engine.RAND.nextInt(perto.size()));
             meteoros.add(new Meteoro(cx(alvo), cy(alvo), raio));
@@ -232,7 +238,9 @@ public final class ArmasDeArea {
     }
 
     private static void tickMeteoros(Player gato, int nivel) {
-        double dano = 14 + 6 * nivel + gato.getDamage() * 0.6;
+        boolean armagedom = gato.getMelhorias().evoluiu(ArmaExtra.METEORO);
+        Estatisticas.fonte(armagedom ? "Armageddon" : ArmaExtra.METEORO.nome());
+        double dano = (14 + 6 * nivel + gato.getDamage() * 0.6) * (armagedom ? 2 : 1);
         Iterator<Meteoro> it = meteoros.iterator();
         while (it.hasNext()) {
             Meteoro m = it.next();

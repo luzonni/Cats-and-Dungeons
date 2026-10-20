@@ -153,6 +153,12 @@ public class Melhorias {
         for (Map.Entry<ArmaExtra, Integer> e : armas.entrySet()) {
             saida.add(new int[]{BASE_ARMAS + e.getKey().ordinal(), e.getValue(), 0});
         }
+        for (Map.Entry<Passiva, Integer> e : passivas.entrySet()) {
+            saida.add(new int[]{BASE_PASSIVAS + e.getKey().ordinal(), e.getValue(), 0});
+        }
+        for (Evolucao e : evolucoes) {
+            saida.add(new int[]{BASE_EVOLUCOES + e.ordinal(), 1, 0});
+        }
         return saida.toArray(new int[0][]);
     }
 
@@ -205,6 +211,68 @@ public class Melhorias {
         return lista;
     }
 
+    // ------------------------------------------------------------ passivas
+
+    /** Passivas e o nivel de cada uma. Gravadas com BASE_PASSIVAS + ordinal. */
+    private static final int BASE_PASSIVAS = 3000;
+    private final Map<Passiva, Integer> passivas = new EnumMap<>(Passiva.class);
+
+    public int nivel(Passiva p) {
+        return passivas.getOrDefault(p, 0);
+    }
+
+    /**
+     * Sobe a passiva. A ARMADURA e a unica que vira modificador direto (o
+     * desconto de dano ja existe no Entity); as outras sao lidas por Bonus.
+     */
+    public void subirPassiva(Player gato, Passiva p) {
+        if (nivel(p) >= Passiva.NIVEL_MAXIMO) {
+            return;
+        }
+        passivas.merge(p, 1, Integer::sum);
+        if (p == Passiva.ARMADURA) {
+            gato.addModifier(Modifiers.Resistance, p.valorPorNivel());
+        }
+    }
+
+    public Map<Passiva, Integer> passivas() {
+        return Collections.unmodifiableMap(passivas);
+    }
+
+    public Map<ArmaExtra, Integer> armas() {
+        return Collections.unmodifiableMap(armas);
+    }
+
+    // ----------------------------------------------------------- evolucoes
+
+    /** Armas que ja evoluiram. Gravadas com BASE_EVOLUCOES + ordinal. */
+    private static final int BASE_EVOLUCOES = 4000;
+    private final java.util.Set<Evolucao> evolucoes = java.util.EnumSet.noneOf(Evolucao.class);
+
+    public boolean evoluiu(ArmaExtra arma) {
+        Evolucao e = Evolucao.de(arma);
+        return e != null && evolucoes.contains(e);
+    }
+
+    public void evoluir(Evolucao e) {
+        evolucoes.add(e);
+    }
+
+    /** Uma evolucao pronta para sair do proximo bau: arma no maximo + passiva parceira. */
+    public Evolucao evolucaoDisponivel() {
+        for (Evolucao e : Evolucao.values()) {
+            if (!evolucoes.contains(e) && nivel(e.arma()) >= ArmaExtra.NIVEL_MAXIMO
+                    && nivel(e.passiva()) > 0) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public java.util.Set<Evolucao> evolucoes() {
+        return Collections.unmodifiableSet(evolucoes);
+    }
+
     /**
      * Devolve o que estava gravado.
      *
@@ -222,6 +290,23 @@ public class Melhorias {
                 continue;
             }
             int ordinal = linha[0];
+            if (ordinal >= BASE_EVOLUCOES) {
+                Evolucao[] todasEvol = Evolucao.values();
+                if (ordinal - BASE_EVOLUCOES < todasEvol.length) {
+                    evolucoes.add(todasEvol[ordinal - BASE_EVOLUCOES]);
+                }
+                continue;
+            }
+            if (ordinal >= BASE_PASSIVAS) {
+                Passiva[] todasPass = Passiva.values();
+                int p = ordinal - BASE_PASSIVAS;
+                if (p < todasPass.length) {
+                    for (int i = 0; i < linha[1]; i++) {
+                        subirPassiva(gato, todasPass[p]);
+                    }
+                }
+                continue;
+            }
             if (ordinal >= BASE_ARMAS) {
                 ArmaExtra[] todasArmas = ArmaExtra.values();
                 int a = ordinal - BASE_ARMAS;

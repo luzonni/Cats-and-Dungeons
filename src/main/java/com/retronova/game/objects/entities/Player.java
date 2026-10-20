@@ -982,7 +982,7 @@ public class Player extends Entity {
     }
 
     public void plusXp(double weight) {
-        this.XP += weight;
+        this.XP += weight * Bonus.crescimento(this);   // passiva Crescimento
         while(getXp() >= getXpLength()) { //caso ganhe um xp com peso muito alto, o nivel vai aumentar até o chegar no nivel considerado
             this.XP -= getXpLength();
             this.level++;
