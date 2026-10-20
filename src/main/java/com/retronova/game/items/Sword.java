@@ -53,9 +53,7 @@ public class Sword extends Item {
         return elemento.cadencia();
     }
 
-    private final BufferedImage sword_attack;
     private final double damage;
-    private final Rectangle boundsAttack;
 
 
     private final Elemento elemento;
@@ -77,12 +75,10 @@ public class Sword extends Item {
     Sword(int id, Elemento elemento) {
         super(id, elemento.nome("Sword"), elemento.sprite("sword"));
         this.elemento = elemento;
-        this.investida = Investida.leve().vezes(cadencia());
+        this.investida = Investida.espada().vezes(cadencia());
         setIndexSprite(Engine.RAND.nextInt(25));
         this.damage = elemento.dano(35);
         this.side = 1;
-        this.boundsAttack = new Rectangle(GameObject.SIZE()*2, (int)(GameObject.SIZE()*3d));
-        sword_attack = new SpriteHandler("sprites/items", "sword_attack", Configs.GameScale()).getSHEET();
         addSpecifications("Melee Attack", "Player damage + "+ this.damage,
                 elemento == Elemento.NENHUM ? "very fast" : elemento.rotulo().toLowerCase() + " damage");
     }
@@ -103,47 +99,82 @@ public class Sword extends Item {
         return Porte.UMA_MAO;
     }
 
+    // ------------------------------------------------------------ o golpe
+
+    /**
+     * O GOLPE MIRA, como o arco.
+     *
+     * A espada batia sempre para o lado — a mesma pose de quadril girando uns
+     * graus, com a caixa de dano grudada a esquerda ou a direita do gato. Com o
+     * bicho em cima ou embaixo, a lamina cortava o ar e o rastro aparecia longe
+     * dele. Agora o golpe e um ARCO EM VOLTA DO GATO, centrado na direcao do alvo:
+     * a lamina recua para um lado (antecipacao), varre ate o outro em tres ticks
+     * (o corte) e segura um instante la (a sustentacao). O dano e um leque nessa
+     * direcao e pega todos os bichos dentro dele, nao so o mais proximo.
+     */
+    private double mira;
+
+    /** Meia abertura do arco, em radianos: de -ARCO a +ARCO em volta da mira. */
+    private static final double ARCO = Math.toRadians(95);
+    /** Meia abertura do leque de dano: um pouco menor que o desenho do arco. */
+    private static final double LEQUE = Math.toRadians(80);
+    /** Alcance do corte, em tiles, medido do meio do gato. */
+    private static final double ALCANCE = 2.2;
+
     @Override
     public void tick() {
         Player player = Game.getPlayer();
-        setBoundsAttack(player);
         Enemy nearest = alvoVisivel(player, 3);
         if (nearest != null && !investida.ativa()) {
-            // O LADO DO GOLPE PASSA A SER O LADO DO ALVO.
-            //
-            // Ele ALTERNAVA sozinho: um golpe pela direita, o proximo pela esquerda,
-            // e assim por diante. A intencao era boa — golpes seguidos lendo como
-            // direita-esquerda em vez da mesma animacao repetida — mas a caixa de
-            // dano acompanha esse lado, e ela nao perguntava onde o bicho estava.
-            // Com um inimigo parado a direita, metade dos golpes saia para a
-            // esquerda: a animacao rodava, o som saia, e nada acontecia.
-            //
-            // Era isso que se sentia como "a arma acerta mas nao da dano". A
-            // alternancia era bonita e custava metade dos golpes; mirar e melhor.
-            this.side = nearest.getBounds().getCenterX()
-                    < player.getBounds().getCenterX() ? -1 : 1;
-            setBoundsAttack(player);
+            this.mira = miraDe(centroX(player), centroY(player), nearest);
+            // Alterna o lado a cada golpe: ida e volta, forehand e backhand. Com o
+            // leque centrado no alvo, os dois lados acertam, entao a alternancia
+            // nao custa golpe nenhum (era por isso que ela tinha saido).
+            this.side = -this.side;
             investida.comecar();
         }
         investida.tick();
         this.atacando = investida.ativa();
-        if (investida.acertaAgora() && nearest != null) {
-            attack(player, nearest);
+        if (investida.acertaAgora()) {
+            attack(player);
         }
     }
 
-    private void setBoundsAttack(Player player) {
-        int dist = (this.side == -1) ? this.boundsAttack.width * side : 0;
-        double x = (player.getX() + player.getWidth()/2d) + dist;
-        double y = (player.getY() + player.getHeight()/2d) - this.boundsAttack.height/2d;
-        this.boundsAttack.setLocation((int)x, (int)y);
+    private static double centroX(Player p) {
+        return p.getX() + p.getWidth() / 2d;
     }
 
-    private void attack(Player player, Enemy enemy) {
-        if (enemy.colliding(this.boundsAttack)) {
-            enemy.strike(elemento.ataque(AttackTypes.Melee), this.damage + player.getDamage());
-            double r = enemy.getAngle(player);
-            enemy.getPhysical().addForce("knockback", 3, r);
+    private static double centroY(Player p) {
+        return p.getY() + p.getHeight() / 2d;
+    }
+
+    /** O avanco continuo, com a fracao entre ticks: ver Investida.avancoSuave. */
+    private double suave() {
+        return investida.avancoSuave(Engine.alpha());
+    }
+
+    /** Onde a lamina aponta agora: a mira mais o avanco do arco. */
+    private double anguloDaLamina() {
+        return mira + suave() * ARCO * side;
+    }
+
+    private void attack(Player player) {
+        double cx = centroX(player), cy = centroY(player);
+        double alcance = ALCANCE * GameObject.SIZE();
+        for (Enemy e : Game.getMap().getEntities(Enemy.class)) {
+            double ex = e.getX() + e.getWidth() / 2d, ey = e.getY() + e.getHeight() / 2d;
+            double dist = Math.hypot(ex - cx, ey - cy);
+            if (dist > alcance + e.getWidth() / 2d) {
+                continue;
+            }
+            double dif = Math.atan2(ey - cy, ex - cx) - mira;
+            dif = Math.atan2(Math.sin(dif), Math.cos(dif));
+            // Encostado no gato vale de qualquer lado: o angulo ali e ruido.
+            if (Math.abs(dif) > LEQUE && dist > GameObject.SIZE() * 0.6) {
+                continue;
+            }
+            e.strike(elemento.ataque(AttackTypes.Melee), this.damage + player.getDamage());
+            e.getPhysical().addForce("knockback", 3, e.getAngle(player));
         }
         tocarGolpe(Sounds.Sword);
     }
@@ -155,28 +186,122 @@ public class Sword extends Item {
             naMao(g, getSprite());
             return;
         }
-        // Mesmo caminho do machado: a pose manda no lugar e no arco, e o giro do
-        // golpe sai de naMaoGolpeando. Antes a espada tinha uma conta so dela e
-        // ignorava a pose — mexer nela no editor nao mudava o golpe.
-        naMaoGolpeando(g, getSprite(), investida.avanco() * side);
-        drawAttackEffect(g);
+        Player player = Game.getPlayer();
+        drawAttackEffect(g, player);
+        BufferedImage sprite = getSprite();
+        if (sprite == null) {
+            return;
+        }
+        // A lamina ORBITA o gato apontando para fora, como o arco aponta para o
+        // alvo. No corte ela se estende um pouco: e o braco esticando no impacto.
+        double lamina = anguloDaLamina();
+        double raio = GameObject.SIZE() * (0.55 + 0.15 * Math.max(0, suave()));
+        double x = centroX(player) + Math.cos(lamina) * raio;
+        double y = centroY(player) + Math.sin(lamina) * raio;
+        desenharGirado(g, sprite, x, y, lamina + Rotate.DIAGONAL);
     }
 
-    private void drawAttackEffect(Graphics2D g) {
-        // O rastro so aparece no IMPACTO, os poucos ticks em que a lamina cruza a
-        // distancia. Deixa-lo aceso o golpe inteiro anula o efeito: rastro que
-        // dura vira parte do desenho, e nao um golpe.
-        double avanco = investida.avanco();
-        if (avanco > -0.35 && avanco < 0.6) {
-            // O rastro sai na cor do elemento: e o que faz a espada de fogo
-            // PARECER de fogo na hora do golpe, e nao so no icone da hotbar.
-            BufferedImage corte = elemento == Elemento.NENHUM
-                    ? this.sword_attack : tingir(this.sword_attack, elemento.cor());
-            BufferedImage flipped = SpriteHandler.flip(corte, 1, side);
-            int x = this.boundsAttack.x + (this.boundsAttack.width - this.sword_attack.getWidth())/2;
-            int y = this.boundsAttack.y + (this.boundsAttack.height - this.sword_attack.getHeight())/2;
-            g.drawImage(flipped, x, y, null);
+    /**
+     * Gira sem borrar. O Rotate.draw usa interpolacao bilinear, e numa lamina de
+     * poucos pixels isso a transformava numa mancha — parte do "feio" do golpe.
+     * Sem espelhar, tambem: espelhar no meio do arco faria a espada pular.
+     */
+    private static void desenharGirado(Graphics2D g, BufferedImage sprite, double x, double y, double ang) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        java.awt.geom.AffineTransform at = new java.awt.geom.AffineTransform();
+        at.translate(x, y);
+        at.rotate(ang);
+        at.translate(-sprite.getWidth() / 2d, -sprite.getHeight() / 2d);
+        g2.drawImage(sprite, at, null);
+        g2.dispose();
+    }
+
+    /**
+     * O rastro do corte: uma lua crescente que segue a lamina.
+     *
+     * Ele so aparece do impacto em diante e some na sustentacao. Rastro aceso o
+     * golpe inteiro vira parte do desenho, e nao um golpe. O arco desenhado vai
+     * de onde a lamina comecou a varrer ate onde ela esta, entao ele CRESCE junto
+     * com o corte em vez de surgir pronto.
+     */
+    private void drawAttackEffect(Graphics2D g, Player player) {
+        double avanco = suave();
+        if (avanco < -0.6 || !investida.ativa()) {
+            return;
         }
+        double inicio = mira - ARCO * side;
+        double fim = anguloDaLamina();
+        double raio = GameObject.SIZE() * 1.35;
+        int s = Configs.GameScale();
+        // Some aos poucos depois do impacto: forte no corte, fraco na sustentacao.
+        float forca = (float) Math.max(0, Math.min(1, (avanco + 0.6) / 1.2));
+        if (avanco > 0.86) {
+            forca *= (float) ((1 - avanco) / 0.14);
+        }
+        Color cor = elemento == Elemento.NENHUM ? Color.WHITE : elemento.cor();
+        double cx = centroX(player), cy = centroY(player);
+
+        // UMA LUA CHEIA, E NAO DUAS LINHAS. Os dois tracos de espessura fixa liam
+        // como riscos paralelos. Aqui o rastro e uma faixa preenchida que afina
+        // ate sumir na cauda e engrossa perto da lamina, com a transparencia
+        // acompanhando — e o borrao de movimento de um corte, nao um desenho.
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        double espessura = raio * 0.42;
+        desenharFaixa(g2, cx, cy, inicio, fim, raio + s, espessura + 2 * s, cor, 70 * forca);   // halo
+        desenharFaixa(g2, cx, cy, inicio, fim, raio, espessura, cor, 220 * forca);             // miolo
+        g2.dispose();
+    }
+
+    /**
+     * A faixa em CAMADAS empilhadas, e nao em gomos lado a lado.
+     *
+     * Gomos translucidos encostados deixam costura: onde dois se tocam a borda
+     * suavizada soma duas vezes, e o rastro sai listrado. Aqui cada camada e uma
+     * lua inteira, de uma forma so, que comeca um pouco mais perto da lamina que
+     * a anterior. Somadas, a opacidade cresce da cauda ate a ponta sem nenhuma
+     * emenda. A espessura afina ate zero na cauda de cada camada.
+     */
+    private static void desenharFaixa(Graphics2D g, double cx, double cy, double inicio, double fim,
+                                      double raio, double espessura, Color cor, double alfaMax) {
+        int camadas = 7;
+        int alfa = (int) Math.max(0, Math.min(255, alfaMax / camadas * 1.6));
+        if (alfa <= 0 || Math.abs(fim - inicio) < 1e-3) {
+            return;
+        }
+        g.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), alfa));
+        for (int c = 0; c < camadas; c++) {
+            double u0 = c / (double) (camadas + 1);
+            double a0 = inicio + (fim - inicio) * u0;
+            g.fill(lua(cx, cy, a0, fim, raio, espessura * (1 - u0 * 0.35)));
+        }
+    }
+
+    /** Uma lua: borda de fora no raio, borda de dentro afinando ate a cauda. */
+    private static java.awt.geom.Path2D lua(double cx, double cy, double a0, double a1,
+                                            double raio, double espessura) {
+        int passos = 24;
+        java.awt.geom.Path2D p = new java.awt.geom.Path2D.Double();
+        for (int i = 0; i <= passos; i++) {
+            double a = a0 + (a1 - a0) * i / passos;
+            double x = cx + Math.cos(a) * raio, y = cy + Math.sin(a) * raio;
+            if (i == 0) {
+                p.moveTo(x, y);
+            } else {
+                p.lineTo(x, y);
+            }
+        }
+        for (int i = passos; i >= 0; i--) {
+            double u = i / (double) passos;
+            // Cauda fina, barriga cheia, ponta arredondada junto da lamina.
+            double e = espessura * Math.pow(u, 0.8) * Math.min(1, (1 - u) * 5 + 0.55);
+            double a = a0 + (a1 - a0) * u;
+            p.lineTo(cx + Math.cos(a) * (raio - e), cy + Math.sin(a) * (raio - e));
+        }
+        p.closePath();
+        return p;
     }
 
 }
