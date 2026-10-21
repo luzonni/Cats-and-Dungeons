@@ -226,10 +226,14 @@ public class OptionRow {
         Graphics2D g = (Graphics2D) g2.create();
 
         if (focado) {
-            // Marcador na lateral em vez de fundo: o painel já é DEEP, um
-            // preenchimento na mesma cor não apareceria.
-            g.setColor(Palette.LIGHT);
-            g.fillRect(bounds.x - 3 * s, bounds.y + 2 * s, s, bounds.height - 4 * s);
+            // O FOCO NO ESTILO ÚNICO (ver Realce): a faixa da linha clareia e as
+            // setas apontam para ela dos dois lados. Antes era um friso de um pixel
+            // na lateral, uma terceira linguagem de foco só desta tela.
+            Rectangle faixa = new Rectangle(bounds.x - 2 * s, bounds.y, bounds.width + 4 * s, bounds.height);
+            Realce.clarear(g, faixa, 0.8f);
+            if (com.retronova.engine.inputs.Entrada.porFoco()) {
+                Realce.marcadorDeFoco(g, faixa, s);
+            }
         }
 
         Font fonte = FontHandler.font(FontHandler.Game, 7f * s);

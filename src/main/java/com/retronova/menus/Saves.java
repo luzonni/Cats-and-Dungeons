@@ -49,6 +49,9 @@ public class Saves extends TelaDeMenu {
     /** As caixas de cada espaço, e o alvo de apagar dentro delas. */
     private final Rectangle[] caixas = new Rectangle[Corrida.ESPACOS];
     private final Rectangle[] lixeiras = new Rectangle[Corrida.ESPACOS];
+    private final com.retronova.menus.shared.Realce.Estado[] realces = {
+            new com.retronova.menus.shared.Realce.Estado(), new com.retronova.menus.shared.Realce.Estado(),
+            new com.retronova.menus.shared.Realce.Estado()};
 
     /** O que cada espaço guarda agora, ou null. Relido de tempos em tempos. */
     private final Corrida[] corridas = new Corrida[Corrida.ESPACOS];
@@ -165,6 +168,10 @@ public class Saves extends TelaDeMenu {
             reler();
         }
         navegarPeloTeclado();
+        for (int i = 0; i < Corrida.ESPACOS; i++) {
+            realces[i].tick(foco == i
+                    || (com.retronova.engine.inputs.Entrada.porMouse() && Mouse.on(caixas[i])));
+        }
         voltar.tick();
         if (voltar.isHovered()) {
             foco = -1;
@@ -306,10 +313,20 @@ public class Saves extends TelaDeMenu {
      * nao couber e cortado com reticencias, que e uma perda legivel.
      */
     private void desenharEspaco(Graphics2D g, int i, int s) {
-        Rectangle caixa = caixas[i];
-        boolean ativo = foco == i || Mouse.on(caixa);
+        boolean ativo = foco == i
+                || (com.retronova.engine.inputs.Entrada.porMouse() && Mouse.on(caixas[i]));
+        // O REALCE DOS BOTOES (ver Realce): a caixa e uma moldura de botao, entao
+        // cresce, brilha e clareia como eles. No foco das setas, as setas laterais.
+        float intensidade = realces[i].noQuadro();
+        Rectangle caixa = com.retronova.menus.shared.Realce.crescer(caixas[i], intensidade, s);
+        Rectangle corpoDaCaixa = new Rectangle(caixa.x, caixa.y + (ORELHAS - 1) * s,
+                caixa.width, caixa.height - (ORELHAS - 1) * s);
+        com.retronova.menus.shared.Realce.brilho(g, corpoDaCaixa, intensidade, s);
         Button.frame(ativo).draw(g, ativo ? 1 : 0,
                 caixa.x, caixa.y, caixa.width, caixa.height, s);
+        if (foco == i && !focoNoApagar && com.retronova.engine.inputs.Entrada.porFoco()) {
+            com.retronova.menus.shared.Realce.marcadorDeFoco(g, corpoDaCaixa, s);
+        }
 
         int corpoY = caixa.y + ORELHAS * s;
         int corpoH = caixa.height - ORELHAS * s;

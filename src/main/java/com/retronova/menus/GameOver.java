@@ -1,5 +1,6 @@
 package com.retronova.menus;
 
+import com.retronova.menus.shared.Realce;
 import com.retronova.menus.shared.Rodape;
 import com.retronova.menus.shared.TelaDeMenu;
 import com.retronova.engine.Configs;
@@ -113,9 +114,10 @@ public class GameOver extends TelaDeMenu {
         int largura = Button.preferredWidth();
         int altura = Button.preferredHeight();
         int by = y0 + ph + 10 * s;
-        int bx = w / 2 - largura - 4 * s;
+        int vaoBotoes = Realce.folgaEntreVizinhos(Configs.UiScale());
+        int bx = w / 2 - largura - vaoBotoes / 2;
         for (int i = 0; i < botoes.size(); i++) {
-            botoes.get(i).setBounds(new Rectangle(bx + i * (largura + 8 * s), by, largura, altura));
+            botoes.get(i).setBounds(new Rectangle(bx + i * (largura + vaoBotoes), by, largura, altura));
         }
     }
 
@@ -329,14 +331,15 @@ public class GameOver extends TelaDeMenu {
             boolean cheio = nivel >= Meta.Permanente.NIVEL_MAXIMO;
             boolean podeComprar = !cheio && Meta.ouro() >= Meta.preco(m);
             boolean sob = Entrada.porFoco() ? focoLoja == i : r.contains(Mouse.getX(), Mouse.getY());
+            // O realce comum (ver Realce) marca a linha sob o mouse ou o foco, MESMO
+            // SEM OURO: a cor clara diz "da para comprar", o realce diz "e aqui".
+            if (sob) {
+                Realce.brilho(g, r, 1f, s);
+            }
             g.setColor(sob && podeComprar ? Palette.LIGHT : Palette.MAIN);
             g.fillRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
-            // Contorno do foco, mesmo sem ouro: o realce claro so diz "da para
-            // comprar", e sem o contorno uma linha cara nao mostraria onde o foco esta.
             if (sob && Entrada.porFoco()) {
-                g.setColor(Palette.ACCENT);
-                g.setStroke(new BasicStroke(s));
-                g.drawRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
+                Realce.marcadorDeFoco(g, r, s);
             }
             if (brilhoDaCompra == i && desdeACompra < 20) {
                 g.setColor(new Color(255, 255, 255, (int) (200 * (1 - desdeACompra / 20.0))));

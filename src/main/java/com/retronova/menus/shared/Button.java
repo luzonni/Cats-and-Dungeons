@@ -64,26 +64,8 @@ public class Button {
     /** Som proprio ao acionar. Nulo usa o clique padrao. */
     private Sounds vozDoClique;
     private boolean hoveredBefore;
-    /**
-     * Quanto o realce de passagem ja entrou, de 0 a 1.
-     *
-     * Anima em vez de ligar e desligar: o salto entre dois tamanhos le como
-     * falha de desenho, e a rampa curta e o que faz o botao parecer responder ao
-     * ponteiro em vez de trocar de sprite.
-     */
-    private float realce;
-    /** Para onde o realce esta indo, para o render adiantar a fracao do tick. */
-    private float alvoRealce;
-    private static final float VELOCIDADE_REALCE = 0.2f;
-
-    /** Realce interpolado entre ticks, para a rampa fluir acima de 60 FPS. */
-    private float realceNoQuadro() {
-        if (realce == alvoRealce) {
-            return realce;
-        }
-        float r = realce + Math.signum(alvoRealce - realce) * VELOCIDADE_REALCE * Engine.alpha();
-        return Math.max(0f, Math.min(1f, r));
-    }
+    /** O realce de hover e de foco, no estilo único do jogo. Ver Realce. */
+    private final Realce.Estado realce = new Realce.Estado();
 
     public Button(int x, int y, int width, int height, String text, Consumer<Button> onClick) {
         this.bounds = new Rectangle(x, y, width, height);
@@ -130,12 +112,7 @@ public class Button {
             activate();
         }
 
-        float alvo = (hovered || focused) ? 1f : 0f;
-        alvoRealce = alvo;
-        if (realce != alvo) {
-            realce += Math.signum(alvo - realce) * VELOCIDADE_REALCE;
-            realce = Math.max(0f, Math.min(1f, realce));
-        }
+        realce.tick(hovered || focused);
     }
 
     /** Dispara a ação. Separado do clique para servir também ao teclado. */
@@ -149,70 +126,24 @@ public class Button {
     public void render(Graphics2D g2) {
         int scale = Configs.UiScale();
         int state = pressed ? 2 : (hovered || focused ? 1 : 0);
-        Rectangle r = realcado(scale);
+        float intensidade = realce.noQuadro();
+        Rectangle r = Realce.crescer(bounds, intensidade, scale);
 
-        desenharBrilho(g2, r, scale);
+        Realce.brilho(g2, corpo(r, scale), intensidade, scale);
         frame(primary).draw(g2, state, r.x, r.y, r.width, r.height, scale);
 
         if (focused && !pressed) {
-            desenharAnelDeFoco(g2, r, scale);
+            Realce.marcadorDeFoco(g2, corpo(r, scale), scale);
         }
         desenharTexto(g2, r, scale, state == 2);
     }
 
-    /**
-     * Retangulo do botao com o crescimento do realce.
-     *
-     * Cresce a partir do centro, no maximo um tile de escala em cada eixo. Mais
-     * que isso e o botao passa a empurrar visualmente os vizinhos, e a fileira de
-     * botoes parece instavel a cada passagem do mouse.
-     */
-    private Rectangle realcado(int scale) {
-        float realce = realceNoQuadro();
-        if (realce <= 0f) {
-            return bounds;
-        }
-        int cresce = Math.round(realce * scale * 2);
-        return new Rectangle(bounds.x - cresce, bounds.y - cresce / 2,
-                bounds.width + cresce * 2, bounds.height + cresce);
-    }
-
-    /**
-     * Halo por tras do botao em foco.
-     *
-     * Sao poucos retangulos concentricos com alfa decrescente, e nao um gradiente:
-     * o resultado e o mesmo nesta escala e nao custa criar uma pintura por quadro
-     * para cada botao da tela.
-     */
-    private void desenharBrilho(Graphics2D g2, Rectangle r, int scale) {
-        float realce = realceNoQuadro();
-        if (realce <= 0.02f) {
-            return;
-        }
-        Graphics2D g = (Graphics2D) g2.create();
-        int camadas = 4;
-        for (int i = camadas; i >= 1; i--) {
-            int margem = i * scale;
-            int alfa = (int) (26 * realce * (1f - (i - 1) / (float) camadas));
-            g.setColor(new Color(Palette.ACCENT.getRed(), Palette.ACCENT.getGreen(),
-                    Palette.ACCENT.getBlue(), alfa));
-            g.fillRect(r.x - margem, r.y + (EAR_H - 1) * scale - margem,
-                    r.width + margem * 2, r.height - (EAR_H - 1) * scale + margem * 2);
-        }
-        g.dispose();
-    }
-
-    /** Contorno externo indicando o foco de teclado. */
-    private void desenharAnelDeFoco(Graphics2D g2, Rectangle r, int scale) {
-        Graphics2D g = (Graphics2D) g2.create();
-        g.setColor(Palette.ACCENT);
+    /** O corpo do botão, sem a faixa de orelhas: é ele que brilha e que o foco aponta. */
+    private static Rectangle corpo(Rectangle r, int scale) {
         int topo = r.y + (EAR_H - 1) * scale;
-        int altura = r.height - (EAR_H - 1) * scale;
-        for (int i = 1; i <= scale; i++) {
-            g.drawRect(r.x - i, topo - i, r.width + i * 2 - 1, altura + i * 2 - 1);
-        }
-        g.dispose();
+        return new Rectangle(r.x, topo, r.width, r.height - (EAR_H - 1) * scale);
     }
+
 
     private void desenharTexto(Graphics2D g2, Rectangle bounds, int scale, boolean afundado) {
         Graphics2D g = (Graphics2D) g2.create();

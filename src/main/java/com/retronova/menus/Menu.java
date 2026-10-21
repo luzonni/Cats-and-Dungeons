@@ -179,7 +179,12 @@ public class Menu extends TelaDeMenu {
 
         g.setColor(new Color(0, 0, 0, 70));                       // sombra no "chão"
         g.fillRoundRect(r.x + s, r.y + 2 * s, r.width, r.height, 5 * s, 5 * s);
-        g.setColor(aceso ? Palette.ACCENT : Palette.OUTLINE);     // borda
+        // O brilho comum (ver Realce), e não mais a borda acendendo.
+        com.retronova.menus.shared.Realce.brilho(g, new Rectangle(r.x, y, r.width, r.height), (float) h, s);
+        if (trofeu.isFocused()) {
+            com.retronova.menus.shared.Realce.marcadorDeFoco(g, new Rectangle(r.x, y, r.width, r.height), s);
+        }
+        g.setColor(Palette.OUTLINE);                              // borda
         g.fillRoundRect(r.x - s, y - s, r.width + 2 * s, r.height + 2 * s, 6 * s, 6 * s);
         g.setColor(aceso ? Palette.MAIN : Palette.DEEP);          // corpo
         g.fillRoundRect(r.x, y, r.width, r.height, 5 * s, 5 * s);

@@ -18,6 +18,7 @@ import com.retronova.game.items.ItemIDs;
 import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.menus.shared.Button;
+import com.retronova.menus.shared.Realce;
 import com.retronova.menus.shared.Rodape;
 import com.retronova.menus.shared.TelaDeMenu;
 
@@ -873,19 +874,31 @@ public class Personagens extends TelaDeMenu {
         for (int i = 0; i < miniaturas.length; i++) {
             Rectangle r = miniaturas[i];
             boolean escolhido = selecionado == i;
-            boolean sobre = r.contains(Mouse.getX(), Mouse.getY());
+            boolean sobre = !escolhido && com.retronova.engine.inputs.Entrada.porMouse()
+                    && r.contains(Mouse.getX(), Mouse.getY());
 
+            // O ESCOLHIDO BRILHA NA COR DELE, o de baixo do mouse no realce comum
+            // (ver Realce). A borda fina de um pixel, que clareava no hover, saiu:
+            // era a mesma gramática de contorno que o resto da interface deixou.
+            if (escolhido) {
+                Realce.brilho(g, r, 1f, s, new Color(players[i].getCor()).brighter());
+            } else if (sobre) {
+                Realce.brilho(g, r, 1f, s);
+            }
             g.setColor(escolhido ? new Color(players[i].getCor()) : new Color(9, 13, 20, 200));
             g.fillRect(r.x, r.y, r.width, r.height);
-            g.setColor(escolhido ? Palette.LIGHT : new Color(255, 255, 255, sobre ? 120 : 50));
-            g.drawRect(r.x, r.y, r.width - 1, r.height - 1);
+            if (escolhido) {
+                g.setColor(new Color(255, 255, 255, 60));
+                g.fillRect(r.x, r.y, r.width, s);
+            }
 
             BufferedImage sprite = retratos[i];
             if (sprite != null) {
                 desenharRosto(g, sprite, r);
             }
             if (!escolhido) {
-                g.setColor(new Color(9, 13, 20, 130));
+                // Apagado; sob o mouse ele acende pela metade — o "clarear" do realce.
+                g.setColor(new Color(9, 13, 20, sobre ? 55 : 130));
                 g.fillRect(r.x, r.y, r.width, r.height);
             }
         }
