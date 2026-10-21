@@ -5,7 +5,7 @@ Backlog de desenvolvimento por área. Convertido do antigo `TODO/TODO` em texto 
 Legenda: `[x]` feito · `[ ]` a fazer · 🔄 em andamento · ~~riscado~~ abandonado
 ou substituído (o motivo vai ao lado).
 
-Revisado em **2026-10-21** contra o código (commit `8a9cbb8`).
+Revisado em **2026-10-21** contra o código (commit `8a9cbb8` e a limpeza que veio depois).
 
 ## Engine
 
@@ -17,10 +17,10 @@ Revisado em **2026-10-21** contra o código (commit `8a9cbb8`).
 - [x] Interpolação de mundo, câmera e menus entre ticks; 165 e 240 FPS
 - [x] Ritmo de quadros uniforme e opção de VSync
 - [x] Medidor de quadros (`-Dcd.perf`) e modo bancada (`-Dcd.bench`)
-- [ ] Tirar o `Repulsion` da thread paralela e trazer para o tick principal
-- [ ] Encerrar as threads pendentes ao fechar o jogo — **a confirmar** se ainda
-      acontece: a janela já usa `EXIT_ON_CLOSE`
-- [ ] Chamar `resetWindow()` na EDT
+- [x] Tirar o `Repulsion` da thread paralela e trazer para o tick principal
+- [x] Encerrar as threads pendentes ao fechar o jogo — a que ficava presa era a
+      do `Repulsion`, uma por troca de mapa; a das waves saiu com o modo por ondas
+- [x] Chamar `resetWindow()` na EDT
 
 ## Física
 
@@ -29,6 +29,7 @@ Revisado em **2026-10-21** contra o código (commit `8a9cbb8`).
       (`Investida`) em quatro ritmos, e os ratos cercam o gato
 - [x] Corrigir o A\*: a refatoração da branch `alpha` foi integrada e a mistura
       de unidades (pixels contra índices de tile) foi resolvida. Coberto por testes.
+      Removido em 2026-10-21: no campo aberto ninguém o usava.
 - [x] Dash por impulso, de fábrica, com rastro
 
 ## Design
@@ -50,9 +51,9 @@ Revisado em **2026-10-21** contra o código (commit `8a9cbb8`).
 - [ ] Deixar mais claro que o vendedor é um vendedor
 - ~~Mapas individuais por nível~~ — substituído pelo campo gerado a cada
       corrida (`Gerador`)
-- 🔄 Sprites dos bosses — o Rato Rei usa o escudeiro ampliado três vezes;
-      `CryingCat` tem o sprite em WebP com extensão `.png`; `MonarkMouse` não
-      tem sprite
+- 🔄 Sprites dos bosses — o Rato Rei usa o escudeiro ampliado três vezes.
+      `CryingCat` e `MonarkMouse`, que não tinham sprite utilizável, saíram do
+      código em 2026-10-21
 - [ ] Criar os 12 itens adicionais
 - [ ] Criar 6 inimigos
 
@@ -63,11 +64,25 @@ Revisado em **2026-10-21** contra o código (commit `8a9cbb8`).
 - [x] Cercos, elites e endurecimento da horda pelo tempo
 - [x] Chefe a cada cinco minutos e o Rato Rei aos 30, com tela de vitória
 - [x] Fúria Felina e objetos quebráveis
-- ~~Loja entre waves~~ — não há mais waves nem salas. A loja de fim de sala
-      ficou no código sem ser alcançada; só a antecâmara vende
-- [ ] Decidir o destino do modo por ondas (dificuldades `normal` e `hard`,
-      `Recompensa`, `TrapDoor`, plantas `cistern_1` a `6`): integrar ou remover
-- [ ] Dar uso ao dinheiro dentro da corrida, ou tirá-lo — hoje nada rende moeda
+- ~~Loja entre waves~~ — não há mais waves nem salas; só a antecâmara vende
+- [x] Decidir o destino do modo por ondas (dificuldades `normal` e `hard`,
+      `Recompensa`, `TrapDoor`, plantas `cistern_1` a `6`) — removido em
+      2026-10-21, junto com o vendedor de fim de sala
+
+## Dinheiro — ⏸️ em espera
+
+Decisão de 2026-10-21: a mecânica fica **em espera**, sem ser removida nem
+expandida. Hoje o gato começa com 100 moedas, nada dentro da corrida rende moeda
+e só a loja da antecâmara as consome. O código continua de pé e marcado como em
+espera: `Seller`, `Store`, `Coin`, `GumMachine`, `GumInterface`, `GumPanel` e o
+campo `money` do `Player` (gravado no save).
+
+- [ ] Decidir o papel do dinheiro na corrida sem fim (moedas caindo dos inimigos,
+      loja no meio da corrida, máquina de chiclete) ou removê-lo
+- [ ] Alinhar a loja da antecâmara com o `ItemIDs.EM_ESPERA`: a vitrine fixa
+      (`Seller.VITRINE`) põe à venda as variantes elementais que o comentário do
+      `ItemIDs` diz não serem oferecidas, e a `Feed` que o mapa pede nunca aparece
+      (ver [ARMAS.md](ARMAS.md))
 
 ## Progressão
 
@@ -103,9 +118,11 @@ Revisado em **2026-10-21** contra o código (commit `8a9cbb8`).
 
 - [x] Activity de salvamento — tela `Saves` com três espaços, retomar e apagar
 - [x] Persistir o estado da partida (`Corrida`)
-- [ ] Gravar o meio da corrida sem fim: hoje só a entrada na arena e a escolha de
-      elemento gravam, e o relógio da horda não vai junto (ver
-      [ARQUITETURA.md](../ARQUITETURA.md#pontos-frágeis-conhecidos))
+- [x] Gravar o meio da corrida sem fim: relógio, chefes vivos e números da corrida
+      vão junto; grava a cada minuto, depois de cada escolha e ao sair pela pausa
+      (ver [ARQUITETURA.md](../ARQUITETURA.md#persistência))
+- [x] Retomar não cura mais o gato com o upgrade Vitality
+- [ ] Gravar os inimigos da tela, se a brecha de "sair limpa a tela" incomodar
 
 ## Cartas e habilidades
 

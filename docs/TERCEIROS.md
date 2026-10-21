@@ -11,7 +11,7 @@ Declaradas em `build.gradle.kts`.
 |---|---|---|---|
 | [json-simple](https://github.com/fangyidong/json-simple) | 1.1.1 | Apache-2.0 | Leitura de `config.json` e dos JSON de mapas e jogadores |
 | [OSHI](https://github.com/oshi/oshi) | 6.12.0 | MIT | Informações de hardware no overlay de depuração (F3) |
-| [JNA](https://github.com/java-native-access/jna) | 5.19.1 | Apache-2.0 / LGPL-2.1 | Dependência do OSHI |
+| [JNA](https://github.com/java-native-access/jna) | 5.19.1 | Apache-2.0 / LGPL-2.1 | Dependência do OSHI, e também a ponte para a XInput do Windows (controle de Xbox, `engine/inputs/gamepad/XInput.java`) |
 | [SLF4J](https://www.slf4j.org/) | 2.0.19 | MIT | Fachada de log exigida pelo OSHI |
 
 ## Versionadas em `libs/`
@@ -36,7 +36,7 @@ Não têm publicação no Maven Central.
 | [Tiny gun icons (16x16)](https://opengameart.org/content/tiny-gun-icons-16x16) | congusbongus | CC0 1.0 | Desenho do laser |
 | [Ninja Throwing Items Kit](https://opengameart.org/content/ninja-throwing-items-kit-32x32) | kungfu4000 | CC0 1.0 | Desenho da kunai |
 | [16x16 RPG Items (DB32)](https://opengameart.org/content/16x16-rpg-items-db32) | ARoachIFoundOnMyPillow | CC0 1.0 | Varinhas de agua (orbe) e de fogo (tocha) |
-| [16x16 Puny Dungeon Tileset](https://opengameart.org/content/16x16-puny-dungeon-tileset) | Shade | CC0 1.0 | Tiles da cisterna inundada (primeira arena) |
+| [16x16 Puny Dungeon Tileset](https://opengameart.org/content/16x16-puny-dungeon-tileset) | Shade | CC0 1.0 | Tiles da cisterna inundada: o chão, a água e os enfeites do campo da corrida, gerado pelo `Gerador` |
 | [Pixelart Spells](https://opengameart.org/content/pixelart-spells) | DevWizard | CC0 1.0 | Lufada de vento da partícula de impacto do elemento ar |
 | Pixel Bow Pack | **a confirmar** | **⚠ a confirmar** | Desenhos dos arcos |
 
@@ -211,7 +211,8 @@ chiptune de briga com loop limpo — as três fecham com a arte do jogo. O menu 
 a faixa escolhida na hora: escolher música lendo o nome numa lista não funciona.
 
 **A trilha de chefe fica de fora dessa lista, de propósito.** `fight_boss.ogg`
-entra sozinha quando um `Enemy.chefe()` está vivo na arena e sai quando ele morre.
+entra sozinha quando um chefe (`Enemy.chefe()`) está vivo no campo e sai quando
+ele morre, cruzando com a faixa de combate em um segundo (`TrilhaDaArena`).
 Música de chefe que toca o tempo todo deixa de anunciar chefe nenhum: o que a
 torna especial é ela *não* tocar no resto do tempo. Ela também tem loop sem
 emenda, o que importa numa faixa de dois minutos que repete.

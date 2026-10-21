@@ -140,3 +140,33 @@ Survivors* (PRs #20 a #22, 2026-10-19).
 
 - Textura faltando ao escolher fogo no meio da corrida: `swordfire` renomeado
   para `sword_fire` (`a0029e3`).
+
+## Save da corrida e limpeza (2026-10-21, branch `docs/estado-atual`)
+
+Esta seção não é reconstrução: descreve a mudança feita depois da revisão da
+documentação.
+
+- **Save da corrida sem fim completo.** O save passa a guardar o relógio da
+  corrida, os abates, qual chefe vem a seguir, se o Rato Rei já nasceu, o compasso
+  do cerco, os chefes vivos (tipo e fração de vida), níveis pendentes, trocas e
+  pulos das cartas, carga da Fúria, números da tela final e a vitória. Antes,
+  retomar zerava o relógio e devolvia o gato ao estado dos 45 s.
+- **Quando grava:** ao entrar no campo, depois de cada escolha (elemento, carta de
+  nível, prêmio do caça-níquel), a cada minuto de corrida e ao sair pela pausa.
+  O aviso da pausa diz isso e avisa que os inimigos da tela não são guardados.
+- **Retomar não cura mais.** O upgrade permanente Vitality era aplicado depois da
+  vida gravada e enchia a barra.
+- **Removido o que nenhum caminho do jogo alcançava:** o modo por ondas e salas
+  (dificuldades `normal` e `hard`, plantas `cistern_1` a `6`, JSON de
+  `maps/waves/`), a `Recompensa` de fim de sala, o vendedor de fim de sala, o
+  `TrapDoor`, a `Door`, o `Crate` com loot, a `Chain`, o `MonarkMouse`, o
+  `CryingCat`, o A\* e `Player.takeLevel`.
+- **Dinheiro em espera:** a mecânica fica no código, marcada, sem uso dentro da
+  corrida (`Seller`, `Store`, `Coin`, `GumMachine`).
+- **Threads:** o `Repulsion` saiu da thread própria (que nunca terminava) para o
+  tick do jogo; `resetWindow()` passa pela EDT.
+- **Correções:** o relógio interno do `Game` contava 61 ticks por segundo; a
+  morte do gato deixava o resto do tick rodando depois da troca de tela.
+- O corte do Presságio "nas últimas salas" saiu junto com as salas: ele é sempre
+  oferecido.
+- Comentários que descreviam o fluxo por salas foram atualizados.
