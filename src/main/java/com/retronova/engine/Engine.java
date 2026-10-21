@@ -430,11 +430,6 @@ public class Engine implements Runnable {
         window.requestFocus();
         while (isRunning) {
             try {
-                if (KeyBoard.KeyPressed("F11") && window != null) {
-                    Configs.setFullscreen(!Configs.Fullscreen());
-                    window.resetWindow();
-                }
-
                 long nowHZ = System.nanoTime();
                 delta_HZ += (nowHZ - lastTimeHZ) / ns_HZ;
                 lastTimeHZ = nowHZ;
@@ -446,6 +441,16 @@ public class Engine implements Runnable {
                 int ticksExecutados = 0;
                 while (delta_HZ >= 1 && ticksExecutados < MAX_CATCHUP) {
                     long inicioTick = System.nanoTime();
+                    // O F11 E LIDO NO TICK, e nao a cada volta do laco. Fora daqui
+                    // ele rodava tambem na espera entre quadros, que gira no lugar
+                    // milhoes de vezes por segundo — e cada leitura percorre as 47
+                    // teclas comparando texto. Medido: ~22% do tempo da thread do
+                    // jogo. Num notebook isso e pior que desperdicio: CPU e placa de
+                    // video dividem o mesmo limite de energia e calor.
+                    if (KeyBoard.KeyPressed("F11") && window != null) {
+                        Configs.setFullscreen(!Configs.Fullscreen());
+                        window.resetWindow();
+                    }
                     this.tick();
                     if (ACTIVITY_RUNNING && !stackActivities.isEmpty()) {
                         getACTIVITY().tick();
