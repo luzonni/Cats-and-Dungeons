@@ -5,9 +5,12 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.game.Conquistas;
+import com.retronova.game.map.arena.Icones;
 import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.Cenario;
 import com.retronova.menus.shared.Confirm;
@@ -22,6 +25,8 @@ import java.util.List;
 public class Menu implements Activity {
 
     private final List<Button> botoes;
+    /** O troféu das conquistas: o último da lista, mas fora da coluna central. */
+    private Button trofeu;
     /**
      * A ilustracao do titulo, viva.
      *
@@ -74,6 +79,10 @@ public class Menu implements Activity {
         //Sair pela pausa já perguntava; aqui fechava direto. Mesmo diálogo nos dois.
         botoes.add(new Button(0, 0, 0, 0, "Quit",
                 b -> confirmacao.perguntar("Do you want to quit?", Engine::CLOSE)));
+        // O TROFEU E O ULTIMO DA LISTA, para o teclado alcancá-lo como aos outros,
+        // mas nao entra na coluna central: posicionarBotoes o leva para o canto.
+        trofeu = new Button(0, 0, 0, 0, "", b -> Engine.heapActivity(new TelaDeConquistas()));
+        botoes.add(trofeu);
     }
 
     /** Recalcula posições a partir da escala da UI, para os cantos do 9-slice caírem inteiros. */
@@ -83,11 +92,17 @@ public class Menu implements Activity {
         int espaco = altura + 6 * Configs.UiScale();
 
         int x = Engine.window.getWidth() / 2 - largura / 2;
-        int y = Engine.window.getHeight() / 2 - (botoes.size() * espaco) / 2;
+        // Sem o troféu: ele não faz parte da coluna.
+        int naColuna = botoes.size() - 1;
+        int y = Engine.window.getHeight() / 2 - (naColuna * espaco) / 2;
 
-        for (int i = 0; i < botoes.size(); i++) {
+        for (int i = 0; i < naColuna; i++) {
             botoes.get(i).setBounds(new Rectangle(x, y + i * espaco, largura, altura));
         }
+        // No canto superior direito, quadrado, com a margem da interface.
+        int lado = (int) (altura * 1.3);
+        trofeu.setBounds(new Rectangle(Engine.window.getWidth() - Configs.Margin() - lado,
+                Configs.Margin(), lado, lado));
     }
 
     @Override
@@ -140,9 +155,50 @@ public class Menu implements Activity {
             botoes.get(i).render(g);
             g.translate(-dx, 0);
         }
+        desenharTrofeu(g);
         desenharVersao(g);
         desenharEscurecimento(g);
         confirmacao.render(g);
+    }
+
+    /**
+     * O troféu por cima do botão vazio: o ícone, um selo vermelho se há conquista
+     * nova que o jogador não viu, e a dica no foco ou com o mouse em cima.
+     *
+     * Acompanha a saída dos botões (a mesma translação), para não ficar parado
+     * enquanto o resto da tela vai embora.
+     */
+    private void desenharTrofeu(Graphics2D g) {
+        int s = Configs.UiScale();
+        Rectangle r = trofeu.getBounds();
+        int dx = deslocamentoDeSaida(botoes.indexOf(trofeu));
+        g.translate(dx, 0);
+
+        // O corpo do botão tem a faixa das orelhas em cima; o ícone vai no resto.
+        int corpoY = r.y + 6 * s;
+        int corpoH = r.height - 6 * s;
+        int celula = Math.max(1, corpoH * 7 / 10 / 9);
+        int lado = Icones.lado(celula);
+        Color ouro = trofeu.isHovered() ? new Color(0xFFE680) : new Color(0xFFD23F);
+        Icones.desenhar(g, "TROFEU", ouro, r.x + (r.width - lado) / 2, corpoY + (corpoH - lado) / 2, celula);
+
+        if (Conquistas.temNovas()) {
+            // Pulsa devagar: chama atenção sem gritar.
+            double pulso = 0.5 + 0.5 * Math.sin((transicao < 0 ? Engine.alpha() : 0) + System.nanoTime() / 2.5e8);
+            int d = 7 * s;
+            int bx = r.x + r.width - d + 2 * s, by = r.y + 2 * s;
+            g.setColor(new Color(0xE0475F));
+            g.fillOval(bx - (int) (pulso * s), by - (int) (pulso * s), d + (int) (2 * pulso * s), d + (int) (2 * pulso * s));
+            Font f = FontHandler.font(FontHandler.Game, 5f * s);
+            TextFx.draw(g, "!", f, bx + d / 2 - FontHandler.getWidth("!", f) / 2, by + d - s, Palette.TEXT, s);
+        }
+        if (trofeu.isHovered() || trofeu.isFocused()) {
+            Font f = FontHandler.font(FontHandler.Septem, 6f * s);
+            String dica = "Achievements";
+            TextFx.draw(g, dica, f, r.x + r.width - FontHandler.getWidth(dica, f), r.y + r.height + 9 * s,
+                    Palette.TEXT, s);
+        }
+        g.translate(-dx, 0);
     }
 
     /**
