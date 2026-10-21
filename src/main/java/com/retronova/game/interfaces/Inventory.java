@@ -8,6 +8,7 @@ import com.retronova.game.Game;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.UiSprite;
+import com.retronova.engine.inputs.Entrada;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -37,6 +38,13 @@ public class Inventory implements Activity {
      * crescer o arquivo empurraria a tela inteira. Ver tools/GenOrelhas.java.
      */
     private final UiSprite orelhas;
+
+    /**
+     * A casa em foco das setas e do controle, numa grade de 5 colunas: as tres
+     * primeiras fileiras sao a mochila (0 a 14) e a quarta e a hotbar (15 a 19).
+     */
+    private int foco;
+    private static final int COLUNAS = 5, CASAS_DA_MOCHILA = 15, TOTAL = 20;
 
     public Inventory(int lengthBag, int lengthHotbar) {
         if(lengthBag > 15 || lengthHotbar > 5) {
@@ -239,6 +247,43 @@ public class Inventory implements Activity {
         for (int i = 0; i < lengthHotbar; i++) {
             cuidarDoSlot(hotbar[i], false);
         }
+        // O foco vem DEPOIS do mouse: o F com o ponteiro em cima de uma casa ja
+        // foi gasto ali, e so sobra para a casa em foco quando o mouse nao usou.
+        cuidarDoFoco();
+    }
+
+    // ------------------------------------------------------------- foco
+
+    private boolean ativa(int i) {
+        return i < CASAS_DA_MOCHILA ? i < lengthBag : i - CASAS_DA_MOCHILA < lengthHotbar;
+    }
+
+    private Slot casa(int i) {
+        return i < CASAS_DA_MOCHILA ? bag[i] : hotbar[i - CASAS_DA_MOCHILA];
+    }
+
+    /**
+     * O inventario pelas setas e pelo controle.
+     *
+     * Os mesmos gestos do mouse, sem ponteiro: Enter/A pega e larga (o clique
+     * esquerdo), Q/View manda para o outro lado (o Shift + clique) e F/X consome.
+     * O item na mao fica desenhado junto da casa em foco, que e onde ele vai cair.
+     */
+    private void cuidarDoFoco() {
+        if (!ativa(foco)) {
+            foco = ativa(0) ? 0 : CASAS_DA_MOCHILA;
+        }
+        foco = Grade.navegar(foco, COLUNAS, TOTAL, this::ativa);
+        Slot slot = casa(foco);
+        boolean naMochila = foco < CASAS_DA_MOCHILA;
+        if (KeyBoard.KeyPressed("Enter")) {
+            pegarOuLargar(slot);
+        } else if (KeyBoard.KeyPressed("Q") && !slot.isEmpty()) {
+            mandarParaOOutroLado(slot, naMochila);
+        } else if (slot.item() instanceof Consumable consumable && KeyBoard.KeyPressed("F")) {
+            consumable.consume();
+            slot.take();
+        }
     }
 
     private void cuidarDoSlot(Slot slot, boolean naMochila) {
@@ -293,15 +338,7 @@ public class Inventory implements Activity {
 
     private void interation(Slot slot) {
         if(Mouse.clickOn(Mouse_Button.LEFT, slot.getBounds())) {
-            if(slot.isEmpty()) {
-                slot.put(this.insurer.takeAll());
-            }else {
-                if(this.insurer.isEmpty()) {
-                    this.insurer.put(slot.takeAll());
-                }else {
-                    replace(slot, this.insurer);
-                }
-            }
+            pegarOuLargar(slot);
         }
         if(Mouse.clickOn(Mouse_Button.RIGHT, slot.getBounds())) {
             if(slot.isEmpty()) {
@@ -312,6 +349,21 @@ public class Inventory implements Activity {
                 }else {
                     replace(slot, this.insurer);
                 }
+            }
+        }
+    }
+
+    /** O clique esquerdo: pega o item, larga o da mao, ou troca os dois. */
+    private void pegarOuLargar(Slot slot) {
+        if(slot.isEmpty()) {
+            if(!this.insurer.isEmpty()) {
+                slot.put(this.insurer.takeAll());
+            }
+        }else {
+            if(this.insurer.isEmpty()) {
+                this.insurer.put(slot.takeAll());
+            }else {
+                replace(slot, this.insurer);
             }
         }
     }
@@ -357,6 +409,9 @@ public class Inventory implements Activity {
         for(int i = 0; i < lengthHotbar; i++) {
             hotbar[i].render(g);
         }
+        if (Entrada.porFoco() && ativa(foco)) {
+            casa(foco).renderFoco(g);
+        }
     }
 
     // A NUMERACAO SAIU DAQUI TAMBEM.
@@ -370,11 +425,23 @@ public class Inventory implements Activity {
         if(!insurer.isEmpty()) {
             int x = Mouse.getX() + 16;
             int y = Mouse.getY() + 16;
+            if (Entrada.porFoco() && ativa(foco)) {
+                Rectangle r = casa(foco).getBounds();
+                x = r.x + r.width / 2;
+                y = r.y + r.height / 2;
+            }
             g.drawImage(insurer.item().getSprite(), x, y, 16 * 2, 16 * 2, null);
         }
     }
 
     private void renderInfo(Graphics2D g) {
+        if (Entrada.porFoco()) {
+            // Com o item na mao, a ficha taparia o lugar onde ele vai cair.
+            if (ativa(foco) && insurer.isEmpty()) {
+                casa(foco).renderInfoAoLado(g);
+            }
+            return;
+        }
         Slot[] slots = merge();
         for(int i = 0; i < slots.length; i++) {
             Slot slot = slots[i];
@@ -384,10 +451,17 @@ public class Inventory implements Activity {
         }
     }
 
+    /**
+     * Fechar com um item na mao devolve ele ao inventario.
+     *
+     * Ele era largado no chao. Com o mouse isso ja surpreendia; com o controle,
+     * em que o B fecha a tela, bastava pegar uma arma para trocar de casa e
+     * apertar o botao errado para perde-la. So vai para o chao se nao couber.
+     */
     @Override
     public void dispose() {
         if(!this.insurer.isEmpty())
-            Game.getPlayer().dropLoot(this.insurer.takeAll());
+            give(this.insurer.takeAll());
     }
 
 }

@@ -119,6 +119,16 @@ public class InfoBox {
      *    nada na loja.
      */
     public void render(Graphics2D g) {
+        render(g, Mouse.getX(), Mouse.getY());
+    }
+
+    /**
+     * Desenha a caixa ancorada num ponto qualquer, e nao no ponteiro.
+     *
+     * Com as setas ou o controle nao ha ponteiro: a casa em foco e que diz de
+     * qual item e a ficha, e a caixa nasce junto dela.
+     */
+    public void render(Graphics2D g, int ancoraX, int ancoraY) {
         if (isEmpty()) {
             return;
         }
@@ -130,8 +140,8 @@ public class InfoBox {
         // do painel, entao a ficha dos itens mais usados era a que mais vazava. Nao
         // ha decisao nova aqui: ela continua indo para baixo e para a direita, e so
         // recua o quanto for preciso para caber.
-        int x = Mouse.getX() + 16;
-        int y = Mouse.getY() + 16;
+        int x = ancoraX + 16;
+        int y = ancoraY + 16;
         int larguraDaJanela = com.retronova.engine.Engine.window.getWidth();
         int alturaDaJanela = com.retronova.engine.Engine.window.getHeight();
         x = Math.max(esc, Math.min(x, larguraDaJanela - this.bounds.width - esc));

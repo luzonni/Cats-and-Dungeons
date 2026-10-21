@@ -3,6 +3,7 @@ package com.retronova.game.interfaces;
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.DrawString;
 import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.graphics.Palette;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.UiSprite;
@@ -129,5 +130,21 @@ public class Slot {
             info.setValues(this.item);
             info.render(g);
         }
+    }
+
+    /** A ficha do item ao lado da casa, para a casa em foco das setas e do controle. */
+    public void renderInfoAoLado(Graphics2D g) {
+        if(!isEmpty()) {
+            info.setValues(this.item);
+            info.render(g, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+        }
+    }
+
+    /** Moldura de foco: a casa que o Enter/A vai usar. */
+    public void renderFoco(Graphics2D g) {
+        int s = Configs.HudScale();
+        g.setColor(Palette.ACCENT);
+        g.setStroke(new BasicStroke(s));
+        g.drawRect(bounds.x - s, bounds.y - s, bounds.width + s, bounds.height + s);
     }
 }

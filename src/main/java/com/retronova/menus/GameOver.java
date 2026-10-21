@@ -6,6 +6,7 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.graphics.TextFx;
+import com.retronova.engine.inputs.Entrada;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -20,6 +21,7 @@ import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Bonus;
 import com.retronova.menus.shared.Button;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -46,6 +48,8 @@ public class GameOver implements Activity {
     private final List<Button> botoes = new ArrayList<>();
     private final List<Rectangle> linhasDaLoja = new ArrayList<>();
     private int foco = -1;
+    /** Linha da loja em foco pelas setas e pelo controle, ou -1 com o foco nos botões. */
+    private int focoLoja = -1;
     private int entrando;
     private int brilhoDaCompra = -1, desdeACompra;
     /** Ticks desde que a tela terminou de entrar; anima os avisos de conquista. */
@@ -119,30 +123,54 @@ public class GameOver implements Activity {
             if (r.contains(Mouse.getX(), Mouse.getY())) {
                 Engine.window.pointing();
                 if (Mouse.clickOn(Mouse_Button.LEFT, r)) {
-                    if (Meta.comprar(todos[i])) {
-                        Sound.play(Sounds.Conquista);
-                        brilhoDaCompra = i;
-                        desdeACompra = 0;
-                    } else {
-                        Sound.play(Sounds.Button);
-                    }
+                    comprar(i);
                 }
             }
         }
-        if (KeyBoard.KeyPressed("Right")) {
+        // AS SETAS ANDAM NAS DUAS PARTES DA TELA. Cima e baixo percorrem a loja,
+        // e descer da ultima melhoria cai nos botoes; esquerda e direita escolhem
+        // o botao. A loja era so de clique, e o controle nao chegava nela.
+        if (KeyBoard.KeyPressed("Up")) {
+            focoLoja = focoLoja < 0 ? todos.length - 1 : Math.max(0, focoLoja - 1);
+            foco = -1;
+        } else if (KeyBoard.KeyPressed("Down")) {
+            if (focoLoja >= 0 && focoLoja < todos.length - 1) {
+                focoLoja++;
+            } else {
+                focoLoja = -1;
+                foco = Math.max(0, foco);
+            }
+        } else if (KeyBoard.KeyPressed("Right")) {
+            focoLoja = -1;
             foco = (foco + 1) % botoes.size();
         } else if (KeyBoard.KeyPressed("Left")) {
+            focoLoja = -1;
             foco = (foco <= 0 ? botoes.size() : foco) - 1;
-        } else if (KeyBoard.KeyPressed("Enter") && foco >= 0) {
-            botoes.get(foco).activate();
+        } else if (KeyBoard.KeyPressed("Enter")) {
+            if (focoLoja >= 0) {
+                comprar(focoLoja);
+            } else if (foco >= 0) {
+                botoes.get(foco).activate();
+            }
         }
         for (int i = 0; i < botoes.size(); i++) {
             Button botao = botoes.get(i);
             botao.tick();
             if (botao.isHovered()) {
                 foco = -1;
+                focoLoja = -1;
             }
             botao.setFocused(foco == i);
+        }
+    }
+
+    private void comprar(int linha) {
+        if (Meta.comprar(Meta.Permanente.values()[linha])) {
+            Sound.play(Sounds.Conquista);
+            brilhoDaCompra = linha;
+            desdeACompra = 0;
+        } else {
+            Sound.play(Sounds.Button);
         }
     }
 
@@ -300,9 +328,16 @@ public class GameOver implements Activity {
             int nivel = Meta.nivel(m);
             boolean cheio = nivel >= Meta.Permanente.NIVEL_MAXIMO;
             boolean podeComprar = !cheio && Meta.ouro() >= Meta.preco(m);
-            boolean sob = r.contains(Mouse.getX(), Mouse.getY());
+            boolean sob = Entrada.porFoco() ? focoLoja == i : r.contains(Mouse.getX(), Mouse.getY());
             g.setColor(sob && podeComprar ? Palette.LIGHT : Palette.MAIN);
             g.fillRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
+            // Contorno do foco, mesmo sem ouro: o realce claro so diz "da para
+            // comprar", e sem o contorno uma linha cara nao mostraria onde o foco esta.
+            if (sob && Entrada.porFoco()) {
+                g.setColor(Palette.ACCENT);
+                g.setStroke(new BasicStroke(s));
+                g.drawRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
+            }
             if (brilhoDaCompra == i && desdeACompra < 20) {
                 g.setColor(new Color(255, 255, 255, (int) (200 * (1 - desdeACompra / 20.0))));
                 g.fillRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
@@ -321,7 +356,7 @@ public class GameOver implements Activity {
             contornado(g, preco, f, r.x + r.width - 6 * s - pw, r.y + 14 * s,
                     cheio ? Palette.LIGHT : podeComprar ? new Color(0xFFD23F) : new Color(0x9A5050), s);
         }
-        centro(g, "Click to buy. Upgrades apply to every new run.", FontHandler.font(FontHandler.Septem, 5f * s),
+        centro(g, "Click or press Enter to buy. Upgrades apply to every new run.", FontHandler.font(FontHandler.Septem, 5f * s),
                 p.x + p.width / 2, p.y + p.height - 4 * s, Palette.LIGHT);
     }
 

@@ -6,6 +6,8 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.exceptions.StoreException;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.UiSprite;
+import com.retronova.engine.inputs.Entrada;
+import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
@@ -36,6 +38,8 @@ public class Store implements Activity {
     private final UiSprite store;
     private final Point positionStore;
     private int indexSelected = -1;
+    /** A casa em foco das setas e do controle. */
+    private int foco;
     private final Slot[] slots;
     private final int[] prices;
 
@@ -105,19 +109,44 @@ public class Store implements Activity {
             Engine.window.pointing();
         }
         if(indexSelected != -1 && Mouse.clickOn(Mouse_Button.LEFT, buttonBuy) && podeComprar(player)) {
-            // Na vitrine a prateleira não esvazia: dá para pegar o mesmo item
-            // de novo depois de trocar de arma, que é o que uma revisão exige.
-            Item comprado = Debugging.VITRINE
-                    ? Item.build(slots[indexSelected].item().getID(), 1)
-                    : slots[indexSelected].take();
-            player.getInventory().give(comprado);
-            player.setMoney(player.getMoney() - prices[indexSelected]);
-            if (slots[indexSelected].isEmpty()) {
-                indexSelected = -1;
-            }
-            Sound.play(Sounds.Coin);
-            Sound.play(Sounds.Cat);
+            comprar(player);
         }
+        cuidarDoFoco(player);
+    }
+
+    /**
+     * A prateleira pelas setas e pelo controle.
+     *
+     * DOIS TOQUES NO A, como no mouse sao dois cliques: o primeiro seleciona a
+     * casa em foco e mostra o preco, o segundo — na mesma casa — compra. Um toque
+     * so compraria qualquer coisa em que o foco passasse por engano.
+     */
+    private void cuidarDoFoco(Player player) {
+        foco = Grade.navegar(foco, COLUNAS, slots.length, i -> true);
+        if (!KeyBoard.KeyPressed("Enter") || slots[foco].isEmpty()) {
+            return;
+        }
+        if (indexSelected != foco) {
+            indexSelected = foco;
+            Sound.play(Sounds.Button);
+        } else if (podeComprar(player)) {
+            comprar(player);
+        }
+    }
+
+    private void comprar(Player player) {
+        // Na vitrine a prateleira não esvazia: dá para pegar o mesmo item
+        // de novo depois de trocar de arma, que é o que uma revisão exige.
+        Item comprado = Debugging.VITRINE
+                ? Item.build(slots[indexSelected].item().getID(), 1)
+                : slots[indexSelected].take();
+        player.getInventory().give(comprado);
+        player.setMoney(player.getMoney() - prices[indexSelected]);
+        if (slots[indexSelected].isEmpty()) {
+            indexSelected = -1;
+        }
+        Sound.play(Sounds.Coin);
+        Sound.play(Sounds.Cat);
     }
 
     /**
@@ -165,6 +194,9 @@ public class Store implements Activity {
                 rec = slot.getBounds();
             }
         }
+        if (Entrada.porFoco()) {
+            slots[foco].renderFoco(g);
+        }
         if(rec == null)
             return;
         g.setColor(Color.white);
@@ -187,7 +219,11 @@ public class Store implements Activity {
     }
 
     public void renderButtonBuy(Graphics2D g) {
-        if(!Mouse.on(buttonBuy))
+        // Pelo foco, o botao acende quando o proximo A vai comprar: e o aviso de
+        // que o segundo toque e uma compra, e nao outra selecao.
+        boolean compraPeloFoco = Entrada.porFoco() && foco == indexSelected
+                && podeComprar(Game.getPlayer());
+        if(!Mouse.on(buttonBuy) && !compraPeloFoco)
             return;
         g.setColor(Color.white);
         g.setStroke(new BasicStroke(Configs.HudScale()));
@@ -195,6 +231,10 @@ public class Store implements Activity {
     }
 
     private void renderInfo(Graphics2D g) {
+        if (Entrada.porFoco()) {
+            slots[foco].renderInfoAoLado(g);
+            return;
+        }
         for(int i = 0; i < slots.length; i++) {
             Slot slot = slots[i];
             if (Mouse.on(slot.getBounds()) && !slot.isEmpty()) {
