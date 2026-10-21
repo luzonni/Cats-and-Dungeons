@@ -125,9 +125,10 @@ public abstract class Projetil extends Utility {
         // Tiro de inimigo leva brilho vermelho na ponta, mesmo parado: e o mesmo
         // codigo de cor das sombras e bordas dos bichos — vermelho machuca.
         if (hostil()) {
-            int r = (int) (larguraEmPixels() * 1.6);
-            g.setColor(new java.awt.Color(255, 40, 50, 90));
-            g.fillOval((int) px - r, (int) py - r, r * 2, r * 2);
+            // Imagem pronta, e nao fillOval: ver Brilho. Com o ceu cheio de
+            // caveiras, o oval suavizado de cada uma era rasterizado na CPU.
+            com.retronova.engine.graphics.Brilho.disco(g, px, py, larguraEmPixels() * 1.6,
+                    new java.awt.Color(255, 40, 50, 90));
         }
         if (gravados < 2) {
             return;
