@@ -86,7 +86,7 @@ public class Melhorias {
     }
 
     /**
-     * Sorteia a oferta de fim de turno.
+     * Sorteia melhorias para o caça-níquel do baú (ver Roleta).
      *
      * DUAS ROLAGENS SEPARADAS, como no Hades: primeiro o grau, depois qual
      * melhoria. Elas são independentes de propósito — se o grau dependesse da
@@ -94,31 +94,12 @@ public class Melhorias {
      * aprenderia a ignorar metade da lista. Assim qualquer uma pode sair lendária,
      * e o que o jogador avalia é sempre o par.
      *
-     * AS MELHORIAS NÃO REPETEM DENTRO DA MESMA OFERTA. Duas cartas da mesma coisa
-     * desperdiçariam uma das três opções — e três viram uma escolha só.
-     */
-    /**
-     * A partir de que sala o Presagio para de ser oferecido.
+     * AS MELHORIAS NÃO REPETEM DENTRO DA MESMA OFERTA, quando se pede mais de uma.
      *
-     * Ele melhora as cartas FUTURAS, entao quanto mais tarde vem, menos vale — e na
-     * ultima sala nao vale nada. Uma opcao objetivamente morta e o pior que um
-     * sistema de cartas pode ter: quem conhece o jogo simplesmente nunca a escolhe,
-     * e quem nao conhece e punido por isso. Some das ultimas salas em vez de virar
-     * uma pegadinha para novato.
-     *
-     * A corrida tem vinte ondas; quinze deixa um quarto do caminho sem ele.
+     * @param promocao chance de cada carta subir um degrau, de Modifiers.Fortune
      */
-    private static final int ULTIMA_SALA_COM_PRESAGIO = 15;
-
-    /**
-     * @param nivel      em que sala a oferta esta sendo feita
-     * @param promocao   chance de cada carta subir um degrau, de Modifiers.Fortune
-     */
-    public List<Carta> oferecer(int quantas, int nivel, double promocao) {
+    public List<Carta> oferecer(int quantas, double promocao) {
         List<Melhoria> possiveis = new ArrayList<>(List.of(Melhoria.values()));
-        if (nivel >= ULTIMA_SALA_COM_PRESAGIO) {
-            possiveis.remove(Melhoria.PRESAGIO);
-        }
         Collections.shuffle(possiveis, Engine.RAND);
         List<Carta> oferta = new ArrayList<>();
         for (int i = 0; i < quantas && i < possiveis.size(); i++) {

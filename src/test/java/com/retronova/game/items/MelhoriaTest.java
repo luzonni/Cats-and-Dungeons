@@ -142,7 +142,7 @@ class MelhoriaTest {
     void ofertaSemRepetir() {
         Melhorias ledger = new Melhorias();
         for (int rodada = 0; rodada < 500; rodada++) {
-            var oferta = ledger.oferecer(3, 0, 0);
+            var oferta = ledger.oferecer(3, 0);
             assertEquals(3, oferta.size());
             assertEquals(3, oferta.stream().map(Melhorias.Carta::melhoria).distinct().count(),
                     "duas cartas iguais desperdicam uma das tres opcoes");
@@ -204,34 +204,6 @@ class MelhoriaTest {
                 "com presagio no absurdo o comum saiu " + Math.round(fatia * 100)
                         + "%, esperado " + Math.round(esperado * 100)
                         + "% — o teto nao esta segurando");
-    }
-
-    @Test
-    @DisplayName("o presagio some das ultimas salas")
-    void presagioSaiNoFim() {
-        Melhorias ledger = new Melhorias();
-        // No fim da corrida ele nao melhora mais nada: seria uma opcao morta, e
-        // opcao morta pune quem ainda nao conhece o jogo.
-        for (int rodada = 0; rodada < 500; rodada++) {
-            var tarde = ledger.oferecer(3, 19, 0);
-            assertTrue(tarde.stream().noneMatch(c -> c.melhoria() == Melhoria.PRESAGIO),
-                    "Presagio foi oferecido na ultima sala, onde nao vale nada");
-        }
-        // E continua existindo no comeco, senao a carta nunca apareceria.
-        boolean apareceu = false;
-        for (int rodada = 0; rodada < 500 && !apareceu; rodada++) {
-            apareceu = ledger.oferecer(3, 0, 0).stream()
-                    .anyMatch(c -> c.melhoria() == Melhoria.PRESAGIO);
-        }
-        assertTrue(apareceu, "Presagio nunca aparece nem no inicio");
-    }
-
-    @Test
-    @DisplayName("tirando o presagio ainda sobram tres cartas para oferecer")
-    void semPresagioAindaHaOferta() {
-        assertTrue(Melhoria.values().length - 1 >= 3,
-                "nas ultimas salas o Presagio sai do baralho; sem folga a oferta "
-                        + "encolheria em silencio");
     }
 
     @Test

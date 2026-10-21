@@ -6,96 +6,35 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.GameObject;
-import com.retronova.game.objects.entities.Entity;
-import com.retronova.game.objects.entities.EntityIDs;
 import com.retronova.game.objects.entities.enemies.Enemy;
 
-import java.util.List;
-
+/**
+ * O campo da corrida sem fim: gerado na hora (ver Gerador), com a horda do
+ * Waves, a chegada do gato pelo portal, a musica que acompanha a briga, a
+ * escolha de elemento aos 45 s e os quebraveis que aparecem em volta do gato.
+ *
+ * Ja houve arenas desenhadas a mao, uma por sala, encadeadas por uma porta que
+ * abria ao fim das ondas. Esse modo saiu do codigo junto com as ondas: a corrida
+ * nao tem mais fim de sala, so o relogio.
+ */
 public class Arena extends GameMap {
 
-    /**
-     * As arenas de cada dificuldade.
-     *
-     * ANTES ERA UM MAPA SO POR DIFICULDADE, e o encadeamento reconstruia sempre o
-     * mesmo: o quinto turno era identico ao primeiro, e a corrida nao tinha para
-     * onde ir visualmente. Agora a facil e um LOTE de seis plantas da cisterna, com
-     * a saida em paredes diferentes e a agua em niveis diferentes.
-     *
-     * O tamanho do lote saiu de como o genero se organiza. Hades tem quinze camaras
-     * no Tartaro e dez em Asfodelo; Slay the Spire, quinze a dezessete andares por
-     * ato, com a corrida entre quarenta e cinco minutos e uma hora; Isaac fica em
-     * vinte e cinco minutos a uma hora. O padrao e tres a cinco regioes por corrida
-     * e dez a quinze salas por regiao. Aqui cada sala e uma arena inteira de ondas —
-     * mais longa que uma camara de Hades — entao seis por tema da um bloco de turnos
-     * sem repeticao imediata, e ainda e um numero que da para cuidar.
-     *
-     * Normal e dificil continuam com um mapa cada: elas ainda nao tem tema, e
-     * inventar variedade sem ambientacao seria seis vezes a mesma caixa.
-     */
-    private static final String[][] MAPAS = {
-            {"cistern_1", "cistern_2", "cistern_3", "cistern_4", "cistern_5", "cistern_6"},
-            {"normal"},
-            {"hard"},
-    };
-
-    /**
-     * Qual planta este turno usa.
-     *
-     * Percorre o lote em ordem a partir do nivel, e nao por sorteio: sorteio repete,
-     * e cair duas vezes seguidas na mesma sala e justamente o que se quer evitar.
-     * Passado o lote inteiro, ele recomeca — a essa altura o jogador ja andou seis
-     * arenas e o retorno nao le como falta de conteudo.
-     */
-    private static String planta(int dificuldade, int nivel) {
-        String[] lote = MAPAS[dificuldade];
-        return lote[Math.floorMod(nivel, lote.length)];
-    }
     private final Waves waves;
-    private boolean ended;
 
-    /** A trilha que a arena subiu. Guardada para saber quando trocar. */
-    private Musics trilha;
-
-    public Arena(int difficult) {
-        this(difficult, Game.getGame().getLevel());
-    }
-
-    /**
-     * A arena com o nivel dito de fora.
-     *
-     * EXISTE PARA A RETOMADA. O construtor de cima pergunta o nivel a
-     * {@code Game.getGame()}, que resolve pela activity corrente — e ao retomar uma
-     * corrida a arena precisa ser montada DENTRO do construtor do Game, quando ele
-     * ainda nao esta na pilha e a pergunta nao tem resposta.
-     *
-     * Sem isto, a unica saida era comecar no saguao e trocar de sala no primeiro
-     * tick, o que fazia o jogador ver o saguao e ser teleportado — parecia defeito,
-     * e era.
-     */
-    public Arena(int difficult, int nivel) {
-        // A dificuldade normal e a cisterna GERADA: maior e diferente a cada sala.
-        // As outras seguem nos mapas desenhados a mao. Ver Gerador.
-        super(difficult == 0
-                ? Gerador.cisterna(Engine.RAND.nextLong())
-                : GameMap.deArquivo(planta(difficult, nivel)));
-        this.ended = false;
-        this.waves = new Waves(this, nivel, difficult);
+    public Arena() {
+        super(Gerador.cisterna(Engine.RAND.nextLong()));
+        this.waves = new Waves(this);
         Sound.stop(Musics.Room);
         // DEVOLVE O VOLUME DAS FAIXAS DE ACAO.
         //
-        // A arena anterior terminou baixando-as ate zero na passagem para a calma, e
-        // volume e estado da faixa, nao da sala: sem isto a arena seguinte manda
-        // tocar a musica de combate e ela toca MUDA, porque continua no volume em
-        // que a cena passada a deixou.
+        // Volume e estado da faixa, nao da corrida: uma faixa baixada por uma cena
+        // anterior (o fim de uma corrida, a calmaria antes de um chefe) continuaria
+        // naquele volume, e a corrida nova mandaria tocar uma musica muda.
         for (Musics m : Musics.COMBATE) {
             Sound.volume(m, 1);
         }
         Sound.volume(Musics.FightBoss, 1);
-        // keepPlaying, e nao play: de uma arena para a proxima a trilha de
-        // combate segue de onde estava, em vez de recomecar a cada vitoria.
         Sound.keepPlaying(Musics.combate(), true);
-        this.trilha = Musics.combate();
     }
 
     public Waves getWaves() {
@@ -103,220 +42,23 @@ public class Arena extends GameMap {
     }
 
     /**
-     * Limpou a arena, abre o alcapao para a PROXIMA ARENA.
-     *
-     * Antes ele levava a uma sala de compras entre uma arena e outra. A sala saiu
-     * e o alcapao passou a encadear as arenas direto, com o nivel subindo a cada
-     * uma: e o laco de um roguelike, onde a corrida so anda para a frente e fica
-     * mais dificil, em vez de parar num intervalo seguro a cada vitoria.
-     *
-     * Consequencia assumida: por enquanto nao ha onde comprar nem se curar no
-     * meio da corrida. So a antecamara tem loja, e dela nao se volta.
-     */
-    /**
-     * A trilha de chefe entra quando um chefe entra, e sai quando ele morre.
-     *
-     * A troca e feita aqui, e nao na hora de invocar o bicho, porque chefe pode
-     * aparecer em qualquer onda e por qualquer caminho — e porque ele tambem
-     * pode morrer no meio da arena, e ai a briga continua sem chefe nenhum.
-     * So mexe no som quando a faixa desejada MUDA: chamar play todo tick
-     * rebobinaria a musica sessenta vezes por segundo.
+     * Qual faixa toca e a que volume: intensidade da horda, calmaria antes do
+     * chefe e cruzamento nas trocas. Ver TrilhaDaArena.
      */
     private void ajustarTrilha() {
         // NAO DECIDE NADA COM O SOM CALADO. Sem foco as faixas ficam pausadas, e
-        // pausada responde "nao estou tocando" — o que fazia esta funcao reiniciar
-        // a musica do zero a cada F11.
+        // pausada responde "nao estou tocando" — o que fazia a trilha reiniciar
+        // do zero a cada F11.
         if (Sound.silenciado()) {
             return;
         }
-        // ACABOU A BRIGA, ACABA A MUSICA DE BRIGA.
-        //
-        // Nao entre ondas — entre ondas o combate continua e cortar a trilha ali
-        // faria o intervalo parecer o fim. So quando TODAS as ondas terminaram e a
-        // sala esta vazia: dali ate a proxima porta o jogador escolhe carta, compra
-        // e caminha, e nada disso e briga. A faixa de acao continuando por cima
-        // dessas tres coisas e o que fazia o turno nao ter fim, so pausa.
-        //
-        // A proxima arena sobe o combate de novo no proprio construtor, entao o
-        // ciclo fecha sozinho: briga, silencio, briga.
-        if (ended) {
-            passagemParaACalma();
-            return;
-        }
-        // Qual faixa e a que volume: intensidade da horda, calmaria antes do chefe
-        // e cruzamento nas trocas. Ver TrilhaDaArena.
         direcaoMusical.tick();
     }
 
     private final TrilhaDaArena direcaoMusical = new TrilhaDaArena();
 
     /**
-     * Quadros da passagem de uma trilha para a outra.
-     *
-     * Um segundo e meio. Curto demais e corte com enfeite; longo demais e as duas
-     * faixas se sobrepoem tempo suficiente para virar barulho — sao musicas
-     * diferentes em andamentos diferentes, e elas nao combinam tocando juntas.
-     */
-    private static final int PASSAGEM = 90;
-
-    private int passagem;
-
-    /**
-     * A briga acabou: a acao SAI e a calma ENTRA, ao mesmo tempo.
-     *
-     * Cortar de uma para a outra dizia "acabou" no mesmo instante em que o ultimo
-     * bicho caia, e o alivio nao tem instante — ele assenta. Com as duas se
-     * cruzando, o silencio chega antes de o jogador perceber que chegou, que e como
-     * ele funciona fora do jogo tambem.
-     *
-     * A calma comeca MUDA e so entao sobe: subir do zero e o que faz dela uma
-     * chegada. Se ela entrasse no volume cheio, o cruzamento seria dois cortes.
-     */
-    private void passagemParaACalma() {
-        Musics calma = Musics.calma();
-        if (passagem == 0) {
-            Sound.volume(calma, 0);
-            Sound.play(calma, true);
-        }
-        if (passagem >= PASSAGEM) {
-            // Terminou: a acao pode parar de vez, sem ninguem ouvir o corte.
-            Musics.pararCombate();
-            return;
-        }
-        passagem++;
-        float t = passagem / (float) PASSAGEM;
-        for (Musics m : Musics.COMBATE) {
-            Sound.volume(m, 1 - t);
-        }
-        Sound.volume(Musics.FightBoss, 1 - t);
-        Sound.volume(calma, t);
-    }
-
-    /**
-     * Solta a saida assim que a arma terminar de mudar.
-     *
-     * Roda no tick da arena e nao no fim da animacao porque quem sabe que a
-     * animacao acabou e o gato; a arena so precisa perguntar.
-     */
-    private void esperarATransmutacao() {
-        if (!esperandoTransmutacao) {
-            return;
-        }
-        if (Game.getPlayer().transmutando()) {
-            return;
-        }
-        esperandoTransmutacao = false;
-        liberarSaida();
-    }
-
-
-    /**
-     * A camera vai ate a alavanca e fecha nela.
-     *
-     * O ALVO E A ALAVANCA, e nao a passagem. A passagem e um corredor escuro que
-     * so muda quando alguem age; a alavanca e a coisa em que se clica. Apontar para
-     * o que o jogador tem de FAZER, e nao para onde ele vai acabar indo, e o que
-     * transforma o movimento de camera em instrucao em vez de passeio.
-     *
-     * Ela nao teleporta: o proprio seguimento da camera ja e suave, entao trocar de
-     * alvo produz uma varredura pela sala — e essa varredura mostra de quebra o
-     * campo limpo, que e a recompensa do turno.
-     */
-    /**
-     * Um tile livre ao lado da alavanca, para o vendedor.
-     *
-     * Tenta os quatro vizinhos e fica no primeiro que nao for parede. Sem o teste,
-     * um deslocamento fixo poe o vendedor dentro da alvenaria nas plantas em que a
-     * alavanca esta encostada nela — que sao todas, porque alavanca e coisa de
-     * parede.
-     */
-    /** Onde fica a passagem, em tiles. O corredor corre no eixo dela. */
-    private java.awt.Point bocaDaPassagem() {
-        int tile = GameObject.SIZE();
-        for (com.retronova.game.objects.entities.furniture.Gate porta
-                : getEntities(com.retronova.game.objects.entities.furniture.Gate.class)) {
-            return new java.awt.Point((int) Math.round(porta.getX() / tile),
-                    (int) Math.round(porta.getY() / tile));
-        }
-        return null;
-    }
-
-    private java.awt.Point juntoDaAlavanca() {
-        int tile = GameObject.SIZE();
-        for (com.retronova.game.objects.entities.furniture.Lever alavanca
-                : getEntities(com.retronova.game.objects.entities.furniture.Lever.class)) {
-            int lx = (int) Math.round(alavanca.getX() / tile);
-            int ly = (int) Math.round(alavanca.getY() / tile);
-            java.awt.Point saida = bocaDaPassagem();
-            int[][] vizinhos = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}, {-2, -1}, {2, -1}};
-            for (int[] d : vizinhos) {
-                int x = lx + d[0];
-                int y = ly + d[1];
-                if (getTile(x, y).isSolid()) {
-                    continue;
-                }
-                // NUNCA NO CAMINHO DA PASSAGEM.
-                //
-                // O vendedor apareceu plantado dentro do vao da porta. Alem de
-                // feio, e um problema de jogo: ele bloqueia a unica saida da sala,
-                // e a coisa que o jogador vai fazer em seguida e passar por ali.
-                // O corredor corre no eixo da porta, entao basta recusar qualquer
-                // tile que compartilhe linha ou coluna com ela.
-                if (saida != null && (x == saida.x || y == saida.y)) {
-                    continue;
-                }
-                return new java.awt.Point(x, y);
-            }
-            return new java.awt.Point(lx, ly);
-        }
-        int meio = (getBounds().width / tile) / 2;
-        return new java.awt.Point(meio, (getBounds().height / tile) - 5);
-    }
-
-    private void mostrarSaida() {
-        for (com.retronova.game.objects.entities.furniture.Lever alavanca
-                : getEntities(com.retronova.game.objects.entities.furniture.Lever.class)) {
-            Game.getCam().velocidadeDeCena(CAMERA_DE_CENA);
-            Game.getCam().setFollowed(alavanca);
-            Game.getCam().aproximar(1.4f);
-            this.olhandoASaida = OLHANDO_A_SAIDA;
-            return;
-        }
-    }
-
-    private void tickCamera() {
-        // A GUARDA ERA "SE NAO ESTA OLHANDO A SAIDA, SAI" — e era o bug.
-        //
-        // A volta da camera acontece DEPOIS de olhandoASaida chegar a zero, e o
-        // proprio zero fazia o metodo retornar no tick seguinte. O contador da
-        // volta ficava congelado no valor em que parou, nunca chegava a zero, e
-        // {@code velocidadeDeCena(0)} nunca era chamado: a camera continuava na
-        // velocidade de CENA, que e um vigesimo da normal, pelo resto da sala. So
-        // parecia normalizar na troca de fase porque ali nasce uma camera nova.
-        //
-        // Os dois contadores sao independentes e agora correm independentes.
-        if (olhandoASaida > 0) {
-            olhandoASaida--;
-        }
-        if (olhandoASaida == 0 && voltando == 0 && saidaLiberada && !voltaFeita) {
-            voltaFeita = true;
-            // A VOLTA TAMBEM E LENTA. So depois de chegar no gato a camera recupera
-            // a velocidade de jogo — devolver antes faria o retorno ser o corte que
-            // a ida deixou de ser.
-            Game.getCam().setFollowed(Game.getPlayer());
-            Game.getCam().velocidadeDeCena(CAMERA_DE_CENA);
-            this.voltando = OLHANDO_A_SAIDA / 2;
-        }
-        if (voltando > 0) {
-            voltando--;
-            if (voltando == 0) {
-                Game.getCam().velocidadeDeCena(0);
-            }
-        }
-    }
-
-    /**
-     * A chegada do gato. Enquanto ela roda, a arena nao solta onda nenhuma.
+     * A chegada do gato. Enquanto ela roda, a arena nao solta inimigo nenhum.
      *
      * A ORDEM E O PEDIDO: portal com o jogador PRIMEIRO, bichos depois. Os dois ao
      * mesmo tempo competem pela mesma atencao — o clarao do portal e o branco dos
@@ -340,191 +82,58 @@ public class Arena extends GameMap {
 
     @Override
     public void tick() {
+        ajustarTrilha();
         if (chegando()) {
             chegada.tick();
-            tickCamera();
-            ajustarTrilha();
             return;
         }
-        tickCamera();
-        ajustarTrilha();
-        esperarATransmutacao();
         manterQuebraveis();
         oferecerElemento();
-        if(waves.ended() && !ended && enemiesEmpty()) {
-            ended = true;
-            abrirRecompensa();
-        }else if (!ended) {
-            waves.tick();
-        }
+        waves.tick();
+        gravarACadaMinuto();
     }
 
+    /** O ultimo minuto do relogio em que a corrida foi gravada. */
+    private int minutoGravado = -1;
+
     /**
-     * Fim de turno: escolher uma carta, e so depois seguir.
+     * Um ponto de retomada por minuto de corrida.
      *
-     * A ORDEM AQUI E O DESENHO DO TURNO. Antes limpar a arena abria o alcapao no
-     * mesmo quadro, e a unica coisa entre uma sala e a proxima era andar ate o
-     * buraco. Agora o turno fecha em tres tempos:
-     *
-     *   ESCOLHER — tres cartas, uma leva. Obrigatorio, e por isso vem primeiro:
-     *   enquanto a escolha nao acontece nao ha para onde ir, e o jogador nao passa
-     *   batido por ela como passaria por um bau no chao.
-     *
-     *   COMPRAR — o vendedor aparece ao lado, com o dinheiro que o turno rendeu.
-     *   Ele e OPCIONAL de proposito: a carta e o que a corrida da, a loja e o que o
-     *   jogador decide comprar com o que juntou. Duas decisoes de naturezas
-     *   diferentes, e por isso separadas.
-     *
-     *   SEGUIR — o alcapao. Ele so nasce depois da carta escolhida, senao daria
-     *   para pular a recompensa correndo para o buraco.
+     * Os outros pontos (escolhas, saida pela pausa) cobrem quem sai pelo menu. Este
+     * cobre quem nao sai: o jogo fechado a forca, a janela fechada no X, a luz que
+     * cai. Sem ele, qualquer um desses custaria tudo o que veio depois da ultima
+     * carta — e numa corrida de trinta minutos isso pode ser muito.
      */
-    /**
-     * A recompensa de fim de turno — e a PRIMEIRA e diferente das outras.
-     *
-     * O ELEMENTO E O PREMIO DA PRIMEIRA ARENA, e nao uma pergunta feita no saguao.
-     * A diferenca nao e de lugar, e de ORDEM: o jogador enfrenta uma sala inteira
-     * com a arma de fabrica antes de escolher, entao quando as tres cartas
-     * aparecem ele ja sabe como o gato dele bate — o alcance da espada, o ritmo do
-     * arco — e a escolha deixa de ser no escuro. Escolhendo antes de jogar, ele
-     * estaria apostando em palavras.
-     *
-     * E o mesmo desenho do Hades: a primeira camara tem recompensa FORCADA, e ela
-     * e sempre uma bencao. A corrida comeca com uma decisao que define o resto, mas
-     * so depois de a primeira briga ter ensinado alguma coisa.
-     *
-     * O teste e "o gato ainda nao tem elemento", e nao "e a primeira sala". Uma
-     * corrida retomada do save ja escolheu, e o elemento veio gravado junto — ela
-     * cai direto nas cartas normais, sem perguntar de novo.
-     */
-    private void abrirRecompensa() {
-        if (Game.getPlayer().elemento() == com.retronova.game.items.Elemento.NENHUM) {
-            Engine.pause(new EscolhaDeElemento(() -> {
-                com.retronova.game.Corrida.gravar();
-                // A SAIDA ESPERA A ARMA TERMINAR DE MUDAR. Ver esperarATransmutacao.
-                this.esperandoTransmutacao = true;
-            }));
+    private void gravarACadaMinuto() {
+        int minuto = waves.getSeconds() / 60;
+        if (minutoGravado < 0) {
+            minutoGravado = minuto;     // o da entrada ja foi gravado no changeMap
             return;
         }
-        Engine.pause(new Recompensa(() -> {
-            // GRAVA DEPOIS DA ESCOLHA, e este e o detalhe que importa.
-            //
-            // O checkpoint da entrada da sala e anterior a oferta das tres cartas.
-            // Se ele fosse o unico, quem nao gostasse do sorteio poderia fechar o
-            // jogo e voltar para receber outra oferta, quantas vezes quisesse — o
-            // save viraria uma maquina de re-rolagem. Gravando com a carta ja no
-            // inventario, nao ha o que re-sortear. E a mesma razao pela qual o
-            // Hades grava logo apos a recompensa ser aceita.
+        if (minuto != minutoGravado) {
+            minutoGravado = minuto;
             com.retronova.game.Corrida.gravar();
-            liberarSaida();
-        }));
-    }
-
-    /**
-     * Quadros que a camera passa olhando a saida.
-     *
-     * A sala tem trinta e quatro tiles e a saida pode estar em qualquer parede: sem
-     * isto, o jogador termina a briga e fica girando no lugar procurando para onde
-     * ir. Dois segundos e meio e o bastante para o olho achar a alavanca e entender
-     * que ela e o proximo passo — e curto o suficiente para nao virar cinema.
-     */
-    private static final int OLHANDO_A_SAIDA = 240;
-
-    /**
-     * Velocidade da camera durante a cena.
-     *
-     * Um vinte avos da distancia por quadro, contra um quarto do normal — cinco
-     * vezes mais lenta. Com a velocidade de jogo a camera cobre a sala em dez
-     * quadros e o efeito e um corte: o jogador ve a alavanca aparecer, nao a camera
-     * ir ate ela. Devagar, o caminho ate la e a propria informacao — ele mostra o
-     * campo limpo e onde fica a saida, que e tudo o que a cena tem para dizer.
-     */
-    private static final double CAMERA_DE_CENA = 0.05;
-
-    private int olhandoASaida;
-    private int voltando;
-
-    /** A camera ja voltou para o gato. Impede a volta de ser disparada de novo. */
-    private boolean voltaFeita;
-
-    private void liberarSaida() {
-        this.saidaLiberada = true;
-        // O VENDEDOR ENTRA ANTES DA CAMERA SAIR. Ele nasce agora, com o portal
-        // dele, e a camera chega la a tempo de pegar o meio da chegada: a cena
-        // passa a ter duas coisas para mostrar — onde e a saida e quem esta ao lado
-        // dela — em vez de so apontar para uma alavanca parada.
-        mostrarSaida();
-        int meioX = (getBounds().width / GameObject.SIZE()) / 2;
-        int meioY = (getBounds().height / GameObject.SIZE()) / 2;
-
-        // O vendedor fica ACIMA do alcapao, e nao em cima dele: encostados, abrir a
-        // loja e cair para a proxima arena seriam a mesma tecla no mesmo lugar.
-        // O VENDEDOR FICA AO LADO DA PORTA, EM TERRA SECA. Duas condicoes, e as
-        // duas importam: junto da saida ele e a ultima parada antes de seguir, e
-        // fora da agua porque um vendedor de pe no reservatorio nao tem como ser
-        // lido como alguem que montou banca ali.
-        // AO LADO DA ALAVANCA, ONDE QUER QUE ELA ESTEJA.
-        //
-        // A posicao estava cravada no rodape do mapa, e por isso o vendedor caia
-        // sempre embaixo — nas arenas em que a saida fica ao norte, a leste ou a
-        // oeste, ele nascia do outro lado da sala, longe de tudo. A alavanca e a
-        // referencia certa porque ela ja acompanha a saida: perguntando a ela, o
-        // vendedor acerta nas seis plantas sem ninguem manter uma tabela.
-        java.awt.Point junto = juntoDaAlavanca();
-        Entity vendedor = Entity.build(EntityIDs.Seller.ordinal(),
-                junto.x, junto.y, "FULL", "CHEGANDO");
-        if (vendedor != null) {
-            put(vendedor);
         }
-        // O ALCAPAO SAIU. Quem leva adiante agora e a porta da parede leste, que ja
-        // nasce com a sala e fica fechada ate a alavanca ser puxada. Um buraco no
-        // meio do chao nao pertence a lugar nenhum — aparecia do nada onde antes
-        // havia laje, e nao dava para ambientar em volta dele. A porta pertence a
-        // parede, a ponte leva ate ela e a alavanca e o gesto de sair.
     }
-
-    /**
-     * O turno acabou: ondas limpas E carta escolhida.
-     *
-     * Sao as duas condicoes, e nao so a primeira: a carta e obrigatoria, entao
-     * liberar a saida antes dela daria como escolher nao escolher.
-     */
-    public boolean turnoEncerrado() {
-        return this.saidaLiberada;
-    }
-
-    private boolean saidaLiberada;
-
-    /**
-     * A saida foi pedida, mas a arma ainda esta virando outra.
-     *
-     * POR QUE ESPERAR. Liberar a saida comeca a CENA DA CAMERA: ela sai do gato e
-     * viaja ate a alavanca, para mostrar por onde se segue. Disparada junto com a
-     * transmutacao, a camera abandonaria o gato exatamente no segundo em que a arma
-     * dele sobe, acende e volta sendo outra — a animacao aconteceria fora de quadro,
-     * e a unica coisa que o jogador veria da propria escolha seria o nome numa
-     * carta.
-     *
-     * Duas cenas boas disputando o mesmo instante viram duas cenas perdidas. Esta
-     * espera poe as duas em fila: primeiro a arma muda, com a camera no gato; depois
-     * a camera vai embora mostrar a saida.
-     */
-    private boolean esperandoTransmutacao;
 
     // ------------------------------------------------- escolha do elemento
 
-    private boolean elementoOferecido;
-
     /**
-     * Na corrida sem fim nao ha "fim da primeira sala", que era quando o elemento
-     * era escolhido. Ele passa a ser oferecido aos 45 segundos: cedo o bastante
-     * para definir a corrida, tarde o bastante para o jogador ja ter sentido a arma.
+     * O ELEMENTO E OFERECIDO AOS 45 SEGUNDOS, e nao antes de a corrida comecar:
+     * cedo o bastante para definir a corrida, tarde o bastante para o jogador ja
+     * ter sentido como o gato dele bate — o alcance da espada, o ritmo do arco.
+     * Escolhendo antes de jogar, ele estaria apostando em palavras.
+     *
+     * O teste e "o gato ainda nao tem elemento", e nao um sinal guardado: uma
+     * corrida retomada ja escolheu, e o elemento veio gravado junto.
      */
     private void oferecerElemento() {
-        if (elementoOferecido || !waves.semFim() || waves.getSeconds() < 45 || Engine.pausado()
+        if (waves.getSeconds() < 45 || Engine.pausado()
                 || Game.getPlayer().elemento() != com.retronova.game.items.Elemento.NENHUM) {
             return;
         }
-        elementoOferecido = true;
+        // Grava DEPOIS da escolha: retomar antes dela ofereceria tudo de novo, e o
+        // save viraria uma maquina de re-sortear.
         Engine.pause(new EscolhaDeElemento(com.retronova.game.Corrida::gravar));
     }
 
@@ -589,23 +198,13 @@ public class Arena extends GameMap {
         }
     }
 
-    boolean enemiesEmpty() {
-        // Objetos quebraveis sao Enemy para apanhar das armas, mas nao seguram a onda.
-        for (Enemy e : Game.getMap().getEntities(Enemy.class)) {
-            if (e.alvoAutomatico()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /**
      * Nao para a trilha de combate.
      *
      * Quem entra e que decide o que toca: a Room silencia o combate ao carregar,
-     * e a derrota passa por GameOver, que corta tudo. Parar aqui deixava a
-     * proxima arena muda, porque o dispose da anterior roda DEPOIS do construtor
-     * da nova e desligava a musica que ela tinha acabado de subir.
+     * e a derrota passa por GameOver, que corta tudo. Parar aqui deixava a tela
+     * seguinte muda, porque o dispose do mapa antigo roda DEPOIS do construtor do
+     * novo e desligava a musica que ele tinha acabado de subir.
      */
     @Override
     public void dispose() {

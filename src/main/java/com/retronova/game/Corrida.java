@@ -4,7 +4,12 @@ import com.retronova.game.interfaces.Inventory;
 import com.retronova.game.interfaces.Slot;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
+import com.retronova.game.map.arena.Arena;
+import com.retronova.game.map.arena.Waves;
+import com.retronova.game.objects.entities.Entity;
+import com.retronova.game.objects.entities.EntityIDs;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.game.objects.entities.enemies.Chefe;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -17,7 +22,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A corrida interrompida, gravada em disco para poder ser retomada.
@@ -31,9 +38,9 @@ import java.util.List;
  * "salvar e sair" do Nethack e do Angband, que existe só para você poder fechar
  * o jogo e voltar depois, e não dá poder nenhum.
  *
- * Isto aqui é o SEGUNDO, e só ele. Não há moeda permanente, não há desbloqueio,
- * nada atravessa a morte. O jogo continua sendo um roguelike; o que ele ganha é
- * a possibilidade de ser jogado por quem não tem uma hora livre de uma vez.
+ * Isto aqui é o SEGUNDO, e só ele. A meta-progressão mora no {@link Meta}, em
+ * arquivo próprio; nada daqui atravessa a morte. O que a corrida ganha é a
+ * possibilidade de ser jogada por quem não tem meia hora livre de uma vez.
  *
  * ---------------------------------------------------------------------------
  * POR QUE O ARQUIVO É APAGADO AO SER LIDO
@@ -42,45 +49,43 @@ import java.util.List;
  * impede save-scum não é restringir o SALVAR, é restringir o CARREGAR. Um save
  * que sobrevive ao carregamento vira um "desfazer" — morreu, fecha o jogo, abre
  * de novo, tenta outra vez. A permadeath deixa de existir sem que ninguém tenha
- * tocado nela.
- *
- * O preço é conhecido e é assumido: se o jogo travar logo depois de retomar, a
- * corrida foi. É a mesma troca que o gênero inteiro faz.
+ * tocado nela. A partida retomada regrava o próprio save no primeiro tick (ver
+ * {@code Game.regravarSave}), então quem fecha logo depois não perde nada.
  *
  * ---------------------------------------------------------------------------
- * POR QUE SÓ ENTRE SALAS — a decisão que torna isto barato
+ * O QUE É GRAVADO, E O QUE NÃO É
  *
- * Gravar no meio de uma onda obrigaria a serializar cada inimigo, cada projétil,
- * cada partícula e cada vetor de força do Physical. Seria muito código, seria
- * frágil, e quebraria de novo a cada arma nova que alguém escrevesse.
+ * O GATO INTEIRO E O RELÓGIO DA CORRIDA. O gato é vida, XP, nível, inventário,
+ * cartas, passivas, armas extras, evoluções e elemento. O relógio é o minuto da
+ * corrida, os abates, qual chefe vem a seguir, se o Rato Rei já nasceu e o
+ * compasso do cerco ({@link Waves.Estado}) — mais o que só existe por corrida: a
+ * carga da Fúria, as trocas e pulos que restam nas cartas de nível, os números
+ * da tela final e a vitória, se já houve.
  *
- * Entre salas não é preciso nada disso, porque a arena é DETERMINÍSTICA: a
- * planta sai de {@code Arena.planta(dificuldade, nivel)}, que indexa a lista de
- * seis mapas pelo nível, e a onda sai de {@code Waves}, que lê o JSON pelo mesmo
- * índice. Não há semente aleatória em nenhum dos dois. Então o save não precisa
- * descrever o mundo — precisa dizer QUAL mundo, e o jogo o reconstrói igual.
+ * OS BICHOS NÃO SÃO GRAVADOS, com uma exceção. Serializar cada inimigo, cada
+ * projétil, cada partícula e cada vetor de força seria muito código, frágil, e
+ * quebraria de novo a cada arma nova. E não é preciso: a horda é função do
+ * relógio, e se refaz em segundos a partir dele. A exceção são os CHEFES vivos,
+ * gravados pelo tipo e pela fração de vida — sem eles, fechar o jogo seria um
+ * jeito de pular chefe, porque o relógio retomado já passou do minuto em que
+ * ele nasce.
  *
- * Sobra uma ficha de umas dez linhas: quem é o gato, em que nível e dificuldade
- * ele está, e como ele está. É a mesma escolha do Hades, que grava ao ENTRAR em
- * cada sala em vez de tentar fotografar o combate.
- *
- * O QUE FICA DE FORA, de propósito: posição dos bichos, projéteis no ar,
- * partículas e o estado do gerador aleatório. Tudo isso é re-sorteado, e a
- * consequência honesta é que fechar o jogo no meio de uma briga devolve o
- * jogador ao COMEÇO daquela sala, não ao instante em que ele parou.
+ * O campo também não é gravado. Ele é sorteado de novo ao retomar; é um campo
+ * aberto, e o que muda são manchas de chão e braseiros.
  *
  * ---------------------------------------------------------------------------
  * QUANDO GRAVA
  *
- * Em dois pontos, os mesmos do Hades:
+ *   1. ao entrar no campo ({@code Game.changeMap});
+ *   2. DEPOIS de cada escolha que não pode ser re-sorteada: o elemento, a carta
+ *      de nível, o prêmio do caça-níquel;
+ *   3. a cada minuto de corrida ({@code Arena}), para um fechamento à força não
+ *      custar mais que isso;
+ *   4. ao sair pela pausa ("Main Menu" ou "Quit").
  *
- *   1. ao entrar numa sala nova ({@code Game.changeMap});
- *   2. DEPOIS de a carta de recompensa ser escolhida.
- *
- * O segundo não é detalhe. Gravando antes da escolha, fechar e reabrir o jogo
- * re-sortearia a oferta de três cartas até vir a que se queria — o save viraria
- * uma máquina de re-rolagem. Gravando depois, a escolha já está no inventário e
- * não há o que re-sortear.
+ * O segundo ponto não é detalhe. Gravando antes da escolha, fechar e reabrir o
+ * jogo re-sortearia as cartas até vir a que se queria — o save viraria uma
+ * máquina de re-rolagem. Gravando depois, a escolha já está no gato.
  *
  * ---------------------------------------------------------------------------
  * TRÊS ESPAÇOS, E O QUE ISSO **NÃO** SIGNIFICA
@@ -89,9 +94,9 @@ import java.util.List;
  * corrida. É a distinção que mantém tudo o que está escrito acima de pé.
  *
  * Se os três fossem pontos da mesma partida, o save-scum voltaria inteiro pela
- * porta da frente: bastaria guardar uma cópia antes de uma sala perigosa e
- * recarregá-la ao morrer. Três corridas paralelas não permitem isso — é o mesmo
- * que ter três personagens no Nethack, cada um com o próprio destino.
+ * porta da frente: bastaria guardar uma cópia antes de um chefe e recarregá-la
+ * ao morrer. Três corridas paralelas não permitem isso — é o mesmo que ter três
+ * personagens no Nethack, cada um com o próprio destino.
  *
  * O que garante a separação é o jogador NUNCA ESCOLHER onde gravar. O espaço é
  * escolhido uma vez, ao começar a corrida, e a partir daí ela grava sempre no
@@ -149,12 +154,39 @@ public final class Corrida {
      * vez de tentar lê-lo e quebrar no meio. Um save de formato desconhecido é
      * descartado em silêncio, e o jogador simplesmente não vê o botão de
      * continuar — que é muito melhor do que uma corrida retomada pela metade.
+     *
+     * A VERSÃO NÃO SOBE QUANDO UM CAMPO NOVO TEM UM AUSENTE CORRETO. O andamento
+     * da corrida entrou assim: um save sem ele é o de quem gravou no começo da
+     * corrida, e "relógio zerado, nenhum chefe ainda" é exatamente o que ele
+     * descrevia. Os campos {@code nivel} e {@code dificuldade}, do tempo das salas,
+     * são ignorados ao ler.
      */
     private static final long VERSAO = 1;
 
+    /** Um chefe que estava vivo quando a corrida foi gravada. */
+    public record ChefeVivo(EntityIDs tipo, double fracaoDeVida) {
+    }
+
+    /**
+     * Tudo o que é da CORRIDA e não do gato.
+     *
+     * @param relogio         o estado do Waves
+     * @param chefes          os chefes vivos no momento da gravação
+     * @param niveisPendentes níveis ganhos cuja carta ainda não foi escolhida
+     * @param trocas          trocas de mão que restam nas cartas de nível
+     * @param pulos           pulos que restam nas cartas de nível
+     * @param furia           carga da Fúria Felina, de 0 a 1
+     * @param baus            baús abertos, para a tela final e as conquistas
+     * @param maiorHorda      a maior horda vista, idem
+     * @param venceu          o Rato Rei já caiu (o bônus já foi pago)
+     * @param danoPorFonte    dano por arma, para a tela final
+     */
+    public record Andamento(Waves.Estado relogio, List<ChefeVivo> chefes, int niveisPendentes,
+                            int trocas, int pulos, double furia, int baus, int maiorHorda,
+                            boolean venceu, Map<String, Double> danoPorFonte) {
+    }
+
     private final int gato;
-    private final int nivel;
-    private final int dificuldade;
     private final long segundos;
 
     private final double vida;
@@ -173,8 +205,6 @@ public final class Corrida {
      * A VERSAO DO FORMATO NAO SUBIU, e isso e deliberado. Um campo novo AUSENTE tem
      * um significado correto — "esta corrida nao tem melhoria nenhuma" — e e
      * exatamente o que vale para toda corrida gravada antes do sistema existir.
-     * Subir a versao recusaria esses saves, e recusar o save de quem esta jogando
-     * para acrescentar um campo opcional e caro sem precisar.
      */
     private final List<int[]> melhorias;
 
@@ -184,13 +214,12 @@ public final class Corrida {
      */
     private final int elemento;
 
-    private Corrida(int gato, int nivel, int dificuldade, long segundos, double vida,
-                    double xp, int nivelDoGato, int dinheiro, List<int[]> hotbar,
-                    List<int[]> mochila, List<int[]> passivos, List<int[]> melhorias,
-                    int elemento) {
+    private final Andamento andamento;
+
+    private Corrida(int gato, long segundos, double vida, double xp, int nivelDoGato,
+                    int dinheiro, List<int[]> hotbar, List<int[]> mochila, List<int[]> passivos,
+                    List<int[]> melhorias, int elemento, Andamento andamento) {
         this.gato = gato;
-        this.nivel = nivel;
-        this.dificuldade = dificuldade;
         this.segundos = segundos;
         this.vida = vida;
         this.xp = xp;
@@ -201,32 +230,31 @@ public final class Corrida {
         this.passivos = passivos;
         this.melhorias = melhorias;
         this.elemento = elemento;
+        this.andamento = andamento;
     }
 
     public int gato() {
         return this.gato;
     }
 
-    public int nivel() {
-        return this.nivel;
-    }
-
-    public int dificuldade() {
-        return this.dificuldade;
+    public int nivelDoGato() {
+        return this.nivelDoGato;
     }
 
     public long segundos() {
         return this.segundos;
     }
 
-    /**
-     * Como esta corrida se descreve para quem vai decidir se a retoma.
-     *
-     * MORA AQUI, e nao no menu, porque e conhecimento sobre os proprios campos: o
-     * nivel comeca em zero e a sala que o jogador conta comeca em um, e a
-     * dificuldade e um indice que so este lado sabe traduzir. Deixar essa conversao
-     * na tela espalharia a regra por quem quer que venha a mostrar um save.
-     */
+    public Andamento andamento() {
+        return this.andamento;
+    }
+
+    /** Em que segundo do relógio da corrida ela parou. */
+    public long segundosDaCorrida() {
+        return andamento.relogio().ticks() / 60;
+    }
+
+    /** Como esta corrida se descreve para quem vai decidir se a retoma. */
     public String[] resumo() {
         return new String[]{nomeDoGato(), descricao() + "     " + tempo()};
     }
@@ -239,27 +267,21 @@ public final class Corrida {
 
     /** Onde a corrida parou, sem o tempo. */
     public String descricao() {
-        // O SEPARADOR E UM HIFEN, e nao o ponto do meio: a fonte do jogo nao tem o
-        // glifo do ponto medio, e no lugar dele sai o retangulo de caractere
-        // ausente. Ja tinha acontecido na ficha de item.
-        return dificuldadeEmPalavra() + " - Room " + (nivel + 1);
-    }
-
-    /** Quanto tempo esta corrida ja durou. */
-    public String tempo() {
-        return relogio(segundos);
-    }
-
-    private String dificuldadeEmPalavra() {
-        return switch (dificuldade) {
-            case 1 -> "Normal";
-            case 2 -> "Hard";
-            default -> "Easy";
-        };
+        return "Level " + nivelDoGato;
     }
 
     /**
-     * O tempo jogado, com a hora aparecendo só quando existe.
+     * O minuto da corrida em que ela parou, que é o que diz quanto falta até o
+     * Rato Rei. Um save sem relógio (gravado ao entrar no campo) mostra o tempo
+     * jogado, contando a antecâmara.
+     */
+    public String tempo() {
+        long daCorrida = segundosDaCorrida();
+        return relogio(daCorrida > 0 ? daCorrida : segundos);
+    }
+
+    /**
+     * O tempo, com a hora aparecendo só quando existe.
      *
      * Sem a separação de horas, uma corrida de duas horas virava "134:12" — que se
      * lê como duas horas erradas antes de se ler como cento e trinta e quatro
@@ -282,8 +304,7 @@ public final class Corrida {
      *
      * Silenciosa por opção: um checkpoint que falha não pode interromper o jogo
      * com uma caixa de erro no meio de uma corrida. O erro vai para o console, o
-     * jogo segue, e o pior caso é o jogador perder a possibilidade de retomar —
-     * que é exatamente onde ele já estava antes deste arquivo existir.
+     * jogo segue, e o pior caso é o jogador perder a possibilidade de retomar.
      */
     public static void gravar() {
         try {
@@ -291,6 +312,12 @@ public final class Corrida {
             Player gato = Game.getPlayer();
             if (gato == null || gato.morrendo()) {
                 return;             // morto não se retoma
+            }
+            // SÓ NO CAMPO. A retomada monta o campo direto; um save feito na
+            // antecâmara pularia a antecâmara na volta. Ali a corrida ainda não
+            // começou, e não há o que retomar.
+            if (!(Game.getMap() instanceof Arena)) {
+                return;
             }
             de(jogo, gato).escrever(jogo.getEspaco());
         } catch (RuntimeException fora) {
@@ -302,14 +329,34 @@ public final class Corrida {
     private static Corrida de(Game jogo, Player gato) {
         Inventory inv = gato.getInventory();
         return new Corrida(
-                jogo.getIndexPlayer(), jogo.getLevel(), jogo.getDifficult(),
-                jogo.getSeconds(), gato.getLife(), gato.getXp(), gato.getLevel(),
+                jogo.getIndexPlayer(), jogo.getSeconds(), gato.getLife(), gato.getXp(), gato.getLevel(),
                 gato.getMoney(),
                 doSlots(inv.getHotbar(), inv.getHotbarSize()),
                 doSlots(inv.getBag(), inv.getBagSize()),
                 dosPassivos(gato),
                 List.of(gato.getMelhorias().comoNumeros()),
-                gato.elemento().ordinal());
+                gato.elemento().ordinal(),
+                andamentoDe(jogo, gato));
+    }
+
+    private static Andamento andamentoDe(Game jogo, Player gato) {
+        Waves.Estado relogio = new Waves.Estado(0, 0, 1, false, 0);
+        List<ChefeVivo> chefes = new ArrayList<>();
+        if (Game.getMap() instanceof Arena arena) {
+            relogio = arena.getWaves().estado();
+            EntityIDs[] tipos = EntityIDs.values();
+            for (Chefe chefe : arena.getEntities(Chefe.class)) {
+                if (chefe.getLife() > 0 && chefe.getID() >= 0 && chefe.getID() < tipos.length) {
+                    chefes.add(new ChefeVivo(tipos[chefe.getID()], chefe.getLife() / chefe.getLifeSize()));
+                }
+            }
+        }
+        return new Andamento(relogio, chefes, gato.niveisPendentes(),
+                com.retronova.game.map.arena.SubirDeNivel.trocas(),
+                com.retronova.game.map.arena.SubirDeNivel.pulos(),
+                com.retronova.game.objects.entities.Furia.carga(),
+                Estatisticas.baus(), Estatisticas.maiorHorda(), Estatisticas.venceu(),
+                new LinkedHashMap<>(Estatisticas.danoPorFonte()));
     }
 
     private static List<int[]> doSlots(Slot[] slots, int quantos) {
@@ -342,8 +389,6 @@ public final class Corrida {
         JSONObject o = new JSONObject();
         o.put("versao", VERSAO);
         o.put("gato", (long) gato);
-        o.put("nivel", (long) nivel);
-        o.put("dificuldade", (long) dificuldade);
         o.put("segundos", segundos);
         o.put("vida", vida);
         o.put("xp", xp);
@@ -354,12 +399,12 @@ public final class Corrida {
         o.put("passivos", paraJson(passivos));
         o.put("melhorias", paraJson(melhorias));
         o.put("elemento", (long) elemento);
+        o.put("andamento", andamentoParaJson(andamento));
 
         // A MESMA GRAVAÇÃO ATÔMICA DO Configs, e pelo mesmo motivo: escrever por
         // cima do arquivo real deixa um JSON pela metade se o processo morrer no
         // meio. Num arquivo de preferências isso custa as preferências; aqui
-        // custaria a corrida inteira, e justamente de quem fechou o jogo — que é o
-        // único momento em que este arquivo é escrito.
+        // custaria a corrida inteira.
         Path destino = caminho(espaco);
         Path temporario = destino.resolveSibling(destino.getFileName() + ".tmp");
         try {
@@ -374,6 +419,38 @@ public final class Corrida {
         } catch (IOException e) {
             System.err.println("Corrida: falha ao gravar o ponto de retomada: " + e);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static JSONObject andamentoParaJson(Andamento a) {
+        JSONObject o = new JSONObject();
+        Waves.Estado r = a.relogio();
+        o.put("ticks", r.ticks());
+        o.put("abates", (long) r.abates());
+        o.put("proximoChefe", (long) r.proximoChefe());
+        o.put("reiNasceu", r.reiNasceu());
+        o.put("ateOCerco", (long) r.ateOCerco());
+        JSONArray chefes = new JSONArray();
+        for (ChefeVivo c : a.chefes()) {
+            JSONObject chefe = new JSONObject();
+            // PELO NOME, e nao pelo ordinal: o EntityIDs perde e ganha entradas, e o
+            // nome e o que os mapas ja usam para dizer qual entidade e qual.
+            chefe.put("tipo", c.tipo().name());
+            chefe.put("vida", c.fracaoDeVida());
+            chefes.add(chefe);
+        }
+        o.put("chefes", chefes);
+        o.put("niveisPendentes", (long) a.niveisPendentes());
+        o.put("trocas", (long) a.trocas());
+        o.put("pulos", (long) a.pulos());
+        o.put("furia", a.furia());
+        o.put("baus", (long) a.baus());
+        o.put("maiorHorda", (long) a.maiorHorda());
+        o.put("venceu", a.venceu());
+        JSONObject dano = new JSONObject();
+        dano.putAll(a.danoPorFonte());
+        o.put("danoPorFonte", dano);
+        return o;
     }
 
     @SuppressWarnings("unchecked")
@@ -479,8 +556,6 @@ public final class Corrida {
         }
         return new Corrida(
                 inteiro(o, "gato", 0),
-                inteiro(o, "nivel", 0),
-                inteiro(o, "dificuldade", 0),
                 (long) inteiro(o, "segundos", 0),
                 real(o, "vida", 1),
                 real(o, "xp", 0),
@@ -490,7 +565,51 @@ public final class Corrida {
                 doJson(o.get("mochila")),
                 doJson(o.get("passivos")),
                 doJson(o.get("melhorias")),
-                inteiro(o, "elemento", 0));
+                inteiro(o, "elemento", 0),
+                andamentoDoJson(o.get("andamento")));
+    }
+
+    /**
+     * O andamento lido, com o padrão de cada campo sendo o de uma corrida que
+     * acabou de começar: um save sem ele é o de quem gravou ao entrar no campo.
+     */
+    private static Andamento andamentoDoJson(Object bruto) {
+        JSONObject o = bruto instanceof JSONObject j ? j : new JSONObject();
+        Waves.Estado relogio = new Waves.Estado(
+                o.get("ticks") instanceof Number n ? n.longValue() : 0,
+                inteiro(o, "abates", 0),
+                inteiro(o, "proximoChefe", 1),
+                Boolean.TRUE.equals(o.get("reiNasceu")),
+                inteiro(o, "ateOCerco", 0));
+        List<ChefeVivo> chefes = new ArrayList<>();
+        if (o.get("chefes") instanceof JSONArray lista) {
+            for (Object item : lista) {
+                if (item instanceof JSONObject c && c.get("tipo") instanceof String nome) {
+                    for (EntityIDs tipo : EntityIDs.values()) {
+                        if (tipo.name().equals(nome)) {
+                            chefes.add(new ChefeVivo(tipo, real(c, "vida", 1)));
+                        }
+                    }
+                }
+            }
+        }
+        Map<String, Double> dano = new LinkedHashMap<>();
+        if (o.get("danoPorFonte") instanceof JSONObject d) {
+            for (Object chave : d.keySet()) {
+                if (d.get(chave) instanceof Number n) {
+                    dano.put(String.valueOf(chave), n.doubleValue());
+                }
+            }
+        }
+        return new Andamento(relogio, chefes,
+                inteiro(o, "niveisPendentes", 0),
+                inteiro(o, "trocas", -1),
+                inteiro(o, "pulos", -1),
+                real(o, "furia", 0),
+                inteiro(o, "baus", 0),
+                inteiro(o, "maiorHorda", 0),
+                Boolean.TRUE.equals(o.get("venceu")),
+                dano);
     }
 
     private static int inteiro(JSONObject o, String chave, int padrao) {
@@ -539,20 +658,17 @@ public final class Corrida {
     /**
      * Devolve o gato ao estado gravado.
      *
+     * Roda DEPOIS dos bônus de início (o do gato e os upgrades permanentes, ver
+     * {@code Game.retomar}). A ordem é o que impede a retomada de curar: o upgrade
+     * de vida enche a barra ao ser aplicado, e só a vida gravada, reposta por
+     * último, diz quanto o gato tinha de fato.
+     *
      * Os IDs viram itens de novo por {@code Item.build}, e não são desserializados
      * como objetos: a arma é código, não dado. Guardar o objeto obrigaria a manter
      * a forma interna de cada classe de item estável para sempre, e uma refatoração
-     * inocente invalidaria todos os saves do mundo. Guardando só o ID, um item que
-     * mude por dentro continua sendo o mesmo item ao voltar.
+     * inocente invalidaria todos os saves do mundo.
      */
     public void aplicarNoGato(Player gato) {
-        // AS MELHORIAS PRIMEIRO, E A VIDA DEPOIS.
-        //
-        // A ordem nao e arrumacao: melhoria de vigor sobe a vida MAXIMA, e
-        // {@code setLife} recusa qualquer valor acima do maximo do momento. Repondo
-        // a vida antes, um gato que tinha cento e trinta de vida por causa das
-        // cartas voltaria com os oitenta de fabrica, e a corrida retomada seria
-        // mais fraca do que a fechada — sem aviso nenhum.
         // O ELEMENTO ANTES DE TUDO. Ele reconstroi o inventario inteiro — a espada
         // vira a espada de gelo, com outro dano e outro desenho —, entao repor os
         // itens primeiro faria o trabalho duas vezes e, pior, a reconstrucao
@@ -562,9 +678,12 @@ public final class Corrida {
         if (elemento >= 0 && elemento < elementos.length) {
             gato.reporElemento(elementos[elemento]);
         }
+        // AS MELHORIAS ANTES DA VIDA. Melhoria de vigor sobe a vida MAXIMA, e
+        // {@code setLife} recusa qualquer valor acima do maximo do momento.
         gato.getMelhorias().deNumeros(gato, melhorias.toArray(new int[0][]));
         gato.setLife(vida);
         gato.setXpBruto(xp, nivelDoGato);
+        gato.reporNiveisPendentes(andamento.niveisPendentes());
         gato.setMoney(dinheiro);
 
         Inventory inv = gato.getInventory();
@@ -574,6 +693,19 @@ public final class Corrida {
         for (int[] p : passivos) {
             gato.reporPassivo(p[1], p[2]);
         }
+    }
+
+    /**
+     * Devolve à corrida o que é dela: o relógio, a Fúria, as válvulas das cartas e
+     * os números da tela final. Os chefes vivos voltam pelo Game, no primeiro tick
+     * — nascer precisa da partida já na pilha de telas.
+     */
+    public void aplicarNaCorrida(Arena arena) {
+        arena.getWaves().repor(andamento.relogio());
+        com.retronova.game.objects.entities.Furia.repor(andamento.furia());
+        com.retronova.game.map.arena.SubirDeNivel.repor(andamento.trocas(), andamento.pulos());
+        Estatisticas.repor(andamento.baus(), andamento.maiorHorda(), andamento.venceu(),
+                andamento.danoPorFonte());
     }
 
     private static void repor(Slot[] slots, List<int[]> pares) {

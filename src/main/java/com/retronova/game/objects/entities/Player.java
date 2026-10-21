@@ -399,7 +399,7 @@ public class Player extends Entity {
     /**
      * As melhorias escolhidas nesta corrida.
      *
-     * Vive no gato, e nao na tela de recompensa, porque a tela e passageira e o
+     * Vive no gato, e nao na tela da carta, porque a tela e passageira e o
      * acumulo nao e: quem precisa saber quantas vezes "Furia" ja saiu e quem esta
      * carregando as furias.
      */
@@ -1014,6 +1014,11 @@ public class Player extends Entity {
         niveisPendentes = Math.max(0, niveisPendentes - 1);
     }
 
+    /** Retomada: os niveis que estavam esperando carta voltam a esperar. */
+    public void reporNiveisPendentes(int quantos) {
+        niveisPendentes = Math.max(0, quantos);
+    }
+
     public double getXp() {
         return this.XP;
     }
@@ -1041,14 +1046,6 @@ public class Player extends Entity {
             return;
         }
         this.money = money;
-    }
-
-    public boolean takeLevel(double levles) {
-        if(this.level <= levles) {
-            this.level -= levles;
-            return true;
-        }
-        return false;
     }
 
     public int getLevel() {

@@ -53,7 +53,6 @@ public abstract class GameMap {
         this.particles = new ArrayList<>();
         loadMap(mapName);
         this.repulsion = new Repulsion(this);
-        this.repulsion.start();
     }
 
     public void addPlayer(Player player) {
@@ -106,7 +105,6 @@ public abstract class GameMap {
         }
         putAll(planta.extras());
         this.repulsion = new Repulsion(this);
-        this.repulsion.start();
     }
 
     private void loadMap(String mapName) {
@@ -397,7 +395,8 @@ public abstract class GameMap {
      * Copiar a cada chamada era o custo escondido da horda: toda arma, todo
      * projetil e todo "inimigo mais proximo" pede a lista, varias vezes por tick, e
      * cada pedido copiava os cem bichos — cem vezes cem por quadro. A copia ainda
-     * e necessaria (a Repulsion le em outra thread), mas uma por mudanca basta.
+     * e necessaria (quem percorre a lista pode por e tirar entidades no meio do
+     * caminho), mas uma por mudanca basta.
      */
     private volatile List<Entity> retrato;
 
@@ -458,7 +457,6 @@ public abstract class GameMap {
     }
 
     public void dispose() {
-        this.repulsion.dispose();
     }
 
 

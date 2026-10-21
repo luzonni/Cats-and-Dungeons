@@ -98,21 +98,27 @@ class CorridaTest {
         Files.writeString(onde, json, StandardCharsets.UTF_8);
     }
 
-    /** Um save valido, com o nivel servindo de marca para saber de qual espaco veio. */
-    private static String valido(int nivel) {
+    /** Um save valido, com o nivel do gato servindo de marca para saber de qual espaco veio. */
+    private static String valido(int nivelDoGato) {
         return "{"
                 + "\"versao\":1,"
                 + "\"gato\":2,"
-                + "\"nivel\":" + nivel + ","
-                + "\"dificuldade\":1,"
                 + "\"segundos\":423,"
                 + "\"vida\":18.5,"
                 + "\"xp\":140.25,"
-                + "\"nivelDoGato\":3,"
+                + "\"nivelDoGato\":" + nivelDoGato + ","
                 + "\"dinheiro\":260,"
                 + "\"hotbar\":[[0,1,1],[2,5,3]],"
                 + "\"mochila\":[[4,9,1]],"
-                + "\"passivos\":[]"
+                + "\"passivos\":[],"
+                + "\"andamento\":{"
+                + "\"ticks\":72000,\"abates\":1840,\"proximoChefe\":5,\"reiNasceu\":false,"
+                + "\"ateOCerco\":900,"
+                + "\"chefes\":[{\"tipo\":\"CatToyBoss\",\"vida\":0.4},{\"tipo\":\"NaoExiste\",\"vida\":1}],"
+                + "\"niveisPendentes\":1,\"trocas\":1,\"pulos\":0,\"furia\":0.5,"
+                + "\"baus\":6,\"maiorHorda\":120,\"venceu\":false,"
+                + "\"danoPorFonte\":{\"Hand weapon\":5000.5}"
+                + "}"
                 + "}";
     }
 
@@ -137,9 +143,49 @@ class CorridaTest {
         Corrida corrida = Corrida.consumir(2);
         assertNotNull(corrida);
         assertEquals(2, corrida.gato());
-        assertEquals(7, corrida.nivel());
-        assertEquals(1, corrida.dificuldade());
+        assertEquals(7, corrida.nivelDoGato());
         assertEquals(423, corrida.segundos());
+    }
+
+    // ------------------------------------------------- o andamento da corrida
+
+    @Test
+    @DisplayName("o relogio da corrida volta de onde parou")
+    void leOAndamento() throws IOException {
+        escrever(arquivo(1), valido(7));
+
+        Corrida.Andamento a = Corrida.consumir(1).andamento();
+        assertEquals(72000, a.relogio().ticks(), "sem o relogio a corrida recomecaria do minuto zero");
+        assertEquals(1840, a.relogio().abates());
+        assertEquals(5, a.relogio().proximoChefe(), "chefe que ja nasceu nao pode nascer de novo");
+        assertFalse(a.relogio().reiNasceu());
+        assertEquals(900, a.relogio().ateOCerco());
+        assertEquals(1, a.niveisPendentes());
+        assertEquals(1, a.trocas());
+        assertEquals(0, a.pulos());
+        assertEquals(0.5, a.furia(), 1e-9);
+        assertEquals(6, a.baus());
+        assertEquals(120, a.maiorHorda());
+        assertEquals(5000.5, a.danoPorFonte().get("Hand weapon"), 1e-9);
+    }
+
+    @Test
+    @DisplayName("o chefe vivo volta pelo nome, e nome desconhecido e ignorado")
+    void leOsChefes() throws IOException {
+        escrever(arquivo(1), valido(7));
+
+        var chefes = Corrida.consumir(1).andamento().chefes();
+        assertEquals(1, chefes.size(), "um tipo que saiu do jogo nao pode derrubar a retomada");
+        assertEquals(com.retronova.game.objects.entities.EntityIDs.CatToyBoss, chefes.getFirst().tipo());
+        assertEquals(0.4, chefes.getFirst().fracaoDeVida(), 1e-9);
+    }
+
+    @Test
+    @DisplayName("o tempo mostrado e o do relogio da corrida")
+    void tempoDoRelogio() throws IOException {
+        escrever(arquivo(1), valido(7));
+
+        assertEquals("20:00", Corrida.espiar(1).tempo(), "72000 ticks sao vinte minutos");
     }
 
     @Test
@@ -162,9 +208,9 @@ class CorridaTest {
         escrever(arquivo(2), valido(2));
         escrever(arquivo(3), valido(3));
 
-        assertEquals(1, Corrida.espiar(1).nivel());
-        assertEquals(2, Corrida.espiar(2).nivel());
-        assertEquals(3, Corrida.espiar(3).nivel());
+        assertEquals(1, Corrida.espiar(1).nivelDoGato());
+        assertEquals(2, Corrida.espiar(2).nivelDoGato());
+        assertEquals(3, Corrida.espiar(3).nivelDoGato());
     }
 
     @Test
@@ -174,13 +220,13 @@ class CorridaTest {
         escrever(arquivo(2), valido(2));
         escrever(arquivo(3), valido(3));
 
-        assertEquals(2, Corrida.consumir(2).nivel());
+        assertEquals(2, Corrida.consumir(2).nivelDoGato());
 
         assertFalse(Corrida.existe(2));
         assertTrue(Corrida.existe(1), "comecar ou retomar uma corrida nao custa as outras");
         assertTrue(Corrida.existe(3));
-        assertEquals(1, Corrida.espiar(1).nivel());
-        assertEquals(3, Corrida.espiar(3).nivel());
+        assertEquals(1, Corrida.espiar(1).nivelDoGato());
+        assertEquals(3, Corrida.espiar(3).nivelDoGato());
     }
 
     @Test
@@ -231,7 +277,7 @@ class CorridaTest {
         escrever(LEGADO, valido(5));
 
         assertTrue(Corrida.existe(1), "quem estava jogando nao pode perder a corrida na mudanca");
-        assertEquals(5, Corrida.espiar(1).nivel());
+        assertEquals(5, Corrida.espiar(1).nivelDoGato());
         assertFalse(Files.exists(LEGADO), "migrado uma vez, o arquivo antigo nao fica para tras");
     }
 
@@ -241,7 +287,7 @@ class CorridaTest {
         escrever(arquivo(1), valido(9));
         escrever(LEGADO, valido(5));
 
-        assertEquals(9, Corrida.espiar(1).nivel(), "o espaco 1 ja tinha dono");
+        assertEquals(9, Corrida.espiar(1).nivelDoGato(), "o espaco 1 ja tinha dono");
         assertFalse(Files.exists(LEGADO));
     }
 
@@ -254,13 +300,13 @@ class CorridaTest {
 
         Corrida espiada = Corrida.espiar(2);
         assertNotNull(espiada);
-        assertEquals(7, espiada.nivel());
+        assertEquals(7, espiada.nivelDoGato());
         assertTrue(Files.exists(arquivo(2)),
                 "espiar so descreve o save; quem responde 'no' fica com a corrida intacta");
 
         Corrida consumida = Corrida.consumir(2);
         assertNotNull(consumida);
-        assertEquals(7, consumida.nivel());
+        assertEquals(7, consumida.nivelDoGato());
         assertFalse(Files.exists(arquivo(2)));
     }
 
@@ -301,19 +347,24 @@ class CorridaTest {
 
         Corrida corrida = Corrida.consumir(1);
         assertNotNull(corrida, "o caractere invisivel do UTF-8 com BOM nao pode barrar a leitura");
-        assertEquals(7, corrida.nivel());
+        assertEquals(7, corrida.nivelDoGato());
     }
 
     @Test
     @DisplayName("campo faltando cai no padrao em vez de quebrar")
     void campoAusente() throws IOException {
-        escrever(arquivo(1), "{\"versao\":1,\"gato\":1,\"nivel\":4}");
+        // O save antigo, do tempo das salas: "nivel" e "dificuldade" sao ignorados,
+        // e sem "andamento" a corrida volta como recem-comecada.
+        escrever(arquivo(1), "{\"versao\":1,\"gato\":1,\"nivel\":4,\"dificuldade\":2,\"nivelDoGato\":4}");
 
         Corrida corrida = Corrida.consumir(1);
         assertNotNull(corrida);
         assertEquals(1, corrida.gato());
-        assertEquals(4, corrida.nivel());
-        assertEquals(0, corrida.dificuldade(), "sem o campo, a dificuldade volta ao padrao");
+        assertEquals(4, corrida.nivelDoGato());
+        assertEquals(0, corrida.andamento().relogio().ticks(), "sem andamento, o relogio comeca do zero");
+        assertEquals(1, corrida.andamento().relogio().proximoChefe());
+        assertTrue(corrida.andamento().chefes().isEmpty());
+        assertEquals(-1, corrida.andamento().trocas(), "ausente diz 'nao sei', e nao 'nenhuma'");
     }
 
     @Test
