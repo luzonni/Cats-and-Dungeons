@@ -31,7 +31,7 @@ permanentes para as próximas.
 
 O que distingue este projeto não é o gênero, é como ele foi feito. **Não há
 engine.** Nada de Unity, Godot, libGDX ou LWJGL. O laço de jogo, o renderizador, o
-sistema de física vetorial, o pathfinding, o sistema de partículas e toda a
+sistema de física vetorial, o sistema de partículas e toda a
 interface foram escritos do zero sobre a biblioteca padrão do Java — `Canvas` com
 `BufferStrategy` para desenhar, `javax.sound.sampled` para o som. O pacote chamado
 `engine` é camada interna do próprio time, não motor de terceiros.
@@ -86,7 +86,7 @@ registrados de propósito, para não se perderem de novo.
 * **Áudio:** TinySound sobre `javax.sound.sampled`; músicas em Ogg Vorbis via SPI.
 * **Dados:** JSON via json-simple, para configurações, mapas e personagens.
 * **Diagnóstico:** OSHI no overlay de depuração.
-* **CI:** GitHub Actions — build, testes e verificação dos assets gerados.
+* **CI:** GitHub Actions — build, testes e verificação dos assets gerados; mescla os PRs na `develop` e promove a `main` sozinha quando tudo passa.
 
 ## Como Rodar
 
@@ -128,6 +128,14 @@ workflow sem entrar aqui. Ver `tools/CiLocal.java`.
 
 Num caso pontual dá para pular com `git push --no-verify`.
 
+### Fluxo de branches
+
+O trabalho nasce da `develop`, numa branch própria, e volta por pull request.
+Quando a CI do PR passa, o próprio workflow mescla na `develop`; a `develop` roda
+a CI de novo e, verde, a `main` avança sozinha até ela. Push direto em `develop`
+ou `main` é recusado pelo hook. O passo a passo está em
+[`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md).
+
 ## Controles
 
 | Tecla | Controle (Xbox) | Ação |
@@ -162,6 +170,7 @@ Series ou compatível). Em outros sistemas o jogo segue só com teclado e mouse.
 | Documento | Conteúdo |
 |---|---|
 | [`docs/CONTEXTO.md`](docs/CONTEXTO.md) | Ponto de partida: o jogo, onde fica cada sistema, estado de cada funcionalidade |
+| [`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md) | Fluxo de branches, PR, CI e commits |
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Como o projeto é organizado e por quê |
 | [`docs/planejamento/ROADMAP.md`](docs/planejamento/ROADMAP.md) | Backlog por área |
 | [`docs/planejamento/INIMIGOS.md`](docs/planejamento/INIMIGOS.md) | Inimigos e chefes |
