@@ -37,9 +37,40 @@ public class Sound {
 		sounds = new HashMap<>();
 		Sounds[] names = Sounds.values();
 		for(Sounds name : names) {
-			kuusisto.tinysound.Sound sound = TinySound.loadSound(Engine.resPath + "audio/" + name.resource() + ".wav");
+			String caminho = Engine.resPath + "audio/" + name.resource() + ".wav";
+			kuusisto.tinysound.Sound sound = TinySound.loadSound(caminho);
 			sounds.put(name.resource(), sound);
+			duracoes.put(name, duracaoEmMs(caminho));
 		}
+	}
+
+	/** Duração de cada efeito, para o limite de vozes saber quando uma termina. */
+	private static final Map<Sounds, Long> duracoes = new java.util.EnumMap<>(Sounds.class);
+	private static final LimiteDeVozes limite = new LimiteDeVozes();
+
+	/** Lê a duração do WAV pelo cabeçalho. Na dúvida, meio segundo. */
+	private static long duracaoEmMs(String caminho) {
+		try {
+			java.net.URL url = Sound.class.getResource(caminho);
+			if (url != null) {
+				try (javax.sound.sampled.AudioInputStream in =
+						javax.sound.sampled.AudioSystem.getAudioInputStream(url)) {
+					float taxa = in.getFormat().getFrameRate();
+					long quadros = in.getFrameLength();
+					if (taxa > 0 && quadros > 0) {
+						return (long) (quadros * 1000L / taxa);
+					}
+				}
+			}
+		} catch (Exception semCabecalho) {
+			// cai no padrão abaixo
+		}
+		return 500;
+	}
+
+	/** O efeito pode tocar agora, ou já há vozes dele demais? Ver LimiteDeVozes. */
+	private static boolean cabeVoz(Sounds sound) {
+		return limite.tocar(sound, System.currentTimeMillis(), duracoes.getOrDefault(sound, 500L));
 	}
 
 	/**
@@ -82,12 +113,18 @@ public class Sound {
 	public static void play(Sounds sound) {
 		if(!sounds.containsKey(sound.resource()))
 			throw new RuntimeException("sound not exists");
+		if (!cabeVoz(sound)) {
+			return;
+		}
 		sounds.get(sound.resource()).play(ganhoDeEfeito());
 	}
 
 	public static void play(Sounds sound, double pan) {
 		if(!sounds.containsKey(sound.resource()))
 			throw new RuntimeException("sound not exists");
+		if (!cabeVoz(sound)) {
+			return;
+		}
 		sounds.get(sound.resource()).play(ganhoDeEfeito(), pan);
 	}
 	
