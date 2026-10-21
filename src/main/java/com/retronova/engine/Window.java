@@ -50,11 +50,11 @@ public class Window extends Canvas {
     public void initFrame(){
         this.frame = new JFrame(this.name);
         frame.add(this);
-        frame.setUndecorated(Configs.Fullscreen());
+        frame.setUndecorated(Configs.Fullscreen() && !Foto.ligado());
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        if(Configs.Fullscreen()) {
+        if(Configs.Fullscreen() && !Foto.ligado()) {
             String os = System.getProperty("os.name").toLowerCase();
             if (os.contains("windows 11")) {
                 setPreferredSize(toolkit.getScreenSize());
@@ -78,6 +78,10 @@ public class Window extends Canvas {
             frame.setIconImages(iconesDaJanela());
         }catch(Exception ignore) { }
         createOpenGl();
+        if (Foto.ligado()) {
+            prepararParaFoto();
+            return;
+        }
         frame.pack();
         if (!Configs.Fullscreen()) {
             caberNaAreaUtil();
@@ -86,6 +90,29 @@ public class Window extends Canvas {
         frame.setVisible(true);
         refreshSize();      // o cache precisa valer já no primeiro quadro
         showAccelerators();
+    }
+
+    /**
+     * A janela do modo de foto: existe (o BufferStrategy precisa dela), mas fica
+     * longe da área visível, nunca pega o foco e não aparece na barra de tarefas —
+     * rodar um roteiro de fotos não pode atrapalhar quem está usando a máquina.
+     * Sempre em janela, no tamanho pedido, sem encolher para caber no monitor.
+     */
+    private void prepararParaFoto() {
+        Dimension pedido = Foto.tamanho();
+        if (pedido != null) {
+            setPreferredSize(pedido);
+        }
+        if (frame.isUndecorated()) {
+            frame.setUndecorated(false);
+        }
+        frame.setType(java.awt.Window.Type.UTILITY);
+        frame.setFocusableWindowState(false);
+        frame.setAutoRequestFocus(false);
+        frame.pack();
+        frame.setLocation(-30000, -30000);
+        frame.setVisible(true);
+        refreshSize();
     }
 
     /**

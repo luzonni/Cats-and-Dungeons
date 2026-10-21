@@ -108,7 +108,7 @@ public final class Corrida {
     public static final int ESPACOS = 3;
 
     /** Onde os saves moram, ao lado do config.json. */
-    private static final String PASTA = "saves";
+    private static final String PASTA = com.retronova.engine.Foto.pastaDeSaves();
 
     /** O arquivo do espaço, contando de 1 como o jogador conta. */
     private static Path caminho(int espaco) {
@@ -129,6 +129,9 @@ public final class Corrida {
      * um {@code Files.exists}.
      */
     private static void migrarOSaveAntigo() {
+        if (com.retronova.engine.Foto.ligado()) {
+            return;
+        }
         Path antigo = Paths.get("corrida.json");
         if (!Files.exists(antigo)) {
             return;

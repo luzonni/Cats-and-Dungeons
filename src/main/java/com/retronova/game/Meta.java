@@ -64,7 +64,7 @@ public final class Meta {
         }
     }
 
-    private static final Path ARQUIVO = Paths.get("saves", "meta.json");
+    private static final Path ARQUIVO = Paths.get(com.retronova.engine.Foto.pastaDeSaves(), "meta.json");
     private static int ouro;
     private static final Map<Permanente, Integer> niveis = new EnumMap<>(Permanente.class);
     private static boolean carregado;
