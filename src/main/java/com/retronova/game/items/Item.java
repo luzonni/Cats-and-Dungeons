@@ -593,6 +593,39 @@ public abstract class Item {
      * caminho que o projetil nao tinha, e o tiro morria no primeiro tick, colado
      * na arma. Quem atira e a boca; e dela que a pergunta tem de ser feita.
      */
+    /**
+     * Os {@code quantos} alvos alcançáveis mais próximos, do mais perto ao mais
+     * longe, sem o {@code fora}. Mesmas regras de {@link #alvoAlcancavel}: quem
+     * está nascendo não conta, e precisa haver linha de tiro desde a origem.
+     *
+     * É o que deixa o voleio do arco espalhar: as flechas a mais vão para OUTROS
+     * bichos em vez de todas no mesmo.
+     */
+    protected static List<Enemy> alvosAlcancaveis(Player jogador, double alcanceEmTiles,
+                                                  double origemX, double origemY,
+                                                  int quantos, Entity fora) {
+        double limite = GameObject.SIZE() * alcanceEmTiles;
+        List<Enemy> candidatos = new java.util.ArrayList<>();
+        for (Enemy e : Game.getMap().getEntities(Enemy.class)) {
+            if (e == fora || e.nascendo() || !e.alvoAutomatico() || e.getDistance(jogador) >= limite) {
+                continue;
+            }
+            candidatos.add(e);
+        }
+        candidatos.sort(java.util.Comparator.comparingDouble(e -> e.getDistance(jogador)));
+        List<Enemy> escolhidos = new java.util.ArrayList<>();
+        for (Enemy e : candidatos) {
+            if (escolhidos.size() >= quantos) {
+                break;
+            }
+            // A linha de tiro so e perguntada para os mais perto: ela e cara.
+            if (podeAcertar(origemX, origemY, e)) {
+                escolhidos.add(e);
+            }
+        }
+        return escolhidos;
+    }
+
     protected static Enemy alvoAlcancavel(Player jogador, double alcanceEmTiles,
                                           double origemX, double origemY) {
         double limite = GameObject.SIZE() * alcanceEmTiles;

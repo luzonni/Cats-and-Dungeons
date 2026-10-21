@@ -101,11 +101,15 @@ public class SubirDeNivel implements Activity {
         // Passivas: metade de cada evolucao.
         for (Passiva p : Passiva.values()) {
             int n = m.nivel(p);
-            if (n < Passiva.NIVEL_MAXIMO) {
-                String rotulo = n == 0 ? "NEW PASSIVE" : "PASSIVE LV " + (n + 1);
+            if (n < p.nivelMaximo() && p.disponivelPara(gato.getName())) {
+                // A exclusiva se anuncia: o jogador precisa saber que aquela carta
+                // e do gato dele, e nao uma passiva qualquer que todos tem.
+                String rotulo = p.exclusiva()
+                        ? (n == 0 ? "CAT SKILL" : "CAT SKILL LV " + (n + 1))
+                        : (n == 0 ? "NEW PASSIVE" : "PASSIVE LV " + (n + 1));
                 baralho.add(new Carta(rotulo, p.name(), p.nome(), p.efeitoDeUmNivel(), p.cor(),
                         () -> m.subirPassiva(gato, p)));
-                pesos.add(2.0);
+                pesos.add(p.exclusiva() ? 2.5 : 2.0);
             }
         }
         // Atributos, com raridade: a mesma carta vale mais quando sai rara.

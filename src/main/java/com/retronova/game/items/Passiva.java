@@ -21,7 +21,15 @@ public enum Passiva {
     CRITICO("Critical", "Critical chance", new Color(0xFFD23F), "+%d%% critical chance", 6),
     AREA("Area", "Weapon area", new Color(0x5BE07A), "+%d%% weapon area", 12),
     PRESSA("Haste", "Weapon cooldown", new Color(0xB57CF0), "-%d%% weapon cooldown", 8),
-    CRESCIMENTO("Growth", "XP gain", new Color(0x7FE0C8), "+%d%% XP gained", 10);
+    CRESCIMENTO("Growth", "XP gain", new Color(0x7FE0C8), "+%d%% XP gained", 10),
+    /**
+     * VOLEIO: exclusiva do Finn. Cada nivel e uma flecha a mais por disparo.
+     *
+     * Tem teto proprio de TRES niveis, e nao cinco: com cinco, e somada a pressa,
+     * o arco virava uma metralhadora de seis flechas. O dano tambem nao soma
+     * inteiro — ver {@code Bonus.danoPorFlecha}.
+     */
+    VOLEIO("Volley", "Arrows per shot", new Color(0xE8B04A), "+%d arrow per shot", 1, 3, "Finn");
 
     public static final int NIVEL_MAXIMO = 5;
 
@@ -32,12 +40,38 @@ public enum Passiva {
     /** Quanto cada nivel vale, nas unidades do formato (por cento, ou decimos de HP/s). */
     private final int porNivel;
 
+    /** Ate onde ela sobe. A maioria vai ate {@link #NIVEL_MAXIMO}. */
+    private final int nivelMaximo;
+    /** O unico gato que a recebe, ou null se e de todos. */
+    private final String dono;
+
     Passiva(String nome, String assunto, Color cor, String formato, int porNivel) {
+        this(nome, assunto, cor, formato, porNivel, NIVEL_MAXIMO, null);
+    }
+
+    Passiva(String nome, String assunto, Color cor, String formato, int porNivel,
+            int nivelMaximo, String dono) {
         this.nome = nome;
         this.assunto = assunto;
         this.cor = cor;
         this.formato = formato;
         this.porNivel = porNivel;
+        this.nivelMaximo = nivelMaximo;
+        this.dono = dono;
+    }
+
+    public int nivelMaximo() {
+        return nivelMaximo;
+    }
+
+    /** Esta passiva pode sair para este gato? As exclusivas so para o dono. */
+    public boolean disponivelPara(String nomeDoGato) {
+        return dono == null || dono.equals(nomeDoGato);
+    }
+
+    /** E exclusiva de algum gato? A carta mostra isso no rotulo. */
+    public boolean exclusiva() {
+        return dono != null;
     }
 
     public String nome() {

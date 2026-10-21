@@ -19,6 +19,7 @@ import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.OptionRow;
 
 import javax.imageio.ImageIO;
+import java.awt.AlphaComposite;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -49,6 +50,16 @@ public class Options implements Activity {
     private Rectangle[] abasRect;
     private int abaAtual;
     private int foco;
+
+    // Animação da troca de aba. O destaque da aba DESLIZA até a nova em vez de
+    // pular, e o conteúdo entra pelo lado de onde a aba nova está.
+    /** Posição x do destaque agora e no tick anterior, para interpolar no render. */
+    private double destaqueX = -1, destaqueXAntes = -1;
+    /** Ticks desde a troca de aba; acima de TROCA_TICKS a animação acabou. */
+    private int desdeATroca = Integer.MAX_VALUE;
+    /** +1 se a aba nova está à direita da anterior, -1 se à esquerda. */
+    private int direcaoDaTroca = 1;
+    private static final int TROCA_TICKS = 12;
     private int yTitulo;
     private Rectangle painel = new Rectangle();
 
@@ -266,21 +277,42 @@ public class Options implements Activity {
      */
     private void posicionar() {
         int s = Configs.UiScale();
-        int larguraPainel = Math.min(Engine.window.getWidth() - 16 * s, 220 * s);
+        int larguraPainel = Math.min(Engine.window.getWidth() - 16 * s, 240 * s);
         int x = Engine.window.getWidth() / 2 - larguraPainel / 2;
 
         int alturaTitulo = 18 * s;
         int alturaAbas = 13 * s;
+        // RESPIRO. Antes era tudo de 2 a 6 pixels: as linhas encostavam umas nas
+        // outras e na borda do painel, e a tela inteira lia como amontoada.
+        int entreLinhas = 7 * s;      // vão entre uma opção e a próxima
+        int margemX = 12 * s;         // da borda do painel até o rótulo e os controles
+        int margemTopo = 10 * s;      // da faixa das abas até a primeira opção
+        int margemBase = 12 * s;      // da última opção até o fim do painel
+        int entreBlocos = 10 * s;     // título ↔ abas e painel ↔ botões
+        int alturaBotao = Button.preferredHeight();
         //Altura calculada pela aba MAIS LONGA, não pela aba atual: assim o painel
         //e os botões ficam parados ao alternar entre Video, Audio e Interface.
-        int alturaLinhas = maxLinhas() * (OptionRow.height() + 2 * s) + 8 * s;
-        int alturaBotao = Button.preferredHeight();
-        int total = alturaTitulo + 6 * s + alturaAbas + alturaLinhas + 6 * s + alturaBotao;
+        int alturaLinhas, total;
+        // O RESPIRO CEDE ANTES DO BOTÃO. A aba Video é longa, e com o espaçamento
+        // cheio o painel empurrava o Back para fora da janela — a tela ficava sem
+        // saída a não ser o Esc. Se não couber, os vãos encolhem um passo por vez.
+        while (true) {
+            alturaLinhas = margemTopo + maxLinhas() * (OptionRow.height() + entreLinhas)
+                    - entreLinhas + margemBase;
+            total = alturaTitulo + entreBlocos + alturaAbas + alturaLinhas + entreBlocos + alturaBotao;
+            if (total <= Engine.window.getHeight() - 8 * s || entreLinhas <= 2 * s) {
+                break;
+            }
+            entreLinhas -= s;
+            margemTopo = Math.max(4 * s, margemTopo - s);
+            margemBase = Math.max(4 * s, margemBase - s);
+            entreBlocos = Math.max(6 * s, entreBlocos - s);
+        }
 
         int topo = Math.max(4 * s, (Engine.window.getHeight() - total) / 2);
         this.yTitulo = topo + alturaTitulo;
 
-        int yAbas = topo + alturaTitulo + 6 * s;
+        int yAbas = topo + alturaTitulo + entreBlocos;
         int larguraAba = larguraPainel / abas.length;
         for (int i = 0; i < abas.length; i++) {
             abasRect[i] = new Rectangle(x + i * larguraAba, yAbas, larguraAba, alturaAbas);
@@ -290,16 +322,16 @@ public class Options implements Activity {
         //Posiciona as linhas de TODAS as abas, não só a visível. Só a atual era
         //posicionada, então a aba recém-aberta desenhava um quadro com as
         //coordenadas zeradas — a piscada no canto da tela.
-        int y = yAbas + alturaAbas + 4 * s;
+        int y = yAbas + alturaAbas + margemTopo;
         for (List<OptionRow> aba : linhas) {
             for (int i = 0; i < aba.size(); i++) {
-                aba.get(i).setBounds(x + 5 * s, y + i * (OptionRow.height() + 2 * s),
-                        larguraPainel - 10 * s);
+                aba.get(i).setBounds(x + margemX, y + i * (OptionRow.height() + entreLinhas),
+                        larguraPainel - 2 * margemX);
             }
         }
 
         int larguraBotao = Button.preferredWidth();
-        int yBotoes = yAbas + alturaAbas + alturaLinhas + 6 * s;
+        int yBotoes = yAbas + alturaAbas + alturaLinhas + entreBlocos;
         aplicar.setBounds(new Rectangle(x, yBotoes, larguraBotao, alturaBotao));
         voltar.setBounds(new Rectangle(x + larguraPainel - larguraBotao, yBotoes,
                 larguraBotao, alturaBotao));
@@ -318,6 +350,7 @@ public class Options implements Activity {
         trocarAbaPeloMouse();
         trocarAbaPeloControle();
         navegarPeloTeclado();
+        animarAbas();
 
         List<OptionRow> rows = atuais();
         for (int i = 0; i < rows.size(); i++) {
@@ -344,6 +377,8 @@ public class Options implements Activity {
     private void trocarAbaPeloMouse() {
         for (int i = 0; i < abasRect.length; i++) {
             if (Mouse.clickOn(Mouse_Button.LEFT, abasRect[i]) && i != abaAtual) {
+                direcaoDaTroca = i > abaAtual ? 1 : -1;
+                desdeATroca = 0;
                 abaAtual = i;
                 foco = 0;
                 Sound.play(Sounds.Button);
@@ -360,10 +395,34 @@ public class Options implements Activity {
         int passo = Gamepad.pressionou(Gamepad.Botao.RB) ? 1
                 : Gamepad.pressionou(Gamepad.Botao.LB) ? -1 : 0;
         if (passo != 0) {
+            direcaoDaTroca = passo;
+            desdeATroca = 0;
             abaAtual = (abaAtual + passo + abas.length) % abas.length;
             foco = 0;
             Sound.play(Sounds.Button);
         }
+    }
+
+    /** O destaque persegue a aba atual com amortecimento: rápido no começo, assenta no fim. */
+    private void animarAbas() {
+        double alvo = abasRect[abaAtual].x;
+        destaqueXAntes = destaqueX < 0 ? alvo : destaqueX;
+        destaqueX = destaqueX < 0 ? alvo : destaqueX + (alvo - destaqueX) * 0.3;
+        if (Math.abs(alvo - destaqueX) < 0.5) {
+            destaqueX = alvo;
+        }
+        if (desdeATroca < TROCA_TICKS) {
+            desdeATroca++;
+        }
+    }
+
+    /** 0 no começo da troca, 1 quando acabou; com a fração entre ticks. */
+    private double progressoDaTroca() {
+        if (desdeATroca >= TROCA_TICKS) {
+            return 1;
+        }
+        double f = Math.min(1, (desdeATroca + Engine.alpha()) / TROCA_TICKS);
+        return 1 - Math.pow(1 - f, 3);      // ease-out cúbica
     }
 
     private void navegarPeloTeclado() {
@@ -397,15 +456,37 @@ public class Options implements Activity {
         desenharPainel(g);
         desenharAbas(g);
 
-        for (OptionRow linha : atuais()) {
-            linha.render(g);
-        }
+        desenharLinhas(g);
         if (temPendencia()) {
             aplicar.render(g);
             desenharAvisoPendente(g);
         }
         voltar.render(g);
         desenharTooltip(g);
+    }
+
+    /**
+     * As opções da aba atual. Logo depois de uma troca elas entram deslizando
+     * do lado da aba nova e aparecem num fade, presas ao painel para não
+     * vazarem por cima da borda durante o deslize.
+     */
+    private void desenharLinhas(Graphics2D g) {
+        double p = progressoDaTroca();
+        if (p >= 1) {
+            for (OptionRow linha : atuais()) {
+                linha.render(g);
+            }
+            return;
+        }
+        int s = Configs.UiScale();
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.clipRect(painel.x + s, painel.y + s, painel.width - 2 * s, painel.height - 2 * s);
+        g2.translate((int) Math.round(direcaoDaTroca * (1 - p) * 24 * s), 0);
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) p));
+        for (OptionRow linha : atuais()) {
+            linha.render(g2);
+        }
+        g2.dispose();
     }
 
     private void desenharTitulo(Graphics2D g) {
@@ -435,20 +516,30 @@ public class Options implements Activity {
         Font fonte = FontHandler.font(FontHandler.Game, 7f * s);
         g.setFont(fonte);
 
+        // Fundo das abas: só o hover. O destaque da ativa vem por cima, à parte,
+        // porque é ele que desliza de uma aba para a outra.
+        for (int i = 0; i < abas.length; i++) {
+            Rectangle r = abasRect[i];
+            boolean sobre = r.contains(Mouse.getX(), Mouse.getY()) && i != abaAtual;
+            g.setColor(Palette.OUTLINE);
+            g.fillRect(r.x, r.y, r.width, r.height);
+            if (sobre) {
+                g.setColor(Palette.MAIN);
+                g.fillRect(r.x + s, r.y + s, r.width - 2 * s, r.height - s);
+            }
+        }
+        Rectangle atual = abasRect[abaAtual];
+        double dx = destaqueX < 0 ? atual.x
+                : destaqueXAntes + (destaqueX - destaqueXAntes) * Engine.alpha();
+        int hx = (int) Math.round(dx);
+        g.setColor(Palette.DEEP);
+        g.fillRect(hx + s, atual.y + s, atual.width - 2 * s, atual.height - s);
+        g.setColor(Palette.LIGHT);
+        g.fillRect(hx + s, atual.y + s, atual.width - 2 * s, s);
+
         for (int i = 0; i < abas.length; i++) {
             Rectangle r = abasRect[i];
             boolean ativa = i == abaAtual;
-            boolean sobre = r.contains(Mouse.getX(), Mouse.getY());
-
-            g.setColor(Palette.OUTLINE);
-            g.fillRect(r.x, r.y, r.width, r.height);
-            g.setColor(ativa ? Palette.DEEP : (sobre ? Palette.MAIN : Palette.OUTLINE));
-            g.fillRect(r.x + s, r.y + s, r.width - 2 * s, r.height - s);
-            if (ativa) {
-                g.setColor(Palette.LIGHT);
-                g.fillRect(r.x + s, r.y + s, r.width - 2 * s, s);
-            }
-
             int w = FontHandler.getWidth(abas[i], fonte);
             int h = FontHandler.getHeight(abas[i], fonte);
             int tx = r.x + (r.width - w) / 2;
