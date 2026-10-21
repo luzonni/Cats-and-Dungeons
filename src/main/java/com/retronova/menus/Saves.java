@@ -57,6 +57,8 @@ public class Saves implements Activity {
 
     /** Espaço sob foco de teclado; -1 quando o mouse manda. */
     private int foco = -1;
+    /** O foco está no X de apagar do espaço em foco, e não na caixa. */
+    private boolean focoNoApagar;
 
     /**
      * Quantos ticks entre uma releitura do disco e outra.
@@ -185,6 +187,7 @@ public class Saves implements Activity {
         for (int i = 0; i < Corrida.ESPACOS; i++) {
             if (Mouse.on(caixas[i])) {
                 foco = i;
+                focoNoApagar = false;
                 Engine.window.pointing();
             }
             // A LIXEIRA E TESTADA ANTES DA CAIXA, porque esta dentro dela: na ordem
@@ -201,15 +204,36 @@ public class Saves implements Activity {
         }
     }
 
+    /**
+     * O X DE APAGAR TAMBEM SE ALCANCA SEM MOUSE. Ele mora dentro da caixa, e a
+     * navegacao so subia e descia entre caixas — pelo teclado ou pelo controle
+     * nao havia como chegar nele. Agora a direita leva o foco ao X e a esquerda
+     * volta; o F (o X do controle, que e o proprio desenho do botao) apaga direto.
+     * Os dois caminhos ainda passam pela pergunta, que abre com o foco no No.
+     */
     private void navegarPeloTeclado() {
         int quantos = Corrida.ESPACOS + 1;          // os espaços mais o "Back"
+        boolean naCorrida = foco >= 0 && foco < Corrida.ESPACOS && corridas[foco] != null;
+        if (!naCorrida) {
+            focoNoApagar = false;       // a corrida foi apagada: o X sumiu junto
+        }
         if (KeyBoard.KeyPressed("Down") || KeyBoard.KeyPressed("S")) {
             foco = foco < 0 ? 0 : (foco + 1) % quantos;
+            focoNoApagar = false;
         } else if (KeyBoard.KeyPressed("Up") || KeyBoard.KeyPressed("W")) {
             foco = (foco <= 0 ? quantos : foco) - 1;
+            focoNoApagar = false;
+        } else if (KeyBoard.KeyPressed("Right") || KeyBoard.KeyPressed("D")) {
+            focoNoApagar = naCorrida;
+        } else if (KeyBoard.KeyPressed("Left") || KeyBoard.KeyPressed("A")) {
+            focoNoApagar = false;
+        } else if (KeyBoard.KeyPressed("F") && naCorrida) {
+            perguntarSeApaga(foco + 1);
         } else if (KeyBoard.KeyPressed("Enter") && foco >= 0) {
             if (foco == Corrida.ESPACOS) {
                 voltar.activate();
+            } else if (focoNoApagar && naCorrida) {
+                perguntarSeApaga(foco + 1);
             } else {
                 acionar(foco + 1);
             }
@@ -389,7 +413,7 @@ public class Saves implements Activity {
      */
     private void desenharLixeira(Graphics2D g, int i, int s) {
         Rectangle r = lixeiras[i];
-        boolean sobre = Mouse.on(r);
+        boolean sobre = Mouse.on(r) || (foco == i && focoNoApagar);
         g.setColor(sobre ? Palette.WARN : Palette.OUTLINE);
         g.fillRect(r.x, r.y, r.width, r.height);
         int px = Math.max(1, r.width / 9);
