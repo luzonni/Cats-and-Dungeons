@@ -1,5 +1,7 @@
 package com.retronova.engine.inputs.mouse;
 
+import com.retronova.engine.inputs.Entrada;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -15,54 +17,36 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
     protected static int scrollSide = 0;
     protected static boolean scrollChanged = false;
 
-    /** O mouse de verdade se mexeu desde a última consulta. Ver Gamepad. */
-    private static volatile boolean movimentoReal;
+    /** Onde o ponteiro "está" no modo controle: longe de qualquer coisa na tela. */
+    private static final int FORA_DA_TELA = -100_000;
 
     /**
-     * Posiciona o cursor virtual do controle.
+     * NO MODO CONTROLE O PONTEIRO NAO EXISTE.
      *
-     * Escreve nos mesmos campos que o mouse de verdade, e é por isso que loja,
-     * inventário e objetos do mapa funcionam com o controle sem mudar uma linha.
+     * As telas perguntam a cada tick se o mouse esta sobre um botao ou uma carta,
+     * e dao o foco a quem estiver embaixo dele. Um mouse PARADO em cima de uma
+     * carta respondia "sim" para sempre e tomava de volta o foco que o D-pad
+     * acabara de mudar. Responder daqui que o ponteiro esta fora da tela resolve
+     * isso em todas as telas de uma vez, e mexer o mouse o traz de volta.
      */
-    public static void moverVirtual(int x, int y) {
-        xMouse = x;
-        yMouse = y;
+    private static int x() {
+        return Entrada.usandoControle() ? FORA_DA_TELA : xMouse;
     }
 
-    /** Aperta ou solta um botão pelo cursor virtual, igual a mousePressed/mouseReleased. */
-    public static synchronized void botaoVirtual(Mouse_Button button, boolean apertado) {
-        if (apertado) {
-            if (button == Mouse_Button.LEFT) {
-                clickLeft = clickLeftOn = pressingLeft = true;
-            } else if (button == Mouse_Button.RIGHT) {
-                clickRight = clickRightOn = pressingRight = true;
-            }
-            xClicked = xMouse;
-            yClicked = yMouse;
-        } else if (button == Mouse_Button.LEFT) {
-            clickLeft = clickLeftOn = pressingLeft = false;
-        } else if (button == Mouse_Button.RIGHT) {
-            clickRight = clickRightOn = pressingRight = false;
-        }
-    }
-
-    /** Diz se o mouse de verdade se mexeu, e zera o aviso. */
-    public static boolean consumirMovimentoReal() {
-        boolean moveu = movimentoReal;
-        movimentoReal = false;
-        return moveu;
+    private static int y() {
+        return Entrada.usandoControle() ? FORA_DA_TELA : yMouse;
     }
 
     public static boolean on(Rectangle rec) {
-        if(rec.contains(xMouse, yMouse)) {
+        if(rec.contains(x(), y())) {
             return true;
         }
         return false;
     }
 
     public static boolean on(int x, int y, int width, int height) {
-        if((Mouse.xMouse >= x && Mouse.xMouse < x + width) &&
-                Mouse.yMouse >= y && Mouse.yMouse < y + height) {
+        if((x() >= x && x() < x + width) &&
+                y() >= y && y() < y + height) {
             return true;
         }
         return false;
@@ -89,13 +73,13 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
 
     public static boolean isPressed(Mouse_Button button, Rectangle rec) {
         if (button.equals(Mouse_Button.LEFT)) {
-            return pressingLeft && rec.contains(xMouse, yMouse);
+            return pressingLeft && rec.contains(x(), y());
         }
         if (button.equals(Mouse_Button.RIGHT)) {
-            return pressingRight && rec.contains(xMouse, yMouse);
+            return pressingRight && rec.contains(x(), y());
         }
         if (button.equals(Mouse_Button.SCROOL)) {
-            return pressingScroll && rec.contains(xMouse, yMouse);
+            return pressingScroll && rec.contains(x(), y());
         }
         return false;
     }
@@ -127,11 +111,11 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
     }
 
     public static int getX() {
-        return xMouse;
+        return x();
     }
 
     public static int getY() {
-        return yMouse;
+        return y();
     }
 
     public static int getClickedX() {
@@ -170,6 +154,7 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         //Sets
         xClicked = e.getX();
         yClicked = e.getY();
+        Entrada.mouse();
     }
 
     @Override
@@ -211,7 +196,7 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         //Set's
         Mouse.xMouse = e.getX();
         Mouse.yMouse = e.getY();
-        movimentoReal = true;
+        Entrada.mouse();
     }
 
     @Override
@@ -219,7 +204,7 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         //Set's
         Mouse.xMouse = e.getX();
         Mouse.yMouse = e.getY();
-        movimentoReal = true;
+        Entrada.mouse();
     }
 
     @Override

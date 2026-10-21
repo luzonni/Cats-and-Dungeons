@@ -1,5 +1,7 @@
 package com.retronova.engine.inputs.keyboard;
 
+import com.retronova.engine.inputs.Entrada;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -134,6 +136,7 @@ public class KeyBoard implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        Entrada.tecla();
         // == System ==
         for(int i = 0; i < Keys.length; i++) {
             if(Keys[i].getKey() == e.getKeyCode()) {

@@ -2,9 +2,11 @@ package com.retronova.game.map;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
+import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -160,6 +162,49 @@ public class Camera {
     }
 
     /**
+     * Quanto a camera pode se afastar do gato pelo analogico direito, em tiles.
+     *
+     * UM E MEIO, E NAO MEIA TELA. Num jogo de horda a ameaca vem de todos os lados
+     * ao mesmo tempo, e uma camera que se afasta muito tira da tela justamente o
+     * lado de onde o gato nao esta olhando. Era 3, e ainda espalhava demais: a
+     * espiada tem de ser uma inclinada de cabeca, com o gato sempre perto do meio.
+     */
+    private static final double ALCANCE_DO_OLHAR = 1.5;
+    /**
+     * Fracao do caminho que o olhar anda por tick. Mais lento que a camera, que
+     * persegue o gato a um quarto por tick: sem esta folga, um toque no analogico
+     * virava um tranco na tela inteira. Era 0,12, e ainda pedia menos.
+     */
+    private static final double SUAVIDADE_DO_OLHAR = 0.06;
+
+    /** Deslocamento atual do olhar, em pixels do mundo. */
+    private double olharX, olharY;
+
+    /**
+     * Desloca a camera para onde o analogico direito aponta, e a traz de volta
+     * quando ele e solto.
+     *
+     * So vale com o gato no comando: durante uma cena (a chegada, a ida ate a
+     * alavanca) e na queda, a camera e da cena, e o jogador nao a disputa.
+     */
+    private void espiar() {
+        double alvoX = 0, alvoY = 0;
+        if (velocidadeDeCena <= 0 && followed instanceof Player gato
+                && !gato.chegando() && !gato.morrendo()) {
+            double[] olhar = Gamepad.olhar();
+            // CURVA QUADRATICA: meio curso do analogico espia um quarto do
+            // alcance, e nao metade. Linear, qualquer encostada no analogico ja
+            // deslocava a tela; assim so quem empurra de verdade vai longe.
+            double forca = Math.hypot(olhar[0], olhar[1]);
+            double alcance = ALCANCE_DO_OLHAR * GameObject.SIZE() * forca;
+            alvoX = olhar[0] * alcance;
+            alvoY = olhar[1] * alcance;
+        }
+        olharX += (alvoX - olharX) * SUAVIDADE_DO_OLHAR;
+        olharY += (alvoY - olharY) * SUAVIDADE_DO_OLHAR;
+    }
+
+    /**
      * Segue o alvo, sem deixar o mapa acabar dentro da tela.
      *
      * O RECORTE E PELA AREA VISIVEL, E NAO PELA TELA. Com zoom, o que cabe na tela
@@ -183,6 +228,9 @@ public class Camera {
         // degraus de pixel e travar a poucos pixels do alvo.
         double targetX = followed.getX() + followed.getWidth() / 2d - width / 2d;
         double targetY = followed.getY() + followed.getHeight() / 2d - height / 2d;
+        espiar();
+        targetX += olharX;
+        targetY += olharY;
         double passo = velocidadeDeCena > 0 ? velocidadeDeCena : speed;
         double xx = this.x + (targetX - this.x) * passo;
         double yy = this.y + (targetY - this.y) * passo;

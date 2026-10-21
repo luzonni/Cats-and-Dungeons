@@ -1,6 +1,8 @@
 package com.retronova.engine.inputs.gamepad;
 
+import com.retronova.engine.inputs.Entrada;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.engine.inputs.mouse.Mouse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,13 +40,14 @@ class GamepadTest {
     }
 
     private static void aplicar(EstadoDoControle e) {
-        Gamepad.aplicar(e, 0, 0);
+        Gamepad.aplicar(e);
     }
 
     @BeforeEach
     @AfterEach
     void limpar() {
         Gamepad.reiniciar();
+        Entrada.mouse();
         for (KeyBoard.Key k : KeyBoard.Keys) {
             KeyBoard.KeyPressed(k.getName());
         }
@@ -154,6 +157,41 @@ class GamepadTest {
         assertNull(Gamepad.movimento());
         aplicar(analogicoEsquerdo(0.4, -0.2));
         assertArrayEquals(new double[] {0.4, -0.2}, Gamepad.movimento(), 1e-9);
+    }
+
+    @Test
+    @DisplayName("apertar o controle esconde o mouse das telas; mexer o mouse o traz de volta")
+    void modoControle() {
+        Entrada.mouse();
+        assertTrue(Mouse.getX() >= 0, "no modo mouse a posição é a de verdade");
+        aplicar(botoes(Gamepad.Botao.BAIXO));
+        assertTrue(Entrada.usandoControle());
+        assertFalse(Mouse.on(new java.awt.Rectangle(0, 0, 10_000, 10_000)),
+                "um mouse parado em cima de uma carta roubava o foco do D-pad");
+        Entrada.mouse();
+        assertFalse(Entrada.usandoControle());
+        assertTrue(Mouse.on(new java.awt.Rectangle(-1, -1, 10_000, 10_000)));
+    }
+
+    @Test
+    @DisplayName("segurar o controle parado não toma o jogo de quem mexeu o mouse")
+    void seguradoNaoRetoma() {
+        aplicar(botoes(Gamepad.Botao.A));
+        Entrada.mouse();
+        aplicar(botoes(Gamepad.Botao.A));   // o mesmo botão, ainda apertado
+        assertFalse(Entrada.usandoControle());
+    }
+
+    @Test
+    @DisplayName("o analógico direito é olhar, e não aperta tecla nenhuma")
+    void analogicoDireitoOlha() {
+        aplicar(new EstadoDoControle(0, 0, 0, 0, 0, 0.8, -0.5));
+        assertArrayEquals(new double[] {0.8, -0.5}, Gamepad.olhar(), 1e-9);
+        for (KeyBoard.Key k : KeyBoard.Keys) {
+            assertFalse(KeyBoard.KeyPressing(k.getName()), "o olhar apertou " + k.getName());
+        }
+        aplicar(EstadoDoControle.SOLTO);
+        assertArrayEquals(new double[] {0, 0}, Gamepad.olhar(), 1e-9);
     }
 
     @Test
