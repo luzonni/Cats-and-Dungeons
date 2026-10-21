@@ -38,17 +38,17 @@ class VitoriaTest {
     @Test
     void vitoriaSoContaUmaVezPorCorrida() {
         assertFalse(Estatisticas.venceu());
-        assertTrue(Estatisticas.registrarVitoria(), "a primeira vez conta");
+        assertTrue(Estatisticas.registrarVitoria("Finn"), "a primeira vez conta");
         assertTrue(Estatisticas.venceu());
-        assertFalse(Estatisticas.registrarVitoria(), "a segunda nao paga de novo");
+        assertFalse(Estatisticas.registrarVitoria("Finn"), "a segunda nao paga de novo");
     }
 
     @Test
     void reiniciarApagaAVitoria() {
-        Estatisticas.registrarVitoria();
+        Estatisticas.registrarVitoria("Finn");
         Estatisticas.reiniciar();
         assertFalse(Estatisticas.venceu());
-        assertTrue(Estatisticas.registrarVitoria(), "a corrida nova pode vencer de novo");
+        assertTrue(Estatisticas.registrarVitoria("Finn"), "a corrida nova pode vencer de novo");
     }
 
     @Test
@@ -58,7 +58,7 @@ class VitoriaTest {
         Estatisticas.encerrar(1800, 400, 20, "Finn");
         assertEquals(base, Estatisticas.ouroGanho(), "sem vitoria, so o ouro da corrida");
 
-        Estatisticas.registrarVitoria();
+        Estatisticas.registrarVitoria("Finn");
         Estatisticas.encerrar(1800, 400, 20, "Finn");
         assertEquals(base + Meta.BONUS_DE_VITORIA, Estatisticas.ouroGanho(),
                 "com vitoria, o bonus entra no numero mostrado");

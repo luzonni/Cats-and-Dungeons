@@ -30,6 +30,7 @@ public final class Estatisticas {
         baus = 0;
         maiorHorda = 0;
         venceu = false;
+        conquistasDaCorrida.clear();
     }
 
     // ------------------------------------------------------------ vitoria
@@ -45,13 +46,21 @@ public final class Estatisticas {
      *
      * @return true se foi a primeira vez nesta corrida
      */
-    public static boolean registrarVitoria() {
+    public static boolean registrarVitoria(String gato) {
         if (venceu) {
             return false;
         }
         venceu = true;
         Meta.depositar(Meta.BONUS_DE_VITORIA);
+        conquistasDaCorrida.addAll(Conquistas.registrarVitoria(gato));
         return true;
+    }
+
+    /** O que esta corrida desbloqueou, na ordem, para a tela final avisar. */
+    private static final java.util.List<Conquistas.Conquista> conquistasDaCorrida = new java.util.ArrayList<>();
+
+    public static java.util.List<Conquistas.Conquista> conquistasDaCorrida() {
+        return java.util.Collections.unmodifiableList(conquistasDaCorrida);
     }
 
     /** O chefe final caiu nesta corrida? */
@@ -99,6 +108,7 @@ public final class Estatisticas {
         if (venceu) {
             ouroGanho += Meta.BONUS_DE_VITORIA;
         }
+        conquistasDaCorrida.addAll(Conquistas.registrarCorrida(segundos, abates, nivel, baus, maiorHorda));
     }
 
     public static int segundos() {

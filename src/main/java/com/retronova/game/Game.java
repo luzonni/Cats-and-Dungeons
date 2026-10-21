@@ -204,7 +204,7 @@ public class Game implements Activity {
      * Nao faz nada na segunda chamada: a vitoria so conta uma vez por corrida.
      */
     public void vencer() {
-        if (Estatisticas.registrarVitoria()) {
+        if (Estatisticas.registrarVitoria(player.getName())) {
             Engine.pause(new com.retronova.menus.Vitoria());
         }
     }
