@@ -11,6 +11,39 @@ saem do dump de dados real das bênçãos ([orlp/hades-boons,
 
 ---
 
+## 0. Estado em 2026-10-21 — leia antes do resto
+
+O plano abaixo foi escrito em 2026-09-19 e **nenhuma fase dele foi
+implementada**. Entre 2026-10-19 e 2026-10-21 a progressão da corrida foi
+refeita por outro caminho, no modelo do **Vampire Survivors** e não do Hades:
+
+| O que o plano previa | O que existe hoje |
+|---|---|
+| Cartas de fim de sala (`Recompensa`) | A corrida não tem salas. A `Recompensa` ficou no código, sem ser alcançada |
+| Melhorias de atributo empilháveis | Continuam (`Melhoria`), mas só saem do caça-níquel do baú (`Roleta`) |
+| Encaixes que descartam (ATAQUE, DASH, PULSO, REVIDE) | Não existem. As cartas de nível (`SubirDeNivel`) oferecem atributo com raridade, passiva ou nível de arma extra, e tudo empilha |
+| Vocabulário de status | Não existe. `EFFECT_POISON` e `EFFECT_REGENERATION` seguem sem uso |
+| Ganchos `aoDarDash`, `aoAcertar`, `aoLevarDano`... | Não há sistema de ganchos. A Retaliação chama `Habilidades.aoLevarDano` direto do `Player.strike` |
+| Global antes de classe (decisão 2.1) | As três habilidades novas são **exclusivas de um gato** (ver abaixo) |
+| Pré-requisito e combinação (fase 4) | O par **arma extra no nível 5 + passiva parceira** vira uma evolução: é a combinação que existe |
+
+As habilidades exclusivas, uma por gato, até o nível 3:
+
+| Gato | Habilidade | O que faz | Onde |
+|---|---|---|---|
+| Finn | Volley | +1 flecha por nível, que procura outro alvo | `Bow`, `Bonus.flechas` |
+| Muffin | Retaliate | onda de choque ao levar dano, com recarga | `Habilidades`, `Bonus` |
+| Azrael | Arcane Burst | as bolas da varinha explodem em área | `Habilidades`, `Bonus` |
+
+A Retaliação é, na prática, o encaixe **REVIDE** da seção 2.2 — só que presa a um
+gato e sem descarte.
+
+**A confirmar:** se este plano continua valendo como próximo passo, se ele vai
+ser adaptado às cartas de nível, ou se foi substituído. As decisões da seção 2
+ficam registradas como estavam; nenhuma foi revogada por escrito.
+
+---
+
 ## 1. O objetivo
 
 Hoje as cartas dão só atributo. O objetivo é que elas deem **habilidade** — que
@@ -104,9 +137,13 @@ Levantado, não presumir de novo:
 
 | Peça | Onde | Estado |
 |---|---|---|
-| `Melhoria` (7 atributos + `Modifiers`) | `game/items/Melhoria.java` | pronto |
-| `Melhorias` (livro-caixa, `oferecer`, serialização) | `game/items/Melhorias.java` | pronto |
-| `Recompensa` (tela de 3 cartas) | `game/map/arena/Recompensa.java` | pronto |
+| `Melhoria` (7 atributos + `Modifiers`) | `game/items/Melhoria.java` | pronto; hoje sai só do caça-níquel |
+| `Melhorias` (livro-caixa, `oferecer`, serialização) | `game/items/Melhorias.java` | pronto; também guarda pontos de nível, armas extras, passivas e evoluções |
+| `Recompensa` (tela de 3 cartas) | `game/map/arena/Recompensa.java` | pronta, **sem uso** na corrida sem fim |
+| `SubirDeNivel` (3 cartas por nível, reroll e skip) | `game/map/arena/SubirDeNivel.java` | pronto — nasceu depois deste plano |
+| `Passiva` (7 gerais + 3 exclusivas) | `game/items/Passiva.java` | pronto — nasceu depois deste plano |
+| `ArmaExtra` + `Evolucao` | `game/items/` | pronto — nasceu depois deste plano |
+| `Habilidades` (Retaliação, Explosão Arcana) | `game/objects/entities/Habilidades.java` | pronto — nasceu depois deste plano |
 | `Raridade` | `game/items/Raridade.java` | pronto |
 | `Elemento` (5 + NENHUM + LENDARIA, cor, som, tipo de dano) | `game/items/Elemento.java` | pronto |
 | `Classe` (melee / magia / distância) | `game/items/Classe.java` | pronto |
@@ -223,9 +260,11 @@ houver o que combinar.
 
 ### Fase 3 — assinaturas exclusivas (a camada *Aspect*)
 
-- [ ] **Espada dupla** (melee) — segundo render, segunda caixa de ataque
-- [ ] Uma para magia
-- [ ] Uma para distância
+- [ ] **Espada dupla** (melee) — segundo render, segunda caixa de ataque. A
+      exclusiva do Muffin (corpo a corpo) acabou sendo a Retaliação, que não é
+      de arma
+- [x] Uma para magia — **Arcane Burst**, do Azrael, presa ao gato e não à classe
+- [x] Uma para distância — **Volley**, do Finn, presa ao gato e não à classe
 
 ### Fase 4 — combinação
 
@@ -264,3 +303,4 @@ de classe piora.
 | Data | O que mudou |
 |---|---|
 | 2026-09-19 | Documento criado. Decisões 2.1 a 2.4 tomadas com base no dump do Hades. Nada implementado ainda. |
+| 2026-10-21 | Revisão contra o código: nenhuma fase implementada como planejado. A progressão foi refeita no modelo do Vampire Survivors (cartas de nível, passivas, armas extras, evoluções) e cada gato ganhou uma habilidade exclusiva. Seção 0 e tabela da seção 3 atualizadas; fase 3 marcada. Continuidade do plano **a confirmar**. |
