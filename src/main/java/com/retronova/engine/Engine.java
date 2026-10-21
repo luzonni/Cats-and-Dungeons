@@ -75,6 +75,12 @@ public class Engine implements Runnable {
             int gatoDaBancada = Math.max(0, Math.min(2, Integer.getInteger("cd.gato", 2)));
             heapActivity(new com.retronova.game.Game(gatoDaBancada,
                     new com.retronova.game.map.arena.Arena(), 0));
+            // -Dcd.piloto=true anda e da dash sozinho; -Dcd.imortal=true (ver
+            // Player.strike) impede o gato de cair. Juntos, medem a horda cheia
+            // com a camera varrendo o campo, que e o caso que trava.
+            if (Boolean.getBoolean("cd.piloto")) {
+                PilotoDeBancada.iniciar();
+            }
             // Telas por cima, para conferir o desenho delas sem jogar ate elas.
             // Abrem depois de um segundo de partida: a chegada do gato fecha
             // qualquer pausa aberta antes dela.
