@@ -160,7 +160,8 @@ custa mais do que guardá-lo.
 
 Os sprites do jogo são derivados, não cópias: `tools/GenKenney.java` remapeia a
 paleta azul-acinzentada do Kenney para as rampas de pedra fria, laje e madeira do
-projeto — ver `documentation/padroes/ARTE-CENARIO.md` para o porquê. A chama passa
+projeto — ver `documentation/padroes/ARTE-CENARIO.md` para o porquê (documento
+local: a pasta `documentation/` está no `.gitignore` e não vai no clone). A chama passa
 intacta, porque é o único acento quente do cenário. Para regerar:
 
 ```
