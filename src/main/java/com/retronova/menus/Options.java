@@ -401,13 +401,7 @@ public class Options extends TelaDeMenu {
 
     /** Painel de fundo atrás das linhas. Altura fixa, igual em todas as abas. */
     private void desenharPainel(Graphics2D g) {
-        int s = Configs.UiScale();
-        g.setColor(Palette.OUTLINE);
-        g.fillRect(painel.x, painel.y, painel.width, painel.height);
-        g.setColor(Palette.DEEP);
-        g.fillRect(painel.x + s, painel.y + s, painel.width - 2 * s, painel.height - 2 * s);
-        g.setColor(Palette.OUTLINE);
-        g.fillRect(painel.x + 3 * s, painel.y + 3 * s, painel.width - 6 * s, s);
+        TelaDeMenu.desenharPainel(g, painel);
     }
 
     private void desenharAvisoPendente(Graphics2D g) {

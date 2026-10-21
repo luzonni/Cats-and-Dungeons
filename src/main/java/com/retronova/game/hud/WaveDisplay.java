@@ -65,15 +65,29 @@ public class WaveDisplay {
         boolean chefe = seg >= total && !com.retronova.game.Estatisticas.venceu();
         String texto = chefe ? "BOSS!" : String.format("%02d:%02d", seg / 60, seg % 60);
         boolean passou = seg >= total;
-        Font font = FontHandler.font(FontHandler.Game, s * 8);
-        int alt = FontHandler.getHeight(texto, font);
+        String meta = !chefe && !passou ? "/" + Waves.DURACAO_MINUTOS + ":00" : "";
         int tx = x + 26 * s;
+        // O TEXTO CABE NA PLACA, e não o contrário. A largura das fontes não cresce
+        // exatamente com a escala do HUD, e em algumas escalas o "/30:00" passava da
+        // borda direita do sprite. Mede e, se não couber, desce a fonte um ponto
+        // por vez.
+        int livre = x + clock.largura() - 4 * s - tx;
+        Font font = null, miuda = null;
+        int largura = 0;
+        for (float tam = 8; tam >= 5; tam -= 1) {
+            font = FontHandler.font(FontHandler.Game, s * tam);
+            miuda = FontHandler.font(FontHandler.Septem, s * (tam - 2));
+            largura = FontHandler.getWidth(texto, font)
+                    + (meta.isEmpty() ? 0 : 2 * s + FontHandler.getWidth(meta, miuda));
+            if (largura <= livre) {
+                break;
+            }
+        }
+        int alt = FontHandler.getHeight(texto, font);
         int ty = y + 12 * s + alt / 2;
         TextFx.draw(g, texto, font, tx, ty, chefe ? Palette.WARN : Palette.TEXT, s);
-        if (!chefe && !passou) {
-            Font miuda = FontHandler.font(FontHandler.Septem, s * 6);
-            TextFx.draw(g, "/" + Waves.DURACAO_MINUTOS + ":00", miuda,
-                    tx + FontHandler.getWidth(texto, font) + 2 * s, ty, Palette.LIGHT, s);
+        if (!meta.isEmpty()) {
+            TextFx.draw(g, meta, miuda, tx + FontHandler.getWidth(texto, font) + 2 * s, ty, Palette.LIGHT, s);
         }
     }
 

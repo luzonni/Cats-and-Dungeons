@@ -260,7 +260,11 @@ public class Personagens extends TelaDeMenu {
         int larguraBotao = Button.preferredWidth();
         // Os botoes sentam na base da area de conteudo, acima do rodape de dicas.
         Rectangle area = areaDoConteudo();
-        int yBotoes = area.y + area.height - alturaBotao;
+        // A FILEIRA SENTA PELA PEÇA MAIS ALTA. As miniaturas são mais altas que os
+        // botões e ficam centradas neles; sentando pelos botões, metade da sobra
+        // descia para dentro do rodapé de dicas.
+        int alturaFileira = Math.max(alturaBotao, MINIATURA * s);
+        int yBotoes = area.y + area.height - alturaFileira / 2 - alturaBotao / 2;
         voltar.setBounds(new Rectangle(margem, yBotoes, larguraBotao, alturaBotao));
         jogar.setBounds(new Rectangle(janelaW - margem - larguraBotao, yBotoes,
                 larguraBotao, alturaBotao));

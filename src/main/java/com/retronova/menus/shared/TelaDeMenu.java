@@ -254,8 +254,28 @@ public abstract class TelaDeMenu implements Activity {
     protected static Rectangle areaDoConteudo() {
         int s = Configs.UiScale();
         int topo = baseDoTitulo() + 8 * s;
-        int base = Engine.window.getHeight() - Configs.Margin() - Rodape.ALTURA * s;
+        // A FOLGA ANTES DO RODAPÉ é parte da área reservada: sem ela, o que senta na
+        // base da área (os botões e as miniaturas da seleção de gato) encostava nas
+        // dicas, e em telas mais baixas passava por cima delas.
+        int base = Engine.window.getHeight() - Configs.Margin() - Rodape.ALTURA * s - FOLGA_DO_RODAPE * s;
         return new Rectangle(0, topo, Engine.window.getWidth(), Math.max(0, base - topo));
+    }
+
+    /** Vão entre a área do conteúdo e o rodapé, em pixels nativos. */
+    public static final int FOLGA_DO_RODAPE = 6;
+
+    /**
+     * O painel padrão das telas de menu: borda escura, corpo fundo e um fio
+     * escuro no topo. É o que fica atrás das linhas de configuração.
+     */
+    public static void desenharPainel(Graphics2D g, Rectangle r) {
+        int s = Configs.UiScale();
+        g.setColor(Palette.OUTLINE);
+        g.fillRect(r.x, r.y, r.width, r.height);
+        g.setColor(Palette.DEEP);
+        g.fillRect(r.x + s, r.y + s, r.width - 2 * s, r.height - 2 * s);
+        g.setColor(Palette.OUTLINE);
+        g.fillRect(r.x + 3 * s, r.y + 3 * s, r.width - 6 * s, s);
     }
 
     /** O título no padrão: fonte do jogo, 14 pixels nativos, centralizado. */
