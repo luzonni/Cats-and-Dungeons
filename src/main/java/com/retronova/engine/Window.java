@@ -213,7 +213,31 @@ public class Window extends Canvas {
         frame = null;
     }
 
+    /**
+     * Recria a janela (F11, resolução nova).
+     *
+     * NA EDT. Quem pede é a thread do jogo, no meio do tick, e o Swing só aceita
+     * criar e destruir janela pela thread dele: fora dela, o JFrame novo nascia
+     * disputando o estado do AWT com os eventos que a EDT ainda processava do
+     * antigo. A thread do jogo ESPERA a troca terminar (invokeAndWait), para o
+     * quadro seguinte já sair no canvas novo — e não pode estar segurando lock
+     * nenhum da janela nessa espera, que é o que a EDT precisa para trabalhar.
+     */
     public void resetWindow() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            recriar();
+            return;
+        }
+        try {
+            SwingUtilities.invokeAndWait(this::recriar);
+        } catch (InterruptedException interrompida) {
+            Thread.currentThread().interrupt();
+        } catch (java.lang.reflect.InvocationTargetException falha) {
+            throw new IllegalStateException("Falha ao recriar a janela", falha.getCause());
+        }
+    }
+
+    private void recriar() {
         //O BufferStrategy pertence a este canvas dentro do frame antigo e não
         //sobrevive ao dispose. Sem invalidá-lo, o jogo passa a desenhar num
         //buffer morto e a janela nova fica em branco.
