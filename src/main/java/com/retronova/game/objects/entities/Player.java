@@ -466,7 +466,7 @@ public class Player extends Entity {
         // nada — e cerimonia sem conteudo ensina o jogador a ignorar a proxima.
         if (antes != null && agora != null && agora.getSprite() != antes) {
             this.transmutacao = new Transmutacao(antes, agora.getSprite(),
-                    this.elemento.som());
+                    this.elemento.som(), this.elemento.cor(), agora.getName());
         }
     }
 
@@ -769,7 +769,7 @@ public class Player extends Entity {
         if (transmutacao == null) {
             return;
         }
-        transmutacao.tick();
+        transmutacao.tick(getX() + getWidth() / 2.0, getY() + getHeight() / 2.0);
         if (transmutacao.acabou()) {
             transmutacao = null;
         }
@@ -1288,11 +1288,11 @@ public class Player extends Entity {
         // rabo e a pata apoiada subiam junto com o corpo — e eles ficam no chao.
         renderSprite(sprite, g);
 
-        // DURANTE A TRANSMUTACAO A ARMA NAO ESTA NA MAO — ela esta no alto, virando
-        // outra coisa. Desenhar as duas seria mostrar a mesma arma em dois lugares.
-        if (transmutando()) {
-            transmutacao.render(g, (int) getX() + getWidth() / 2,
-                    (int) getY() + getHeight() / 2);
+        // DURANTE A TRANSMUTACAO quem desenha a arma e ela: a mesma pose da mao,
+        // pulando e clareando. Desenhar as duas seria mostrar a arma duas vezes.
+        Item naMao = getInventory().getItemHand();
+        if (transmutando() && naMao != null) {
+            transmutacao.render(g, getMao(), naMao::renderNaMao);
             return;
         }
         // A arma nao balanca junto: ela orbita o gato e tem ritmo proprio.

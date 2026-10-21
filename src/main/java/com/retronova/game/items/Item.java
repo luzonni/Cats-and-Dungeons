@@ -949,6 +949,14 @@ public abstract class Item {
         return new Point(sprite.getWidth() / 2, sprite.getHeight() - Configs.GameScale());
     }
 
+    /**
+     * O item na mão, na pose de porte, com outro desenho: a arma velha, ou a
+     * clareada, enquanto a Transmutacao a troca pela nova.
+     */
+    public void renderNaMao(Graphics2D g, BufferedImage sprite) {
+        naMao(g, sprite);
+    }
+
     /** O sprite com o punho na mão do gato, na pose do porte. */
     protected void naMao(Graphics2D g, BufferedImage sprite) {
         naMao(g, sprite, 0, 0);

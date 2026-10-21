@@ -208,6 +208,13 @@ public class Bow extends Item {
         renderArrow(player, g);
     }
 
+    /** O arco não usa a pose de porte: ele aponta para a mira, sem a flecha. */
+    @Override
+    public void renderNaMao(Graphics2D g, java.awt.image.BufferedImage sprite) {
+        java.awt.geom.Point2D.Double a = ancora(Game.getPlayer(), 0);
+        Rotate.apontar(sprite, a.x, a.y, angle + giroExtra(), Rotate.DIAGONAL, g);
+    }
+
     /**
      * A flecha encaixada — ela SAI DO MEIO DO ARCO.
      *
