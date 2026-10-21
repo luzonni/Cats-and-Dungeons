@@ -107,7 +107,7 @@ public class SubirDeNivel implements Activity {
                 String rotulo = p.exclusiva()
                         ? (n == 0 ? "CAT SKILL" : "CAT SKILL LV " + (n + 1))
                         : (n == 0 ? "NEW PASSIVE" : "PASSIVE LV " + (n + 1));
-                baralho.add(new Carta(rotulo, p.name(), p.nome(), p.efeitoDeUmNivel(), p.cor(),
+                baralho.add(new Carta(rotulo, p.name(), p.nome(), p.efeitoNoNivel(n + 1), p.cor(),
                         () -> m.subirPassiva(gato, p)));
                 pesos.add(p.exclusiva() ? 2.5 : 2.0);
             }

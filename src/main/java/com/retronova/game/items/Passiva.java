@@ -49,8 +49,11 @@ public enum Passiva {
         this(nome, assunto, cor, formato, porNivel, NIVEL_MAXIMO, null);
     }
 
+    /** Texto da carta por nivel (o primeiro e o do nivel 1), ou null para o formato. */
+    private final String[] textos;
+
     Passiva(String nome, String assunto, Color cor, String formato, int porNivel,
-            int nivelMaximo, String dono) {
+            int nivelMaximo, String dono, String... textos) {
         this.nome = nome;
         this.assunto = assunto;
         this.cor = cor;
@@ -58,6 +61,21 @@ public enum Passiva {
         this.porNivel = porNivel;
         this.nivelMaximo = nivelMaximo;
         this.dono = dono;
+        this.textos = textos.length == 0 ? null : textos;
+    }
+
+    /**
+     * O que a carta diz ao oferecer o nivel {@code nivel} (1 = a primeira vez).
+     *
+     * As habilidades dos gatos nao mudam um numero so por nivel — o raio, a forca
+     * e a recarga mudam juntos — e "+1 shockwave level" nao diz nada. Elas trazem
+     * um texto por nivel; as passivas comuns continuam no formato.
+     */
+    public String efeitoNoNivel(int nivel) {
+        if (textos != null) {
+            return textos[Math.max(0, Math.min(textos.length - 1, nivel - 1))];
+        }
+        return efeitoDeUmNivel();
     }
 
     public int nivelMaximo() {
