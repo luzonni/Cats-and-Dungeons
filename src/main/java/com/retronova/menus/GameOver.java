@@ -12,6 +12,7 @@ import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
+import com.retronova.game.Conquistas;
 import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
 import com.retronova.game.Meta;
@@ -47,6 +48,8 @@ public class GameOver implements Activity {
     private int foco = -1;
     private int entrando;
     private int brilhoDaCompra = -1, desdeACompra;
+    /** Ticks desde que a tela terminou de entrar; anima os avisos de conquista. */
+    private int desdeOFim;
 
     private final int gato;
     private final int espaco;
@@ -104,6 +107,7 @@ public class GameOver implements Activity {
             return;
         }
         desdeACompra++;
+        desdeOFim++;
         if (KeyBoard.KeyPressed("Escape")) {
             Engine.heapActivity(new Menu());
             return;
@@ -168,8 +172,53 @@ public class GameOver implements Activity {
 
         desenharResumo(g, s);
         desenharLoja(g, s);
+        desenharConquistas(g, s);
         for (Button botao : botoes) {
             botao.render(g);
+        }
+    }
+
+    /**
+     * Os avisos de conquista desbloqueada, no canto superior direito.
+     *
+     * Entram deslizando pela direita, um depois do outro, e ficam. Mostram só o
+     * nome: o que ela pede e o resto está na tela de conquistas, que o jogador
+     * abre pelo troféu do menu.
+     */
+    private void desenharConquistas(Graphics2D g, int s) {
+        List<Conquistas.Conquista> novas = Estatisticas.conquistasDaCorrida();
+        if (novas.isEmpty()) {
+            return;
+        }
+        int w = 96 * s, h = 22 * s, vao = 4 * s;
+        int margem = Configs.Margin();
+        for (int i = 0; i < novas.size(); i++) {
+            // 0 a 1: cada aviso começa 14 ticks depois do anterior e leva 18 para entrar.
+            double t = Math.clamp((desdeOFim + Engine.alpha() - 10 - i * 14) / 18.0, 0, 1);
+            if (t <= 0) {
+                continue;
+            }
+            double suave = 1 - Math.pow(1 - t, 3);
+            int x = (int) (Engine.window.getWidth() - margem - w + (1 - suave) * (w + margem));
+            int y = margem + i * (h + vao);
+
+            g.setColor(new Color(0, 0, 0, 100));
+            g.fillRoundRect(x + 2 * s, y + 3 * s, w, h, 8 * s, 8 * s);
+            g.setColor(new Color(0x8A6A14));
+            g.fillRoundRect(x - s, y - s, w + 2 * s, h + 2 * s, 9 * s, 9 * s);
+            g.setPaint(new GradientPaint(0, y, new Color(0x46391E), 0, y + h, new Color(0x201A12)));
+            g.fillRoundRect(x, y, w, h, 8 * s, 8 * s);
+
+            int celula = Math.max(1, (int) Math.round(1.6 * s));
+            int lado = com.retronova.game.map.arena.Icones.lado(celula);
+            com.retronova.game.map.arena.Icones.desenhar(g, "TROFEU", new Color(0xFFD23F),
+                    x + 4 * s, y + (h - lado) / 2, celula);
+
+            int tx = x + 4 * s + lado + 4 * s;
+            TextFx.draw(g, "Achievement unlocked", FontHandler.font(FontHandler.Septem, 5f * s),
+                    tx, y + 8 * s, Palette.LIGHT, s);
+            TextFx.draw(g, novas.get(i).nome(), FontHandler.font(FontHandler.Game, 7f * s),
+                    tx, y + 17 * s, new Color(0xFFD23F), s);
         }
     }
 
