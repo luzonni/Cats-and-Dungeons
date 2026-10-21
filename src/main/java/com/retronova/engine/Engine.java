@@ -72,7 +72,9 @@ public class Engine implements Runnable {
         // desempenho sem navegar menus. Espaco 0 nao e um espaco de save valido —
         // nada e gravado nem apagado; as corridas do jogador ficam intactas.
         if (Boolean.getBoolean("cd.bench")) {
-            heapActivity(new com.retronova.game.Game(2,
+            // -Dcd.gato=0|1|2 escolhe Muffin, Azrael ou Finn (o padrao e o Finn).
+            int gatoDaBancada = Math.max(0, Math.min(2, Integer.getInteger("cd.gato", 2)));
+            heapActivity(new com.retronova.game.Game(gatoDaBancada,
                     new com.retronova.game.map.arena.Arena(0, 4), 0));
             // Telas por cima, para conferir o desenho delas sem jogar ate elas.
             // Abrem depois de um segundo de partida: a chegada do gato fecha
@@ -114,6 +116,25 @@ public class Engine implements Runnable {
                         for (int i = 0; i < 3; i++) {
                             com.retronova.game.Game.getPlayer().getMelhorias().subirArma(
                                     com.retronova.game.items.ArmaExtra.valueOf(nome.trim()));
+                        }
+                    }
+                    if (antes != null) {
+                        antes.run();
+                    }
+                };
+            }
+            // -Dcd.habilidade=N da ao gato a habilidade exclusiva dele ja no nivel N
+            // (1 a 3), para ver o efeito sem esperar a carta sair no level up.
+            Integer habilidade = Integer.getInteger("cd.habilidade");
+            if (habilidade != null) {
+                Runnable antes = com.retronova.game.Game.depoisDeUmSegundo;
+                com.retronova.game.Game.depoisDeUmSegundo = () -> {
+                    var gato = com.retronova.game.Game.getPlayer();
+                    for (var p : com.retronova.game.items.Passiva.values()) {
+                        if (p.exclusiva() && p.disponivelPara(gato.getName())) {
+                            for (int i = 0; i < Math.max(1, Math.min(3, habilidade)); i++) {
+                                gato.getMelhorias().subirPassiva(gato, p);
+                            }
                         }
                     }
                     if (antes != null) {
