@@ -43,7 +43,7 @@ atual e à divisão clara entre motor e jogo.
 |---|---|
 | `com.retronova.engine` | Laço de jogo, janela, configurações, pilha de Activity |
 | `engine.graphics` | Sprites, fontes, 9-slice, paleta, escala |
-| `engine.inputs` | Teclado e mouse |
+| `engine.inputs` | Teclado, mouse e controle |
 | `engine.io` | Leitura de JSON dos recursos |
 | `engine.sound` | Música e efeitos |
 | `com.retronova.game` | Activity principal do jogo |
@@ -64,6 +64,32 @@ atual e à divisão clara entre motor e jogo.
 
 Tick e render compartilham a mesma thread. Quando o desenho atrasa, o jogo perde
 quadros, não velocidade.
+
+## Controle
+
+O controle de Xbox é lido pela **XInput**, a API do próprio Windows, chamada
+pelo JNA que já vinha com o OSHI. Não entrou dependência nova. Fora do Windows
+a DLL não carrega e o controle fica desligado sem erro.
+
+Nenhuma tela conhece o controle. `Gamepad` traduz cada leitura em **teclas
+virtuais** (`KeyBoard.pad`), as mesmas que o jogo já lê por nome, e num **cursor
+virtual** que escreve nos campos do `Mouse`. As telas feitas para teclado ou
+mouse funcionam sem mudar. O estado do controle fica num campo separado do
+teclado, para que soltar um não solte o outro.
+
+Duas regras pesam no desempenho e no comportamento:
+
+- **Porta vazia é consultada uma vez por segundo.** `XInputGetState` numa porta
+  sem controle é lento, e consultar as quatro a cada tick faria o jogo engasgar
+  em quem nem tem controle.
+- **O B depende de onde o jogador está.** Com a partida rolando, ele interage
+  com o objeto mais próximo: `GameMap.interagir` escolhe o alvo, e o
+  `clickOnRect` desse objeto responde como se ele tivesse sido clicado. Nas
+  telas, o B volta. O papel é decidido no aperto e fica até soltar, para o B
+  que abre a loja não fechá-la no tick seguinte.
+- **O cursor virtual só existe enquanto o analógico direito o usa.** Mexer o
+  mouse de verdade ou voltar ao D-pad o recolhe e devolve ao `A` o papel de
+  confirmar.
 
 ## Recursos
 

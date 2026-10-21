@@ -1,5 +1,6 @@
 package com.retronova.game.objects.entities.enemies;
 
+import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.game.objects.GameObject;
@@ -12,11 +13,25 @@ import java.awt.image.BufferedImage;
 
 public class Skeleton extends Enemy {
 
+    /**
+     * Ticks entre duas caveiras. ERA 45, e o esqueleto e o unico bicho que bate
+     * de longe: com meia duzia deles na tela, eram oito caveiras por segundo
+     * vindas de onde o gato nao alcanca, e a partida acabava no minuto tres
+     * contra um gato que ainda nem tinha build. Com 110 ele continua sendo o
+     * bicho que obriga a se mexer, sem ser o que decide a partida sozinho.
+     */
+    private static final int RECARGA = 110;
+    /** Alcance do tiro, em tiles. Mais curto que a tela: ele tem de aparecer antes de atirar. */
+    private static final int ALCANCE = 7;
+
     private int countAnim;
     private int cooldown;
 
     public Skeleton(int ID, double x, double y) {
         super(ID, x, y, 25);
+        // Cada um comeca num ponto diferente da recarga: um grupo que nasce junto
+        // nao dispara em rajada sincronizada.
+        this.cooldown = Engine.RAND.nextInt(RECARGA);
         loadSprites("mouseskeleton");
         setLife(60);
         setXpWeight(6d);
@@ -44,7 +59,7 @@ public class Skeleton extends Enemy {
         }
         Player player = Game.getPlayer();
         cooldown++;
-        if(cooldown >= 45 && player.getDistance(this) <= GameObject.SIZE() * 8) {
+        if(cooldown >= RECARGA && player.getDistance(this) <= GameObject.SIZE() * ALCANCE) {
             cooldown = 0;
             Skull skull = new Skull(getX() + getWidth() / 2d, getY() + getHeight() / 2d,
                     player.getAngle(this), this);

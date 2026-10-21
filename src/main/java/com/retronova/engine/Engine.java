@@ -1,6 +1,8 @@
 package com.retronova.engine;
 
+import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
+import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.menus.Loading;
@@ -329,6 +331,9 @@ public class Engine implements Runnable {
     }
 
     private void tick() {
+        // Antes da janela e da Activity: o aperto do controle chega às teclas
+        // virtuais no mesmo tick em que a tela vai lê-las.
+        Gamepad.tick();
         window.tick();
         Debugging.tick();
         Debugging.setInfo("Ticks", Engine.HERTZ + " / " + (int) Engine.HZ);
@@ -341,6 +346,7 @@ public class Engine implements Runnable {
         Debugging.setInfo("RAM do jogo", Debugging.formatBytes(emUso)
                 + " de " + Debugging.formatBytes(vm.maxMemory()));
         Debugging.setInfo("Screen Size", "[" + Engine.window.getWidth() + " / " + Engine.window.getHeight() + "]");
+        Debugging.setInfo("Controle", Gamepad.conectado() ? "conectado" : "nenhum");
     }
 
     private void render(Graphics2D graphics) {
@@ -348,6 +354,8 @@ public class Engine implements Runnable {
         //ficava ocupando a tela o jogo inteiro sem informar nada; o lugar dela e
         //a tela inicial, como faz a maioria dos jogos, e o overlay de depuracao
         //(F3) para quem precisa dela com o jogo rodando.
+        if(Gamepad.cursorAtivo())
+            desenharCursorVirtual(graphics);
         if(Debugging.running)
             Debugging.render(graphics);
         graphics.dispose();
@@ -365,6 +373,19 @@ public class Engine implements Runnable {
         } catch (IllegalStateException superficiePerdida) {
             invalidateBuffer();
         }
+    }
+
+    /**
+     * O cursor do controle é DESENHADO pelo jogo, e não movido no sistema: mexer
+     * no ponteiro do sistema exigiria java.awt.Robot, que briga com o mouse de
+     * verdade e com outras janelas. Usa os mesmos sprites do cursor normal.
+     */
+    private void desenharCursorVirtual(Graphics2D g) {
+        boolean pata = window.apontando();
+        Image sprite = pata ? Window.POINTER_CURSOR : Window.DEFAULT_CURSOR;
+        int x = Mouse.getX() - (pata ? Window.POINTER_HOTSPOT.x : 0);
+        int y = Mouse.getY() - (pata ? Window.POINTER_HOTSPOT.y : 0);
+        g.drawImage(sprite, x, y, null);
     }
 
     @Override

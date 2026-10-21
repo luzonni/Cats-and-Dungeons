@@ -9,6 +9,7 @@ import com.retronova.game.items.Consumable;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.graphics.UiSprite;
+import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 
@@ -108,6 +109,12 @@ class Hotbar {
     private int getIndexHot() {
         int length = player.getInventory().getHotbarSize();
         int scroll = Mouse.Scroll();
+        // LB/RB fazem o papel da rodinha.
+        if(Gamepad.pressionou(Gamepad.Botao.RB)) {
+            scroll = 1;
+        }else if(Gamepad.pressionou(Gamepad.Botao.LB)) {
+            scroll = -1;
+        }
         if(scroll > 0) {
             index++;
             if(index > length-1) {

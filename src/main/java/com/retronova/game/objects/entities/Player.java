@@ -18,6 +18,7 @@ import com.retronova.game.items.Melhorias;
 import com.retronova.engine.graphics.Alpha;
 import com.retronova.engine.graphics.Rotate;
 import com.retronova.engine.graphics.SpriteHandler;
+import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.game.items.ItemIDs;
 import com.retronova.game.objects.GameObject;
@@ -885,6 +886,7 @@ public class Player extends Entity {
             damage *= 1 - Shield.absorcao();
         }
         Sound.play(this.dor);
+        Gamepad.vibrar(0.45, 10);
         // A careta so entra DEPOIS da esquiva: golpe desviado nao doeu, e fazer o
         // gato se encolher num ataque que ele evitou contaria a historia errada.
         reagirAoDano();
@@ -1123,8 +1125,16 @@ public class Player extends Entity {
                 countDash = 0;
             }
         }
+        // Com o analogico, o angulo vem dele: o gato anda em qualquer direcao, e
+        // nao so nas oito do teclado.
+        double[] analogico = Gamepad.movimento();
+        if (analogico != null) {
+            isMoving = true;
+        }
         if (isMoving) {
-            double radians = Math.atan2(vertical, horizontal);
+            double radians = analogico != null
+                    ? Math.atan2(analogico[1], analogico[0])
+                    : Math.atan2(vertical, horizontal);
             if (dash) {
                 // O ARRANCO TEM FREIO PROPRIO, e nao mexe mais no drag.
                 //

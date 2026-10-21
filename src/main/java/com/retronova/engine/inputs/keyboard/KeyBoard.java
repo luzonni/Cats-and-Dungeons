@@ -56,6 +56,8 @@ public class KeyBoard implements KeyListener {
             new Key("F10", KeyEvent.VK_F10, true),
             new Key("F11", KeyEvent.VK_F11, true),
             new Key("F12", KeyEvent.VK_F12, true),
+            // Só o controle aperta: código -1 não existe no teclado. Ver Gamepad.
+            new Key("Interact", -1, true),
     };
     private static char[] Caracteres = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
             'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
@@ -79,11 +81,27 @@ public class KeyBoard implements KeyListener {
     public static boolean KeyPressed(String key) {
         for(int i = 0; i < Keys.length; i++) {
             if(Keys[i].getName().equalsIgnoreCase(key) && Keys[i].Actived()) {
-                Keys[i].setActive(false);
+                Keys[i].consumir();
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Aciona ou solta uma tecla pelo controle.
+     *
+     * O controle não tem tela própria de entrada: ele aperta as MESMAS teclas que
+     * o jogo já lê por nome, e por isso nenhuma das telas precisou mudar. O estado
+     * fica num campo separado do teclado para um não soltar o outro — largar o
+     * analógico não pode soltar o W que continua apertado no teclado.
+     */
+    public static void pad(String key, boolean ativo) {
+        for(int i = 0; i < Keys.length; i++) {
+            if(Keys[i].getName().equalsIgnoreCase(key)) {
+                Keys[i].pad = ativo;
+            }
+        }
     }
 
     public static char getKeyChar() {
@@ -145,6 +163,8 @@ public class KeyBoard implements KeyListener {
         protected String Name;
         protected int Key;
         protected boolean Actived;
+        /** Acionada pelo controle. Ver KeyBoard.pad. */
+        protected boolean pad;
         private boolean lockable;
 
         public Key(String name, int key, boolean lockable) {
@@ -158,6 +178,12 @@ public class KeyBoard implements KeyListener {
             return this;
         }
 
+        /** Gasta o aperto das duas origens, como o KeyPressed sempre fez. */
+        void consumir() {
+            this.Actived = false;
+            this.pad = false;
+        }
+
         public int getKey() {
             return this.Key;
         }
@@ -166,7 +192,7 @@ public class KeyBoard implements KeyListener {
             if(lockable)
                 if(BlockWithWriting)
                     return false;
-            return this.Actived;
+            return this.Actived || this.pad;
         }
 
         public String getName() {

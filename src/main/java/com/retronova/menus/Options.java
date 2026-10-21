@@ -7,6 +7,7 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.graphics.TextFx;
+import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -182,6 +183,9 @@ public class Options implements Activity {
                 .desc("Draws the collision box over entities. Same as pressing F4 in game."));
         ui.add(OptionRow.stepper("Margin", Configs::Margin, Configs::setMargin, 0, 40, 5)
                 .desc("Distance between the interface and the edges of the screen."));
+        ui.add(OptionRow.toggle("Controller vibration",
+                () -> Configs.Rumble() ? 1 : 0, v -> Configs.setRumble(v != 0))
+                .desc("Rumble on an Xbox controller when the cat takes damage."));
 
         linhas.add(video);
         linhas.add(audio);
@@ -312,6 +316,7 @@ public class Options implements Activity {
             return;
         }
         trocarAbaPeloMouse();
+        trocarAbaPeloControle();
         navegarPeloTeclado();
 
         List<OptionRow> rows = atuais();
@@ -347,6 +352,17 @@ public class Options implements Activity {
             if (abasRect[i].contains(Mouse.getX(), Mouse.getY())) {
                 Engine.window.pointing();
             }
+        }
+    }
+
+    /** LB/RB passam de aba, como nos menus de console. */
+    private void trocarAbaPeloControle() {
+        int passo = Gamepad.pressionou(Gamepad.Botao.RB) ? 1
+                : Gamepad.pressionou(Gamepad.Botao.LB) ? -1 : 0;
+        if (passo != 0) {
+            abaAtual = (abaAtual + passo + abas.length) % abas.length;
+            foco = 0;
+            Sound.play(Sounds.Button);
         }
     }
 

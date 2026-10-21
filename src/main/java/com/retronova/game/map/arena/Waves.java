@@ -191,15 +191,27 @@ public class Waves implements Runnable {
             return;
         }
         // Grupos cada vez mais frequentes (2,2s -> 0,4s) e maiores.
-        ateOProximoGrupo = (int) Math.max(24, 130 - 22 * min);
+        //
+        // A RAMPA ERA INCLINADA DEMAIS NO COMECO. Com 130 - 22*min e 3 + 3*min, a
+        // horda nascia a ~2 ratos por segundo no minuto zero, 7 no dois e 12 no
+        // tres: o ritmo dobrava a cada minuto enquanto o gato ainda estava no
+        // nivel cinco, com uma arma. Agora fica em ~4,5/s no minuto dois, ~6,5/s
+        // no tres e ~12/s no cinco, e o intervalo so chega ao piso de 0,4s perto
+        // do minuto nove — o fim da corrida continua sendo uma enxurrada, o
+        // comeco deixa a build se formar.
+        ateOProximoGrupo = (int) Math.max(24, 130 - 12 * min);
         int vivos = 0;
+        esqueletosVivos = 0;
         for (Entity e : gameMap.getEntities()) {
             if (e instanceof com.retronova.game.objects.entities.enemies.Enemy b && b.alvoAutomatico()) {
                 vivos++;
+                if (b instanceof com.retronova.game.objects.entities.enemies.Skeleton) {
+                    esqueletosVivos++;
+                }
             }
         }
         com.retronova.game.Estatisticas.horda(vivos);
-        int tamanho = 3 + (int) (min * 3) + Engine.RAND.nextInt(3);
+        int tamanho = 3 + (int) (min * 2) + Engine.RAND.nextInt(3);
         tamanho = Math.min(tamanho, MAX_VIVOS - vivos);
         if (tamanho > 0) {
             nascerGrupo(tamanho, null, false);
@@ -211,6 +223,22 @@ public class Waves implements Runnable {
         return (int) (minutos() * 2.5);
     }
 
+    /** Esqueletos vivos na ultima contagem, mais os que nasceram desde entao. */
+    private int esqueletosVivos;
+
+    /**
+     * Quantos esqueletos a horda aceita ao mesmo tempo: 4 no minuto dois, um a
+     * mais por minuto, ate 12.
+     *
+     * Ele e o unico que bate de longe, e o sorteio favorece o tipo mais novo —
+     * entao no minuto em que era liberado, metade da horda virava esqueleto, e
+     * dez atiradores juntos eram uma parede de caveiras. Os outros bichos se
+     * resolvem chegando perto; atirador demais nao tem resposta.
+     */
+    private int tetoDeEsqueletos() {
+        return Math.min(12, 2 + (int) minutos());
+    }
+
     private EntityIDs sortearTipo() {
         double min = minutos();
         List<EntityIDs> liberados = new ArrayList<>();
@@ -219,9 +247,16 @@ public class Waves implements Runnable {
                 liberados.add((EntityIDs) linha[1]);
             }
         }
+        if (esqueletosVivos >= tetoDeEsqueletos() && liberados.size() > 1) {
+            liberados.remove(EntityIDs.Skeleton);
+        }
         // Os mais recentes pesam mais: a horda muda de cara com o tempo.
         int i = liberados.size() - 1 - (int) (Math.abs(Engine.RAND.nextGaussian()) * 1.5);
-        return liberados.get(Math.max(0, i));
+        EntityIDs tipo = liberados.get(Math.max(0, i));
+        if (tipo == EntityIDs.Skeleton) {
+            esqueletosVivos++;
+        }
+        return tipo;
     }
 
     /** Um grupo nascendo junto, de uma direcao, logo fora da tela. */
