@@ -220,8 +220,32 @@ public class GameOver extends TelaDeMenu {
         if (novas.isEmpty()) {
             return;
         }
-        int w = 96 * s, h = 22 * s, vao = 4 * s;
+        int h = 22 * s, vao = 4 * s;
         int margem = Configs.Margin();
+        int celula = Math.max(1, (int) Math.round(1.6 * s));
+        int lado = com.retronova.game.map.arena.Icones.lado(celula);
+        Font rotulo = FontHandler.font(FontHandler.Septem, 5f * s);
+        // A LARGURA VEM DO MAIOR NOME, e não de um valor fixo: com 96 pixels, nomes
+        // como "Treasure Hunter" passavam da borda do aviso. Todos os avisos ficam
+        // com a mesma largura, para a pilha não ficar serrilhada; se nem a janela
+        // inteira couber, a fonte do nome desce um ponto por vez.
+        int maxW = Engine.window.getWidth() - 2 * margem;
+        int fixo = 4 * s + lado + 4 * s + 6 * s;
+        float tamNome = 7f;
+        Font fonteNome = FontHandler.font(FontHandler.Game, tamNome * s);
+        int texto;
+        while (true) {
+            texto = FontHandler.getWidth("Achievement unlocked", rotulo);
+            for (Conquistas.Conquista c : novas) {
+                texto = Math.max(texto, FontHandler.getWidth(c.nome(), fonteNome));
+            }
+            if (fixo + texto <= maxW || tamNome <= 4f) {
+                break;
+            }
+            tamNome -= 1f;
+            fonteNome = FontHandler.font(FontHandler.Game, tamNome * s);
+        }
+        int w = Math.min(maxW, Math.max(96 * s, fixo + texto));
         for (int i = 0; i < novas.size(); i++) {
             // 0 a 1: cada aviso começa 14 ticks depois do anterior e leva 18 para entrar.
             double t = Math.clamp((desdeOFim + Engine.alpha() - 10 - i * 14) / 18.0, 0, 1);
@@ -239,16 +263,12 @@ public class GameOver extends TelaDeMenu {
             g.setPaint(new GradientPaint(0, y, new Color(0x46391E), 0, y + h, new Color(0x201A12)));
             g.fillRoundRect(x, y, w, h, 8 * s, 8 * s);
 
-            int celula = Math.max(1, (int) Math.round(1.6 * s));
-            int lado = com.retronova.game.map.arena.Icones.lado(celula);
             com.retronova.game.map.arena.Icones.desenhar(g, "TROFEU", new Color(0xFFD23F),
                     x + 4 * s, y + (h - lado) / 2, celula);
 
             int tx = x + 4 * s + lado + 4 * s;
-            TextFx.draw(g, "Achievement unlocked", FontHandler.font(FontHandler.Septem, 5f * s),
-                    tx, y + 8 * s, Palette.LIGHT, s);
-            TextFx.draw(g, novas.get(i).nome(), FontHandler.font(FontHandler.Game, 7f * s),
-                    tx, y + 17 * s, new Color(0xFFD23F), s);
+            TextFx.draw(g, "Achievement unlocked", rotulo, tx, y + 8 * s, Palette.LIGHT, s);
+            TextFx.draw(g, novas.get(i).nome(), fonteNome, tx, y + 17 * s, new Color(0xFFD23F), s);
         }
     }
 
