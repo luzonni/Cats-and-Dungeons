@@ -127,16 +127,24 @@ Num caso pontual dá para pular com `git push --no-verify`.
 
 ## Controles
 
-| Tecla | Ação |
-|---|---|
-| `W` `A` `S` `D` ou setas | Mover |
-| `Espaço` | Dash (requer o modificador) |
-| `E` | Inventário |
-| `Esc` | Pausar |
-| `F11` | Alternar tela cheia |
-| `Ctrl` + `=` / `-` | Zoom da câmera |
-| `F3` | Overlay de depuração |
-| `F4` `F5` `F6` | Hitbox de entidades · grade de tiles · bounds de partículas |
+| Tecla | Controle (Xbox) | Ação |
+|---|---|---|
+| `W` `A` `S` `D` ou setas | Analógico esquerdo · D-pad | Mover (em 360° pelo analógico) |
+| `Espaço` | `LT` / `RT` | Dash (requer o modificador) |
+| `E` | `Y` | Inventário |
+| `F` | `X` | Usar consumível |
+| `Q` | `View` | Largar item |
+| Rodinha · `1`–`9` | `LB` / `RB` | Trocar slot da hotbar · trocar aba nas Opções |
+| `Enter` | `A` | Confirmar |
+| `Esc` | `B` · `Start` | Voltar · pausar |
+| Mouse | Analógico direito + `A` (`R3` = botão direito) | Cursor, para loja, inventário e objetos do mapa |
+| `F11` | | Alternar tela cheia |
+| `Ctrl` + `=` / `-` | | Zoom da câmera |
+| `F3` | | Overlay de depuração |
+| `F4` `F5` `F6` | | Hitbox de entidades · grade de tiles · bounds de partículas |
+
+O controle funciona no Windows, com qualquer controle XInput (Xbox 360, One,
+Series ou compatível). Em outros sistemas o jogo segue só com teclado e mouse.
 
 ## Documentação
 

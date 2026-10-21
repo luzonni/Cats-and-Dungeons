@@ -295,15 +295,20 @@ public class Personagens implements Activity {
             return;
         }
 
+        // Setas e controle trocam de gato; Enter embarca. Era a unica tela da
+        // partida que so andava com o mouse.
+        if (KeyBoard.KeyPressed("Right")) {
+            escolher((selecionado + 1) % players.length);
+        } else if (KeyBoard.KeyPressed("Left")) {
+            escolher((selecionado + players.length - 1) % players.length);
+        } else if (KeyBoard.KeyPressed("Enter")) {
+            jogar.activate();
+            return;
+        }
+
         for (int i = 0; i < miniaturas.length; i++) {
             if (Mouse.clickOn(Mouse_Button.LEFT, miniaturas[i]) && selecionado != i) {
-                Sound.play(players[i].getVoz());
-                focoAnterior = selecionado;
-                selecionado = i;
-                // Embarcar mia com o gato ESCOLHIDO: o botao troca de voz junto
-                // com a fileira, senao ele continuaria miando com o primeiro.
-                jogar.meow(players[i].getVoz());
-                entrada = 0f;
+                escolher(i);
             }
             if (miniaturas[i].contains(Mouse.getX(), Mouse.getY())) {
                 Engine.window.pointing();
@@ -323,6 +328,16 @@ public class Personagens implements Activity {
         if (voltar.isHovered()) {
             Engine.window.pointing();
         }
+    }
+
+    private void escolher(int i) {
+        Sound.play(players[i].getVoz());
+        focoAnterior = selecionado;
+        selecionado = i;
+        // Embarcar mia com o gato ESCOLHIDO: o botao troca de voz junto
+        // com a fileira, senao ele continuaria miando com o primeiro.
+        jogar.meow(players[i].getVoz());
+        entrada = 0f;
     }
 
     // ---------------------------------------------------------------- render

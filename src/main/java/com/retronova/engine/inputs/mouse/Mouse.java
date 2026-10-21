@@ -15,6 +15,44 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
     protected static int scrollSide = 0;
     protected static boolean scrollChanged = false;
 
+    /** O mouse de verdade se mexeu desde a última consulta. Ver Gamepad. */
+    private static volatile boolean movimentoReal;
+
+    /**
+     * Posiciona o cursor virtual do controle.
+     *
+     * Escreve nos mesmos campos que o mouse de verdade, e é por isso que loja,
+     * inventário e objetos do mapa funcionam com o controle sem mudar uma linha.
+     */
+    public static void moverVirtual(int x, int y) {
+        xMouse = x;
+        yMouse = y;
+    }
+
+    /** Aperta ou solta um botão pelo cursor virtual, igual a mousePressed/mouseReleased. */
+    public static synchronized void botaoVirtual(Mouse_Button button, boolean apertado) {
+        if (apertado) {
+            if (button == Mouse_Button.LEFT) {
+                clickLeft = clickLeftOn = pressingLeft = true;
+            } else if (button == Mouse_Button.RIGHT) {
+                clickRight = clickRightOn = pressingRight = true;
+            }
+            xClicked = xMouse;
+            yClicked = yMouse;
+        } else if (button == Mouse_Button.LEFT) {
+            clickLeft = clickLeftOn = pressingLeft = false;
+        } else if (button == Mouse_Button.RIGHT) {
+            clickRight = clickRightOn = pressingRight = false;
+        }
+    }
+
+    /** Diz se o mouse de verdade se mexeu, e zera o aviso. */
+    public static boolean consumirMovimentoReal() {
+        boolean moveu = movimentoReal;
+        movimentoReal = false;
+        return moveu;
+    }
+
     public static boolean on(Rectangle rec) {
         if(rec.contains(xMouse, yMouse)) {
             return true;
@@ -173,6 +211,7 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         //Set's
         Mouse.xMouse = e.getX();
         Mouse.yMouse = e.getY();
+        movimentoReal = true;
     }
 
     @Override
@@ -180,6 +219,7 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         //Set's
         Mouse.xMouse = e.getX();
         Mouse.yMouse = e.getY();
+        movimentoReal = true;
     }
 
     @Override

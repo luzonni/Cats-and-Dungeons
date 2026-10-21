@@ -62,6 +62,7 @@ public class Configs {
         DEFAULTS.put("MaxFrames", 60);
         DEFAULTS.put("indexResolution", 0);
         DEFAULTS.put("BATTLEMUSIC", 0);    // indice em Musics.COMBATE
+        DEFAULTS.put("rumble", true);      // vibração do controle, ver Gamepad.vibrar
 
         VALUES = new LinkedHashMap<>(DEFAULTS);
         registrarFlushNoEncerramento();
@@ -405,6 +406,17 @@ public class Configs {
 
     public static void setBattleMusic(int indice) {
         VALUES.put("BATTLEMUSIC", indice);
+        update();
+    }
+
+    /** Vibração do controle. Ver inputs.gamepad.Gamepad. */
+    public static boolean Rumble() {
+        Object v = VALUES.get("rumble");
+        return v == null || (boolean) v;
+    }
+
+    public static void setRumble(boolean rumble) {
+        VALUES.put("rumble", rumble);
         update();
     }
 

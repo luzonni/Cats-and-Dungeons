@@ -79,11 +79,27 @@ public class KeyBoard implements KeyListener {
     public static boolean KeyPressed(String key) {
         for(int i = 0; i < Keys.length; i++) {
             if(Keys[i].getName().equalsIgnoreCase(key) && Keys[i].Actived()) {
-                Keys[i].setActive(false);
+                Keys[i].consumir();
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Aciona ou solta uma tecla pelo controle.
+     *
+     * O controle não tem tela própria de entrada: ele aperta as MESMAS teclas que
+     * o jogo já lê por nome, e por isso nenhuma das telas precisou mudar. O estado
+     * fica num campo separado do teclado para um não soltar o outro — largar o
+     * analógico não pode soltar o W que continua apertado no teclado.
+     */
+    public static void pad(String key, boolean ativo) {
+        for(int i = 0; i < Keys.length; i++) {
+            if(Keys[i].getName().equalsIgnoreCase(key)) {
+                Keys[i].pad = ativo;
+            }
+        }
     }
 
     public static char getKeyChar() {
@@ -145,6 +161,8 @@ public class KeyBoard implements KeyListener {
         protected String Name;
         protected int Key;
         protected boolean Actived;
+        /** Acionada pelo controle. Ver KeyBoard.pad. */
+        protected boolean pad;
         private boolean lockable;
 
         public Key(String name, int key, boolean lockable) {
@@ -158,6 +176,12 @@ public class KeyBoard implements KeyListener {
             return this;
         }
 
+        /** Gasta o aperto das duas origens, como o KeyPressed sempre fez. */
+        void consumir() {
+            this.Actived = false;
+            this.pad = false;
+        }
+
         public int getKey() {
             return this.Key;
         }
@@ -166,7 +190,7 @@ public class KeyBoard implements KeyListener {
             if(lockable)
                 if(BlockWithWriting)
                     return false;
-            return this.Actived;
+            return this.Actived || this.pad;
         }
 
         public String getName() {

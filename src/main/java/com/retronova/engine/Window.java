@@ -1,6 +1,7 @@
 package com.retronova.engine;
 
 import com.retronova.engine.graphics.SpriteHandler;
+import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.sound.Sound;
@@ -19,6 +20,10 @@ public class Window extends Canvas {
 
     public static final BufferedImage DEFAULT_CURSOR;
     public static final BufferedImage POINTER_CURSOR;
+    /** Ponto de clique da patinha dentro do sprite. */
+    public static final Point POINTER_HOTSPOT = new Point(6*3, 3);
+    /** Esconde o cursor do sistema enquanto o do controle está na tela. */
+    private static final BufferedImage NO_CURSOR = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 
     static {
         DEFAULT_CURSOR = new SpriteHandler("ui","cursor", 3).getSHEET();
@@ -27,6 +32,8 @@ public class Window extends Canvas {
 
     private final String name;
     private boolean pointing;
+    /** Se o último tick pediu a patinha. Lido pelo cursor virtual do controle. */
+    private boolean apontando;
     /** Ultimo estado de foco visto, para so agir na troca. */
     private boolean focada = true;
     private JFrame frame;
@@ -166,12 +173,19 @@ public class Window extends Canvas {
     void tick() {
         refreshSize();      // uma leitura do AWT por tick, em vez de dezenas por quadro
         conferirFoco();
-        if(pointing) {
-            pointing = false;
-            Engine.window.setCursor(Window.POINTER_CURSOR, new Point(6*3, 3));
+        apontando = pointing;
+        pointing = false;
+        if(Gamepad.cursorAtivo()) {
+            Engine.window.setCursor(NO_CURSOR);
+        }else if(apontando) {
+            Engine.window.setCursor(Window.POINTER_CURSOR, POINTER_HOTSPOT);
         }else {
             Engine.window.setCursor(Window.DEFAULT_CURSOR);
         }
+    }
+
+    public boolean apontando() {
+        return apontando;
     }
 
     /**
