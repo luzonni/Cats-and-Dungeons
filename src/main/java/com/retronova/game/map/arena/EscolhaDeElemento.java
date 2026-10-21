@@ -232,10 +232,9 @@ public class EscolhaDeElemento implements Activity {
 
         BufferedImage marca = selo(e.simbolo());
         int lado = 30 * s;
-        if (marca != null) {
-            g.drawImage(marca, caixa.x + caixa.width / 2 - lado / 2, corpoY + 3 * s,
-                    lado, lado, null);
-        }
+        // Fator inteiro e sem suavizar, com contorno e relevo: ver Relevo.
+        com.retronova.engine.graphics.Relevo.desenhar(g, marca,
+                caixa.x + caixa.width / 2, corpoY + 3 * s + lado / 2, lado);
 
         int y = corpoY + lado + 12 * s;
         Font nome = FontHandler.font(FontHandler.Game, 8f * s);
