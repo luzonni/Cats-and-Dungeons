@@ -29,7 +29,32 @@ public enum Passiva {
      * o arco virava uma metralhadora de seis flechas. O dano tambem nao soma
      * inteiro — ver {@code Bonus.danoPorFlecha}.
      */
-    VOLEIO("Volley", "Arrows per shot", new Color(0xE8B04A), "+%d arrow per shot", 1, 3, "Finn");
+    VOLEIO("Volley", "Arrows per shot", new Color(0xE8B04A), "+%d arrow per shot", 1, 3, "Finn"),
+    /**
+     * RETALIACAO: exclusiva do Muffin. Ao levar dano, ele solta uma onda que
+     * machuca e EMPURRA quem esta perto.
+     *
+     * O Muffin e o gato que aguenta, mas aguentar sozinho nao e jogo: e esperar.
+     * A onda faz o golpe recebido virar espaco — o cerco que ia esmaga-lo e jogado
+     * para tras. Tem recarga, entao nao vira imunidade: ver {@code Bonus.retaliacao}.
+     */
+    RETALIACAO("Retaliate", "Shockwave when hurt", new Color(0x5FC9A8), "", 0, 3, "Muffin",
+            "Shockwave when you get hurt",
+            "Wider, stronger shockwave",
+            "Huge shockwave, faster recharge"),
+    /**
+     * EXPLOSAO ARCANA: exclusiva do Azrael. As bolas da varinha explodem ao
+     * acertar e ferem quem esta em volta do alvo.
+     *
+     * O Azrael ja e o gato da area (+20%), mas a arma da mao dele acertava um bicho
+     * por vez. A explosao usa o multiplicador de area dele, entao as duas coisas
+     * passam a conversar. O dano em volta e uma fracao do golpe, e o alvo direto
+     * nao leva duas vezes: ver {@code Bonus.explosaoArcana}.
+     */
+    EXPLOSAO_ARCANA("Arcane Burst", "Bolts explode on impact", new Color(0xC08CFF), "", 0, 3, "Azrael",
+            "Bolts burst on impact",
+            "Bigger, stronger bursts",
+            "Huge bursts");
 
     public static final int NIVEL_MAXIMO = 5;
 
@@ -49,8 +74,11 @@ public enum Passiva {
         this(nome, assunto, cor, formato, porNivel, NIVEL_MAXIMO, null);
     }
 
+    /** Texto da carta por nivel (o primeiro e o do nivel 1), ou null para o formato. */
+    private final String[] textos;
+
     Passiva(String nome, String assunto, Color cor, String formato, int porNivel,
-            int nivelMaximo, String dono) {
+            int nivelMaximo, String dono, String... textos) {
         this.nome = nome;
         this.assunto = assunto;
         this.cor = cor;
@@ -58,6 +86,21 @@ public enum Passiva {
         this.porNivel = porNivel;
         this.nivelMaximo = nivelMaximo;
         this.dono = dono;
+        this.textos = textos.length == 0 ? null : textos;
+    }
+
+    /**
+     * O que a carta diz ao oferecer o nivel {@code nivel} (1 = a primeira vez).
+     *
+     * As habilidades dos gatos nao mudam um numero so por nivel — o raio, a forca
+     * e a recarga mudam juntos — e "+1 shockwave level" nao diz nada. Elas trazem
+     * um texto por nivel; as passivas comuns continuam no formato.
+     */
+    public String efeitoNoNivel(int nivel) {
+        if (textos != null) {
+            return textos[Math.max(0, Math.min(textos.length - 1, nivel - 1))];
+        }
+        return efeitoDeUmNivel();
     }
 
     public int nivelMaximo() {

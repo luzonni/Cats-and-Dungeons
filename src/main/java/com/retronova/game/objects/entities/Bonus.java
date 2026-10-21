@@ -67,6 +67,79 @@ public final class Bonus {
         return 1 / Math.sqrt(Math.max(1, flechas));
     }
 
+    // ------------------------------------------------------ Retaliacao (Muffin)
+
+    /**
+     * Os numeros da onda do Muffin, por nivel (1 a 3).
+     *
+     * A ONDA E MAIS EMPURRAO QUE DANO. O que mata o Muffin e o cerco, nao a falta
+     * de dano — a espada dele ja resolve um bicho por vez. Entao o que cresce mais
+     * por nivel e o RAIO e a recarga; o dano sobe menos, e sempre puxa do dano do
+     * gato, para a onda continuar valendo no minuto vinte.
+     *
+     * A RECARGA E O FREIO. Sem ela, com a invulnerabilidade de 0,4 s depois de
+     * apanhar, um cerco de dez bichos daria duas ondas e meia por segundo — o
+     * Muffin ficaria imune a cerco. Com 3 s / 2,5 s / 2 s ele continua precisando
+     * se mexer.
+     */
+    public static double raioDaRetaliacao(int nivel) {
+        return switch (Math.max(1, Math.min(3, nivel))) {
+            case 1 -> 1.6;
+            case 2 -> 2.0;
+            default -> 2.4;
+        };
+    }
+
+    /** Dano da onda: um fixo mais o dano do gato, multiplicado pelo nivel. */
+    public static double danoDaRetaliacao(int nivel, double danoDoGato) {
+        double mult = switch (Math.max(1, Math.min(3, nivel))) {
+            case 1 -> 1.0;
+            case 2 -> 1.5;
+            default -> 2.0;
+        };
+        return (12 + Math.max(0, danoDoGato)) * mult;
+    }
+
+    /** Ticks entre duas ondas. */
+    public static int recargaDaRetaliacao(int nivel) {
+        return switch (Math.max(1, Math.min(3, nivel))) {
+            case 1 -> 180;
+            case 2 -> 150;
+            default -> 120;
+        };
+    }
+
+    /** Forca do empurrao, na mesma unidade dos outros knockbacks. */
+    public static double empurraoDaRetaliacao(int nivel) {
+        return 5 + Math.max(1, Math.min(3, nivel));
+    }
+
+    // ------------------------------------------------- Explosao arcana (Azrael)
+
+    /**
+     * Fracao do golpe que a explosao causa EM VOLTA do alvo, por nivel.
+     *
+     * Abaixo de um de proposito: o alvo direto ja levou o golpe inteiro, e a
+     * explosao so existe para o resto do grupo. Contra um bicho sozinho ela nao
+     * soma nada — o Azrael nao vira o melhor matador de chefe por causa dela.
+     */
+    public static double fracaoDaExplosao(int nivel) {
+        return switch (Math.max(1, Math.min(3, nivel))) {
+            case 1 -> 0.35;
+            case 2 -> 0.50;
+            default -> 0.65;
+        };
+    }
+
+    /** Raio da explosao, em tiles, ANTES do multiplicador de area do gato. */
+    public static double raioDaExplosao(int nivel) {
+        return switch (Math.max(1, Math.min(3, nivel))) {
+            case 1 -> 1.0;
+            case 2 -> 1.3;
+            default -> 1.6;
+        };
+    }
+
     /** Vida recuperada por segundo. */
     public static double regeneracao(Player gato) {
         return nivel(gato, Passiva.REGENERACAO) * Passiva.REGENERACAO.valorPorNivel();
@@ -87,8 +160,8 @@ public final class Bonus {
     public static String habilidade(String nomeDoGato) {
         return switch (nomeDoGato) {
             case "Finn" -> "+10% critical chance, Volley skill";
-            case "Muffin" -> "-10% damage taken";
-            case "Azrael" -> "+20% weapon area";
+            case "Muffin" -> "-10% damage taken, Retaliate skill";
+            case "Azrael" -> "+20% weapon area, Arcane Burst skill";
             default -> "";
         };
     }

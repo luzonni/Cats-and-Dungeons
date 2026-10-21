@@ -195,6 +195,28 @@ public final class Icones {
                     "....#....",
                     "..#####..",
                     ".#######."}),
+            // Retaliacao (Muffin): escudo com a onda saindo pelos cantos.
+            Map.entry("RETALIACAO", new String[]{
+                    "#.......#",
+                    ".#.###.#.",
+                    "..#####..",
+                    ".##+####.",
+                    ".#######.",
+                    ".#######.",
+                    "..#####..",
+                    ".#.###.#.",
+                    "#...#...#"}),
+            // Explosao arcana (Azrael): o orbe no meio, as faiscas saindo.
+            Map.entry("EXPLOSAO_ARCANA", new String[]{
+                    "#...#...#",
+                    ".#.....#.",
+                    "...###...",
+                    "..#+###..",
+                    "#.#####.#",
+                    "..#####..",
+                    "...###...",
+                    ".#.....#.",
+                    "#...#...#"}),
             Map.entry("VOLEIO", new String[]{
                     "#...#...#",
                     "+#..+..#+",

@@ -187,6 +187,10 @@ public class Wand extends Item {
             alvoAtingido.strike(elemento.ataque(AttackTypes.Sorcery), total);
             tocarGolpe(Sounds.Laser);
             alvoAtingido.getPhysical().addForce("knockback", 2, alvoAtingido.getAngle(player));
+            // Explosao Arcana do Azrael: so faz algo se o gato tiver a habilidade.
+            com.retronova.game.objects.entities.Habilidades.explosaoArcana(player, alvoAtingido, total,
+                    elemento.ataque(AttackTypes.Sorcery), elemento == Elemento.NENHUM
+                            ? com.retronova.game.items.Passiva.EXPLOSAO_ARCANA.cor() : elemento.cor());
         });
         Game.getMap().put(bola);
         this.ultimoAngulo = angulo;
