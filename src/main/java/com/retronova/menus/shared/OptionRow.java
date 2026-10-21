@@ -36,7 +36,12 @@ public class OptionRow {
         /** Lista discreta de rótulos, circular. */
         CYCLE,
         /** Liga/desliga, sem setas. */
-        TOGGLE
+        TOGGLE,
+        /**
+         * Uma ação (Continue, Restart, Quit...): só o rótulo e uma seta no lugar
+         * dos controles. Enter, A ou um clique na linha inteira a executam.
+         */
+        ACTION
     }
 
     // Geometria em pixels nativos; tudo é multiplicado pela escala da UI.
@@ -62,6 +67,10 @@ public class OptionRow {
     private Rectangle menos = new Rectangle();
     private Rectangle mais = new Rectangle();
     private Rectangle alvoToggle = new Rectangle();
+
+    private Runnable acao;
+    /** O realce da linha, em rampa: aceso pelo foco ou pelo mouse (ver Realce). */
+    private final Realce.Estado realce = new Realce.Estado();
 
     private boolean focado;
     private int seguraTicks;
@@ -102,6 +111,27 @@ public class OptionRow {
 
     public static OptionRow toggle(String label, IntSupplier get, IntConsumer set) {
         return new OptionRow(label, Kind.TOGGLE, get, set, 0, 1, 1, new String[]{"Off", "On"}, "");
+    }
+
+    /** Uma linha que executa uma ação, no lugar de ajustar um valor. */
+    public static OptionRow acao(String label, Runnable acao) {
+        OptionRow linha = new OptionRow(label, Kind.ACTION, () -> 0, v -> { }, 0, 0, 0, null, "");
+        linha.acao = acao;
+        return linha;
+    }
+
+    public boolean ehAcao() {
+        return kind == Kind.ACTION;
+    }
+
+    /** Enter e A: executa a ação, ou avança o valor como a seta da direita. */
+    public void ativar() {
+        if (kind == Kind.ACTION) {
+            Sound.play(Sounds.Button);
+            acao.run();
+            return;
+        }
+        ajustar(1);
     }
 
     /** Texto de ajuda exibido ao passar o mouse pela linha. Encadeável. */
@@ -149,12 +179,22 @@ public class OptionRow {
     }
 
     public boolean estaSobreControles() {
+        if (kind == Kind.ACTION) {
+            return estaSobreLinha();
+        }
         return menos.contains(Mouse.getX(), Mouse.getY())
                 || mais.contains(Mouse.getX(), Mouse.getY())
                 || (kind == Kind.TOGGLE && alvoToggle.contains(Mouse.getX(), Mouse.getY()));
     }
 
     public void tick() {
+        realce.tick(focado || (com.retronova.engine.inputs.Entrada.porMouse() && estaSobreLinha()));
+        if (kind == Kind.ACTION) {
+            if (Mouse.clickOn(Mouse_Button.LEFT, bounds)) {
+                ativar();
+            }
+            return;
+        }
         if (kind == Kind.TOGGLE) {
             if (Mouse.clickOn(Mouse_Button.LEFT, alvoToggle) || Mouse.clickOn(Mouse_Button.LEFT, menos)
                     || Mouse.clickOn(Mouse_Button.LEFT, mais)) {
@@ -194,7 +234,9 @@ public class OptionRow {
 
     /** Ajuste por teclado (setas esquerda/direita). */
     public void ajustarPeloTeclado(int dir) {
-        ajustar(dir);
+        if (kind != Kind.ACTION) {
+            ajustar(dir);
+        }
     }
 
     private void ajustar(int dir) {
@@ -225,16 +267,16 @@ public class OptionRow {
         int s = Configs.UiScale();
         Graphics2D g = (Graphics2D) g2.create();
 
-        if (focado) {
-            // O FOCO NO ESTILO ÚNICO (ver Realce): a faixa da linha clareia e as
-            // setas apontam para ela dos dois lados. Antes era um friso de um pixel
-            // na lateral, uma terceira linguagem de foco só desta tela.
-            Rectangle faixa = new Rectangle(bounds.x - 2 * s, bounds.y, bounds.width + 4 * s, bounds.height);
-            Realce.clarear(g, faixa, 0.8f);
-            if (com.retronova.engine.inputs.Entrada.porFoco()) {
-                Realce.marcadorDeFoco(g, faixa, s);
-            }
+        // O FOCO E O HOVER NO ESTILO ÚNICO (ver Realce): a faixa da linha clareia,
+        // e no foco do teclado e do controle as setas apontam para ela dos dois
+        // lados. Antes era um friso de um pixel na lateral, uma terceira linguagem
+        // de foco só desta tela, e o mouse não acendia nada.
+        Rectangle faixa = new Rectangle(bounds.x - 2 * s, bounds.y, bounds.width + 4 * s, bounds.height);
+        Realce.clarear(g, faixa, 0.8f * realce.noQuadro());
+        if (focado && com.retronova.engine.inputs.Entrada.porFoco()) {
+            Realce.marcadorDeFoco(g, faixa, s);
         }
+        boolean aceso = focado || realce.noQuadro() > 0.5f;
 
         Font fonte = FontHandler.font(FontHandler.Game, 7f * s);
         int alturaTexto = FontHandler.getHeight(label, fonte);
@@ -250,9 +292,11 @@ public class OptionRow {
         }
 
         g.setFont(fonteLabel);
-        TextFx.draw(g, label, bounds.x, baseTexto, focado ? Palette.TEXT : Palette.LIGHT, s);
+        TextFx.draw(g, label, bounds.x, baseTexto, aceso ? Palette.TEXT : Palette.LIGHT, s);
 
-        if (kind == Kind.TOGGLE) {
+        if (kind == Kind.ACTION) {
+            desenharChevron(g, aceso, s);
+        } else if (kind == Kind.TOGGLE) {
             desenharToggle(g, s);
         } else {
             desenharSeta(g, menos, "-", noLimite(-1), s);
@@ -328,6 +372,18 @@ public class OptionRow {
         g.fillRect(cx - braco, cy - esp / 2, braco * 2, esp);
         if (sinal.equals("+")) {
             g.fillRect(cx - esp / 2, cy - braco, esp, braco * 2);
+        }
+    }
+
+    /** A seta das linhas de ação, na borda direita: "isto abre ou executa algo". */
+    private void desenharChevron(Graphics2D g, boolean aceso, int s) {
+        int lado = 4 * s;
+        int x = bounds.x + bounds.width - lado - 2 * s + (aceso ? s : 0);
+        int cy = bounds.y + bounds.height / 2;
+        g.setColor(aceso ? Palette.TEXT : Palette.LIGHT);
+        for (int i = 0; i < lado; i += s) {
+            int altura = (lado - i) * 2 - s;
+            g.fillRect(x + i, cy - altura / 2, s, Math.max(s, altura));
         }
     }
 
