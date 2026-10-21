@@ -1,21 +1,76 @@
 name: CI
 
+# Fluxo de branches (ver docs/CONTRIBUINDO.md):
+#
+#   <tipo>/<assunto>  --PR + CI verde-->  develop  --CI verde-->  main
+#
+# 1. A implementacao nasce da develop numa branch propria (feature/, fix/, docs/...)
+#    e volta por PR. Quando os checks deste PR passam, o job "Mesclar na develop"
+#    mescla sozinho e apaga a branch.
+# 2. A develop mesclada roda esta CI inteira de novo, sobre o commit que ela tem de
+#    fato. Verde, o job "Promover para a main" avanca a main ate esse commit.
+#
+# POR QUE O PROPRIO WORKFLOW MESCLA, e nao o auto-merge do GitHub: o auto-merge e uma
+# configuracao do repositorio, e so o dono a liga. O workflow usa o token do Actions,
+# que qualquer colaborador com escrita ja tem.
+#
+# POR QUE A CI RODA DE NOVO NA DEVELOP: o PR testa a juncao com a develop do momento
+# em que ele abriu. Se outro PR entrou no meio, o commit que chega na develop nunca foi
+# testado. Rodar de novo e o que garante que a main so recebe o que passou.
+#
+# E por que por workflow_dispatch: push feito com o token do Actions nao dispara outro
+# workflow (e assim que o GitHub evita lacos), mas o disparo manual por API dispara.
+#
+# Passo novo entra em DOIS lugares: aqui e em tools/CiLocal.java. O ultimo passo da CI
+# local falha quando um passo nomeado aqui nao tem equivalente la.
 on:
-  push:
-    branches: [main, alpha]
   pull_request:
-    branches: [main, alpha]
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
   workflow_dispatch:
 
-# Um push novo cancela a execução anterior do mesmo branch.
+# Um push novo cancela a execucao anterior do mesmo branch. A develop nao cancela: uma
+# execucao dela pode estar no meio da promocao, e cortar ali deixaria a main para tras.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
 
 permissions:
   contents: read
 
 jobs:
+  origem:
+    name: Branch de origem
+    runs-on: ubuntu-latest
+    steps:
+      # A develop recebe implementacao; a main so recebe a develop. Os nomes chegam por
+      # env, nunca interpolados no script: sao texto escrito por quem abre o PR.
+      - name: Conferir branch de origem
+        env:
+          EVENTO: ${{ github.event_name }}
+          BASE: ${{ github.base_ref }}
+          ORIGEM: ${{ github.head_ref }}
+        run: |
+          if [ "$EVENTO" != "pull_request" ]; then
+            echo "evento $EVENTO: sem regra de origem"
+            exit 0
+          fi
+          case "$BASE" in
+            main)
+              if [ "$ORIGEM" != "develop" ]; then
+                echo "::error::PR para a main so vem da develop (veio de '$ORIGEM')."
+                exit 1
+              fi ;;
+            develop)
+              case "$ORIGEM" in
+                main|develop)
+                  echo "::error::PR para a develop vem de uma branch de implementacao, nao de '$ORIGEM'."
+                  exit 1 ;;
+              esac ;;
+          esac
+          echo "ok: $ORIGEM -> $BASE"
+
   build:
     name: Build e testes
     runs-on: ubuntu-latest
@@ -93,7 +148,7 @@ jobs:
     name: Fat-jar
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'push'
+    if: github.event_name != 'pull_request'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -116,3 +171,76 @@ jobs:
           name: cats-and-dungeons-jar
           path: build/libs/*-all.jar
           retention-days: 14
+
+  # ------------------------------------------------------------------ o fluxo
+
+  mesclar:
+    name: Mesclar na develop
+    runs-on: ubuntu-latest
+    needs: [origem, build, assets]
+    # Só PR para a develop, aberto de dentro do repositório (de fork, o token não
+    # tem escrita) e que não esteja em rascunho: rascunho é o jeito de abrir o PR
+    # para ver a CI sem pedir o merge ainda.
+    if: >-
+      github.event_name == 'pull_request'
+      && github.base_ref == 'develop'
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && !github.event.pull_request.draft
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      # Merge commit, e não squash: os commits da branch já seguem o padrão do
+      # projeto, e o squash os apagaria. A branch é apagada depois do merge.
+      - name: Mesclar o PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          TESTADO: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gh pr merge "$PR" --repo "$REPO" --merge --delete-branch --match-head-commit "$TESTADO"
+
+      # O merge feito pelo token do Actions não dispara a CI da develop sozinho.
+      - name: Rodar a CI na develop
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: gh workflow run ci.yml --repo "$REPO" --ref develop
+
+  promover:
+    name: Promover para a main
+    runs-on: ubuntu-latest
+    needs: [build, assets, distribuicao]
+    if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # SÓ AVANÇA, NUNCA REESCREVE. A main recebe exatamente o commit que esta
+      # execução testou — e só se for um avanço dela. Se a main tiver commit que a
+      # develop não tem (alguém empurrou direto), o push é recusado e o job falha:
+      # é para alguém olhar, e não para o workflow escolher um lado.
+      #
+      # Se a develop andou enquanto esta execução rodava, a promoção para no commit
+      # testado; a execução da develop nova leva a main até o resto.
+      - name: Promover para a main
+        env:
+          TESTADO: ${{ github.sha }}
+        run: |
+          git fetch origin main
+          if git merge-base --is-ancestor "$TESTADO" origin/main; then
+            echo "A main já contém $TESTADO. Nada a promover."
+            exit 0
+          fi
+          if ! git merge-base --is-ancestor origin/main "$TESTADO"; then
+            echo "::error::A main tem commits que a develop não tem. Traga a main para a develop por PR e a promoção volta a andar."
+            exit 1
+          fi
+          git push origin "$TESTADO:refs/heads/main"
+          echo "main promovida para $TESTADO"

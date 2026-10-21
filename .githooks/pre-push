@@ -13,6 +13,26 @@
 #     git push --no-verify
 #
 
+# DEVELOP E MAIN NAO RECEBEM PUSH DIRETO. A develop so muda por PR com a CI verde,
+# e a main so pela promocao automatica (ver docs/CONTRIBUINDO.md). O repositorio
+# nao tem protecao de branch ligada no GitHub — so o dono poderia ligar —, entao
+# esta e a trava que existe. A unica excecao e CRIAR a develop pela primeira vez.
+#
+# O git manda, por linha: <ref local> <sha local> <ref remota> <sha remota>.
+ZEROS=0000000000000000000000000000000000000000
+while read -r _ _ REF_REMOTA SHA_REMOTA; do
+  case "$REF_REMOTA" in
+    refs/heads/main|refs/heads/develop)
+      if [ "$REF_REMOTA" = "refs/heads/develop" ] && [ "$SHA_REMOTA" = "$ZEROS" ]; then
+        continue
+      fi
+      echo "[pre-push] push direto para ${REF_REMOTA#refs/heads/} recusado."
+      echo "[pre-push] Abra um PR de uma branch de implementacao para a develop;"
+      echo "[pre-push] a main recebe a develop sozinha quando a CI passa."
+      exit 1 ;;
+  esac
+done
+
 # Acha o java do mesmo jeito que o gradlew acha: JAVA_HOME primeiro, PATH depois.
 # No Git Bash do Windows o java quase nunca esta no PATH, e um hook que morre com
 # "command not found" e pior do que hook nenhum — ele vira uma etapa que todo

@@ -82,11 +82,15 @@ public class CiLocal {
      * Passos do ci.yml que nao tem como rodar aqui, e nem faria sentido.
      *
      * Sao os de infraestrutura do runner — preparar a maquina e publicar
-     * artefato. O espelho ignora estes e cobra todos os outros.
+     * artefato — e os do fluxo de branches: conferir de onde vem o PR, mesclar na
+     * develop e promover para a main so existem no GitHub, onde ha PR e branch
+     * remota. O espelho ignora estes e cobra todos os outros.
      */
     private static final Set<String> SO_NO_GITHUB = Set.of(
             "checkout", "configurar jdk 21", "configurar gradle",
-            "publicar relatorio de testes", "publicar artefato");
+            "publicar relatorio de testes", "publicar artefato",
+            "conferir branch de origem", "mesclar o pr", "rodar a ci na develop",
+            "promover para a main");
 
     private record Resultado(boolean ok, String saida) {
         static Resultado bom() {

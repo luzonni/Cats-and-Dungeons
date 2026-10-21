@@ -3,7 +3,8 @@
 Ponto de partida para quem chega sem saber nada — pessoa ou agente. Lendo só
 este arquivo dá para retomar o trabalho; os outros documentos aprofundam.
 
-Estado descrito: **2026-10-21**, commit `8a9cbb8` (merge do PR #31). Itens
+Estado descrito: **2026-10-21**, a partir do commit `8a9cbb8` (merge do PR #31) mais a limpeza
+da branch `docs/estado-atual` (save da corrida, remoção do código inalcançável). Itens
 marcados **a confirmar** não puderam ser verificados pelo código nem pelos
 commits.
 
@@ -32,7 +33,7 @@ um ano parado. Sem engine: tudo em Java puro.
 | Áudio | TinySound (`libs/`) + `vorbis-support` para OGG via SPI |
 | Dados | json-simple |
 | Controle | XInput do Windows via JNA (que vem com o OSHI) |
-| Testes | JUnit 5, headless — 17 classes, 132 testes passando em 2026-10-21 |
+| Testes | JUnit 5, headless — 15 classes, 120 testes passando em 2026-10-21 |
 | CI | GitHub Actions (`.github/workflows/ci.yml`) + CI local (`tools/CiLocal.java`) |
 | Versão declarada | `0.1.3-alpha` em `build.gradle.kts` (ver [releases](releases/)) |
 
@@ -80,7 +81,7 @@ src/main/java/com/retronova/
 │   ├── map/                   GameMap, Camera, Atmosfera (luz e sombra)
 │   │   ├── arena/             Arena, Waves, Gerador, cartas, roleta, música
 │   │   └── room/              Room (antecâmara)
-│   └── objects/               entidades, tiles, partículas, física, A*
+│   └── objects/               entidades, tiles, partículas, física
 │       └── entities/          Player, Bonus, Arsenal, ArmasDeArea, Furia,
 │                              Habilidades, enemies/, furniture/, utilities/, NPCs/
 └── menus/                     Menu, Saves, Personagens, Options, Pause,
@@ -100,7 +101,7 @@ docs/                          esta pasta
 | Laço de jogo (60 Hz fixo, render separado) | `engine/Engine.java` |
 | Fluxo de telas | `Engine.heapActivity` / `backActivity` / `pause` (pilha de `Activity`) |
 | Partida | `game/Game.java` |
-| Corrida sem fim, horda, chefes | `game/map/arena/Waves.java` (`tickSemFim`) |
+| Corrida sem fim, horda, chefes | `game/map/arena/Waves.java` |
 | Campo gerado (160×160 tiles) | `game/map/arena/Gerador.java` |
 | Antecâmara | `game/map/room/Room.java` + `maps/beginning.{png,json}` |
 | Gato: movimento, dash, dano, XP, morte | `game/objects/entities/Player.java` |
@@ -146,17 +147,20 @@ docs/                          esta pasta
   **local**: a pasta `documentation/` está no `.gitignore` e só existe na
   máquina de quem a tem. O mesmo vale para `documentation/padroes/ARTE-CENARIO.md`,
   citado em comentários de `tools/` e da mobília.
-- Trabalho entra por branch e PR no repositório `luzonni/Cats-and-Dungeons`.
+- Trabalho entra por branch e PR para a `develop` no repositório
+  `luzonni/Cats-and-Dungeons`: CI verde mescla sozinho, e a `develop` testada vai
+  sozinha para a `main`. Push direto em `develop` e `main` é recusado pelo hook.
+  Ver [CONTRIBUINDO.md](CONTRIBUINDO.md).
 
 ## 6. Estado das funcionalidades
 
-✅ pronto · 🟡 parcial · 🧪 só começado · ⚰️ sem uso (código morto ou inalcançável)
+✅ pronto · 🟡 parcial · 🧪 só começado · ⏸️ em espera (no código, sem uso, por decisão)
 
 | Funcionalidade | Estado | Nota |
 |---|---|---|
 | Menu, opções (vídeo, áudio, interface), pausa | ✅ | |
 | Seleção de personagem (3 gatos) | ✅ | |
-| Três espaços de save, retomar e apagar | ✅ | ver o problema da corrida sem fim abaixo |
+| Três espaços de save, retomar e apagar | ✅ | |
 | Antecâmara com vendedor, placas e portão | ✅ | o portão leva à corrida |
 | Corrida sem fim de 30 min em campo gerado | ✅ | |
 | Horda por tempo, cercos, elites | ✅ | |
@@ -174,16 +178,15 @@ docs/                          esta pasta
 | Controle de Xbox, foco por D-pad | ✅ | só Windows |
 | Luz dinâmica, sombras, interpolação, VSync | ✅ | |
 | Música que acompanha a corrida | ✅ | |
-| Save no meio da corrida sem fim | 🟡 | só grava ao entrar e após a escolha de elemento |
-| Dinheiro (moedas) dentro da corrida | 🟡 | começa com 100; nada rende moeda; só a antecâmara vende |
+| Save no meio da corrida | ✅ | relógio, chefes vivos e números da corrida vão junto; ver ARQUITETURA |
+| Dinheiro | ⏸️ | **em espera, por decisão**: o gato começa com 100, nada rende moeda, só a antecâmara vende. `Seller`, `Store`, `Coin` e `GumMachine` ficam no código sem uso até o dinheiro ganhar papel |
 | Plano de cartas com encaixes e status (HABILIDADES.md) | 🧪 | nenhuma fase implementada |
-| Arenas por ondas e salas (`normal`, `hard`, `cistern_1..6`) | ⚰️ | o jogo só entra na dificuldade 0, que é a corrida sem fim |
-| Recompensa de fim de sala (3 cartas de `Melhoria`) | ⚰️ | só abre quando as ondas acabam, o que não acontece na corrida sem fim |
-| Vendedor ao fim da sala, alçapão | ⚰️ | mesmo motivo |
-| `MonarkMouse` | ⚰️ | sem sprite; fora da horda |
-| `CryingCat` | ⚰️ | sprite em WebP com extensão `.png`; nunca nasce |
-| Máquina de chiclete (`GumMachine`) | ⚰️ | nenhum mapa a coloca |
-| Moeda (`Coin`) | ⚰️ | nada a cria |
+
+Removidos em 2026-10-21 por serem inalcançáveis: o modo por ondas e salas
+(dificuldades `normal` e `hard`, plantas `cistern_1..6`, JSON de `waves/`), a
+`Recompensa` de fim de sala, o vendedor de fim de sala, o `TrapDoor`, a `Door`, o
+`Crate` com loot, a `Chain`, o `MonarkMouse`, o `CryingCat` e o A\* (só o zumbi
+usava, e só fora da corrida sem fim). Estão no histórico do git.
 
 ## 7. Decisões importantes
 
@@ -210,7 +213,7 @@ docs/                          esta pasta
 | Curva de XP | `Player.getXpLength` — `15 + 10·n + 0,8·n²` |
 | Sorte → chance; chance de baú | `Player.chanceDeSorte`, `Player.chanceDeBau` |
 | Dash, invulnerabilidade | `Player` (`DASH`, `INVULNERAVEL = 24`) |
-| Ritmo da horda, tipos por minuto, chefes, teto de vivos | `Waves.java` (`ESCALA`, `CHEFES`, `MAX_VIVOS`, `tickSemFim`) |
+| Ritmo da horda, tipos por minuto, chefes, teto de vivos | `Waves.java` (`ESCALA`, `CHEFES`, `MAX_VIVOS`, `tick`) |
 | Escala de inimigo por degrau (+7% vida, +4% dano) | `Enemy` (`CRESCIMENTO_VIDA`, `CRESCIMENTO_DANO`) |
 | Elite | `Enemy.tornarElite`, chance em `Waves.prepararBicho` |
 | Vida, dano e golpe de cada inimigo | construtor de cada classe em `enemies/` |
@@ -230,13 +233,9 @@ docs/                          esta pasta
 Tirados do código e do [roadmap](planejamento/ROADMAP.md); nenhum tem dono
 definido:
 
-- Decidir o destino do código das salas por ondas (normal/hard, `Recompensa`,
-  vendedor de fim de sala): integrar à corrida sem fim ou remover.
-- Fazer o save da corrida sem fim guardar o relógio e o progresso do meio da
-  corrida (ver [ARQUITETURA.md](ARQUITETURA.md#pontos-frágeis-conhecidos)).
-- Dar uso ao dinheiro dentro da corrida ou tirá-lo.
-- Arte própria do Rato Rei; sprites de `MonarkMouse` e `CryingCat`.
-- Tirar o `Repulsion` da thread paralela.
+- Tirar o dinheiro da espera: dar a ele um papel na corrida sem fim (moedas
+  caindo, loja no meio da corrida) ou removê-lo.
+- Arte própria do Rato Rei.
 - Decidir se o plano de [HABILIDADES.md](planejamento/HABILIDADES.md) continua,
   agora que as cartas seguem o modelo do Vampire Survivors.
 - Pendências de licença: fonte `septem`, faixas herdadas, *Pixel Bow Pack*
