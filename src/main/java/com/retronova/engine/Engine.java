@@ -74,7 +74,7 @@ public class Engine implements Runnable {
             // -Dcd.gato=0|1|2 escolhe Muffin, Azrael ou Finn (o padrao e o Finn).
             int gatoDaBancada = Math.max(0, Math.min(2, Integer.getInteger("cd.gato", 2)));
             heapActivity(new com.retronova.game.Game(gatoDaBancada,
-                    new com.retronova.game.map.arena.Arena(0, 4), 0));
+                    new com.retronova.game.map.arena.Arena(), 0));
             // Telas por cima, para conferir o desenho delas sem jogar ate elas.
             // Abrem depois de um segundo de partida: a chegada do gato fecha
             // qualquer pausa aberta antes dela.

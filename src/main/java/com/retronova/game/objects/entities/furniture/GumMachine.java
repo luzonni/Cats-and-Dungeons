@@ -11,6 +11,12 @@ import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.Volatile;
 
+/**
+ * Maquina de chiclete: troca moedas por um item sorteado.
+ *
+ * EM ESPERA, junto com o dinheiro: nenhum mapa a coloca. Ver Seller e
+ * docs/planejamento/ROADMAP.md.
+ */
 public class GumMachine extends Furniture {
 
     private final GumInterface gumInterface;

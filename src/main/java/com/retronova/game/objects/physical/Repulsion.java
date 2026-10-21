@@ -6,42 +6,40 @@ import com.retronova.game.objects.entities.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Repulsion implements Runnable {
+/**
+ * Afasta corpos solidos que se sobrepoem, na proporcao do peso de cada um.
+ *
+ * RODA NO TICK DO JOGO, e nao mais numa thread propria. A thread mexia nas
+ * posicoes enquanto o laco principal lia e desenhava as mesmas entidades, e
+ * nunca terminava: o dispose so baixava uma flag, mas ela dormia num wait que
+ * ninguem mais acordava — cada troca de mapa deixava uma thread presa para tras.
+ * No tick ela roda depois de todo mundo andar, que e o momento certo de
+ * desfazer as sobreposicoes, e a conta de uma horda cheia cabe folgada no quadro.
+ */
+public class Repulsion {
 
     private final GameMap map;
-    private final Thread thread;
-    private boolean running;
 
     public Repulsion(GameMap map) {
         this.map = map;
-        thread = new Thread(this, "Repulsion-Thread");
     }
 
-    public void start() {
-        this.running = true;
-        this.thread.start();
-    }
-
-    public boolean isRunning() {
-        return this.running;
-    }
-
-    private void cycle() {
-        List<Entity> entities = new ArrayList<>(List.copyOf(map.getEntities()));
+    public void tick() {
+        List<Entity> entities = map.getEntities();
+        List<Entity> nears = new ArrayList<>();
         for(int i = 0; i < entities.size(); i++) {
             Entity e1 = entities.get(i);
             if(e1.isSolid()) {
-                List<Entity> nears = getNears(e1, entities);
+                nears.clear();
+                getNears(e1, entities, nears);
                 for (int j = 0; j < nears.size(); j++) {
-                    Entity e2 = nears.get(j);
-                    repulsion(e1, e2);
+                    repulsion(e1, nears.get(j));
                 }
             }
         }
     }
 
-    private List<Entity> getNears(Entity entity, List<Entity> list) {
-        List<Entity> nears = new ArrayList<>();
+    private void getNears(Entity entity, List<Entity> list, List<Entity> nears) {
         for(int i = 0; i < list.size(); i++) {
             Entity e = list.get(i);
             double total_radius = (e.getWidth() + entity.getWidth()) / 2d;
@@ -50,7 +48,6 @@ public class Repulsion implements Runnable {
                 nears.add(e);
             }
         }
-        return nears;
     }
 
     void repulsion(Entity e1, Entity e2) {
@@ -67,26 +64,6 @@ public class Repulsion implements Runnable {
             e1.getPhysical().moveSystem(-rx * proportion1, -ry * proportion1);
             e2.getPhysical().moveSystem(rx * proportion2, ry * proportion2);
         }
-    }
-
-    @Override
-    public void run() {
-        while (running) {
-            try {
-                synchronized (this) {
-                    this.wait();
-                }
-                cycle();
-            }catch (Exception e) {
-                String err = "Bem... esse erro não vai afetar em NADA o jogo, mas é um erro ;( " +
-                        "\nO que fazer? Acho que chorar, porque resolver isso é desnecessário e chato, então chore, faz bem!";
-                System.err.println(err);
-            }
-        }
-    }
-
-    public void dispose() {
-        running = false;
     }
 
 }

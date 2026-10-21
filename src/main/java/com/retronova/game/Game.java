@@ -61,8 +61,6 @@ public class Game implements Activity {
     private Camera gCam;
 
     private GameMap map;
-    private int level;
-    private int difficult;
 
     private final HUD hud;
     private final Inter inter;
@@ -71,9 +69,9 @@ public class Game implements Activity {
      * A corrida acabou de ser retomada e precisa reescrever o proprio save.
      *
      * A leitura APAGA o arquivo — e o que impede retomar duas vezes o mesmo ponto.
-     * Mas isso abre uma janela: entre retomar e trocar de sala, nao existe save
-     * nenhum no disco, e quem fechasse o jogo nesse intervalo perderia a corrida
-     * que tinha acabado de abrir. Regravar no primeiro tick fecha a janela.
+     * Mas isso abre uma janela: entre retomar e o proximo ponto de gravacao, nao
+     * existe save nenhum no disco, e quem fechasse o jogo nesse intervalo perderia
+     * a corrida que tinha acabado de abrir. Regravar no primeiro tick fecha a janela.
      *
      * No primeiro tick, e nao no construtor, porque a gravacao pergunta qual e a
      * partida corrente — e durante o construtor a resposta ainda e outra.
@@ -81,13 +79,14 @@ public class Game implements Activity {
     private boolean regravarSave;
 
     /**
-     * Retoma a corrida gravada, montando a arena DIRETO.
-     *
-     * A primeira versao comecava no saguao e trocava de sala no primeiro tick,
-     * porque o construtor da Arena perguntava o nivel a {@code Game.getGame()} e
-     * ali este objeto ainda nao estava na pilha. O efeito era o jogador aparecer no
-     * saguao e ser teleportado um instante depois — parecia defeito, e era. Com a
-     * Arena aceitando o nivel de fora, a sala certa e a PRIMEIRA que se ve.
+     * Os chefes que estavam vivos quando a corrida foi gravada. Voltam no primeiro
+     * tick, pelo mesmo motivo do regravarSave: nascer pergunta onde esta o gato, e
+     * durante o construtor a partida ainda nao e a corrente.
+     */
+    private java.util.List<Corrida.ChefeVivo> chefesARepor = java.util.List.of();
+
+    /**
+     * Retoma a corrida gravada, montando o campo DIRETO, sem passar pela antecamara.
      */
     public static Game retomar(Corrida corrida, int espaco) {
         return new Game(corrida, espaco);
@@ -101,18 +100,21 @@ public class Game implements Activity {
         this.inter.put("inventory", player.getInventory(), false);
         this.inter.put("status", new Status(player), false);
         this.player = player;
-        // O ESTADO ANTES DO MAPA. A arena e escolhida pelo nivel, e o gato precisa
-        // estar reconstituido antes de ser posto nela — o changeMap ja o posiciona.
-        this.level = corrida.nivel();
-        this.difficult = corrida.dificuldade();
         this.seconds = corrida.segundos();
+        // OS BONUS DE INICIO ANTES DO SAVE. O upgrade permanente de vida enche a
+        // barra ao ser aplicado; rodando depois, ele curava toda corrida retomada.
+        // Antes, a vida gravada e a ultima palavra.
+        com.retronova.game.objects.entities.Bonus.aplicarNoInicio(player);
         corrida.aplicarNoGato(player);
-        this.changeMap(new Arena(this.difficult, this.level));
+        Arena arena = new Arena();
+        this.changeMap(arena);
         this.hud = new HUD(player);
         com.retronova.game.objects.entities.Furia.reiniciar();
         Estatisticas.reiniciar();
-        com.retronova.game.objects.entities.Bonus.aplicarNoInicio(player);
         com.retronova.game.objects.entities.ArmasDeArea.reiniciar();
+        // Depois dos reinicios, que zeram justamente o que vai ser reposto.
+        corrida.aplicarNaCorrida(arena);
+        this.chefesARepor = corrida.andamento().chefes();
         this.regravarSave = true;
     }
 
@@ -158,22 +160,6 @@ public class Game implements Activity {
 
     public static void focus(GameObject obj) {
         getGame().gCam.setFollowed(obj);
-    }
-
-    public int getLevel() {
-        return this.level;
-    }
-
-    public void plusLevel() {
-        this.level++;
-    }
-
-    public int getDifficult() {
-        return this.difficult;
-    }
-
-    public void setDifficult(int difficult) {
-        this.difficult = difficult;
     }
 
     /** Quadros decorridos dentro do segundo atual. Serve para espacar efeitos. */
@@ -233,9 +219,7 @@ public class Game implements Activity {
         int segundosDaCorrida = (int) this.seconds, abates = 0;
         if (map instanceof Arena arena) {
             abates = arena.getWaves().abates();
-            if (arena.getWaves().semFim()) {
-                segundosDaCorrida = arena.getWaves().getSeconds();
-            }
+            segundosDaCorrida = arena.getWaves().getSeconds();
         }
         Estatisticas.encerrar(segundosDaCorrida, abates, player.getLevel(), player.getName());
         Engine.backActivity();
@@ -250,13 +234,11 @@ public class Game implements Activity {
             this.map.remove(player);
             this.map.dispose();
         }
-        // NENHUM EFEITO ATRAVESSA A TROCA DE SALA.
+        // NENHUM EFEITO ATRAVESSA A TROCA DE MAPA.
         //
-        // O som da passagem abrindo continuava tocando dentro da fase seguinte,
-        // porque um efeito nao sabe que a sala mudou — ele so sabe que ainda tem
-        // audio pela frente. Cortar aqui vale para qualquer som, e nao so para
-        // aquele: qualquer efeito longo disparado no fim de um turno teria o mesmo
-        // problema, e o proximo a aparecer ja nasce resolvido.
+        // O som do portao abrindo continuava tocando dentro do campo, porque um
+        // efeito nao sabe que o mapa mudou — ele so sabe que ainda tem audio pela
+        // frente. Cortar aqui vale para qualquer som, e nao so para aquele.
         Sound.stopAllSounds();
         this.map = newMap;
         this.map.addPlayer(player);
@@ -265,13 +247,8 @@ public class Game implements Activity {
         this.gCam.setY((int)player.getY() + player.getHeight()/2 - Engine.window.getHeight()/2);
         this.gCam.setFollowed(player);
 
-        // O PONTO DE RETOMADA E AQUI, ao ENTRAR na sala.
-        //
-        // Este metodo e o funil por onde toda troca de sala passa — alcapao, porta,
-        // saguao — entao um unico ponto cobre todos, inclusive as passagens que
-        // ainda nao existem. E gravar na ENTRADA, e nao na saida, e o que faz o
-        // arquivo descrever sempre uma sala intacta: uma sala pela metade nao pode
-        // ser reconstruida, ja que os bichos e os projeteis nao sao gravados.
+        // O PRIMEIRO PONTO DE RETOMADA E AQUI, ao ENTRAR no campo: dali em diante a
+        // corrida existe no disco, e os outros pontos (ver Corrida) so a atualizam.
         //
         // Fica depois de a camera estar montada porque a gravacao le o estado do
         // jogador, e o jogador so esta no lugar certo depois do addPlayer acima.
@@ -287,7 +264,7 @@ public class Game implements Activity {
      * {@code changeMap} tambem roda dentro do construtor, e ali este objeto ainda
      * nao esta na pilha de activities — a corrente e outra. Sem a checagem,
      * reiniciar uma partida podia gravar um ponto de retomada da partida
-     * ABANDONADA, e quem saisse antes de entrar na primeira arena voltaria, pelo
+     * ABANDONADA, e quem saisse antes de entrar no campo voltaria, pelo
      * "Continue", para a corrida que tinha acabado de jogar fora.
      *
      * Hoje o {@code restart} escapa disso por acidente, porque desempilha antes de
@@ -310,10 +287,16 @@ public class Game implements Activity {
         GameMap.limparInteracao();
         if (regravarSave) {
             regravarSave = false;
+            if (map instanceof Arena arena) {
+                for (Corrida.ChefeVivo chefe : chefesARepor) {
+                    arena.getWaves().devolverChefe(chefe.tipo(), chefe.fracaoDeVida());
+                }
+            }
+            chefesARepor = java.util.List.of();
             Corrida.gravar();
         }
         count++;
-        if(count > 60) {
+        if(count >= 60) {
             count = 0;
             seconds++;
         }
@@ -403,11 +386,12 @@ public class Game implements Activity {
             tile.tick();
         }
         if(!this.map.getEntities().contains(player)) {
+            // A tela ja trocou: o resto deste tick perguntaria pelo mapa a uma
+            // partida que nao e mais a corrente.
             gameOver();
+            return;
         }
-        synchronized (this.map.getRepulsion()) {
-            this.map.getRepulsion().notify();
-        }
+        this.map.getRepulsion().tick();
         gCam.tick();
 
         if(Debugging.running) {

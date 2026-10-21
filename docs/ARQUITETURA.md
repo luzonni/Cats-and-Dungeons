@@ -8,7 +8,7 @@ para o desenho, `javax.sound.sampled` para o áudio (via TinySound) e
 `java.awt.event` para a entrada.
 
 Isso é uma escolha, não uma limitação: o laço de jogo, o sistema de física, o
-pathfinding, o renderizador e a interface foram escritos do zero. O que o
+renderizador e a interface foram escritos do zero. O que o
 projeto chama de "engine" é o pacote `com.retronova.engine`, camada interna
 própria — não um motor de terceiros.
 
@@ -41,17 +41,20 @@ atual e à divisão clara entre motor e jogo.
 
 | Pacote | Responsabilidade |
 |---|---|
-| `com.retronova.engine` | Laço de jogo, janela, configurações, pilha de Activity |
-| `engine.graphics` | Sprites, fontes, 9-slice, paleta, escala |
-| `engine.inputs` | Teclado, mouse e controle |
+| `com.retronova.engine` | Laço de jogo, janela, configurações, pilha de Activity, medidor de quadros (`Desempenho`) |
+| `engine.graphics` | Sprites, fontes, 9-slice, paleta, escala, texto com contorno (`TextFx`), relevo |
+| `engine.inputs` | Teclado, mouse, controle (`gamepad/`) e modo de entrada (`Entrada`) |
 | `engine.io` | Leitura de JSON dos recursos |
-| `engine.sound` | Música e efeitos |
-| `com.retronova.game` | Activity principal do jogo |
-| `game.map` | Mapas, arenas, salas, câmera e waves |
-| `game.objects` | Entidades, tiles, partículas, física e pathfinding |
-| `game.items` | Armas e consumíveis |
-| `game.hud` / `game.interfaces` | HUD e telas in-game |
-| `com.retronova.menus` | Menu, opções, seleção de personagem, pausa |
+| `engine.sound` | Música, efeitos e curva de volume (`Ganho`) |
+| `com.retronova.game` | A partida (`Game`), o save (`Corrida`), a progressão entre corridas (`Meta`), as conquistas e as estatísticas da corrida |
+| `game.map` | Mapa base, câmera, luz e sombra (`Atmosfera`) |
+| `game.map.arena` | Arena, horda (`Waves`), campo gerado (`Gerador`), cartas de nível, caça-níquel, escolha de elemento, música da arena |
+| `game.map.room` | Salas desenhadas à mão (hoje só a antecâmara) |
+| `game.objects` | Entidades, tiles, partículas, física e o golpe com aviso (`Investida`) |
+| `game.objects.entities` | Gato, inimigos, mobília, projéteis e as mecânicas de corrida: `Bonus`, `Arsenal`, `ArmasDeArea`, `Furia`, `Habilidades` |
+| `game.items` | Armas da mão, consumíveis, `Elemento`, `Classe`, raridades, `Melhoria`, `Passiva`, `ArmaExtra`, `Evolucao` |
+| `game.hud` / `game.interfaces` | HUD (relógio, barra de chefe, flash de dano) e telas in-game (inventário, lojas) |
+| `com.retronova.menus` | Menu, saves, seleção de personagem, opções, pausa, fim de corrida, vitória, conquistas |
 
 ## Laço principal
 
@@ -64,6 +67,111 @@ atual e à divisão clara entre motor e jogo.
 
 Tick e render compartilham a mesma thread. Quando o desenho atrasa, o jogo perde
 quadros, não velocidade.
+
+O render **interpola** entre o tick anterior e o atual (`Engine.alpha()`): cada
+entidade guarda a posição antes do tick e é desenhada no meio do caminho. É o
+que deixa 144 Hz ou mais lisos com a simulação presa a 60. Com uma tela por cima
+(pausa, cartas, roleta) a interpolação é desligada, senão o mundo parado
+tremeria.
+
+## Fluxo de uma partida
+
+As telas são `Activity` numa pilha (`Engine.heapActivity` / `backActivity`).
+`Engine.pause(tela)` põe uma tela por cima e para os ticks de baixo, sem parar o
+desenho.
+
+```
+Menu ─ Play ─▶ Saves ─ espaço vazio ─▶ Personagens ─ Embark ─▶ Game(Room "beginning")
+                    └ espaço gravado ─▶ Game.retomar(Corrida)          │
+                                                                      portão
+                                                                        ▼
+                                              Game(Arena, dificuldade 0) — corrida sem fim
+                                                     │ morte ou "Finish Run"
+                                                     ▼
+                                              GameOver (resumo + loja permanente)
+```
+
+**A corrida sem fim.** O portão da antecâmara executa `LOAD ARENA` (o `EASY`
+que segue no mapa é ignorado). A `Arena` monta o campo com `Gerador.cisterna`
+(160×160 tiles, só a borda de parede) e o `Waves` comanda a horda: não há ondas
+nem salas, só o relógio. Por minuto de corrida entram tipos novos de inimigo,
+grupos maiores e mais frequentes, cercos a cada 40 s (o primeiro perto de
+1min35), um chefe a cada cinco minutos e o Rato Rei aos 30.
+
+O gato não atira: as armas procuram o alvo alcançável mais próximo e atacam
+sozinhas (`Item.alvoAlcancavel`). O jogador anda, dá dash e escolhe cartas.
+
+**O que sobe durante a corrida**, cada coisa num lugar:
+
+| Fonte | Quando | Dá |
+|---|---|---|
+| `SubirDeNivel` | a cada nível | 3 cartas: atributo com raridade, passiva, próximo nível de arma extra |
+| `Roleta` | ao abrir um baú (elite ou sorte) | arma extra nova ou nível dela, carta de `Melhoria`, ou a evolução pronta |
+| `EscolhaDeElemento` | aos 45 s | o elemento da corrida, que transmuta a arma da mão |
+| `Furia` | a cada 30 abates | onda de choque automática |
+| `Quebravel` | caixotes e barris perto do gato | cura ou XP grande |
+
+`Game.tick` é o único laço que roda todas as entidades, e por isso concentra as
+regras que valem para todo inimigo: ninguém age enquanto o gato cai, ninguém age
+além da coleira de 20 tiles e, no campo aberto, quem ficou para trás reaparece
+perto do gato (`Arena.trazerDePerto`).
+
+**O modo antigo, por ondas e salas,** saiu do código em 2026-10-21, porque
+nenhum caminho do jogo chegava nele: as dificuldades `normal` e `hard`, as
+plantas `cistern_1` a `cistern_6`, os JSON de `maps/waves/`, a `Recompensa` de
+fim de sala, o vendedor que aparecia ao lado da alavanca, o `TrapDoor` e o A\*
+do zumbi. Está no histórico do git, antes da branch `docs/estado-atual`.
+
+## Desenho
+
+- **OpenGL do Java 2D**, ligado em `Main` antes de qualquer classe AWT: ligá-lo
+  depois não tinha efeito, e o jogo desenhava em software.
+- **VSync** opcional, por `ExtendedBufferCapabilities`, uma API interna do
+  `java.desktop`. Por isso o `run` e o fat-jar exportam
+  `java.desktop/sun.java2d.pipe.hw`.
+- **Só o que está na tela**: tiles e entidades fora da janela (com dois tiles de
+  folga) não são desenhados.
+- **`Atmosfera`** desenha sombras suaves debaixo das entidades e a luz por cima
+  do mundo; iluminação e vinheta podem ser desligadas nas opções.
+- Inimigos e gato ganham movimento no desenho (quique, achata-estica, virada)
+  sem quadro novo de arte: `Game.animarBicho` e `Game.animarGato`.
+
+## Persistência
+
+Tudo é JSON, gravado ao lado do executável (no `run`, a raiz do projeto):
+
+| Arquivo | Dono | O que guarda |
+|---|---|---|
+| `config.json` | `Configs` | opções; gravação atômica com `.tmp` e `.bak` |
+| `saves/corrida-N.json` (N = 1 a 3) | `Corrida` | a corrida interrompida. O gato: nível, vida, XP, inventário, melhorias, passivas, armas extras, evoluções, elemento. O andamento: relógio, abates, próximo chefe, Rato Rei, cerco, chefes vivos (tipo e fração de vida), níveis pendentes, trocas e pulos, carga da Fúria, números da tela final, vitória |
+| `saves/meta.json` | `Meta` | ouro e níveis dos upgrades permanentes |
+| `saves/conquistas.json` | `Conquistas` | o progresso das conquistas |
+
+**Permadeath.** Cada partida grava sempre no mesmo espaço, escolhido no início;
+ler um save o apaga, e o jogo regrava no primeiro tick; morrer apaga. Assim não
+há como guardar uma cópia antes do perigo. O espaço 0 é o da bancada e nunca
+grava.
+
+**Quando grava**, sempre só no campo (a antecâmara não tem save — a corrida ainda
+não começou):
+
+1. ao entrar no campo (`Game.changeMap`);
+2. depois de cada escolha que não pode ser re-sorteada: elemento, carta de nível,
+   prêmio do caça-níquel — gravar antes faria do save uma máquina de re-rolar;
+3. a cada minuto do relógio (`Arena.gravarACadaMinuto`), contra fechamento à força;
+4. ao sair pela pausa ("Main Menu" ou "Quit").
+
+**O que não grava:** inimigos comuns, projéteis, partículas e o campo. A horda é
+função do relógio e se refaz em segundos; o campo é sorteado de novo. Os chefes
+vivos são a exceção — sem eles, fechar o jogo pularia o chefe.
+
+**Ordem da retomada** (`Game.retomar`): bônus de início (gato e upgrades
+permanentes) → o gato do save → o campo → os reinícios de corrida → o andamento
+do save → no primeiro tick, os chefes e a regravação. Os bônus vêm antes porque
+o upgrade de vida enche a barra; a vida gravada tem de ser a última palavra.
+
+`Meta` e `Conquistas` ficam fora dos espaços: apagar uma corrida não apaga o que
+foi conquistado. No modo bancada (`-Dcd.bench`) nenhum dos dois grava.
 
 ## Controle
 
@@ -109,7 +217,10 @@ nearest-neighbor. Fator fracionário desalinha e borra a arte, por isso toda
 escala no projeto é inteira.
 
 Os mapas são PNG em que **a cor de cada pixel identifica um tile**, com um JSON
-irmão descrevendo as entidades. Ver `TileIDs` e `GameMap.convertMap`.
+irmão descrevendo as entidades. Ver `TileIDs` e `GameMap.convertMap`. O campo
+da corrida sem fim não é um arquivo: o `Gerador` pinta a mesma imagem em
+memória, com a mesma tabela de cores, e o resto do carregamento é igual. Hoje
+o único mapa desenhado em uso é a antecâmara (`beginning`).
 
 Os sprites de UI (botões e ícone) são **gerados** por `tools/GenUiAssets.java` e
 versionados. A CI regenera e compara: se o gerador e os PNGs divergirem, o build
@@ -181,10 +292,30 @@ números do mundo linear são convertidos para a posição equivalente na curva
 
 ## Pontos frágeis conhecidos
 
-Registrados para não se perderem:
+Registrados para não se perderem. Revistos em 2026-10-21.
 
-- `Repulsion` roda numa thread paralela alterando posições enquanto o laço
-  principal lê e desenha.
-- Threads não-daemon impedem o processo de encerrar ao fechar a janela.
-- `resetWindow()` executa operações Swing fora da EDT.
-- O `Waves` abre uma thread nova a cada leva de inimigos.
+**Resolvidos em 2026-10-21**, mantidos aqui como registro:
+
+- O `Repulsion` rodava numa thread paralela, mexendo em posições enquanto o laço
+  principal lia e desenhava — e a thread nunca terminava: o `dispose` baixava uma
+  flag, mas ela dormia num `wait` que ninguém mais acordava, e cada troca de mapa
+  deixava uma presa para trás. Agora roda no `Game.tick`.
+- `resetWindow()` (F11, troca de resolução) recriava a janela na thread do
+  `Engine`, fora da EDT. Agora passa pela EDT com `invokeAndWait`.
+- O `Waves` abria uma thread por leva de inimigos no modo por ondas; o modo saiu.
+- O `Game.tick` contava um segundo a cada 61 ticks.
+- O save da corrida sem fim não guardava o relógio, e a retomada com o upgrade
+  Vitality curava o gato. Ver [Persistência](#persistência).
+
+**Em aberto**
+
+- **Retomar limpa a tela.** Como os inimigos comuns não são gravados, quem sai no
+  meio de um cerco volta com a tela vazia. A horda se refaz em segundos, e o aviso
+  da pausa diz isso ("Enemies on screen are not kept"), mas é uma brecha
+  consciente.
+- **Dinheiro em espera.** Não há fonte de moeda dentro da corrida: o gato começa
+  com 100 e só a loja da antecâmara as consome. `Seller`, `Store`, `Coin` e
+  `GumMachine` (com `GumInterface` e `GumPanel`) ficam no código, marcados como
+  em espera, até o dinheiro ganhar papel na corrida.
+- `tools/GenCisterna.java` ainda escreve as plantas `cistern_1` a `6`, que o jogo
+  não lê mais; os tiles que ele gera continuam em uso pelo `Gerador`.

@@ -59,6 +59,24 @@ public class SubirDeNivel implements Activity {
         pulos = PULOS;
     }
 
+    public static int trocas() {
+        return trocas;
+    }
+
+    public static int pulos() {
+        return pulos;
+    }
+
+    /** Retomada. Negativo e "o save nao sabia": fica o valor de corrida nova. */
+    public static void repor(int trocasGravadas, int pulosGravados) {
+        if (trocasGravadas >= 0) {
+            trocas = Math.min(TROCAS, trocasGravadas);
+        }
+        if (pulosGravados >= 0) {
+            pulos = Math.min(PULOS, pulosGravados);
+        }
+    }
+
     /** O que uma carta faz e como ela se apresenta. */
     private record Carta(String rotulo, String icone, String nome, String efeito,
                          Color cor, Runnable aplicar) {
@@ -206,6 +224,7 @@ public class SubirDeNivel implements Activity {
             Player gato = Game.getPlayer();
             gato.setLife(Math.min(gato.getLifeSize(), gato.getLife() + gato.getLifeSize() * 0.15));
             gato.gastarNivel();
+            com.retronova.game.Corrida.gravar();
             Sound.play(Sounds.Button);
             Engine.pause(null);
         }
@@ -214,6 +233,8 @@ public class SubirDeNivel implements Activity {
     private void escolher(int i) {
         mao.get(i).aplicar().run();
         Game.getPlayer().gastarNivel();
+        // Grava com a carta ja no gato: fechar o jogo aqui nao devolve a mao.
+        com.retronova.game.Corrida.gravar();
         Sound.play(Sounds.Conquista);
         escolhido = i;
         foco = i;

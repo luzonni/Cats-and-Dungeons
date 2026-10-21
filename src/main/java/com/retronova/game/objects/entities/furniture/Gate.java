@@ -1,6 +1,6 @@
 package com.retronova.game.objects.entities.furniture;
 
-import com.retronova.engine.exceptions.TrapDoorCommandException;
+import com.retronova.engine.exceptions.GateCommandException;
 import com.retronova.game.Game;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.room.Room;
@@ -163,13 +163,6 @@ public class Gate extends Furniture {
     }
 
     /**
-     * Retângulo do vão: a soleira e a passagem, no centro do portão.
-     *
-     * Sobe um tile acima da célula do portão porque a soleira fica na linha de
-     * cima da parede — é ali que o gato para, emoldurado pelas jambas, quando a
-     * pergunta aparece.
-     */
-    /**
      * A LUZ QUE SAI DA PASSAGEM ABERTA.
      *
      * A ideia veio de olhar a porta aberta e nao acreditar nela: numa vista de
@@ -231,9 +224,9 @@ public class Gate extends Furniture {
      * SEM DESENHO DE PORTA — so a luz.
      *
      * A passagem daqui nao e uma porta, e um CORREDOR: um vao aberto na parede que
-     * esta la desde o comeco da sala, visivel o tempo todo. Enquanto a briga corre
-     * ele e um corredor escuro que nao leva a lugar nenhum; quando a alavanca e
-     * puxada, a luz acende dentro dele.
+     * esta la desde o comeco da sala, visivel o tempo todo. Ate a alavanca ser
+     * puxada ele e um corredor escuro que nao leva a lugar nenhum; depois, a luz
+     * acende dentro dele.
      *
      * Duas tentativas anteriores erraram por insistir em desenhar a porta. Grade
      * subindo e folha girando sao gestos VERTICAIS, e numa vista de cima o chao nao
@@ -254,6 +247,12 @@ public class Gate extends Furniture {
         luzDaPassagem(g);
     }
 
+    /**
+     * Retângulo do vão: a soleira e a passagem, no centro do portão.
+     *
+     * Sobe um tile acima da célula do portão porque a soleira fica na linha de
+     * cima da parede — é ali que o gato para, emoldurado pelas jambas.
+     */
     private Rectangle vao() {
         int tile = GameObject.SIZE();
         int largura = (int) (tile * LARGURA_VAO);
@@ -265,31 +264,25 @@ public class Gate extends Furniture {
     }
 
     /**
-     * Mesma gramática de comandos do alçapão:
-     * {@code LOAD ARENA <nome>}, {@code LOAD ROOM <nome>}, {@code NEXT ARENA}.
+     * O destino escrito no JSON do mapa: {@code LOAD ARENA} leva ao campo da
+     * corrida, {@code LOAD ROOM <nome>} a uma sala desenhada.
+     *
+     * O {@code LOAD ARENA} ainda aceita uma palavra depois (o {@code EASY} do mapa
+     * da antecamara), do tempo em que havia tres dificuldades. Ela e ignorada: so
+     * existe um campo.
      */
     private void executar() {
         String[] partes = this.command.split(" ");
-        if (partes[0].equalsIgnoreCase("LOAD") && partes.length == 3) {
-            String nome = partes[2];
+        if (partes.length >= 2 && partes[0].equalsIgnoreCase("LOAD")) {
             if (partes[1].equalsIgnoreCase("ARENA")) {
-                String[] tipos = {"EASY", "NORMAL", "HARD"};
-                for (int i = 0; i < tipos.length; i++) {
-                    if (tipos[i].equalsIgnoreCase(nome)) {
-                        Game.getGame().setDifficult(i);
-                        Game.getGame().changeMap(new Arena(i));
-                        return;
-                    }
-                }
-                throw new TrapDoorCommandException("Arena type not found: " + nome);
+                Game.getGame().changeMap(new Arena());
+                return;
             }
-            if (partes[1].equalsIgnoreCase("ROOM")) {
-                Game.getGame().changeMap(new Room(nome));
+            if (partes[1].equalsIgnoreCase("ROOM") && partes.length == 3) {
+                Game.getGame().changeMap(new Room(partes[2]));
+                return;
             }
-        } else if (partes[0].equalsIgnoreCase("NEXT") && partes.length == 2
-                && partes[1].equalsIgnoreCase("ARENA")) {
-            Game.getGame().plusLevel();
-            Game.getGame().changeMap(new Arena(Game.getGame().getDifficult()));
         }
+        throw new GateCommandException("Comando de portao desconhecido: " + this.command);
     }
 }

@@ -62,6 +62,12 @@ public final class Furia {
         return carga;
     }
 
+    /** Retomada: a barra volta com a carga gravada, sem onda no ar. */
+    public static void repor(double gravada) {
+        reiniciar();
+        carga = Math.max(0, Math.min(1, gravada));
+    }
+
     /** Zera tudo: partida nova. */
     public static void reiniciar() {
         carga = 0;

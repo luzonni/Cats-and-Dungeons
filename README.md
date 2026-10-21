@@ -19,17 +19,19 @@
 
 ## Visão Geral
 
-*Cats & Dungeons* é um roguelike de sobrevivência por ondas. O jogador escolhe um
-entre três gatos — cada um com atributos próprios de vida, dano, sorte e
-velocidade — e precisa aguentar o máximo de ondas possível numa arena. Entre uma
-onda e outra há loja, e estruturas interativas aparecem em níveis avançados
-trazendo puzzles, chefes e itens raros.
+*Cats & Dungeons* é um roguelike de sobrevivência em horda. O jogador escolhe um
+entre três gatos — cada um com a própria família de arma, atributos e uma
+habilidade exclusiva — e enfrenta uma horda sem fim de ratos num campo aberto
+gerado a cada corrida. As armas atacam sozinhas; o jogador anda, dá dash e
+escolhe, a cada nível, entre atributos, passivas e armas extras. A corrida dura
+**30 minutos**, com um chefe a cada cinco e o Rato Rei no fim.
 
-O inventário é volátil: morrer significa perder itens, habilidades e nível.
+Morrer encerra a corrida e apaga o save dela, mas o ouro ganho compra upgrades
+permanentes para as próximas.
 
 O que distingue este projeto não é o gênero, é como ele foi feito. **Não há
 engine.** Nada de Unity, Godot, libGDX ou LWJGL. O laço de jogo, o renderizador, o
-sistema de física vetorial, o pathfinding, o sistema de partículas e toda a
+sistema de física vetorial, o sistema de partículas e toda a
 interface foram escritos do zero sobre a biblioteca padrão do Java — `Canvas` com
 `BufferStrategy` para desenhar, `javax.sound.sampled` para o som. O pacote chamado
 `engine` é camada interna do próprio time, não motor de terceiros.
@@ -60,9 +62,10 @@ registrados de propósito, para não se perderem de novo.
   desacoplado, desenho em `BufferStrategy` com pipeline OpenGL, tudo em Java puro.
 * **Física vetorial de verdade:** entidades acumulam vetores de força, com peso,
   atrito, arrasto e repulsão entre corpos — não é translação simples de posição.
-* **Mapas desenhados como imagem:** cada arena é um PNG em que a cor do pixel
+* **Mapas desenhados como imagem:** cada sala é um PNG em que a cor do pixel
   define o tile, acompanhado de um JSON que descreve as entidades. Editar um mapa
-  é pintar num editor de imagem.
+  é pintar num editor de imagem. O campo da corrida é gerado na hora com a mesma
+  tabela de cores.
 * **Interface em 9-slice na identidade do jogo:** botões com orelhas de gato que
   escalam para qualquer largura sem deformar, em quatro estados, com escala sempre
   inteira para não borrar a pixel art.
@@ -83,7 +86,7 @@ registrados de propósito, para não se perderem de novo.
 * **Áudio:** TinySound sobre `javax.sound.sampled`; músicas em Ogg Vorbis via SPI.
 * **Dados:** JSON via json-simple, para configurações, mapas e personagens.
 * **Diagnóstico:** OSHI no overlay de depuração.
-* **CI:** GitHub Actions — build, testes e verificação dos assets gerados.
+* **CI:** GitHub Actions — build, testes e verificação dos assets gerados; mescla os PRs na `develop` e promove a `main` sozinha quando tudo passa.
 
 ## Como Rodar
 
@@ -125,12 +128,20 @@ workflow sem entrar aqui. Ver `tools/CiLocal.java`.
 
 Num caso pontual dá para pular com `git push --no-verify`.
 
+### Fluxo de branches
+
+O trabalho nasce da `develop`, numa branch própria, e volta por pull request.
+Quando a CI do PR passa, o próprio workflow mescla na `develop`; a `develop` roda
+a CI de novo e, verde, a `main` avança sozinha até ela. Push direto em `develop`
+ou `main` é recusado pelo hook. O passo a passo está em
+[`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md).
+
 ## Controles
 
 | Tecla | Controle (Xbox) | Ação |
 |---|---|---|
 | `W` `A` `S` `D` ou setas | Analógico esquerdo · D-pad | Mover (em 360° pelo analógico) |
-| `Espaço` | `LT` / `RT` | Dash (requer o modificador) |
+| `Espaço` | `LT` / `RT` | Dash |
 | `E` | `Y` | Inventário |
 | `F` | `X` | Usar consumível |
 | `Q` | `View` | Largar item |
@@ -139,15 +150,17 @@ Num caso pontual dá para pular com `git push --no-verify`.
 | `Esc` | `B` (nas telas) · `Start` | Voltar · pausar |
 | Clique no objeto | `B` (em jogo) | Pegar item, abrir caixa, falar com o vendedor, puxar alavanca, ler placa (o mais próximo) |
 | | Analógico direito | Espiar: a câmera se afasta até 1,5 tile e volta ao soltar |
+| `F11` | | Alternar tela cheia |
+| `Ctrl` + `=` / `-` | | Zoom da câmera |
+| `F3` | | Overlay de depuração |
+| `F4` `F5` `F6` | | Hitbox de entidades · grade de tiles · bounds de partículas |
+
+As armas atacam sozinhas, mirando o inimigo mais próximo: não há botão de ataque.
 
 No inventário, na loja e na máquina de chiclete, as setas ou o D-pad andam pelas
 casas e `Enter`/`A` faz o que o clique faria. No inventário, `Q`/`View` manda o
 item para o outro lado (como Shift + clique) e `F`/`X` consome. Na loja, o
 primeiro `A` seleciona e o segundo, na mesma casa, compra.
-| `F11` | | Alternar tela cheia |
-| `Ctrl` + `=` / `-` | | Zoom da câmera |
-| `F3` | | Overlay de depuração |
-| `F4` `F5` `F6` | | Hitbox de entidades · grade de tiles · bounds de partículas |
 
 O controle funciona no Windows, com qualquer controle XInput (Xbox 360, One,
 Series ou compatível). Em outros sistemas o jogo segue só com teclado e mouse.
@@ -156,10 +169,13 @@ Series ou compatível). Em outros sistemas o jogo segue só com teclado e mouse.
 
 | Documento | Conteúdo |
 |---|---|
+| [`docs/CONTEXTO.md`](docs/CONTEXTO.md) | Ponto de partida: o jogo, onde fica cada sistema, estado de cada funcionalidade |
+| [`docs/CONTRIBUINDO.md`](docs/CONTRIBUINDO.md) | Fluxo de branches, PR, CI e commits |
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Como o projeto é organizado e por quê |
 | [`docs/planejamento/ROADMAP.md`](docs/planejamento/ROADMAP.md) | Backlog por área |
 | [`docs/planejamento/INIMIGOS.md`](docs/planejamento/INIMIGOS.md) | Inimigos e chefes |
-| [`docs/planejamento/ARMAS.md`](docs/planejamento/ARMAS.md) | Armas e passivos |
+| [`docs/planejamento/ARMAS.md`](docs/planejamento/ARMAS.md) | Armas, armas extras, passivas e consumíveis |
+| [`docs/planejamento/HABILIDADES.md`](docs/planejamento/HABILIDADES.md) | Plano de cartas e habilidades |
 | [`docs/releases/`](docs/releases/) | Notas de versão |
 | [`docs/TERCEIROS.md`](docs/TERCEIROS.md) | Bibliotecas de terceiros e suas licenças |
 

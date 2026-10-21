@@ -9,6 +9,7 @@ import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.game.Corrida;
 import com.retronova.game.Game;
 import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.Confirm;
@@ -39,7 +40,7 @@ public class Pause implements Activity {
         botoes.add(new Button(0, 0, 0, 0, "Main Menu",
                 b -> confirmacao.perguntar("Return to main menu?", this::voltarAoMenu)));
         botoes.add(new Button(0, 0, 0, 0, "Quit",
-                b -> confirmacao.perguntar("Do you want to quit?", Engine::CLOSE)));
+                b -> confirmacao.perguntar("Do you want to quit?", this::sair)));
         posicionar();
     }
 
@@ -58,7 +59,16 @@ public class Pause implements Activity {
         Game.restart();
     }
 
+    /** Fecha o jogo, gravando antes. */
+    private void sair() {
+        Corrida.gravar();
+        Engine.CLOSE();
+    }
+
     private void voltarAoMenu() {
+        // Grava ANTES de desempilhar: depois disso a partida ja nao e a corrente,
+        // e a gravacao nao teria de quem fotografar o estado.
+        Corrida.gravar();
         Engine.pause(null);
         Sound.stopAll();
         Engine.backActivity(2);
@@ -139,21 +149,20 @@ public class Pause implements Activity {
     /**
      * Diz onde a corrida está gravada, embaixo dos botões.
      *
-     * NÃO HÁ BOTÃO DE "SAVE AND QUIT", e a ausência é proposital: o jogo já gravou
-     * sozinho ao entrar nesta sala. Um botão de salvar sugeriria que sem ele nada
-     * é gravado, o que é falso, e ainda prometeria gravar o instante atual — que é
-     * o que este save justamente não faz.
+     * NÃO HÁ BOTÃO DE "SAVE AND QUIT", e a ausência é proposital: sair pelo "Main
+     * Menu" ou pelo "Quit" já grava. Um botão de salvar sugeriria que os outros
+     * caminhos perdem a corrida, o que é falso.
      *
      * O que faltava não era o mecanismo, era o jogador SABER dele. Sem esta linha,
      * sair da partida parece perder tudo, e quem acha que vai perder tudo não sai —
      * fica jogando cansado, que é o problema que um suspend save existe para
-     * resolver. Uma frase resolve, e ela diz a verdade inteira, inclusive a parte
-     * inconveniente: o ponto é o COMEÇO desta sala, não este segundo.
+     * resolver. A frase diz também o que fica de fora: os inimigos da tela não são
+     * gravados, e voltam como a horda daquele minuto.
      */
     private void desenharAvisoDoSave(Graphics2D g) {
         int s = Configs.UiScale();
         Font fonte = FontHandler.font(FontHandler.Game, 5f * s);
-        String aviso = "Your run is saved at the start of this room";
+        String aviso = "Leaving saves your run. Enemies on screen are not kept";
         int largura = FontHandler.getWidth(aviso, fonte);
         int x = Engine.window.getWidth() / 2 - largura / 2;
         Rectangle ultimo = botoes.get(botoes.size() - 1).getBounds();

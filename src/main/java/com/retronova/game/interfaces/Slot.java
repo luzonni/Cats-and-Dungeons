@@ -102,7 +102,7 @@ public class Slot {
         // nenhum — a cor esta atras, e o desenho continua inteiro na frente.
         //
         // PASTEL, E NAO A COR CHEIA. A cor da raridade e forte por natureza: ela
-        // existe para gritar numa carta de recompensa, que e vista uma por vez.
+        // existe para gritar numa carta, que e vista uma por vez.
         // Repetida em vinte slots lado a lado, ela vira um mosaico que come o
         // contraste dos itens. Um quinto de opacidade e o suficiente para o olho
         // separar um roxo de um azul de relance, e pouco o bastante para a lamina
