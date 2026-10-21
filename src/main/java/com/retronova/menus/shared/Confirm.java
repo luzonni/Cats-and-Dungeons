@@ -35,6 +35,12 @@ public class Confirm {
     private Runnable aoConfirmar;
     private Button sim;
     private Button nao;
+    /**
+     * Botão com o foco do teclado e do controle: 0 = Yes, 1 = No, -1 = o mouse
+     * assumiu. Abre no No: a pergunta é sempre sobre algo que não se desfaz, e
+     * um Enter a mais não pode sair do jogo.
+     */
+    private int foco = 1;
 
     /** Abre o diálogo. Enquanto estiver aberto, a tela de trás não recebe cliques. */
     public void perguntar(String mensagem, Runnable aoConfirmar) {
@@ -52,6 +58,7 @@ public class Confirm {
             acao.run();
         }).primary();
         this.nao = new Button(0, 0, 0, 0, "No", b -> fechar());
+        this.foco = 1;
     }
 
     public boolean aberto() {
@@ -79,14 +86,33 @@ public class Confirm {
             fechar();
             return true;
         }
+        if (navegarPeloTeclado()) {
+            return true;         // o Enter pode ter fechado o diálogo
+        }
         sim.tick();
         if (aberto()) {          // o "Yes" pode ter fechado o diálogo
             nao.tick();
         }
-        if (aberto() && (sim.isHovered() || nao.isHovered())) {
-            Engine.window.pointing();
+        if (aberto()) {
+            if (sim.isHovered() || nao.isHovered()) {
+                foco = -1;       // o mouse assume o controle
+                Engine.window.pointing();
+            }
+            sim.setFocused(foco == 0);
+            nao.setFocused(foco == 1);
         }
         return true;
+    }
+
+    /** Setas/D-pad trocam entre Yes e No; Enter/A ativa. @return se ativou. */
+    private boolean navegarPeloTeclado() {
+        if (KeyBoard.KeyPressed("Left") || KeyBoard.KeyPressed("Right")) {
+            foco = foco == 0 ? 1 : 0;
+        } else if (KeyBoard.KeyPressed("Enter") && foco >= 0) {
+            (foco == 0 ? sim : nao).activate();
+            return true;
+        }
+        return false;
     }
 
     private void posicionar() {

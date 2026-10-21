@@ -136,7 +136,8 @@ Num caso pontual dá para pular com `git push --no-verify`.
 | `Q` | `View` | Largar item |
 | Rodinha · `1`–`9` | `LB` / `RB` | Trocar slot da hotbar · trocar aba nas Opções |
 | `Enter` | `A` | Confirmar |
-| `Esc` | `B` · `Start` | Voltar · pausar |
+| `Esc` | `B` (nas telas) · `Start` | Voltar · pausar |
+| Clique no objeto | `B` (em jogo) | Pegar item, abrir caixa, falar com o vendedor, puxar alavanca, ler placa (o mais próximo) |
 | Mouse | Analógico direito + `A` (`R3` = botão direito) | Cursor, para loja, inventário e objetos do mapa |
 | `F11` | | Alternar tela cheia |
 | `Ctrl` + `=` / `-` | | Zoom da câmera |

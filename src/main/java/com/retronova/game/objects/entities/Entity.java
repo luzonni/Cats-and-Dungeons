@@ -217,6 +217,15 @@ public abstract class Entity extends GameObject {
         return this.clickable;
     }
 
+    /**
+     * Responde ao botão de interagir do controle. Por padrão, quem é clicável;
+     * o que reage a clique sem pedir a patinha (item no chão, alavanca, placa)
+     * sobrescreve. Ver GameMap.interagir.
+     */
+    public boolean interagivel() {
+        return clickable();
+    }
+
     @Override
     public void loadSprites(String... sprites) {
         setSheet(new SpriteSheet("entity", sprites));

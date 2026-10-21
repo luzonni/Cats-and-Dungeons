@@ -480,7 +480,47 @@ public abstract class GameMap {
         return bounds.contains(worldPoint.x, worldPoint.y);
     }
 
+    /** O objeto que o botão de interagir escolheu neste tick, ou nulo. */
+    private static Entity alvoDaInteracao;
+
+    /**
+     * Interage com o objeto mais próximo do gato, como se ele tivesse sido clicado.
+     *
+     * Pegar item, abrir caixa, falar com o vendedor, puxar alavanca: tudo isso já
+     * passa por {@link #clickOnRect}. Em vez de ensinar cada objeto a ouvir o
+     * controle, o alvo escolhido aqui faz o clickOnRect dele dar verdadeiro no
+     * tick seguinte do objeto — e as regras de cada um (alcance, se está pronto)
+     * continuam valendo como valiam para o mouse.
+     */
+    public void interagir(Player player, double alcance) {
+        Entity melhor = null;
+        double menor = alcance;
+        List<Entity> entities = getEntities();
+        for (int i = 0; i < entities.size(); i++) {
+            Entity e = entities.get(i);
+            if (e == player || !e.interagivel()) {
+                continue;
+            }
+            double d = player.getDistance(e);
+            if (d <= menor) {
+                menor = d;
+                melhor = e;
+            }
+        }
+        alvoDaInteracao = melhor;
+    }
+
+    /** Descarta o alvo que nenhum objeto usou. Chamado a cada tick do jogo. */
+    public static void limparInteracao() {
+        alvoDaInteracao = null;
+    }
+
     public static boolean clickOnRect(Mouse_Button button, Rectangle rec) {
+        if (button == Mouse_Button.LEFT && alvoDaInteracao != null
+                && rec.equals(alvoDaInteracao.getBounds())) {
+            alvoDaInteracao = null;
+            return true;
+        }
         return mouseOnRect(rec) && Mouse.click(button);
     }
 

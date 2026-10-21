@@ -40,6 +40,11 @@ public class Drop extends Utility {
         }
     }
 
+    @Override
+    public boolean interagivel() {
+        return true;
+    }
+
     private double getItemR() {
         double x = (getX() + getWidth()/2d) - (getX() + getWidth()/2d + Math.cos(itemR) * getWidth()/2);
         double y = (getY() + getHeight()/2d) - getY();

@@ -41,11 +41,13 @@ public final class Gamepad {
         }
     }
 
-    /** Botão -> tecla que ele aperta. O A fica de fora: depende do cursor. */
+    /**
+     * Botão -> tecla que ele aperta. A e B ficam de fora: o A depende do cursor,
+     * e o B de estar em jogo ou numa tela (ver {@link #emJogo()}).
+     */
     private static final Map<Botao, String> TECLAS = new LinkedHashMap<>();
 
     static {
-        TECLAS.put(Botao.B, "Escape");
         TECLAS.put(Botao.START, "Escape");
         TECLAS.put(Botao.X, "F");
         TECLAS.put(Botao.Y, "E");
@@ -84,6 +86,11 @@ public final class Gamepad {
 
     private static boolean cursorAtivo;
     private static double cursorX, cursorY;
+
+    /** O jogo rodou no último tick. Ver emJogo. */
+    private static boolean emJogo;
+    /** Tecla que o B está apertando, escolhida no instante do aperto. */
+    private static String teclaDoB = "Escape";
 
     private static int vibracaoRestante;
     private static boolean ganchoDeSaida;
@@ -145,6 +152,18 @@ public final class Gamepad {
         for (Map.Entry<Botao, String> e : TECLAS.entrySet()) {
             teclas.merge(e.getValue(), estado.pressionado(e.getKey()), Boolean::logicalOr);
         }
+
+        // O B INTERAGE EM JOGO E VOLTA NAS TELAS. A escolha e feita no aperto e
+        // fica presa ate soltar: apertar B no vendedor abre a loja, e no tick
+        // seguinte o jogo ja esta pausado — se o B virasse Esc ali, a loja
+        // fecharia no mesmo instante em que abriu.
+        boolean jogando = emJogo;
+        emJogo = false;
+        if (estado.pressionado(Botao.B) && !anterior.pressionado(Botao.B)) {
+            teclaDoB = jogando ? "Interact" : "Escape";
+        }
+        teclas.merge("Interact", false, Boolean::logicalOr);
+        teclas.merge(teclaDoB, estado.pressionado(Botao.B), Boolean::logicalOr);
         teclas.merge("Left", estado.lx() < -LIMIAR_DIRECAO, Boolean::logicalOr);
         teclas.merge("Right", estado.lx() > LIMIAR_DIRECAO, Boolean::logicalOr);
         teclas.merge("Up", estado.ly() < -LIMIAR_DIRECAO, Boolean::logicalOr);
@@ -245,6 +264,14 @@ public final class Gamepad {
 
     // ------------------------------------------------------------- consulta
 
+    /**
+     * Chamado pelo jogo a cada tick em que a partida está rolando, sem pausa nem
+     * interface aberta. Enquanto isso, o B interage em vez de voltar.
+     */
+    public static void emJogo() {
+        emJogo = true;
+    }
+
     public static boolean conectado() {
         return porta >= 0;
     }
@@ -317,5 +344,7 @@ public final class Gamepad {
         anterior = EstadoDoControle.SOLTO;
         cursorAtivo = false;
         cursorX = cursorY = 0;
+        emJogo = false;
+        teclaDoB = "Escape";
     }
 }

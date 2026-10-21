@@ -85,6 +85,11 @@ public class Plate extends Furniture {
         g2.dispose();
     }
 
+    @Override
+    public boolean interagivel() {
+        return true;
+    }
+
     private boolean perto() {
         return Game.getPlayer().getDistance(this) <= GameObject.SIZE() * ALCANCE;
     }

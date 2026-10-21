@@ -21,6 +21,7 @@ import com.retronova.game.objects.entities.furniture.Furniture;
 import com.retronova.game.objects.entities.utilities.Utility;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.tiles.Tile;
+import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.menus.GameOver;
 import com.retronova.menus.Pause;
@@ -281,6 +282,11 @@ public class Game implements Activity {
         if (acabou) {
             return;
         }
+        // Avisa o controle que o jogo esta rolando: aqui o B interage, e nao
+        // volta. Com pausa ou interface aberta este tick nao roda, e o B volta a
+        // ser Esc sozinho.
+        Gamepad.emJogo();
+        GameMap.limparInteracao();
         if (regravarSave) {
             regravarSave = false;
             Corrida.gravar();
@@ -304,6 +310,9 @@ public class Game implements Activity {
         }
         if(KeyBoard.KeyPressed("E")) {
             inter.open();
+        }
+        if(KeyBoard.KeyPressed("Interact")) {
+            map.interagir(player, GameObject.SIZE() * 3);
         }
         // Nivel novo: abre a escolha de atributo. Um por vez — com varios niveis
         // pendentes, ela reabre a cada tick ate gastar todos.

@@ -82,6 +82,28 @@ class GamepadTest {
     }
 
     @Test
+    @DisplayName("em jogo o B interage, e não pausa")
+    void bInterageEmJogo() {
+        Gamepad.emJogo();
+        aplicar(botoes(Gamepad.Botao.B));
+        assertTrue(KeyBoard.KeyPressed("Interact"));
+        assertFalse(KeyBoard.KeyPressing("Escape"), "B em jogo abria a pausa");
+    }
+
+    @Test
+    @DisplayName("o B segurado não vira Esc quando a loja abre por cima do jogo")
+    void bPresoAoAperto() {
+        Gamepad.emJogo();
+        aplicar(botoes(Gamepad.Botao.B));          // abre a loja: o jogo pausa
+        assertTrue(KeyBoard.KeyPressed("Interact"));
+        aplicar(botoes(Gamepad.Botao.B));          // ainda segurando, já sem jogo
+        assertFalse(KeyBoard.KeyPressing("Escape"), "a loja fecharia no tick seguinte");
+        aplicar(EstadoDoControle.SOLTO);
+        aplicar(botoes(Gamepad.Botao.B));          // novo aperto, na loja
+        assertTrue(KeyBoard.KeyPressed("Escape"), "nas telas o B volta");
+    }
+
+    @Test
     @DisplayName("largar o controle não solta a tecla segurada no teclado")
     void tecladoEControleIndependentes() {
         KeyBoard teclado = new KeyBoard();

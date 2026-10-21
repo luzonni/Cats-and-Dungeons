@@ -82,6 +82,11 @@ Duas regras pesam no desempenho e no comportamento:
 - **Porta vazia é consultada uma vez por segundo.** `XInputGetState` numa porta
   sem controle é lento, e consultar as quatro a cada tick faria o jogo engasgar
   em quem nem tem controle.
+- **O B depende de onde o jogador está.** Com a partida rolando, ele interage
+  com o objeto mais próximo: `GameMap.interagir` escolhe o alvo, e o
+  `clickOnRect` desse objeto responde como se ele tivesse sido clicado. Nas
+  telas, o B volta. O papel é decidido no aperto e fica até soltar, para o B
+  que abre a loja não fechá-la no tick seguinte.
 - **O cursor virtual só existe enquanto o analógico direito o usa.** Mexer o
   mouse de verdade ou voltar ao D-pad o recolhe e devolve ao `A` o papel de
   confirmar.
