@@ -114,6 +114,32 @@ public final class Bonus {
         return 5 + Math.max(1, Math.min(3, nivel));
     }
 
+    // ------------------------------------------------- Explosao arcana (Azrael)
+
+    /**
+     * Fracao do golpe que a explosao causa EM VOLTA do alvo, por nivel.
+     *
+     * Abaixo de um de proposito: o alvo direto ja levou o golpe inteiro, e a
+     * explosao so existe para o resto do grupo. Contra um bicho sozinho ela nao
+     * soma nada — o Azrael nao vira o melhor matador de chefe por causa dela.
+     */
+    public static double fracaoDaExplosao(int nivel) {
+        return switch (Math.max(1, Math.min(3, nivel))) {
+            case 1 -> 0.35;
+            case 2 -> 0.50;
+            default -> 0.65;
+        };
+    }
+
+    /** Raio da explosao, em tiles, ANTES do multiplicador de area do gato. */
+    public static double raioDaExplosao(int nivel) {
+        return switch (Math.max(1, Math.min(3, nivel))) {
+            case 1 -> 1.0;
+            case 2 -> 1.3;
+            default -> 1.6;
+        };
+    }
+
     /** Vida recuperada por segundo. */
     public static double regeneracao(Player gato) {
         return nivel(gato, Passiva.REGENERACAO) * Passiva.REGENERACAO.valorPorNivel();
@@ -135,7 +161,7 @@ public final class Bonus {
         return switch (nomeDoGato) {
             case "Finn" -> "+10% critical chance, Volley skill";
             case "Muffin" -> "-10% damage taken, Retaliate skill";
-            case "Azrael" -> "+20% weapon area";
+            case "Azrael" -> "+20% weapon area, Arcane Burst skill";
             default -> "";
         };
     }

@@ -41,7 +41,20 @@ public enum Passiva {
     RETALIACAO("Retaliate", "Shockwave when hurt", new Color(0x5FC9A8), "", 0, 3, "Muffin",
             "Shockwave when you get hurt",
             "Wider, stronger shockwave",
-            "Huge shockwave, faster recharge");
+            "Huge shockwave, faster recharge"),
+    /**
+     * EXPLOSAO ARCANA: exclusiva do Azrael. As bolas da varinha explodem ao
+     * acertar e ferem quem esta em volta do alvo.
+     *
+     * O Azrael ja e o gato da area (+20%), mas a arma da mao dele acertava um bicho
+     * por vez. A explosao usa o multiplicador de area dele, entao as duas coisas
+     * passam a conversar. O dano em volta e uma fracao do golpe, e o alvo direto
+     * nao leva duas vezes: ver {@code Bonus.explosaoArcana}.
+     */
+    EXPLOSAO_ARCANA("Arcane Burst", "Bolts explode on impact", new Color(0xC08CFF), "", 0, 3, "Azrael",
+            "Bolts burst on impact",
+            "Bigger, stronger bursts",
+            "Huge bursts");
 
     public static final int NIVEL_MAXIMO = 5;
 

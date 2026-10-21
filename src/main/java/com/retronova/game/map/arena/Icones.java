@@ -206,6 +206,17 @@ public final class Icones {
                     "..#####..",
                     ".#.###.#.",
                     "#...#...#"}),
+            // Explosao arcana (Azrael): o orbe no meio, as faiscas saindo.
+            Map.entry("EXPLOSAO_ARCANA", new String[]{
+                    "#...#...#",
+                    ".#.....#.",
+                    "...###...",
+                    "..#+###..",
+                    "#.#####.#",
+                    "..#####..",
+                    "...###...",
+                    ".#.....#.",
+                    "#...#...#"}),
             Map.entry("VOLEIO", new String[]{
                     "#...#...#",
                     "+#..+..#+",

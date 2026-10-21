@@ -72,6 +72,37 @@ public final class Habilidades {
         Sound.play(Sounds.Woosh);
     }
 
+    // ------------------------------------------------------- Explosao arcana
+
+    /**
+     * Uma bola da varinha acertou {@code alvo} com {@code golpe} de dano. Se o
+     * gato tem a Explosão Arcana, quem está em volta do alvo leva uma fração dele.
+     *
+     * Estática porque quem chama é a varinha, que não conhece as habilidades do
+     * gato; e a explosão não tem estado nenhum — sem recarga, sai em toda bola.
+     *
+     * @param tipo o tipo do golpe, já com o elemento da varinha aplicado
+     * @param cor  a cor do elemento, para o anel combinar com a bola
+     */
+    public static void explosaoArcana(Player gato, Entity alvo, double golpe, AttackTypes tipo, Color cor) {
+        int nivel = gato.getMelhorias().nivel(Passiva.EXPLOSAO_ARCANA);
+        if (nivel <= 0 || alvo == null) {
+            return;
+        }
+        double cx = alvo.getX() + alvo.getWidth() / 2d;
+        double cy = alvo.getY() + alvo.getHeight() / 2d;
+        double raio = Bonus.raioDaExplosao(nivel) * Bonus.area(gato) * GameObject.SIZE();
+        double dano = golpe * Bonus.fracaoDaExplosao(nivel);
+
+        Estatisticas.fonte(Passiva.EXPLOSAO_ARCANA.nome());
+        for (Enemy e : emVolta(cx, cy, raio, alvo)) {
+            e.strike(tipo, dano);
+        }
+        Estatisticas.fonte(null);
+
+        Game.getMap().put(new OndaDeChoque(cx, cy, raio, cor, 0.45f));
+    }
+
     /** Os inimigos vivos e já nascidos cujo centro está dentro do raio, menos {@code fora}. */
     private static List<Enemy> emVolta(double cx, double cy, double raio, Entity fora) {
         List<Enemy> perto = new java.util.ArrayList<>();
