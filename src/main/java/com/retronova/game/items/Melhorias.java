@@ -226,7 +226,7 @@ public class Melhorias {
      * desconto de dano ja existe no Entity); as outras sao lidas por Bonus.
      */
     public void subirPassiva(Player gato, Passiva p) {
-        if (nivel(p) >= Passiva.NIVEL_MAXIMO) {
+        if (nivel(p) >= p.nivelMaximo()) {
             return;
         }
         passivas.merge(p, 1, Integer::sum);

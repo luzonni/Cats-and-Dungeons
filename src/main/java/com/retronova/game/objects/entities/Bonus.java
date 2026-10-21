@@ -48,6 +48,25 @@ public final class Bonus {
                 + (e(gato, "Finn") ? 0.10 : 0) + gato.chanceDeSorte() * 0.05;
     }
 
+    /** Quantas flechas o arco solta por disparo: 1 mais o nivel do Voleio (max. 4). */
+    public static int flechas(Player gato) {
+        return 1 + nivel(gato, Passiva.VOLEIO);
+    }
+
+    /**
+     * Fracao do dano que CADA flecha leva quando sao n de uma vez.
+     *
+     * O TIRO INTEIRO RENDE RAIZ DE N, e nao n. Com n flechas de dano cheio, o
+     * voleio dobrava, triplicava e quadruplicava o dano do Finn — nenhuma outra
+     * carta chega perto disso, e ela passaria a ser a unica escolha. Dividindo
+     * por raiz de n, 2 flechas valem 1,41x, 3 valem 1,73x e 4 valem 2x: cada
+     * nivel ainda e um ganho claro, so que cada vez menor. E o leque ainda espalha
+     * as flechas, entao contra um alvo so, de longe, nem todas acertam.
+     */
+    public static double danoPorFlecha(int flechas) {
+        return 1 / Math.sqrt(Math.max(1, flechas));
+    }
+
     /** Vida recuperada por segundo. */
     public static double regeneracao(Player gato) {
         return nivel(gato, Passiva.REGENERACAO) * Passiva.REGENERACAO.valorPorNivel();
@@ -67,7 +86,7 @@ public final class Bonus {
     /** A habilidade do gato, em uma linha, para a selecao e a tela final. */
     public static String habilidade(String nomeDoGato) {
         return switch (nomeDoGato) {
-            case "Finn" -> "+10% critical chance";
+            case "Finn" -> "+10% critical chance, Volley skill";
             case "Muffin" -> "-10% damage taken";
             case "Azrael" -> "+20% weapon area";
             default -> "";

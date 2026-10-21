@@ -78,6 +78,9 @@ public class Bow extends Item {
      */
     private static final double DANO = 12;
 
+    /** Angulo entre duas flechas vizinhas do voleio: 4 flechas cobrem uns 27 graus. */
+    private static final double ABERTURA_DO_VOLEIO = Math.toRadians(9);
+
     @Override
     public double cadencia() {
         return elemento.cadencia();
@@ -153,13 +156,40 @@ public class Bow extends Item {
         // paralela a mira, afastada por essa distancia, e de longe a flecha passa
         // ao lado do alvo. O angulo da arma continua o do corpo — ela so aponta.
         double tiro = alvoDoTiro == null ? angle : miraDe(b.x, b.y, alvoDoTiro);
-        Arrow arrow = new Arrow(b.x, b.y, tiro, elemento.sprite("arrow"), 7d, shooter,
-                (entity) -> {
-            entity.strike(elemento.ataque(AttackTypes.Piercing),
-                    elemento.dano(DANO + shooter.getDamage()));
-            entity.getPhysical().addForce("knockback", 4, tiro);
-        });
-        Game.getMap().put(arrow);
+        // VOLEIO: n flechas, com o dano dividido por raiz de n (ver
+        // Bonus.danoPorFlecha). Sem a passiva, n = 1 e o tiro e o de sempre.
+        //
+        // AS FLECHAS A MAIS PROCURAM OUTROS BICHOS. A primeira vai no alvo de
+        // sempre; cada uma das outras vai no proximo inimigo mais perto que ainda
+        // nao tem flecha. So quando falta inimigo a flecha sobra para o leque em
+        // volta da mira principal — e ai e que o voleio concentra.
+        int n = com.retronova.game.objects.entities.Bonus.flechas(shooter);
+        double fracao = com.retronova.game.objects.entities.Bonus.danoPorFlecha(n);
+        java.util.List<com.retronova.game.objects.entities.enemies.Enemy> outros = n > 1
+                ? alvosAlcancaveis(shooter, shooter.getRange(), b.x, b.y, n - 1, alvoDoTiro)
+                : java.util.List.of();
+        int noLeque = 0;
+        for (int i = 0; i < n; i++) {
+            double direcao;
+            if (i == 0) {
+                direcao = tiro;
+            } else if (i - 1 < outros.size()) {
+                direcao = miraDe(b.x, b.y, outros.get(i - 1));
+            } else {
+                // Alterna os lados do leque: +9, -9, +18...
+                noLeque++;
+                int passo = (noLeque + 1) / 2;
+                direcao = tiro + (noLeque % 2 == 1 ? passo : -passo) * ABERTURA_DO_VOLEIO;
+            }
+            final double dirFinal = direcao;
+            Arrow arrow = new Arrow(b.x, b.y, dirFinal, elemento.sprite("arrow"), 7d, shooter,
+                    (entity) -> {
+                entity.strike(elemento.ataque(AttackTypes.Piercing),
+                        elemento.dano(DANO + shooter.getDamage()) * fracao);
+                entity.getPhysical().addForce("knockback", 4 * fracao, dirFinal);
+            });
+            Game.getMap().put(arrow);
+        }
         tocarGolpe(Sounds.Bow);
     }
 
