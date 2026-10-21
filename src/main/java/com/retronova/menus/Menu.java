@@ -62,7 +62,7 @@ public class Menu extends TelaDeMenu {
         // SEM MIADO AQUI. Quem mia e o botao "Embark" da selecao de personagem, com
         // a voz DAQUELE gato. La o som responde a uma escolha; aqui ele so acontecia.
         botoes.add(new Button(0, 0, 0, 0, "Play", b -> abrir(new Saves())).primary());
-        botoes.add(new Button(0, 0, 0, 0, "Options", b -> abrir(new Options())));
+        botoes.add(new Button(0, 0, 0, 0, "Settings", b -> abrir(new Configuracoes())));
         //Sair pela pausa já perguntava; aqui fechava direto. Mesmo diálogo nos dois.
         botoes.add(new Button(0, 0, 0, 0, "Quit", b -> perguntarSeSai()));
         // O TROFEU E O ULTIMO DA LISTA, para o teclado alcancá-lo como aos outros,

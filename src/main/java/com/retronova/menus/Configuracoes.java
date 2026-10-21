@@ -10,7 +10,11 @@ import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
+import com.retronova.game.Corrida;
 import com.retronova.game.Game;
+import com.retronova.game.items.Elemento;
+import com.retronova.game.map.arena.Arena;
+import com.retronova.game.objects.entities.Player;
 import com.retronova.menus.shared.Abas;
 import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.OptionRow;
@@ -25,12 +29,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tela de opções — UMA SÓ, aberta pela tela inicial e pela pausa.
+ * Settings — O PAINEL ÚNICO DE CONFIGURAÇÕES, e também a pausa.
  *
- * Antes eram dois jeitos de abrir a mesma classe, e cada um desenhava um fundo: a
- * da tela inicial trazia uma imagem própria; a da pausa, o jogo. Agora quem decide
- * o fundo é o contexto (ver TelaDeMenu) e a tela é idêntica nos dois caminhos,
- * como no Minecraft: o que muda é só para onde o "Back" volta.
+ * DUAS PORTAS, UM COMPONENTE. Pela tela inicial ele abre com as abas de
+ * configuração (Video, Audio, Interface). Dentro da corrida ele É a pausa: ganha
+ * na frente a aba Run, com Continue, Restart, Main Menu e Quit, um resumo curto da
+ * corrida e o aviso do save. Antes a pausa era outra interface — uma coluna de
+ * botões grandes — e "Options" levava a uma segunda tela; o jogador mudava de
+ * gramática no meio do caminho.
+ *
+ * Por que assim: o Hades e o Dead Cells abrem a pausa direto num painel e
+ * guardam as configurações nele; o Forza Horizon e o Red Dead Redemption 2 põem
+ * a partida e as configurações em abas de um mesmo menu, trocadas por LB/RB; o
+ * Minecraft usa uma tela de opções só, que sabe de onde foi aberta. A aba Run
+ * fica primeiro e com o foco em Continue: quem pausa quer, antes de tudo, voltar
+ * a jogar (Game Accessibility Guidelines, "allow the game to be paused" e
+ * retomar sem passos extras).
+ *
+ * O fundo vem do contexto (ver TelaDeMenu): a ilustração do título fora da
+ * corrida, o jogo congelado dentro dela.
  *
  * Organizada como lista vertical dentro de abas, e não como grade 4x3. Na grade,
  * o "+" de uma opção acabava a 10px do "-" da opção vizinha e a 200px do próprio
@@ -39,15 +56,22 @@ import java.util.List;
  * Quase tudo se aplica na hora. As exceções são resolução e tela cheia, que
  * exigem recriar a janela; essas ficam pendentes até o botão Apply.
  */
-public class Options extends TelaDeMenu {
+public class Configuracoes extends TelaDeMenu {
 
     private static final int[] FPS_VALORES = {30, 60, 120, 144, 165, 240};
     /** Tamanhos de GUI, como no Minecraft. 0 = automático. Ver Configs.UiScale(). */
     private static final int[] ESCALAS_UI = {0, 1, 2, 3};
     private static final String[] ROTULOS_ESCALA = {"Auto", "1", "2", "3"};
 
-    private final Abas abas = new Abas("Video", "Audio", "Interface");
+    /** O aviso do save, na aba Run, em duas linhas para caber no painel. */
+    private static final String[] AVISO = {"Leaving saves your run.", "Enemies on screen are not kept."};
+
+    /** Aberta dentro da corrida: é a pausa, com a aba Run na frente. */
+    private final boolean naCorrida;
+    private final Abas abas;
     private final List<List<OptionRow>> linhas = new ArrayList<>();
+    /** Onde começa o resumo e o aviso da aba Run, abaixo das ações. */
+    private int yDoResumo;
     /**
      * O foco do teclado e do controle: as linhas da aba, e depois delas o Apply
      * (quando há o que aplicar) e o Back. Antes os dois botões só respondiam ao
@@ -63,11 +87,75 @@ public class Options extends TelaDeMenu {
     private final Button aplicar;
     private final Button voltar;
 
-    public Options() {
-        super("Options");
+    /** As configurações, pela tela inicial. */
+    public Configuracoes() {
+        this(false);
+    }
+
+    /** A pausa: o mesmo painel, com a aba Run na frente e o foco em Continue. */
+    public static Configuracoes pausa() {
+        return new Configuracoes(true);
+    }
+
+    private Configuracoes(boolean naCorrida) {
+        super(naCorrida ? "Paused" : "Settings");
+        this.naCorrida = naCorrida;
+        this.abas = naCorrida
+                ? new Abas("Run", "Video", "Audio", "Interface")
+                : new Abas("Video", "Audio", "Interface");
+        if (naCorrida) {
+            linhas.add(linhasDaCorrida());
+        }
         montarLinhas();
         this.aplicar = new Button(0, 0, 0, 0, "Apply", b -> aplicarPendentes()).primary();
-        this.voltar = new Button(0, 0, 0, 0, "Back", b -> voltar());
+        // Na pausa o botão de fora do painel RETOMA, como o Esc: "Back" ali não
+        // diria para onde se volta.
+        this.voltar = new Button(0, 0, 0, 0, naCorrida ? "Resume" : "Back", b -> voltar());
+    }
+
+    // ------------------------------------------------------------ aba Run
+
+    /**
+     * As ações da corrida, como linhas do painel. As três que saem dela pedem
+     * confirmação: um Enter a mais não pode custar uma corrida.
+     */
+    private List<OptionRow> linhasDaCorrida() {
+        List<OptionRow> run = new ArrayList<>();
+        run.add(OptionRow.acao("Continue", this::voltar)
+                .desc("Back to the run. Esc does the same."));
+        run.add(OptionRow.acao("Restart",
+                () -> confirmacao.perguntar("Restart the run?", this::reiniciar))
+                .desc("Start over from the beginning. This run is lost."));
+        run.add(OptionRow.acao("Main Menu",
+                () -> confirmacao.perguntar("Return to main menu?", this::irAoMenu))
+                .desc("Save the run and go to the title screen. Resume it from Play."));
+        run.add(OptionRow.acao("Quit",
+                () -> confirmacao.perguntar("Do you want to quit?", this::sair))
+                .desc("Save the run and close the game."));
+        return run;
+    }
+
+    private void reiniciar() {
+        encerrarAudicao(true);
+        Engine.pause(null);
+        Game.restart();
+    }
+
+    private void irAoMenu() {
+        // Grava ANTES de desempilhar: depois disso a partida ja nao e a corrente,
+        // e a gravacao nao teria de quem fotografar o estado.
+        encerrarAudicao(false);
+        Corrida.gravar();
+        voltarAoMenuPrincipal();
+    }
+
+    private void sair() {
+        Corrida.gravar();
+        Engine.CLOSE();
+    }
+
+    private boolean naAbaDaCorrida() {
+        return naCorrida && abas.atual() == 0;
     }
 
     /** Ha uma previa de musica tocando por cima do que o jogo tocava. */
@@ -91,7 +179,7 @@ public class Options extends TelaDeMenu {
                 .desc("Size of the game window. Takes effect only after Apply, which recreates the window."));
         video.add(OptionRow.toggle("Fullscreen", () -> pendTelaCheia, v -> pendTelaCheia = v)
                 .desc("Fills the whole screen with a borderless window. Needs Apply. F11 also toggles it."));
-        video.add(OptionRow.cycle("Frame rate", Options::indiceFps,
+        video.add(OptionRow.cycle("Frame rate", Configuracoes::indiceFps,
                 v -> Configs.setMaxFrames(FPS_VALORES[v]), fps)
                 .desc("Maximum frames drawn per second. Higher values look smoother but cost more CPU."));
         video.add(OptionRow.toggle("Smooth graphics",
@@ -140,7 +228,7 @@ public class Options extends TelaDeMenu {
                 .desc("Track for normal arenas. Plays here so you can compare. Boss fights have their own."));
 
         List<OptionRow> ui = new ArrayList<>();
-        ui.add(OptionRow.cycle("GUI size", Options::indiceEscala,
+        ui.add(OptionRow.cycle("GUI size", Configuracoes::indiceEscala,
                 v -> Configs.setUiScale(ESCALAS_UI[v]), ROTULOS_ESCALA)
                 .desc("Size of menus, buttons and text: 1 small, 2 normal, 3 large. Auto = 2."));
         ui.add(OptionRow.stepper("HUD size", Configs::HudScale, Configs::setHudScale, 2, 6, 1)
@@ -203,12 +291,16 @@ public class Options extends TelaDeMenu {
      */
     @Override
     protected void voltar() {
+        encerrarAudicao(Engine.getACTIVITY() instanceof Game);
+        super.voltar();
+    }
+
+    private void encerrarAudicao(boolean seguir) {
         if (auditando) {
-            Sound.encerrarAudicao(previa, Engine.getACTIVITY() instanceof Game);
+            Sound.encerrarAudicao(previa, seguir);
             previa = null;
             auditando = false;
         }
-        super.voltar();
     }
 
     private List<OptionRow> atuais() {
@@ -277,6 +369,10 @@ public class Options extends TelaDeMenu {
                         larguraPainel - 2 * margemX);
             }
         }
+        if (naCorrida) {
+            Rectangle ultima = linhas.getFirst().getLast().getBounds();
+            yDoResumo = ultima.y + ultima.height + entreLinhas;
+        }
 
         int larguraBotao = Button.preferredWidth();
         int yBotoes = yAbas + alturaAbas + alturaLinhas + entreBlocos;
@@ -340,7 +436,7 @@ public class Options extends TelaDeMenu {
             rows.get(foco).ajustarPeloTeclado(-1);
         } else if (KeyBoard.KeyPressed("Enter")) {
             if (foco < rows.size()) {
-                rows.get(foco).ajustarPeloTeclado(1);
+                rows.get(foco).ativar();
             } else if (foco == focoDoAplicar()) {
                 aplicar.activate();
             } else if (foco == focoDoVoltar()) {
@@ -352,7 +448,8 @@ public class Options extends TelaDeMenu {
 
     @Override
     protected List<Rodape.Dica> dicas() {
-        return List.of(Rodape.AJUSTAR, Rodape.ABAS, Rodape.VOLTAR);
+        Rodape.Dica sair = naCorrida ? new Rodape.Dica("Esc", "B", "Resume") : Rodape.VOLTAR;
+        return List.of(naAbaDaCorrida() ? Rodape.SELECIONAR : Rodape.AJUSTAR, Rodape.ABAS, sair);
     }
 
     // ---------------------------------------------------------------- render
@@ -385,6 +482,9 @@ public class Options extends TelaDeMenu {
             for (OptionRow linha : atuais()) {
                 linha.render(g);
             }
+            if (naAbaDaCorrida()) {
+                desenharResumo(g);
+            }
             return;
         }
         int s = Configs.UiScale();
@@ -396,7 +496,61 @@ public class Options extends TelaDeMenu {
         for (OptionRow linha : atuais()) {
             linha.render(g2);
         }
+        if (naAbaDaCorrida()) {
+            desenharResumo(g2);
+        }
         g2.dispose();
+    }
+
+    /**
+     * Embaixo das ações da aba Run: um fio, o resumo curto da corrida e o aviso
+     * do save.
+     *
+     * O RESUMO É CURTO DE PROPÓSITO: tempo, nível e elemento, o que se quer saber
+     * de relance antes de decidir se sai. O detalhe (atributos, inventário) é da
+     * tela de Status, na tecla E — repetir aqui seria manter duas fichas.
+     *
+     * O AVISO EXISTE porque não há botão de "Save and Quit": sair pelo Main Menu
+     * ou pelo Quit já grava. Sem esta linha, sair parece perder tudo, e quem acha
+     * que vai perder tudo não sai — fica jogando cansado.
+     */
+    private void desenharResumo(Graphics2D g) {
+        int s = Configs.UiScale();
+        int esq = painel.x + 12 * s, larg = painel.width - 24 * s;
+        int y = yDoResumo;
+        g.setColor(Palette.OUTLINE);
+        g.fillRect(esq, y, larg, s);
+        int cx = painel.x + painel.width / 2;
+
+        String resumo = resumoDaCorrida();
+        if (!resumo.isEmpty()) {
+            Font f = FontHandler.font(FontHandler.Game, 6f * s);
+            y += 12 * s;
+            TextFx.draw(g, resumo, f, cx - FontHandler.getWidth(resumo, f) / 2, y, Palette.TEXT, s);
+        }
+        Font fonte = FontHandler.font(FontHandler.Game, 5f * s);
+        y += 10 * s;
+        for (String linha : AVISO) {
+            TextFx.draw(g, linha, fonte, cx - FontHandler.getWidth(linha, fonte) / 2, y, Palette.LIGHT, s);
+            y += 8 * s;
+        }
+    }
+
+    private static String resumoDaCorrida() {
+        Player gato = Game.getPlayer();
+        if (gato == null) {
+            return "";
+        }
+        List<String> partes = new ArrayList<>();
+        if (Game.getMap() instanceof Arena && Game.getWave() != null) {
+            int seg = Game.getWave().getSeconds();
+            partes.add(String.format("%02d:%02d", seg / 60, seg % 60));
+        }
+        partes.add("Level " + gato.getLevel());
+        if (gato.elemento() != Elemento.NENHUM) {
+            partes.add(gato.elemento().rotulo());
+        }
+        return String.join("   ", partes);
     }
 
     /** Painel de fundo atrás das linhas. Altura fixa, igual em todas as abas. */

@@ -24,7 +24,7 @@ import com.retronova.game.objects.tiles.Tile;
 import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.menus.GameOver;
-import com.retronova.menus.Pause;
+import com.retronova.menus.Configuracoes;
 
 import java.awt.*;
 import java.util.List;
@@ -315,7 +315,11 @@ public class Game implements Activity {
         }
         hud.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
-            com.retronova.menus.shared.TelaDeMenu.abrir(new Pause());
+            com.retronova.menus.shared.TelaDeMenu.abrir(Configuracoes.pausa());
+            // Mais nada neste tick: um E apertado junto com o Esc abriria o Status
+            // por baixo da pausa. Com a pausa aberta o jogo nem recebe ticks, e o
+            // Q/E de lá só troca de aba.
+            return;
         }
         if(KeyBoard.KeyPressed("E")) {
             inter.open();
@@ -413,9 +417,15 @@ public class Game implements Activity {
         g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
         renderWorld(g);
         long t0 = System.nanoTime();
-        hud.render(g);
-        if (map instanceof com.retronova.game.map.arena.Arena) {
-            com.retronova.game.objects.entities.Furia.renderBarra(g, Engine.window.getWidth(), Engine.window.getHeight());
+        // COM UM MENU ABERTO POR CIMA, SÓ O MUNDO. O HUD atrás do véu disputava
+        // com o menu: o título "Paused" caía em cima do relógio e a hotbar aparecia
+        // por baixo do botão Resume. O Hades faz o mesmo ao pausar — fica a cena,
+        // sai a interface de combate.
+        if (!(Engine.sobreposta() instanceof com.retronova.menus.shared.TelaDeMenu)) {
+            hud.render(g);
+            if (map instanceof com.retronova.game.map.arena.Arena) {
+                com.retronova.game.objects.entities.Furia.renderBarra(g, Engine.window.getWidth(), Engine.window.getHeight());
+            }
         }
         com.retronova.engine.Desempenho.secao("hud", System.nanoTime() - t0);
         apagarNaMorte(g);

@@ -65,7 +65,7 @@ public class Inventory implements Activity {
      *
      * Reage a DOIS gatilhos, e nao so a um: a janela mudou de tamanho, ou a
      * escala do HUD mudou. Antes so o primeiro era observado, entao mexer no
-     * "HUD size" em Options deixava a moldura no tamanho velho e os slots nas
+     * "HUD size" em Settings deixava a moldura no tamanho velho e os slots nas
      * coordenadas novas — o inventario inteiro fora do lugar.
      */
     public void refreshPositions() {
