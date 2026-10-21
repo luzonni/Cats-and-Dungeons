@@ -161,7 +161,10 @@ public class GameOver implements Activity {
         }
 
         Font titulo = FontHandler.font(FontHandler.Game, 18f * s);
-        contornadoCentro(g, "RUN OVER", titulo, w / 2, painelResumo.y - 10 * s, new Color(0xE0475F), s);
+        // Vencer o chefe final muda o titulo, mesmo que o gato tenha caido depois.
+        boolean venceu = Estatisticas.venceu();
+        contornadoCentro(g, venceu ? "VICTORY" : "RUN OVER", titulo, w / 2, painelResumo.y - 10 * s,
+                venceu ? new Color(0xFFD23F) : new Color(0xE0475F), s);
 
         desenharResumo(g, s);
         desenharLoja(g, s);

@@ -29,6 +29,34 @@ public final class Estatisticas {
         danoPorFonte.clear();
         baus = 0;
         maiorHorda = 0;
+        venceu = false;
+    }
+
+    // ------------------------------------------------------------ vitoria
+
+    private static boolean venceu;
+
+    /**
+     * Registra a vitoria sobre o chefe final e DEPOSITA o bonus na hora.
+     *
+     * Na hora, e nao no fim da corrida: o jogador pode escolher continuar jogando,
+     * e se fechar o jogo no meio disso o bonus nao pode se perder. A segunda
+     * chamada nao paga de novo.
+     *
+     * @return true se foi a primeira vez nesta corrida
+     */
+    public static boolean registrarVitoria() {
+        if (venceu) {
+            return false;
+        }
+        venceu = true;
+        Meta.depositar(Meta.BONUS_DE_VITORIA);
+        return true;
+    }
+
+    /** O chefe final caiu nesta corrida? */
+    public static boolean venceu() {
+        return venceu;
     }
 
     /** Quem esta batendo agora. Chame com null para voltar a arma da mao. */
@@ -66,6 +94,11 @@ public final class Estatisticas {
         gato = nomeDoGato;
         ouroGanho = Meta.ouroDaCorrida(segundos, abates);
         Meta.depositar(ouroGanho);
+        // O bonus de vitoria ja foi depositado em registrarVitoria; aqui so entra no
+        // numero mostrado, para a tela final somar o que o jogador de fato ganhou.
+        if (venceu) {
+            ouroGanho += Meta.BONUS_DE_VITORIA;
+        }
     }
 
     public static int segundos() {

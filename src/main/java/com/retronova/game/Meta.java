@@ -134,6 +134,13 @@ public final class Meta {
         return true;
     }
 
+    /**
+     * O bonus de vencer o chefe final: o mesmo que uns trinta minutos de corrida
+     * rendem so pelo tempo (180 de ouro), um pouco acima. Vencer tem de pagar mais
+     * que sobreviver ate o fim e morrer — senao o chefe nao e um objetivo.
+     */
+    public static final int BONUS_DE_VITORIA = 200;
+
     /** O que uma corrida rende: um pouco pelo tempo, um pouco pelos abates. */
     public static int ouroDaCorrida(int segundos, int abates) {
         return segundos / 6 + abates / 8;

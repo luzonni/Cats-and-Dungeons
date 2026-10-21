@@ -86,6 +86,18 @@ public class RatoRei extends Chefe {
                 16, 50, Sounds.MouseSquire);
     }
 
+    /** Quando o rei cai, a corrida está vencida. */
+    @Override
+    public void die() {
+        super.die();
+        Camera.tremer(10);
+        try {
+            Game.getGame().vencer();
+        } catch (RuntimeException foraDoJogo) {
+            // Sem jogo corrente (teste, ou troca de tela): nao ha o que vencer.
+        }
+    }
+
     @Override
     protected void aoMudarDeFase(int nova) {
         Sound.play(Sounds.Cat);
