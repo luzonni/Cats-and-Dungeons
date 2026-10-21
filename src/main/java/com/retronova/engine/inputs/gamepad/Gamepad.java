@@ -1,10 +1,8 @@
 package com.retronova.engine.inputs.gamepad;
 
 import com.retronova.engine.Configs;
-import com.retronova.engine.Engine;
+import com.retronova.engine.inputs.Entrada;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
-import com.retronova.engine.inputs.mouse.Mouse;
-import com.retronova.engine.inputs.mouse.Mouse_Button;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -16,15 +14,12 @@ import java.util.Set;
  * Controle no padrão Xbox.
  *
  * NÃO HÁ TELA QUE CONHEÇA O CONTROLE. Ele aperta as mesmas teclas que o jogo já
- * lê por nome ({@link KeyBoard#pad}) e mexe no mesmo cursor que o mouse
- * ({@link Mouse#moverVirtual}). Assim as quase cinquenta leituras de teclado e as
- * telas feitas só para mouse — loja, inventário, vendedor — funcionam sem mudar.
- * O que é próprio do controle, e não tem tecla equivalente, é pouco: o movimento
- * analógico ({@link #movimento()}), LB/RB ({@link #pressionou}) e a vibração.
- *
- * O CURSOR VIRTUAL só assume quando o analógico direito é usado. A partir daí o
- * A clica em vez de confirmar. Ele sai de cena quando o mouse de verdade se mexe
- * ou quando o jogador volta a navegar pelo D-pad.
+ * lê por nome ({@link KeyBoard#pad}), e as quase cinquenta leituras de teclado
+ * funcionam sem mudar. As telas de grade — inventário, loja — andam por foco com
+ * as setas, então servem ao teclado e ao controle do mesmo jeito. O que é próprio
+ * do controle, e não tem tecla equivalente, é pouco: o movimento analógico
+ * ({@link #movimento()}), o olhar do analógico direito ({@link #olhar()}), LB/RB
+ * ({@link #pressionou}) e a vibração.
  */
 public final class Gamepad {
 
@@ -42,12 +37,13 @@ public final class Gamepad {
     }
 
     /**
-     * Botão -> tecla que ele aperta. A e B ficam de fora: o A depende do cursor,
-     * e o B de estar em jogo ou numa tela (ver {@link #emJogo()}).
+     * Botão -> tecla que ele aperta. O B fica de fora: depende de estar em jogo
+     * ou numa tela (ver {@link #emJogo()}).
      */
     private static final Map<Botao, String> TECLAS = new LinkedHashMap<>();
 
     static {
+        TECLAS.put(Botao.A, "Enter");
         TECLAS.put(Botao.START, "Escape");
         TECLAS.put(Botao.X, "F");
         TECLAS.put(Botao.Y, "E");
@@ -66,8 +62,6 @@ public final class Gamepad {
     static final double LIMIAR_DIRECAO = 0.5;
     /** Auto-repeat de direção segurada, em ticks: 400 ms e depois a cada ~120 ms. */
     static final int REPETE_APOS = 24, REPETE_CADA = 7;
-    /** Fração da altura da janela que o cursor anda por tick com o analógico no fim. */
-    static final double VELOCIDADE_CURSOR = 0.018;
     /**
      * Porta vazia só é consultada uma vez por segundo. XInputGetState numa porta
      * sem controle é sabidamente lento, e consultar as quatro a cada tick faria o
@@ -83,9 +77,6 @@ public final class Gamepad {
     private static Map<String, Boolean> teclasAnteriores = new HashMap<>();
     private static final Map<String, Integer> seguradas = new HashMap<>();
     private static final Set<Botao> pendentes = EnumSet.noneOf(Botao.class);
-
-    private static boolean cursorAtivo;
-    private static double cursorX, cursorY;
 
     /** O jogo rodou no último tick. Ver emJogo. */
     private static boolean emJogo;
@@ -107,7 +98,7 @@ public final class Gamepad {
         if (vibracaoRestante > 0 && --vibracaoRestante == 0) {
             motores(0, 0);
         }
-        aplicar(estado, Engine.window.getWidth(), Engine.window.getHeight());
+        aplicar(estado);
     }
 
     private static EstadoDoControle ler() {
@@ -137,17 +128,17 @@ public final class Gamepad {
     }
 
     /**
-     * Traduz uma leitura em teclas e cursor.
+     * Traduz uma leitura em teclas.
      *
-     * Separado da leitura para ser testável sem a DLL. Largura e altura zero
-     * desligam o cursor, que é o que os testes usam.
+     * Separado da leitura para ser testável sem a DLL.
      */
-    static void aplicar(EstadoDoControle estado, int largura, int altura) {
-        if (Mouse.consumirMovimentoReal()) {
-            cursorAtivo = false;
+    static void aplicar(EstadoDoControle estado) {
+        // Qualquer coisa no controle passa o jogo para o modo controle, e o mouse
+        // some das telas. So conta MUDANCA: um analogico segurado parado nao pode
+        // ficar tomando o jogo de volta de quem acabou de mexer o mouse.
+        if (!estado.equals(anterior) && !estado.equals(EstadoDoControle.SOLTO)) {
+            Entrada.controle();
         }
-        moverCursor(estado, largura, altura);
-
         Map<String, Boolean> teclas = new HashMap<>();
         for (Map.Entry<Botao, String> e : TECLAS.entrySet()) {
             teclas.merge(e.getValue(), estado.pressionado(e.getKey()), Boolean::logicalOr);
@@ -168,24 +159,6 @@ public final class Gamepad {
         teclas.merge("Right", estado.lx() > LIMIAR_DIRECAO, Boolean::logicalOr);
         teclas.merge("Up", estado.ly() < -LIMIAR_DIRECAO, Boolean::logicalOr);
         teclas.merge("Down", estado.ly() > LIMIAR_DIRECAO, Boolean::logicalOr);
-
-        // Voltar a navegar pelas direções devolve o A ao papel de confirmar.
-        if (cursorAtivo) {
-            for (String direcao : DIRECOES) {
-                if (teclas.get(direcao) && !teclasAnteriores.getOrDefault(direcao, false)) {
-                    recolherCursor();
-                    break;
-                }
-            }
-        }
-
-        if (cursorAtivo) {
-            clicar(Mouse_Button.LEFT, estado.pressionado(Botao.A), anterior.pressionado(Botao.A));
-            clicar(Mouse_Button.RIGHT, estado.pressionado(Botao.R3), anterior.pressionado(Botao.R3));
-            teclas.put("Enter", false);
-        } else {
-            teclas.put("Enter", estado.pressionado(Botao.A));
-        }
 
         for (Map.Entry<String, Boolean> e : teclas.entrySet()) {
             String nome = e.getKey();
@@ -216,52 +189,6 @@ public final class Gamepad {
         anterior = estado;
     }
 
-    private static void moverCursor(EstadoDoControle estado, int largura, int altura) {
-        double raio = Math.hypot(estado.rx(), estado.ry());
-        if (raio == 0 || largura <= 0 || altura <= 0) {
-            return;
-        }
-        if (!cursorAtivo) {
-            cursorAtivo = true;
-            // Nasce onde o mouse estava, se ele estava na janela; senão, onde o
-            // cursor virtual foi deixado da última vez.
-            if (Mouse.getX() >= 0 && Mouse.getY() >= 0) {
-                cursorX = Mouse.getX();
-                cursorY = Mouse.getY();
-            }
-        }
-        // Curva quadrática: o começo do curso é lento e preciso para acertar um
-        // slot, o fim é rápido para atravessar a tela.
-        double passo = raio * VELOCIDADE_CURSOR * altura;
-        cursorX = Math.max(0, Math.min(largura - 1, cursorX + estado.rx() * passo));
-        cursorY = Math.max(0, Math.min(altura - 1, cursorY + estado.ry() * passo));
-        Mouse.moverVirtual((int) cursorX, (int) cursorY);
-    }
-
-    /**
-     * Some com o cursor e o tira de cima da tela.
-     *
-     * Deixado onde estava, ele continuaria "sobre" algum botão, e os menus dão o
-     * foco a quem está sob o mouse — o D-pad ficaria brigando com um cursor que
-     * nem aparece mais.
-     */
-    private static void recolherCursor() {
-        cursorAtivo = false;
-        if (anterior.pressionado(Botao.A)) {
-            Mouse.botaoVirtual(Mouse_Button.LEFT, false);
-        }
-        if (anterior.pressionado(Botao.R3)) {
-            Mouse.botaoVirtual(Mouse_Button.RIGHT, false);
-        }
-        Mouse.moverVirtual(-1, -1);
-    }
-
-    private static void clicar(Mouse_Button botao, boolean agora, boolean antes) {
-        if (agora != antes) {
-            Mouse.botaoVirtual(botao, agora);
-        }
-    }
-
     // ------------------------------------------------------------- consulta
 
     /**
@@ -276,10 +203,6 @@ public final class Gamepad {
         return porta >= 0;
     }
 
-    public static boolean cursorAtivo() {
-        return cursorAtivo;
-    }
-
     /**
      * Direção do analógico esquerdo, ou nulo com ele solto.
      *
@@ -291,6 +214,14 @@ public final class Gamepad {
             return null;
         }
         return new double[] {anterior.lx(), anterior.ly()};
+    }
+
+    /**
+     * Para onde o analógico direito aponta, de -1 a 1 em cada eixo, já sem a zona
+     * morta. Solto, devolve zero. A câmera usa isto para espiar. Ver Camera.
+     */
+    public static double[] olhar() {
+        return new double[] {anterior.rx(), anterior.ry()};
     }
 
     /** LB/RB, consumível como KeyBoard.KeyPressed. */
@@ -342,8 +273,6 @@ public final class Gamepad {
         seguradas.clear();
         pendentes.clear();
         anterior = EstadoDoControle.SOLTO;
-        cursorAtivo = false;
-        cursorX = cursorY = 0;
         emJogo = false;
         teclaDoB = "Escape";
     }

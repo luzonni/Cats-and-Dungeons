@@ -72,10 +72,24 @@ pelo JNA que já vinha com o OSHI. Não entrou dependência nova. Fora do Window
 a DLL não carrega e o controle fica desligado sem erro.
 
 Nenhuma tela conhece o controle. `Gamepad` traduz cada leitura em **teclas
-virtuais** (`KeyBoard.pad`), as mesmas que o jogo já lê por nome, e num **cursor
-virtual** que escreve nos campos do `Mouse`. As telas feitas para teclado ou
-mouse funcionam sem mudar. O estado do controle fica num campo separado do
-teclado, para que soltar um não solte o outro.
+virtuais** (`KeyBoard.pad`), as mesmas que o jogo já lê por nome. O estado do
+controle fica num campo separado do teclado, para que soltar um não solte o
+outro.
+
+As telas de grade — inventário, loja do vendedor, máquina de chiclete, loja do
+fim de corrida — andam por **foco** com as setas (`Grade`), então servem ao
+teclado e ao controle do mesmo jeito.
+
+**Dois modos de entrada** (`Entrada`): mexer o mouse põe o jogo no modo mouse e
+teclado; apertar qualquer coisa no controle põe no modo controle. No modo
+controle o `Mouse` responde que o ponteiro está fora da tela e o ponteiro do
+sistema some. Sem isso, um mouse parado em cima de um botão ou de uma carta
+tomava de volta, a cada tick, o foco que o D-pad tinha acabado de mudar. Nas
+grades, o realce do foco só aparece quando as setas ou o controle estão no
+comando.
+
+O **analógico direito é olhar**: em jogo, a `Camera` se afasta até 1,5 tile do gato
+na direção dele e volta sozinha ao soltar. Não há cursor virtual.
 
 Duas regras pesam no desempenho e no comportamento:
 
@@ -87,9 +101,6 @@ Duas regras pesam no desempenho e no comportamento:
   `clickOnRect` desse objeto responde como se ele tivesse sido clicado. Nas
   telas, o B volta. O papel é decidido no aperto e fica até soltar, para o B
   que abre a loja não fechá-la no tick seguinte.
-- **O cursor virtual só existe enquanto o analógico direito o usa.** Mexer o
-  mouse de verdade ou voltar ao D-pad o recolhe e devolve ao `A` o papel de
-  confirmar.
 
 ## Recursos
 

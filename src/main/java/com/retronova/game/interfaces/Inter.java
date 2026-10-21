@@ -5,6 +5,7 @@ import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
@@ -111,6 +112,7 @@ public class Inter implements Activity {
             close();
         }
         refreshPositions();
+        trocarAbaPeloControle();
         for(int i = 0; i < tabs.length; i++) {
             Rectangle rec = tabs[i];
             // As abas — inventario, status, loja — sao o primeiro lugar onde o
@@ -125,6 +127,18 @@ public class Inter implements Activity {
         }
         if(inter.containsKey(index))
             inter.get(index).tick();
+    }
+
+    /** LB/RB passam de aba — inventario, status, loja —, como nas Opcoes. */
+    private void trocarAbaPeloControle() {
+        int passo = Gamepad.pressionou(Gamepad.Botao.RB) ? 1
+                : Gamepad.pressionou(Gamepad.Botao.LB) ? -1 : 0;
+        if (passo == 0) {
+            return;
+        }
+        String[] keys = keys();
+        int atual = Math.max(0, Arrays.asList(keys).indexOf(index));
+        this.index = keys[(atual + passo + keys.length) % keys.length];
     }
 
     @Override

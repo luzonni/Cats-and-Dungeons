@@ -134,11 +134,16 @@ Num caso pontual dá para pular com `git push --no-verify`.
 | `E` | `Y` | Inventário |
 | `F` | `X` | Usar consumível |
 | `Q` | `View` | Largar item |
-| Rodinha · `1`–`9` | `LB` / `RB` | Trocar slot da hotbar · trocar aba nas Opções |
+| Rodinha · `1`–`9` | `LB` / `RB` | Trocar slot da hotbar · trocar aba no inventário e nas Opções |
 | `Enter` | `A` | Confirmar |
 | `Esc` | `B` (nas telas) · `Start` | Voltar · pausar |
 | Clique no objeto | `B` (em jogo) | Pegar item, abrir caixa, falar com o vendedor, puxar alavanca, ler placa (o mais próximo) |
-| Mouse | Analógico direito + `A` (`R3` = botão direito) | Cursor, para loja, inventário e objetos do mapa |
+| | Analógico direito | Espiar: a câmera se afasta até 1,5 tile e volta ao soltar |
+
+No inventário, na loja e na máquina de chiclete, as setas ou o D-pad andam pelas
+casas e `Enter`/`A` faz o que o clique faria. No inventário, `Q`/`View` manda o
+item para o outro lado (como Shift + clique) e `F`/`X` consome. Na loja, o
+primeiro `A` seleciona e o segundo, na mesma casa, compra.
 | `F11` | | Alternar tela cheia |
 | `Ctrl` + `=` / `-` | | Zoom da câmera |
 | `F3` | | Overlay de depuração |

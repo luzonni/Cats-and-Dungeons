@@ -6,6 +6,8 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.SpriteHandler;
+import com.retronova.engine.inputs.Entrada;
+import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.game.Game;
@@ -74,15 +76,16 @@ public class GumInterface implements Activity {
                 this.priceColor = Color.white;
             }
         }
-        if(Mouse.on(this.button)) {
+        // Pelas teclas e pelo controle a maquina tem um botao so: o Enter/A puxa
+        // a alavanca e, quando o premio cai, o mesmo botao o recolhe. Sao duas
+        // acoes que nunca valem ao mesmo tempo, entao nao ha o que escolher.
+        boolean enter = KeyBoard.KeyPressed("Enter");
+        boolean puxarPeloFoco = Entrada.porFoco() && !gumPanel.opened() && this.slot.isEmpty();
+        if(Mouse.on(this.button) || puxarPeloFoco) {
             this.indexButton = 1;
-            if(Mouse.click(Mouse_Button.LEFT) && !gumPanel.opened()) {
-                if(player.getMoney() >= gum.getPrice()) {
-                    gumPanel.openAward();
-                    player.setMoney(player.getMoney() - gum.getPrice());
-                }else {
-                    this.priceColor = Palette.WARN;
-                }
+            boolean puxou = Mouse.on(this.button) ? Mouse.click(Mouse_Button.LEFT) : enter;
+            if(puxou && !gumPanel.opened()) {
+                puxar(player);
             }
         }else {
             this.indexButton = 0;
@@ -90,11 +93,21 @@ public class GumInterface implements Activity {
         if(gumPanel.animFinish() && this.slot.isEmpty() && awards != null) {
             this.slot.put(awards[Engine.RAND.nextInt(awards.length)]);
         }
-        if(Mouse.clickOn(Mouse_Button.LEFT, this.slot.getBounds()) && !this.slot.isEmpty()) {
+        boolean recolher = Mouse.clickOn(Mouse_Button.LEFT, this.slot.getBounds()) || enter;
+        if(recolher && !this.slot.isEmpty()) {
             Item award = this.slot.takeAll();
             Game.getPlayer().getInventory().give(award);
             Game.getInter().close();
             gum.disappear();
+        }
+    }
+
+    private void puxar(Player player) {
+        if(player.getMoney() >= gum.getPrice()) {
+            gumPanel.openAward();
+            player.setMoney(player.getMoney() - gum.getPrice());
+        }else {
+            this.priceColor = Palette.WARN;
         }
     }
 

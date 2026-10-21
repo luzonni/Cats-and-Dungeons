@@ -4,6 +4,7 @@ import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.UiSprite;
+import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.game.interfaces.InfoBox;
 import com.retronova.game.items.Consumable;
@@ -79,6 +80,13 @@ class Frame {
             H+=rec.height;
         }
         int s = Mouse.Scroll();
+        // As setas e o D-pad rolam a lista tambem: sem rodinha, o controle so via
+        // os primeiros passivos.
+        if(KeyBoard.KeyPressed("Down")) {
+            s = 1;
+        }else if(KeyBoard.KeyPressed("Up")) {
+            s = -1;
+        }
         int pref = rec.height/2;
         if(s == -1) {
             if(scroll < 0)
