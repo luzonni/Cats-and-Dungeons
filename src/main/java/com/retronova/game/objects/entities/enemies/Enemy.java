@@ -520,7 +520,7 @@ public abstract class Enemy extends Entity implements Nascente {
         if (!elite) {
             return;
         }
-        float t = (System.nanoTime() % 1_000_000_000_000L) / 1e9f;
+        float t = (float) com.retronova.game.Game.tempoVisual();
         int alfa = 90 + (int) (50 * Math.sin(t * 6));
         int r = Math.max(getWidth(), getHeight());
         int cx = (int) getX() + getWidth() / 2;

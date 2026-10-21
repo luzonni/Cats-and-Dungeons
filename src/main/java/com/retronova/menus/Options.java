@@ -1,66 +1,59 @@
 package com.retronova.menus;
 
-import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Debugging;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.graphics.TextFx;
-import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
-import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Musics;
-import com.retronova.game.Game;
 import com.retronova.engine.sound.Sound;
-import com.retronova.engine.sound.Sounds;
+import com.retronova.game.Game;
+import com.retronova.menus.shared.Abas;
 import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.OptionRow;
+import com.retronova.menus.shared.Rodape;
+import com.retronova.menus.shared.TelaDeMenu;
 
-import javax.imageio.ImageIO;
 import java.awt.AlphaComposite;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tela de opções.
+ * Tela de opções — UMA SÓ, aberta pela tela inicial e pela pausa.
  *
- * Organizada como lista vertical dentro de abas, e não mais como grade 4x3.
- * Na grade, o "+" de uma opção acabava a 10px do "-" da opção vizinha e a 200px
- * do próprio rótulo, o que fazia os controles parecerem pertencer à coluna
- * errada.
+ * Antes eram dois jeitos de abrir a mesma classe, e cada um desenhava um fundo: a
+ * da tela inicial trazia uma imagem própria; a da pausa, o jogo. Agora quem decide
+ * o fundo é o contexto (ver TelaDeMenu) e a tela é idêntica nos dois caminhos,
+ * como no Minecraft: o que muda é só para onde o "Back" volta.
+ *
+ * Organizada como lista vertical dentro de abas, e não como grade 4x3. Na grade,
+ * o "+" de uma opção acabava a 10px do "-" da opção vizinha e a 200px do próprio
+ * rótulo, o que fazia os controles parecerem pertencer à coluna errada.
  *
  * Quase tudo se aplica na hora. As exceções são resolução e tela cheia, que
- * exigem recriar a janela; essas ficam pendentes até o botão Aplicar.
+ * exigem recriar a janela; essas ficam pendentes até o botão Apply.
  */
-public class Options implements Activity {
+public class Options extends TelaDeMenu {
 
     private static final int[] FPS_VALORES = {30, 60, 120, 144, 165, 240};
     /** Tamanhos de GUI, como no Minecraft. 0 = automático. Ver Configs.UiScale(). */
     private static final int[] ESCALAS_UI = {0, 1, 2, 3};
     private static final String[] ROTULOS_ESCALA = {"Auto", "1", "2", "3"};
 
-    private final String[] abas = {"Video", "Audio", "Interface"};
+    private final Abas abas = new Abas("Video", "Audio", "Interface");
     private final List<List<OptionRow>> linhas = new ArrayList<>();
-    private Rectangle[] abasRect;
-    private int abaAtual;
+    /**
+     * O foco do teclado e do controle: as linhas da aba, e depois delas o Apply
+     * (quando há o que aplicar) e o Back. Antes os dois botões só respondiam ao
+     * mouse — quem jogava de controle não tinha como aplicar uma resolução.
+     */
     private int foco;
-
-    // Animação da troca de aba. O destaque da aba DESLIZA até a nova em vez de
-    // pular, e o conteúdo entra pelo lado de onde a aba nova está.
-    /** Posição x do destaque agora e no tick anterior, para interpolar no render. */
-    private double destaqueX = -1, destaqueXAntes = -1;
-    /** Ticks desde a troca de aba; acima de TROCA_TICKS a animação acabou. */
-    private int desdeATroca = Integer.MAX_VALUE;
-    /** +1 se a aba nova está à direita da anterior, -1 se à esquerda. */
-    private int direcaoDaTroca = 1;
-    private static final int TROCA_TICKS = 12;
-    private int yTitulo;
     private Rectangle painel = new Rectangle();
 
     // Mudanças que só podem ser aplicadas recriando a janela.
@@ -70,48 +63,11 @@ public class Options implements Activity {
     private final Button aplicar;
     private final Button voltar;
 
-    private BufferedImage imagemFundo;
-    /** Quando aberta por cima do jogo, não desenha fundo próprio. */
-    private final boolean sobreposta;
-    private final Runnable aoFechar;
-
-    /**
-     * Abre as opções por cima da cena atual, sem trocar de Activity.
-     *
-     * Empilhar as opções a partir da pausa trocava a tela e trazia junto o fundo
-     * da tela inicial, dando a impressão de que o jogador tinha saído da partida.
-     *
-     * @param aoFechar o que fazer no Back, no lugar de desempilhar a Activity
-     */
-    public static Options sobreposta(Runnable aoFechar) {
-        return new Options(true, aoFechar);
-    }
-
     public Options() {
-        this(false, null);
-    }
-
-    private Options(boolean sobreposta, Runnable aoFechar) {
-        this.sobreposta = sobreposta;
-        this.aoFechar = aoFechar;
+        super("Options");
         montarLinhas();
-        this.abasRect = new Rectangle[abas.length];
-        for (int i = 0; i < abasRect.length; i++) {
-            abasRect[i] = new Rectangle();
-        }
         this.aplicar = new Button(0, 0, 0, 0, "Apply", b -> aplicarPendentes()).primary();
-        this.voltar = new Button(0, 0, 0, 0, "Back", b -> fechar());
-
-        try {
-            imagemFundo = ImageIO.read(getClass().getResource(
-                    "/com/retronova/resources/icons/Gato_fundo.png"));
-        } catch (Exception e) {
-            System.err.println("Options: fundo não carregado: " + e);
-        }
-
-        //Sem isto, o primeiro render pode acontecer antes do primeiro tick e
-        //desenhar tudo em (0,0) — a piscada no canto ao abrir a tela.
-        posicionar();
+        this.voltar = new Button(0, 0, 0, 0, "Back", b -> voltar());
     }
 
     /** Ha uma previa de musica tocando por cima do que o jogo tocava. */
@@ -237,26 +193,26 @@ public class Options implements Activity {
         Engine.window.resetWindow();
     }
 
-    /** Volta para quem abriu: a pausa, quando sobreposta; a pilha, quando não. */
-    private void fechar() {
-        // DENTRO DO JOGO a previa nao e cortada: ela vira a musica da partida e
-        // segue tocando sem emenda. Fora do jogo ela e cortada e a musica do menu
-        // volta de onde parou. Nos dois casos nada recomeca do zero — ver
-        // Sound.encerrarAudicao.
+    /**
+     * Volta para quem abriu — a pausa ou a tela inicial —, encerrando antes a
+     * prévia de música.
+     *
+     * DENTRO DO JOGO a prévia não é cortada: ela vira a música da partida e segue
+     * tocando sem emenda. Fora do jogo ela é cortada e a música do menu volta de
+     * onde parou. Nos dois casos nada recomeça do zero — ver Sound.encerrarAudicao.
+     */
+    @Override
+    protected void voltar() {
         if (auditando) {
             Sound.encerrarAudicao(previa, Engine.getACTIVITY() instanceof Game);
             previa = null;
             auditando = false;
         }
-        if (aoFechar != null) {
-            aoFechar.run();
-        } else {
-            Engine.backActivity();
-        }
+        super.voltar();
     }
 
     private List<OptionRow> atuais() {
-        return linhas.get(abaAtual);
+        return linhas.get(abas.atual());
     }
 
     // ---------------------------------------------------------------- layout
@@ -271,36 +227,35 @@ public class Options implements Activity {
     }
 
     /**
-     * O bloco inteiro — título, abas, painel e botões — é medido primeiro e
-     * então centralizado na janela. Antes ficava ancorado no topo, o que em
-     * telas grandes deixava a tela toda amontoada num canto.
+     * Abas, painel e botões são medidos primeiro e então centralizados na área de
+     * conteúdo, entre o título e o rodapé.
      */
-    private void posicionar() {
+    @Override
+    protected void posicionar() {
         int s = Configs.UiScale();
+        Rectangle area = areaDoConteudo();
         int larguraPainel = Math.min(Engine.window.getWidth() - 16 * s, 240 * s);
         int x = Engine.window.getWidth() / 2 - larguraPainel / 2;
 
-        int alturaTitulo = 18 * s;
-        int alturaAbas = 13 * s;
+        int alturaAbas = Abas.altura();
         // RESPIRO. Antes era tudo de 2 a 6 pixels: as linhas encostavam umas nas
         // outras e na borda do painel, e a tela inteira lia como amontoada.
-        int entreLinhas = 7 * s;      // vão entre uma opção e a próxima
-        int margemX = 12 * s;         // da borda do painel até o rótulo e os controles
-        int margemTopo = 10 * s;      // da faixa das abas até a primeira opção
-        int margemBase = 12 * s;      // da última opção até o fim do painel
-        int entreBlocos = 10 * s;     // título ↔ abas e painel ↔ botões
+        int entreLinhas = 7 * s;
+        int margemX = 12 * s;
+        int margemTopo = 10 * s;
+        int margemBase = 12 * s;
+        int entreBlocos = 10 * s;
         int alturaBotao = Button.preferredHeight();
-        //Altura calculada pela aba MAIS LONGA, não pela aba atual: assim o painel
-        //e os botões ficam parados ao alternar entre Video, Audio e Interface.
+        // A altura vem da aba MAIS LONGA, e não da atual: o painel e os botões ficam
+        // parados ao alternar entre Video, Audio e Interface.
         int alturaLinhas, total;
-        // O RESPIRO CEDE ANTES DO BOTÃO. A aba Video é longa, e com o espaçamento
-        // cheio o painel empurrava o Back para fora da janela — a tela ficava sem
-        // saída a não ser o Esc. Se não couber, os vãos encolhem um passo por vez.
+        // O RESPIRO CEDE ANTES DO BOTÃO. Se não couber, os vãos encolhem um passo
+        // por vez, em vez de o Back sair da janela.
         while (true) {
             alturaLinhas = margemTopo + maxLinhas() * (OptionRow.height() + entreLinhas)
                     - entreLinhas + margemBase;
-            total = alturaTitulo + entreBlocos + alturaAbas + alturaLinhas + entreBlocos + alturaBotao;
-            if (total <= Engine.window.getHeight() - 8 * s || entreLinhas <= 2 * s) {
+            total = alturaAbas + alturaLinhas + entreBlocos + alturaBotao;
+            if (total <= area.height || entreLinhas <= 2 * s) {
                 break;
             }
             entreLinhas -= s;
@@ -309,19 +264,12 @@ public class Options implements Activity {
             entreBlocos = Math.max(6 * s, entreBlocos - s);
         }
 
-        int topo = Math.max(4 * s, (Engine.window.getHeight() - total) / 2);
-        this.yTitulo = topo + alturaTitulo;
-
-        int yAbas = topo + alturaTitulo + entreBlocos;
-        int larguraAba = larguraPainel / abas.length;
-        for (int i = 0; i < abas.length; i++) {
-            abasRect[i] = new Rectangle(x + i * larguraAba, yAbas, larguraAba, alturaAbas);
-        }
+        int yAbas = area.y + Math.max(0, (area.height - total) / 2);
+        abas.posicionar(x, yAbas, larguraPainel);
         this.painel = new Rectangle(x, yAbas + alturaAbas, larguraPainel, alturaLinhas);
 
-        //Posiciona as linhas de TODAS as abas, não só a visível. Só a atual era
-        //posicionada, então a aba recém-aberta desenhava um quadro com as
-        //coordenadas zeradas — a piscada no canto da tela.
+        // Posiciona as linhas de TODAS as abas, não só a visível: a aba recém-aberta
+        // desenhava um quadro com as coordenadas zeradas — a piscada no canto.
         int y = yAbas + alturaAbas + margemTopo;
         for (List<OptionRow> aba : linhas) {
             for (int i = 0; i < aba.size(); i++) {
@@ -339,18 +287,21 @@ public class Options implements Activity {
 
     // ------------------------------------------------------------------ tick
 
-    @Override
-    public void tick() {
-        posicionar();
+    /** Índice do foco que cai no Apply, ou -1 quando ele não está na tela. */
+    private int focoDoAplicar() {
+        return temPendencia() ? atuais().size() : -1;
+    }
 
-        if (KeyBoard.KeyPressed("Escape")) {
-            fechar();
-            return;
+    private int focoDoVoltar() {
+        return atuais().size() + (temPendencia() ? 1 : 0);
+    }
+
+    @Override
+    protected void atualizar() {
+        if (abas.tick()) {
+            foco = 0;
         }
-        trocarAbaPeloMouse();
-        trocarAbaPeloControle();
         navegarPeloTeclado();
-        animarAbas();
 
         List<OptionRow> rows = atuais();
         for (int i = 0; i < rows.size(); i++) {
@@ -363,115 +314,73 @@ public class Options implements Activity {
         }
 
         if (temPendencia()) {
+            aplicar.setFocused(foco == focoDoAplicar());
             aplicar.tick();
             if (aplicar.isHovered()) {
                 Engine.window.pointing();
             }
         }
+        voltar.setFocused(foco == focoDoVoltar());
         voltar.tick();
         if (voltar.isHovered()) {
             Engine.window.pointing();
         }
     }
 
-    private void trocarAbaPeloMouse() {
-        for (int i = 0; i < abasRect.length; i++) {
-            if (Mouse.clickOn(Mouse_Button.LEFT, abasRect[i]) && i != abaAtual) {
-                direcaoDaTroca = i > abaAtual ? 1 : -1;
-                desdeATroca = 0;
-                abaAtual = i;
-                foco = 0;
-                Sound.play(Sounds.Button);
-                return;
-            }
-            if (abasRect[i].contains(Mouse.getX(), Mouse.getY())) {
-                Engine.window.pointing();
-            }
-        }
-    }
-
-    /** LB/RB passam de aba, como nos menus de console. */
-    private void trocarAbaPeloControle() {
-        int passo = Gamepad.pressionou(Gamepad.Botao.RB) ? 1
-                : Gamepad.pressionou(Gamepad.Botao.LB) ? -1 : 0;
-        if (passo != 0) {
-            direcaoDaTroca = passo;
-            desdeATroca = 0;
-            abaAtual = (abaAtual + passo + abas.length) % abas.length;
-            foco = 0;
-            Sound.play(Sounds.Button);
-        }
-    }
-
-    /** O destaque persegue a aba atual com amortecimento: rápido no começo, assenta no fim. */
-    private void animarAbas() {
-        double alvo = abasRect[abaAtual].x;
-        destaqueXAntes = destaqueX < 0 ? alvo : destaqueX;
-        destaqueX = destaqueX < 0 ? alvo : destaqueX + (alvo - destaqueX) * 0.3;
-        if (Math.abs(alvo - destaqueX) < 0.5) {
-            destaqueX = alvo;
-        }
-        if (desdeATroca < TROCA_TICKS) {
-            desdeATroca++;
-        }
-    }
-
-    /** 0 no começo da troca, 1 quando acabou; com a fração entre ticks. */
-    private double progressoDaTroca() {
-        if (desdeATroca >= TROCA_TICKS) {
-            return 1;
-        }
-        double f = Math.min(1, (desdeATroca + Engine.alpha()) / TROCA_TICKS);
-        return 1 - Math.pow(1 - f, 3);      // ease-out cúbica
-    }
-
     private void navegarPeloTeclado() {
         List<OptionRow> rows = atuais();
+        int quantos = focoDoVoltar() + 1;
         if (KeyBoard.KeyPressed("Down")) {
-            foco = (foco + 1) % rows.size();
+            foco = (foco + 1) % quantos;
         } else if (KeyBoard.KeyPressed("Up")) {
-            foco = (foco <= 0 ? rows.size() : foco) - 1;
-        } else if (KeyBoard.KeyPressed("Right")) {
-            rows.get(Math.min(foco, rows.size() - 1)).ajustarPeloTeclado(1);
-        } else if (KeyBoard.KeyPressed("Left")) {
-            rows.get(Math.min(foco, rows.size() - 1)).ajustarPeloTeclado(-1);
+            foco = (foco <= 0 ? quantos : foco) - 1;
+        } else if (KeyBoard.KeyPressed("Right") && foco < rows.size()) {
+            rows.get(foco).ajustarPeloTeclado(1);
+        } else if (KeyBoard.KeyPressed("Left") && foco < rows.size()) {
+            rows.get(foco).ajustarPeloTeclado(-1);
+        } else if (KeyBoard.KeyPressed("Enter")) {
+            if (foco < rows.size()) {
+                rows.get(foco).ajustarPeloTeclado(1);
+            } else if (foco == focoDoAplicar()) {
+                aplicar.activate();
+            } else if (foco == focoDoVoltar()) {
+                voltar.activate();
+            }
         }
-        if (foco >= rows.size()) {
-            foco = rows.size() - 1;
-        }
+        foco = Math.min(foco, focoDoVoltar());
+    }
+
+    @Override
+    protected List<Rodape.Dica> dicas() {
+        return List.of(Rodape.AJUSTAR, Rodape.ABAS, Rodape.VOLTAR);
     }
 
     // ---------------------------------------------------------------- render
 
     @Override
-    public void render(Graphics2D g) {
-        //Sobreposta, o cenário do jogo é o fundo; só o véu escurece atrás.
-        if (!sobreposta && imagemFundo != null) {
-            g.drawImage(imagemFundo, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
-        }
-        g.setColor(Palette.VEIL);
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
-
-        desenharTitulo(g);
+    protected void desenharConteudo(Graphics2D g) {
         desenharPainel(g);
-        desenharAbas(g);
-
+        abas.render(g);
         desenharLinhas(g);
         if (temPendencia()) {
             aplicar.render(g);
             desenharAvisoPendente(g);
         }
         voltar.render(g);
+    }
+
+    @Override
+    protected void desenharPorCima(Graphics2D g) {
         desenharTooltip(g);
     }
 
     /**
-     * As opções da aba atual. Logo depois de uma troca elas entram deslizando
-     * do lado da aba nova e aparecem num fade, presas ao painel para não
-     * vazarem por cima da borda durante o deslize.
+     * As opções da aba atual. Logo depois de uma troca elas entram deslizando do
+     * lado da aba nova e aparecem num fade, presas ao painel para não vazarem por
+     * cima da borda durante o deslize.
      */
     private void desenharLinhas(Graphics2D g) {
-        double p = progressoDaTroca();
+        double p = abas.progressoDaTroca();
         if (p >= 1) {
             for (OptionRow linha : atuais()) {
                 linha.render(g);
@@ -481,23 +390,13 @@ public class Options implements Activity {
         int s = Configs.UiScale();
         Graphics2D g2 = (Graphics2D) g.create();
         g2.clipRect(painel.x + s, painel.y + s, painel.width - 2 * s, painel.height - 2 * s);
-        g2.translate((int) Math.round(direcaoDaTroca * (1 - p) * 24 * s), 0);
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) p));
+        g2.translate((int) Math.round(abas.direcao() * (1 - p) * 24 * s), 0);
+        float base = g.getComposite() instanceof AlphaComposite a ? a.getAlpha() : 1f;
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) p * base));
         for (OptionRow linha : atuais()) {
             linha.render(g2);
         }
         g2.dispose();
-    }
-
-    private void desenharTitulo(Graphics2D g) {
-        int s = Configs.UiScale();
-        Font fonte = FontHandler.font(FontHandler.Game, 14f * s);
-        String titulo = "Options";
-        int w = FontHandler.getWidth(titulo, fonte);
-        int x = Engine.window.getWidth() / 2 - w / 2;
-        int y = yTitulo;
-        g.setFont(fonte);
-        TextFx.draw(g, titulo, x, y, Palette.LIGHT, s);
     }
 
     /** Painel de fundo atrás das linhas. Altura fixa, igual em todas as abas. */
@@ -511,43 +410,6 @@ public class Options implements Activity {
         g.fillRect(painel.x + 3 * s, painel.y + 3 * s, painel.width - 6 * s, s);
     }
 
-    private void desenharAbas(Graphics2D g) {
-        int s = Configs.UiScale();
-        Font fonte = FontHandler.font(FontHandler.Game, 7f * s);
-        g.setFont(fonte);
-
-        // Fundo das abas: só o hover. O destaque da ativa vem por cima, à parte,
-        // porque é ele que desliza de uma aba para a outra.
-        for (int i = 0; i < abas.length; i++) {
-            Rectangle r = abasRect[i];
-            boolean sobre = r.contains(Mouse.getX(), Mouse.getY()) && i != abaAtual;
-            g.setColor(Palette.OUTLINE);
-            g.fillRect(r.x, r.y, r.width, r.height);
-            if (sobre) {
-                g.setColor(Palette.MAIN);
-                g.fillRect(r.x + s, r.y + s, r.width - 2 * s, r.height - s);
-            }
-        }
-        Rectangle atual = abasRect[abaAtual];
-        double dx = destaqueX < 0 ? atual.x
-                : destaqueXAntes + (destaqueX - destaqueXAntes) * Engine.alpha();
-        int hx = (int) Math.round(dx);
-        g.setColor(Palette.DEEP);
-        g.fillRect(hx + s, atual.y + s, atual.width - 2 * s, atual.height - s);
-        g.setColor(Palette.LIGHT);
-        g.fillRect(hx + s, atual.y + s, atual.width - 2 * s, s);
-
-        for (int i = 0; i < abas.length; i++) {
-            Rectangle r = abasRect[i];
-            boolean ativa = i == abaAtual;
-            int w = FontHandler.getWidth(abas[i], fonte);
-            int h = FontHandler.getHeight(abas[i], fonte);
-            int tx = r.x + (r.width - w) / 2;
-            int ty = r.y + (r.height + h) / 2;
-            TextFx.draw(g, abas[i], tx, ty, ativa ? Palette.TEXT : Palette.LIGHT, s);
-        }
-    }
-
     private void desenharAvisoPendente(Graphics2D g) {
         int s = Configs.UiScale();
         Font fonte = FontHandler.font(FontHandler.Game, 5f * s);
@@ -559,18 +421,24 @@ public class Options implements Activity {
     }
 
     /**
-     * Balão de ajuda da linha sob o mouse. Desenhado por último, acima de tudo,
-     * e preso dentro da janela para não vazar pelas bordas.
+     * Balão de ajuda da linha sob o mouse — ou da linha em foco, no teclado e no
+     * controle, que antes ficavam sem explicação nenhuma. Desenhado por último,
+     * acima de tudo, e preso dentro da janela para não vazar pelas bordas.
      */
     private void desenharTooltip(Graphics2D g) {
         OptionRow alvo = null;
+        boolean peloMouse = false;
         for (OptionRow linha : atuais()) {
             if (linha.estaSobreLinha() && !linha.getDescricao().isEmpty()) {
                 alvo = linha;
+                peloMouse = true;
                 break;
             }
         }
-        if (alvo == null) {
+        if (alvo == null && com.retronova.engine.inputs.Entrada.porFoco() && foco < atuais().size()) {
+            alvo = atuais().get(foco);
+        }
+        if (alvo == null || alvo.getDescricao().isEmpty()) {
             return;
         }
         int s = Configs.UiScale();
@@ -587,8 +455,25 @@ public class Options implements Activity {
         int caixaW = largura + pad * 2;
         int caixaH = linhasTexto.size() * alturaLinha + pad * 2;
 
-        int x = Mouse.getX() + 4 * s;
-        int y = Mouse.getY() + 6 * s;
+        int x, y;
+        if (peloMouse) {
+            x = Mouse.getX() + 4 * s;
+            y = Mouse.getY() + 6 * s;
+        } else {
+            // Pelo foco, o balão fica ao lado do painel, na altura da linha: à
+            // direita se couber, senão à esquerda. Só sem espaço nos dois lados ele
+            // desce para baixo da linha — e aí cobre a de baixo, o mal menor.
+            Rectangle r = alvo.getBounds();
+            y = r.y;
+            if (painel.x + painel.width + 4 * s + caixaW <= Engine.window.getWidth() - 2 * s) {
+                x = painel.x + painel.width + 4 * s;
+            } else if (painel.x - 4 * s - caixaW >= 2 * s) {
+                x = painel.x - 4 * s - caixaW;
+            } else {
+                x = painel.x + painel.width - caixaW - 4 * s;
+                y = r.y + r.height + 2 * s;
+            }
+        }
         x = Math.min(x, Engine.window.getWidth() - caixaW - 2 * s);
         y = Math.min(y, Engine.window.getHeight() - caixaH - 2 * s);
         x = Math.max(2 * s, x);
@@ -625,9 +510,5 @@ public class Options implements Activity {
             saida.add(atual.toString());
         }
         return saida;
-    }
-
-    @Override
-    public void dispose() {
     }
 }

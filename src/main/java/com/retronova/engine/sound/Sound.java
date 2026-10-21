@@ -74,9 +74,37 @@ public class Sound {
 		return Ganho.de(Configs.Volum()) * Ganho.de(Configs.Master());
 	}
 
-	/** O mesmo para a musica. */
+	/** O mesmo para a musica, abafada enquanto um menu esta aberto sobre o jogo. */
 	static double ganhoDeMusica() {
-		return Ganho.de(Configs.Music()) * Ganho.de(Configs.Master());
+		return Ganho.de(Configs.Music()) * Ganho.de(Configs.Master()) * fatorDaPausa;
+	}
+
+	/**
+	 * Quanto da musica sobra com um menu aberto por cima do jogo.
+	 *
+	 * ABAFA, NAO CORTA. Hades e Dead Cells mantem a trilha tocando na pausa, so mais
+	 * baixa: cortar faz a volta ao jogo comecar no silencio, e o silencio diz "a
+	 * partida acabou", que e o contrario da pausa. Baixar ao suficiente para o menu
+	 * ser ouvido por cima e o meio-termo. Ajuste fino: 0 corta, 1 deixa como esta.
+	 */
+	public static final double ABAFADO_NA_PAUSA = 0.35;
+
+	private static double fatorDaPausa = 1d;
+
+	/** A fracao de cada faixa pedida por {@link #volume}, para reaplicar depois. */
+	private static final Map<Musics, Double> fracoes = new java.util.EnumMap<>(Musics.class);
+
+	/**
+	 * Liga ou desliga o abafamento da pausa. Idempotente: pode ser chamado a cada
+	 * tick, e so mexe no volume quando o estado muda.
+	 */
+	public static synchronized void abafarParaPausa(boolean abafar) {
+		double alvo = abafar ? ABAFADO_NA_PAUSA : 1d;
+		if (alvo == fatorDaPausa) {
+			return;
+		}
+		fatorDaPausa = alvo;
+		updateVolumes();
 	}
 
 	public static void play(Sounds sound) {
@@ -94,6 +122,7 @@ public class Sound {
 	public static void play(Musics music, boolean loop) {
 		if(!musics.containsKey(music.resource()))
 			throw new RuntimeException("sound not exists");
+		fracoes.put(music, 1d);
 		musics.get(music.resource()).play(loop, ganhoDeMusica());
 	}
 
@@ -109,6 +138,7 @@ public class Sound {
 			throw new RuntimeException("sound not exists");
 		Music m = musics.get(music.resource());
 		if(!m.playing()) {
+			fracoes.put(music, 1d);
 			m.play(loop, ganhoDeMusica());
 		}
 	}
@@ -129,7 +159,9 @@ public class Sound {
 		}
 		Music m = musics.get(music.resource());
 		if(m != null) {
-			m.setVolume(Math.max(0d, Math.min(1d, fracao)) * ganhoDeMusica());
+			double f = Math.max(0d, Math.min(1d, fracao));
+			fracoes.put(music, f);
+			m.setVolume(f * ganhoDeMusica());
 		}
 	}
 
@@ -318,13 +350,25 @@ public class Sound {
 	public static void stopAll() {
 		stopAllSounds();
 		stopAllMusics();
+		// Quem para tudo esta trocando de cena (menu, fim de corrida): a proxima
+		// musica nasce sem o abafamento de uma pausa que ja nao existe.
+		fatorDaPausa = 1d;
 	}
 
+	/**
+	 * Reaplica o volume de todas as faixas, mantendo a fracao de cada uma.
+	 *
+	 * A FRACAO FICA. Antes cada faixa voltava ao volume cheio, o que desfazia no
+	 * meio um cruzamento da trilha da arena (uma subindo, a outra descendo) toda
+	 * vez que alguem mexia no slider ou abria a pausa.
+	 */
 	public static void updateVolumes() {
 		if (musics != null) {
-			for (Music music : musics.values()) {
-				double volume = ganhoDeMusica();
-				music.setVolume(volume);
+			for (Musics nome : Musics.values()) {
+				Music music = musics.get(nome.resource());
+				if (music != null) {
+					music.setVolume(fracoes.getOrDefault(nome, 1d) * ganhoDeMusica());
+				}
 			}
 		}
 	}

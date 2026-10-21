@@ -1,6 +1,7 @@
 package com.retronova.menus;
 
-import com.retronova.engine.Activity;
+import com.retronova.menus.shared.Rodape;
+import com.retronova.menus.shared.TelaDeMenu;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
@@ -41,51 +42,66 @@ import java.util.Map;
  * loja de upgrades permanentes com o ouro ganho (ver Meta). E o momento em que
  * a derrota vira "so mais uma".
  */
-public class GameOver implements Activity {
-
-    private static final int ENTRADA = 30;
+public class GameOver extends TelaDeMenu {
 
     private final List<Button> botoes = new ArrayList<>();
     private final List<Rectangle> linhasDaLoja = new ArrayList<>();
     private int foco = -1;
     /** Linha da loja em foco pelas setas e pelo controle, ou -1 com o foco nos botões. */
     private int focoLoja = -1;
-    private int entrando;
     private int brilhoDaCompra = -1, desdeACompra;
-    /** Ticks desde que a tela terminou de entrar; anima os avisos de conquista. */
+    /** Ticks desde que a tela abriu; anima os avisos de conquista. */
     private int desdeOFim;
 
     private final int gato;
     private final int espaco;
 
     public GameOver(int gato, int espaco) {
+        // Vencer o chefe final muda o titulo, mesmo que o gato tenha caido depois.
+        super(Estatisticas.venceu() ? "Victory" : "Run Over");
+        corDoTitulo(Estatisticas.venceu() ? new Color(0xFFD23F) : new Color(0xE0475F));
         this.gato = gato;
         this.espaco = espaco;
         Sound.stopAll();
         Sound.play(Musics.GameOver, true);
         botoes.add(new Button(0, 0, 0, 0, "Try Again", b -> reiniciar()).primary());
-        botoes.add(new Button(0, 0, 0, 0, "Main Menu", b -> Engine.heapActivity(new Menu())));
-        posicionar();
+        botoes.add(new Button(0, 0, 0, 0, "Main Menu", b -> voltarAoMenuPrincipal()));
     }
 
+    /**
+     * Uma corrida nova com o mesmo gato, no mesmo espaço.
+     *
+     * TIRA ESTA TELA DA PILHA ANTES. Empilhando o jogo por cima dela, cada nova
+     * tentativa deixava um GameOver para trás, e a pilha crescia a cada derrota.
+     */
     private void reiniciar() {
         Sound.stopAll();
+        Engine.backActivity();
         Engine.heapActivity(new Game(gato, new Room("beginning"), espaco), () -> { });
     }
 
+    /** Esc e B levam ao menu principal, como o botão. */
+    @Override
+    protected void voltar() {
+        voltarAoMenuPrincipal();
+    }
+
     private int escala() {
-        int cabe = Math.max(1, (Engine.window.getHeight() - 20) / 210);
+        int cabe = Math.max(1, areaDoConteudo().height / 172);
         return Math.max(1, Math.min(Configs.UiScale(), cabe));
     }
 
     private Rectangle painelResumo, painelLoja;
 
-    private void posicionar() {
+    @Override
+    protected void posicionar() {
         int s = escala();
-        int w = Engine.window.getWidth(), h = Engine.window.getHeight();
+        int w = Engine.window.getWidth();
+        Rectangle area = areaDoConteudo();
         int pw = 150 * s, ph = 140 * s, vao = 10 * s;
+        int total = ph + 10 * s + Button.preferredHeight();
         int x0 = w / 2 - pw - vao / 2;
-        int y0 = h / 2 - ph / 2 - 8 * s;
+        int y0 = area.y + Math.max(0, (area.height - total) / 2);
         painelResumo = new Rectangle(x0, y0, pw, ph);
         painelLoja = new Rectangle(w / 2 + vao / 2, y0, pw, ph);
         linhasDaLoja.clear();
@@ -104,18 +120,9 @@ public class GameOver implements Activity {
     }
 
     @Override
-    public void tick() {
-        posicionar();
-        if (entrando < ENTRADA) {
-            entrando++;
-            return;
-        }
+    protected void atualizar() {
         desdeACompra++;
         desdeOFim++;
-        if (KeyBoard.KeyPressed("Escape")) {
-            Engine.heapActivity(new Menu());
-            return;
-        }
         // Loja: clicar numa linha compra o proximo nivel, se houver ouro.
         Meta.Permanente[] todos = Meta.Permanente.values();
         for (int i = 0; i < linhasDaLoja.size(); i++) {
@@ -151,6 +158,7 @@ public class GameOver implements Activity {
                 comprar(focoLoja);
             } else if (foco >= 0) {
                 botoes.get(foco).activate();
+                return;
             }
         }
         for (int i = 0; i < botoes.size(); i++) {
@@ -177,33 +185,25 @@ public class GameOver implements Activity {
     // ------------------------------------------------------------- desenho
 
     @Override
-    public void render(Graphics2D g) {
-        float entrada = Math.min(1f, (entrando + Engine.alpha()) / ENTRADA);
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+    protected List<Rodape.Dica> dicas() {
+        return List.of(new Rodape.Dica("Enter", "A", "Select / Buy"),
+                new Rodape.Dica("Esc", "B", "Main menu"));
+    }
+
+    @Override
+    protected void desenharConteudo(Graphics2D g) {
         int s = escala();
-
-        g.setColor(Palette.DARKEST);
-        g.fillRect(0, 0, w, h);
-        g.setColor(new Color(Palette.VEIL.getRed(), Palette.VEIL.getGreen(),
-                Palette.VEIL.getBlue(), (int) (Palette.VEIL.getAlpha() * entrada)));
-        g.fillRect(0, 0, w, h);
-        if (entrada < 1f) {
-            return;
-        }
-
-        Font titulo = FontHandler.font(FontHandler.Game, 18f * s);
-        // Vencer o chefe final muda o titulo, mesmo que o gato tenha caido depois.
-        boolean venceu = Estatisticas.venceu();
-        contornadoCentro(g, venceu ? "VICTORY" : "RUN OVER", titulo, w / 2, painelResumo.y - 10 * s,
-                venceu ? new Color(0xFFD23F) : new Color(0xE0475F), s);
-
         desenharResumo(g, s);
         desenharLoja(g, s);
-        desenharConquistas(g, s);
         for (Button botao : botoes) {
             botao.render(g);
         }
+    }
+
+    /** Os avisos entram pela direita, por cima de tudo, fora da transição da tela. */
+    @Override
+    protected void desenharPorCima(Graphics2D g) {
+        desenharConquistas(g, escala());
     }
 
     /**

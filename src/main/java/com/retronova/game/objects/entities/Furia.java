@@ -165,7 +165,7 @@ public final class Furia {
         int largura = 70 * s, altura = 4 * s;
         int x = w / 2 - largura / 2;
         int y = h - Configs.Margin() - 34 * s;
-        double quase = carga >= 0.85 ? 0.5 + 0.5 * Math.sin(System.nanoTime() / 1e9 * 12) : 0;
+        double quase = carga >= 0.85 ? 0.5 + 0.5 * Math.sin(com.retronova.game.Game.tempoVisual() * 12) : 0;
         g.setColor(new Color(10, 6, 16, 180));
         g.fillRect(x - s, y - s, largura + 2 * s, altura + 2 * s);
         int cheio = (int) (largura * carga);

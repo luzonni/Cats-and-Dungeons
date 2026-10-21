@@ -46,6 +46,17 @@ public final class Entrada {
         return modo == Modo.CONTROLE;
     }
 
+    /**
+     * O mouse está no comando: só então "estar em cima" de algo conta como hover.
+     *
+     * Com o teclado no comando, um ponteiro PARADO em cima de um botão roubava o
+     * foco das setas a cada tick — o jogador apertava para baixo e o foco voltava
+     * para onde o mouse tinha ficado. Mexer o mouse devolve o comando a ele.
+     */
+    public static boolean porMouse() {
+        return modo == Modo.MOUSE;
+    }
+
     /** As setas ou o D-pad estão no comando: as telas de grade mostram e usam o foco. */
     public static boolean porFoco() {
         return modo != Modo.MOUSE;

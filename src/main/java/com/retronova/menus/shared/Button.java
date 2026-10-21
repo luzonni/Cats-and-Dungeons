@@ -6,6 +6,7 @@ import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.NineSlice;
 import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.graphics.TextFx;
+import com.retronova.engine.inputs.Entrada;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
@@ -108,7 +109,7 @@ public class Button {
     }
 
     public void tick() {
-        hovered = bounds.contains(Mouse.getX(), Mouse.getY());
+        hovered = Entrada.porMouse() && bounds.contains(Mouse.getX(), Mouse.getY());
         if (hovered) {
             // A PATINHA TAMBEM NOS MENUS.
             //

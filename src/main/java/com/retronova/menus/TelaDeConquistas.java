@@ -1,6 +1,7 @@
 package com.retronova.menus;
 
-import com.retronova.engine.Activity;
+import com.retronova.menus.shared.Rodape;
+import com.retronova.menus.shared.TelaDeMenu;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
@@ -20,6 +21,7 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.util.List;
 
 /**
  * A tela de conquistas, aberta pelo troféu do menu principal.
@@ -29,9 +31,8 @@ import java.awt.Rectangle;
  * que pedem e quanto falta, porque uma meta escondida não puxa ninguém a jogar de
  * outro jeito. As recém-desbloqueadas levam a etiqueta NEW até esta tela fechar.
  */
-public class TelaDeConquistas implements Activity {
+public class TelaDeConquistas extends TelaDeMenu {
 
-    private static final int ENTRADA = 20;
     private static final Color OURO = new Color(0xFFD23F);
     private static final Color APAGADO = new Color(0x5A5A6E);
 
@@ -39,24 +40,27 @@ public class TelaDeConquistas implements Activity {
     private static final Conquista[] TODAS = Conquista.values();
     private static final int LINHAS = (TODAS.length + COLUNAS - 1) / COLUNAS;
 
-    private final Button voltar = new Button(0, 0, 0, 0, "Back", b -> fechar()).primary();
+    private final Button voltar = new Button(0, 0, 0, 0, "Back", b -> voltar()).primary();
     private final Progresso progresso = Conquistas.progresso();
-    private int entrando;
 
     public TelaDeConquistas() {
+        super("Achievements");
+        corDoTitulo(OURO);
         Sound.play(Sounds.Button);
     }
 
-    private void fechar() {
+    @Override
+    protected void voltar() {
         Conquistas.marcarComoVistas();
-        Engine.backActivity();
+        super.voltar();
     }
 
     // ------------------------------------------------------------ medidas
 
-    /** Escala que cabe na janela, em largura e em altura. */
+    /** Escala que cabe na área de conteúdo, em largura e em altura. */
     private int escala() {
-        int porAltura = (Engine.window.getHeight() - 20) / (44 + LINHAS * 35 + 30);
+        Rectangle area = areaDoConteudo();
+        int porAltura = area.height / (14 + LINHAS * 36 + 26);
         int porLargura = (Engine.window.getWidth() - 20) / (COLUNAS * 112 + 8);
         return Math.max(1, Math.min(Configs.UiScale(), Math.min(porAltura, porLargura)));
     }
@@ -69,17 +73,20 @@ public class TelaDeConquistas implements Activity {
         return 30 * s;
     }
 
+    /** O bloco inteiro — contagem, cartões e o Back — centralizado na área. */
     private Rectangle cartao(int i, int s) {
         int w = larguraCartao(s), h = alturaCartao(s), vao = 6 * s;
         int total = COLUNAS * w + (COLUNAS - 1) * vao;
         int x0 = Engine.window.getWidth() / 2 - total / 2;
-        int alturaTotal = 44 * s + LINHAS * (h + vao);
-        int y0 = Engine.window.getHeight() / 2 - alturaTotal / 2 + 30 * s;
+        Rectangle area = areaDoConteudo();
+        int alturaTotal = 14 * s + LINHAS * (h + vao) + 10 * s + com.retronova.menus.shared.Button.preferredHeight();
+        int y0 = area.y + Math.max(0, (area.height - alturaTotal) / 2) + 14 * s;
         int coluna = i % COLUNAS, linha = i / COLUNAS;
         return new Rectangle(x0 + coluna * (w + vao), y0 + linha * (h + vao), w, h);
     }
 
-    private void posicionar() {
+    @Override
+    protected void posicionar() {
         int s = escala();
         Rectangle ultimo = cartao(TODAS.length - 1, s);
         int largura = Button.preferredWidth();
@@ -90,14 +97,13 @@ public class TelaDeConquistas implements Activity {
     // ------------------------------------------------------------ ciclo
 
     @Override
-    public void tick() {
-        entrando++;
-        posicionar();
-        if (KeyBoard.KeyPressed("Escape") || KeyBoard.KeyPressed("Enter")) {
-            fechar();
+    protected void atualizar() {
+        // O Back é a única ação da tela: o foco mora nele, e o Enter o aciona.
+        if (KeyBoard.KeyPressed("Enter")) {
+            voltar.activate();
             return;
         }
-        voltar.setFocused(true);
+        voltar.setFocused(com.retronova.engine.inputs.Entrada.porFoco());
         voltar.tick();
         if (voltar.isHovered()) {
             Engine.window.pointing();
@@ -105,34 +111,26 @@ public class TelaDeConquistas implements Activity {
     }
 
     @Override
-    public void render(Graphics2D g) {
-        float entrada = Math.min(1f, (entrando + Engine.alpha()) / ENTRADA);
-        int w = Engine.window.getWidth(), h = Engine.window.getHeight();
+    protected List<Rodape.Dica> dicas() {
+        return List.of(Rodape.VOLTAR);
+    }
+
+    @Override
+    protected void desenharConteudo(Graphics2D g) {
         int s = escala();
-
-        g.setColor(Palette.DARKEST);
-        g.fillRect(0, 0, w, h);
-        g.setColor(new Color(Palette.VEIL.getRed(), Palette.VEIL.getGreen(), Palette.VEIL.getBlue(),
-                (int) (Palette.VEIL.getAlpha() * entrada)));
-        g.fillRect(0, 0, w, h);
-
-        desenharTitulo(g, s);
+        desenharContagem(g, s);
         for (int i = 0; i < TODAS.length; i++) {
             desenharCartao(g, TODAS[i], cartao(i, s), s);
         }
         voltar.render(g);
     }
 
-    private void desenharTitulo(Graphics2D g, int s) {
+    private void desenharContagem(Graphics2D g, int s) {
         Rectangle primeiro = cartao(0, s);
-        Font titulo = FontHandler.font(FontHandler.Game, 14f * s);
-        String texto = "Achievements";
-        TextFx.draw(g, texto, titulo, Engine.window.getWidth() / 2 - FontHandler.getWidth(texto, titulo) / 2,
-                primeiro.y - 22 * s, OURO, s);
         Font miuda = FontHandler.font(FontHandler.Septem, 7f * s);
         String contagem = progresso.totalDesbloqueadas() + " / " + TODAS.length + " unlocked";
         TextFx.draw(g, contagem, miuda, Engine.window.getWidth() / 2 - FontHandler.getWidth(contagem, miuda) / 2,
-                primeiro.y - 8 * s, Palette.LIGHT, s);
+                primeiro.y - 6 * s, Palette.LIGHT, s);
     }
 
     private void desenharCartao(Graphics2D g, Conquista c, Rectangle r, int s) {

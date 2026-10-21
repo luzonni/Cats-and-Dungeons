@@ -191,7 +191,7 @@ public class Game implements Activity {
      */
     public void vencer() {
         if (Estatisticas.registrarVitoria(player.getName())) {
-            Engine.pause(new com.retronova.menus.Vitoria());
+            com.retronova.menus.shared.TelaDeMenu.abrir(new com.retronova.menus.Vitoria());
         }
     }
 
@@ -285,6 +285,10 @@ public class Game implements Activity {
         // ser Esc sozinho.
         Gamepad.emJogo();
         GameMap.limparInteracao();
+        // O jogo esta rodando: nenhum menu aberto por cima, a musica volta ao normal.
+        // E a rede de seguranca de todo caminho que sai da pausa sem passar pelo
+        // "voltar" dela (reiniciar, escolher carta, a vitoria).
+        com.retronova.engine.sound.Sound.abafarParaPausa(false);
         if (regravarSave) {
             regravarSave = false;
             if (map instanceof Arena arena) {
@@ -302,6 +306,7 @@ public class Game implements Activity {
         }
         guardarPosicoes();
         quadroDoGato++;
+        ticksVisuais++;
         if (depoisDeUmSegundo != null && quadroDoGato > 90 && !Engine.pausado()) {
             Runnable r = depoisDeUmSegundo;
             depoisDeUmSegundo = null;
@@ -310,7 +315,7 @@ public class Game implements Activity {
         }
         hud.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
-            Engine.pause(new Pause());
+            com.retronova.menus.shared.TelaDeMenu.abrir(new Pause());
         }
         if(KeyBoard.KeyPressed("E")) {
             inter.open();
@@ -630,7 +635,7 @@ public class Game implements Activity {
      */
     private static void animarBicho(Graphics2D g, Enemy bicho) {
         int s = com.retronova.engine.Configs.GameScale();
-        double t = System.nanoTime() / 1e9;
+        double t = tempoVisual();
         double fase = (System.identityHashCode(bicho) % 1000) / 1000.0 * Math.PI * 2;
         // Quanto ele esta andando, de 0 a 1.
         double andando = Engine.pausado() ? 0 : Math.min(1, bicho.passoNoTick() / (0.6 * s));
@@ -656,6 +661,22 @@ public class Game implements Activity {
         g.translate(-pesX, -pesY);
     }
 
+    /** Ticks da partida que de fato rodaram: nao anda com a pausa aberta. */
+    private static long ticksVisuais;
+
+    /**
+     * O relogio das animacoes de corpo, em segundos, e que PARA NA PAUSA.
+     *
+     * A respiracao dos bichos e do gato, o tremor da camera, a aura das elites e o
+     * pulso da Furia contavam pelo relogio do sistema — e por isso seguiam vivos
+     * atras do menu de pausa, com o jogo supostamente congelado. Contando pelos
+     * ticks da partida, tudo para junto com a logica; com a interpolacao do
+     * quadro, continua liso a qualquer taxa de quadros.
+     */
+    public static double tempoVisual() {
+        return (ticksVisuais + alphaDoMundo()) / 60.0;
+    }
+
     /** Gancho do modo de bancada (Engine, -Dcd.bench): roda uma vez, no tick 90. */
     public static Runnable depoisDeUmSegundo;
 
@@ -676,7 +697,7 @@ public class Game implements Activity {
      */
     private void animarGato(Graphics2D g, Player gato) {
         int s = com.retronova.engine.Configs.GameScale();
-        double t = System.nanoTime() / 1e9;
+        double t = tempoVisual();
         boolean parado = Engine.pausado();
         double dx = -gato.deslocamentoNoQuadro(0f)[0];
         double andando = parado ? 0 : Math.min(1, gato.passoNoTick() / (0.8 * s));

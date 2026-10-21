@@ -18,6 +18,8 @@ import com.retronova.game.items.ItemIDs;
 import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.menus.shared.Button;
+import com.retronova.menus.shared.Rodape;
+import com.retronova.menus.shared.TelaDeMenu;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -62,7 +64,7 @@ import java.util.List;
  * Nome, papel, lore, cor, arma e atributos saem do JSON do personagem em
  * resources/players — não há texto de personagem escrito nesta classe.
  */
-public class Personagens implements Activity {
+public class Personagens extends TelaDeMenu {
 
     /** Lado do retrato pequeno da fileira, em pixels nativos. */
     private static final int MINIATURA = 30;
@@ -196,6 +198,7 @@ public class Personagens implements Activity {
     private final int espaco;
 
     public Personagens(int espaco) {
+        super("Choose your cat");
         this.espaco = espaco;
         // A trilha do menu NAO e trocada aqui. Escolher o gato ainda e a tela
         // inicial: cortar a musica no meio para tocar outra por poucos segundos
@@ -211,7 +214,7 @@ public class Personagens implements Activity {
 
         this.arteOriginal = semLetreiro(new SpriteHandler("icons", "Gato", 1).getSHEET());
         this.jogar = new Button(0, 0, 0, 0, "Embark", b -> iniciar()).primary().meow(players[selecionado].getVoz());
-        this.voltar = new Button(0, 0, 0, 0, "Back", b -> Engine.backActivity());
+        this.voltar = new Button(0, 0, 0, 0, "Back", b -> voltar());
     }
 
     /**
@@ -245,7 +248,8 @@ public class Personagens implements Activity {
 
     // ------------------------------------------------------------------ layout
 
-    private void posicionar() {
+    @Override
+    protected void posicionar() {
         int s = Configs.UiScale();
         int janelaW = Engine.window.getWidth();
         int janelaH = Engine.window.getHeight();
@@ -253,7 +257,9 @@ public class Personagens implements Activity {
 
         int alturaBotao = Button.preferredHeight();
         int larguraBotao = Button.preferredWidth();
-        int yBotoes = janelaH - margem - alturaBotao;
+        // Os botoes sentam na base da area de conteudo, acima do rodape de dicas.
+        Rectangle area = areaDoConteudo();
+        int yBotoes = area.y + area.height - alturaBotao;
         voltar.setBounds(new Rectangle(margem, yBotoes, larguraBotao, alturaBotao));
         jogar.setBounds(new Rectangle(janelaW - margem - larguraBotao, yBotoes,
                 larguraBotao, alturaBotao));
@@ -287,14 +293,7 @@ public class Personagens implements Activity {
     // ------------------------------------------------------------------ tick
 
     @Override
-    public void tick() {
-        posicionar();
-
-        if (KeyBoard.KeyPressed("Escape")) {
-            Engine.backActivity();
-            return;
-        }
-
+    protected void atualizar() {
         // Setas e controle trocam de gato; Enter embarca. Era a unica tela da
         // partida que so andava com o mouse.
         if (KeyBoard.KeyPressed("Right")) {
@@ -320,6 +319,9 @@ public class Personagens implements Activity {
 
         players[selecionado].tick();
 
+        // Pelo teclado e pelo controle, o Enter embarca: o foco mora no Embark,
+        // para o jogador ver o que a tecla vai fazer.
+        jogar.setFocused(com.retronova.engine.inputs.Entrada.porFoco());
         jogar.tick();
         if (jogar.isHovered()) {
             Engine.window.pointing();
@@ -343,8 +345,19 @@ public class Personagens implements Activity {
     // ---------------------------------------------------------------- render
 
     @Override
-    public void render(Graphics2D g) {
+    protected List<Rodape.Dica> dicas() {
+        return List.of(new Rodape.Dica("Left/Right", "D-pad", "Change cat"),
+                new Rodape.Dica("Enter", "A", "Embark"), Rodape.VOLTAR);
+    }
+
+    /** O fundo desta tela é a ilustração com o facho de luz sobre o escolhido. */
+    @Override
+    protected void desenharFundo(Graphics2D g) {
         desenharAmbiente(g);
+    }
+
+    @Override
+    protected void desenharConteudo(Graphics2D g) {
         desenharBloco(g);
         desenharFileira(g);
         jogar.render(g);
