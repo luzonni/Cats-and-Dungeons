@@ -199,3 +199,9 @@ Esta seção também não é reconstrução. Ver
   nova sobe sobre o gato. Antes eram 2,3 s.
 - **Modo foto** (`-Dcd.foto`) para conferir telas por roteiro sem tocar nos
   saves nem nas configurações.
+- **Pausa e Settings num painel só** (`Configuracoes`). A pausa deixou de ser
+  uma coluna de botões com "Options" levando a outra tela: é o painel de
+  Settings, com a aba Run na frente (Continue, Restart, Main Menu, Quit, resumo
+  da corrida e o aviso do save) e as abas Video, Audio e Interface. Pela tela
+  inicial, o mesmo painel abre sem a aba Run. "Options" passou a se chamar
+  "Settings". O HUD some enquanto um menu está aberto sobre a corrida.

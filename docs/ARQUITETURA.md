@@ -143,8 +143,9 @@ monta a partir daqui e não redesenha título, rodapé, hover ou carta.
 
 ### Sistema de menus (`TelaDeMenu`)
 
-Toda tela de menu estende `TelaDeMenu`: Menu, Saves, Personagens, Options,
-Pause, TelaDeConquistas, GameOver e Vitoria. A moldura é sempre a mesma:
+Toda tela de menu estende `TelaDeMenu`: Menu, Saves, Personagens,
+Configuracoes (Settings e pausa), TelaDeConquistas, GameOver e Vitoria. A
+moldura é sempre a mesma:
 
 ```
 ┌────────────────────────────────────────────┐
@@ -164,9 +165,10 @@ Pause, TelaDeConquistas, GameOver e Vitoria. A moldura é sempre a mesma:
   a tela de baixo. `voltar()` desempilha pelo mesmo caminho, e Esc e B chamam
   `voltar()` em toda tela. `voltarAoMenuPrincipal()` desempilha até a tela
   inicial: "Main Menu" sempre volta ao título, e não a Saves.
-- **Uma tela de opções só.** `Options` abre igual da tela inicial e da pausa;
-  só o fundo muda. As abas (Video, Audio, Interface) usam `Abas`, com o mouse, Q/E
-  e LB/RB.
+- **Um painel de Settings só, que também é a pausa.** Ver
+  [Settings e pausa](#settings-e-pausa-configuracoes) logo abaixo.
+- **Com um menu aberto sobre a corrida, o HUD some** (`Game.render`): fica o
+  mundo congelado sob o véu, sem o relógio e a hotbar disputando com o painel.
 - **Transição única.** Toda tela entra em `TRANSICAO = 9` ticks (0,15 s):
   opacidade de 0 a 1 e o conteúdo subindo `SUBIDA = 6` pixels, com ease-out.
   O valor segue a Nielsen Norman (0,1 s é instantâneo, 0,4 s já é espera).
@@ -183,6 +185,41 @@ posicionar os elementos em `posicionar()` a partir de `areaDoConteudo()`, tratar
 a entrada em `atualizar()`, desenhar em `desenharConteudo()` e devolver as dicas
 em `dicas()` (`Rodape.SELECIONAR`, `VOLTAR`, `ABAS`, `AJUSTAR` ou uma
 `Rodape.Dica` própria). Abrir com `TelaDeMenu.abrir(new MinhaTela())`.
+
+### Settings e pausa (`Configuracoes`)
+
+Um componente só, `menus/Configuracoes.java`, com duas portas:
+
+| Aberto por | Título | Abas | Botão fora do painel | Esc / B |
+|---|---|---|---|---|
+| Tela inicial (`new Configuracoes()`) | Settings | Video, Audio, Interface | Back | volta ao título |
+| Esc na corrida (`Configuracoes.pausa()`) | Paused | **Run**, Video, Audio, Interface | Resume | retoma o jogo |
+
+- **Aba Run:** Continue, Restart, Main Menu e Quit como linhas de ação
+  (`OptionRow.acao`), um resumo curto (tempo, nível, elemento) e o aviso de que
+  sair grava a corrida. Restart, Main Menu e Quit pedem confirmação no diálogo
+  comum (`Confirm`). O foco abre em Continue. O detalhe da corrida fica na tela
+  de Status (tecla E), e não aqui.
+- **Abas de configuração:** as mesmas linhas nos dois acessos, com stepper
+  `−/+`, slider, ciclo e toggle (`OptionRow`). Resolução e tela cheia esperam o
+  Apply, que recria a janela; o resto se aplica na hora.
+- **Rodapé por aba:** na Run, `Enter Select`; nas de configuração,
+  `Left/Right Adjust`. As duas mostram `Q/E Tabs` e o `Esc` (Back ou Resume).
+- **Por que assim:** o Forza Horizon e o RDR2 juntam partida e configurações em
+  abas de um mesmo menu, trocadas por LB/RB; o Hades e o Dead Cells abrem a pausa
+  num painel por cima da cena; o Minecraft usa uma tela de opções só, que sabe de
+  onde foi aberta. A Run vem primeiro e com foco em Continue porque retomar é o
+  que se faz mais vezes numa pausa (Game Accessibility Guidelines: pausar a
+  qualquer momento e voltar sem passos extras).
+- **Q/E para as abas, e o conflito com o E do Status:** ficaram. Q/E é o par de
+  abas mais comum em jogos de PC e espelha LB/RB no controle, que é o que o
+  `Gamepad` já traduz. O conflito não acontece: com a pausa aberta o `Game` não
+  recebe ticks, então o E só troca de aba; e o tick que abre a pausa termina ali,
+  para um E apertado junto com o Esc não abrir o Status por baixo.
+
+Para reaproveitar: uma tela nova de configurações é uma lista de `OptionRow`
+dentro de uma aba de `Configuracoes.montarLinhas`; uma ação nova da corrida é
+mais uma `OptionRow.acao` em `linhasDaCorrida`.
 
 ### Hover e foco (`Realce`)
 

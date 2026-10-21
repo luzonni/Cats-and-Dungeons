@@ -93,7 +93,7 @@ src/main/java/com/retronova/
 │   └── objects/               entidades, tiles, partículas, física
 │       └── entities/          Player, Bonus, Arsenal, ArmasDeArea, Furia,
 │                              Habilidades, enemies/, furniture/, utilities/, NPCs/
-└── menus/                     Menu, Saves, Personagens, Options, Pause,
+└── menus/                     Menu, Saves, Personagens, Configuracoes (Settings e pausa),
     │                          GameOver, Vitoria, TelaDeConquistas
     └── shared/                TelaDeMenu, Rodape, Abas, Realce, MaoDeCartas,
                                Button, OptionRow, Confirm
@@ -112,6 +112,7 @@ docs/                          esta pasta
 | Laço de jogo (60 Hz fixo, render separado) | `engine/Engine.java` |
 | Fluxo de telas | `Engine.heapActivity` / `backActivity` / `pause` (pilha de `Activity`) |
 | Base de toda tela de menu (título, rodapé, transição, voltar) | `menus/shared/TelaDeMenu.java`, `Rodape.java`, `Abas.java` |
+| Settings e pausa (um componente só) | `menus/Configuracoes.java` + `menus/shared/OptionRow.java` |
 | Hover e foco de todo elemento da interface | `menus/shared/Realce.java` |
 | Cartas de escolha (nível e elemento) | `menus/shared/MaoDeCartas.java` |
 | Transmutação da arma ao escolher o elemento | `game/objects/entities/Transmutacao.java` |
@@ -174,7 +175,7 @@ docs/                          esta pasta
 
 | Funcionalidade | Estado | Nota |
 |---|---|---|
-| Menu, opções (vídeo, áudio, interface), pausa | ✅ | todas sobre `TelaDeMenu`; a mesma tela de opções no título e na pausa |
+| Menu, Settings (vídeo, áudio, interface), pausa | ✅ | todas sobre `TelaDeMenu`; a pausa é o painel de Settings com a aba Run (`Configuracoes`) |
 | Seleção de personagem (3 gatos) | ✅ | |
 | Três espaços de save, retomar e apagar | ✅ | |
 | Antecâmara com vendedor, placas e portão | ✅ | o portão leva à corrida |
