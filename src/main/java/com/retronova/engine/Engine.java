@@ -89,6 +89,19 @@ public class Engine implements Runnable {
             } else if (Boolean.getBoolean("cd.nivel")) {
                 com.retronova.game.Game.depoisDeUmSegundo =
                         () -> pause(new com.retronova.game.map.arena.SubirDeNivel());
+            } else if (System.getProperty("cd.rei") != null) {
+                // -Dcd.rei=N chama o Rato Rei ao lado do gato, ja na fase N (1, 2 ou 3),
+                // para ver cada fase da luta sem esperar os trinta minutos.
+                int fase = Math.max(1, Math.min(3, Integer.getInteger("cd.rei", 1)));
+                com.retronova.game.Game.depoisDeUmSegundo = () -> {
+                    var gato = com.retronova.game.Game.getPlayer();
+                    var rei = com.retronova.game.objects.entities.Entity.build(
+                            com.retronova.game.objects.entities.EntityIDs.RatoRei.ordinal(), 0, 0);
+                    rei.setX(gato.getX() + 6 * com.retronova.game.objects.GameObject.SIZE());
+                    rei.setY(gato.getY());
+                    rei.setLife(rei.getLifeSize() * (1 - (fase - 1) / 3.0) - 1);
+                    com.retronova.game.Game.getMap().put(rei);
+                };
             }
             // -Dcd.armas=RAIO,TREMOR,... da essas armas extras no nivel 3, para ver
             // o efeito delas sem depender do sorteio do caca-niquel.
