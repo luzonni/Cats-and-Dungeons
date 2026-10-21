@@ -27,7 +27,8 @@ public class Skull extends Projetil {
     private final double dir;
     private double r;
 
-    private static final int LIMITE = 60 * 5;
+    /** Vida da caveira: 3,5 s. Com 5 s, lenta como e, ela atravessava meia arena e se acumulava. */
+    private static final int LIMITE = 60 * 7 / 2;
 
     public Skull(double centroX, double centroY, double dir) {
         this(centroX, centroY, dir, null);

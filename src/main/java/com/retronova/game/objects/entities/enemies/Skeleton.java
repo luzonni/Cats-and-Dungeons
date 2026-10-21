@@ -59,12 +59,31 @@ public class Skeleton extends Enemy {
         }
         Player player = Game.getPlayer();
         cooldown++;
-        if(cooldown >= RECARGA && player.getDistance(this) <= GameObject.SIZE() * ALCANCE) {
+        if (cooldown >= RECARGA && player.getDistance(this) <= GameObject.SIZE() * ALCANCE) {
+            // TETO DE CAVEIRAS NO AR. Sem ele o numero de tiros crescia junto com o
+            // de esqueletos, sem limite: vinte deles eram umas vinte e sete caveiras
+            // por segundo, e passado o minuto dois a tela virava uma parede sem
+            // brecha. Com o ceu cheio, o esqueleto segura o tiro e tenta de novo
+            // logo depois, entao a pressao fica ALTA mas sempre desviavel.
+            if (caveirasNoAr() >= tetoDeCaveiras()) {
+                cooldown = RECARGA - 15;
+                return;
+            }
             cooldown = 0;
             Skull skull = new Skull(getX() + getWidth() / 2d, getY() + getHeight() / 2d,
                     player.getAngle(this), this);
             Game.getMap().put(skull);
         }
+    }
+
+    private static int caveirasNoAr() {
+        return Game.getMap().getEntities(Skull.class).size();
+    }
+
+    /** 6 caveiras no ar no comeco, +1 por minuto, ate 14. */
+    private static int tetoDeCaveiras() {
+        int minutos = Game.getWave() == null ? 0 : Game.getWave().getSeconds() / 60;
+        return Math.min(14, 6 + Math.max(0, minutos - 2));
     }
 
     private void moveIA() {
