@@ -518,6 +518,9 @@ public class Player extends Entity {
 
     private int desdeODano = INVULNERAVEL;
 
+    /** As habilidades exclusivas que reagem a algo (a onda do Muffin). Ver Habilidades. */
+    private final Habilidades habilidades = new Habilidades(this);
+
     /** Esta no intervalo em que nao pode levar dano. Serve ao piscar. */
     public boolean invulneravel() {
         return desdeODano < INVULNERAVEL;
@@ -801,6 +804,7 @@ public class Player extends Entity {
             tickMorte();
             return;
         }
+        habilidades.tick();
         // CHEGANDO PELO PORTAL: nao anda, nao ataca. Mesmo trato da queda — cena em
         // que o jogador nao controla nada nao pode cobrar reacao dele.
         if (chegando()) {
@@ -891,6 +895,11 @@ public class Player extends Entity {
         // gato se encolher num ataque que ele evitou contaria a historia errada.
         reagirAoDano();
         super.strike(type, damage);
+        // Depois do dano, e so se ele nao derrubou o gato: a onda e resposta, e
+        // quem caiu nao responde.
+        if (!morrendo() && getLife() > 0) {
+            habilidades.aoLevarDano();
+        }
     }
 
     public double getLuck() {

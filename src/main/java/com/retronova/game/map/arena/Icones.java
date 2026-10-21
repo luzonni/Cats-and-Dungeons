@@ -195,6 +195,17 @@ public final class Icones {
                     "....#....",
                     "..#####..",
                     ".#######."}),
+            // Retaliacao (Muffin): escudo com a onda saindo pelos cantos.
+            Map.entry("RETALIACAO", new String[]{
+                    "#.......#",
+                    ".#.###.#.",
+                    "..#####..",
+                    ".##+####.",
+                    ".#######.",
+                    ".#######.",
+                    "..#####..",
+                    ".#.###.#.",
+                    "#...#...#"}),
             Map.entry("VOLEIO", new String[]{
                     "#...#...#",
                     "+#..+..#+",

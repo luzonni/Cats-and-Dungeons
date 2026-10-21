@@ -29,7 +29,19 @@ public enum Passiva {
      * o arco virava uma metralhadora de seis flechas. O dano tambem nao soma
      * inteiro — ver {@code Bonus.danoPorFlecha}.
      */
-    VOLEIO("Volley", "Arrows per shot", new Color(0xE8B04A), "+%d arrow per shot", 1, 3, "Finn");
+    VOLEIO("Volley", "Arrows per shot", new Color(0xE8B04A), "+%d arrow per shot", 1, 3, "Finn"),
+    /**
+     * RETALIACAO: exclusiva do Muffin. Ao levar dano, ele solta uma onda que
+     * machuca e EMPURRA quem esta perto.
+     *
+     * O Muffin e o gato que aguenta, mas aguentar sozinho nao e jogo: e esperar.
+     * A onda faz o golpe recebido virar espaco — o cerco que ia esmaga-lo e jogado
+     * para tras. Tem recarga, entao nao vira imunidade: ver {@code Bonus.retaliacao}.
+     */
+    RETALIACAO("Retaliate", "Shockwave when hurt", new Color(0x5FC9A8), "", 0, 3, "Muffin",
+            "Shockwave when you get hurt",
+            "Wider, stronger shockwave",
+            "Huge shockwave, faster recharge");
 
     public static final int NIVEL_MAXIMO = 5;
 
