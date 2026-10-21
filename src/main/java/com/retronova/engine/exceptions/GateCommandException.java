@@ -1,7 +1,7 @@
 package com.retronova.engine.exceptions;
 
-public class TrapDoorCommandException extends RuntimeException {
-    public TrapDoorCommandException(String message) {
+public class GateCommandException extends RuntimeException {
+    public GateCommandException(String message) {
         super(message);
     }
 }

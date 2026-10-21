@@ -52,7 +52,7 @@ import java.util.List;
  * cinco garante variação entre partidas sem tirar o volante da mão de ninguém.
  *
  * ---------------------------------------------------------------------------
- * A ESCOLHA É OBRIGATÓRIA, como a carta de fim de turno. Sem Escape, sem clicar
+ * A ESCOLHA É OBRIGATÓRIA, como as cartas de nível. Sem Escape, sem clicar
  * fora: poder recusar transformaria a tela num aviso, e avisos se fecham no
  * automático.
  */

@@ -74,9 +74,6 @@ public abstract class Entity extends GameObject {
             case KingCursedCatBoss -> {
                 return new KingCursedCatBoss(ID, x,y);
             }
-            case MonarkMouse -> {
-                return new MonarkMouse(ID, x, y);
-            }
             case Seller -> {
                 if(values.length < 3) {
                     break;
@@ -85,39 +82,7 @@ public abstract class Entity extends GameObject {
                 try {
                     stock = (JSONArray) ((JSONObject) values[2]).get("stock");
                 }catch (ClassCastException ignore) {}
-                if(stock == null && ((String)values[2]).equalsIgnoreCase("FULL")) {
-                    stock = new JSONArray();
-                }
-                // O QUARTO VALOR DIZ SE ELE CHEGA POR PORTAL.
-                //
-                // O vendedor da antecamara mora la: ele ja estava na sala quando o
-                // jogador chegou, e nascer de um portal toda vez que se abre a porta
-                // do saguao conta uma historia que nao e a dele. O da arena e o
-                // contrario — aparece no meio da corrida, e a chegada e o assunto.
-                boolean chegaPorPortal = values.length >= 4
-                        && "CHEGANDO".equalsIgnoreCase(String.valueOf(values[3]));
-                return new Seller(ID, x, y, stock, chegaPorPortal);
-            }
-            case Door -> {
-                return new Door(ID, x, y);
-            }
-            case TrapDoor -> {
-                String place = (length >= 3) ? (String)values[2] : "None";
-                return new TrapDoor(ID, x, y, place);
-            }
-            case Crate -> {
-                JSONArray loot = ((JSONArray)((JSONObject) values[2]).get("loot"));
-                ItemIDs[] ids = ItemIDs.values();
-                int[] lootIds = new int[loot.size()];
-                for(int i = 0; i < lootIds.length; i++) {
-                    String name = (String) loot.get(i);
-                    for(ItemIDs value : ids) {
-                        if(name.equalsIgnoreCase(value.name())) {
-                            lootIds[i] = value.ordinal();
-                        }
-                    }
-                }
-                return new Crate(ID, x, y, lootIds);
+                return new Seller(ID, x, y, stock);
             }
             case Plate -> {
                 String content = "Eu não tenho conteúdo ;(";
@@ -132,9 +97,6 @@ public abstract class Entity extends GameObject {
                     content = (String) values[2];
                 }
                 return new GumMachine(ID, x, y, content);
-            }
-            case CryingCat -> {
-                return new CryingCat(ID, x, y);
             }
             case Pillar -> {
                 return new Pillar(ID, x, y, (length >= 3) ? (String) values[2] : "pillar");
@@ -159,9 +121,6 @@ public abstract class Entity extends GameObject {
             }
             case Bones -> {
                 return new Bones(ID, x, y, (length >= 3) ? (String) values[2] : "bones");
-            }
-            case Chain -> {
-                return new Chain(ID, x, y, (length >= 3) ? (String) values[2] : "chain");
             }
             case RatoRei -> {
                 return new com.retronova.game.objects.entities.enemies.RatoRei(ID, x, y);

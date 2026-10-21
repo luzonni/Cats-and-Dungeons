@@ -9,16 +9,17 @@ import com.retronova.engine.graphics.UiSprite;
 import com.retronova.game.map.arena.Waves;
 import com.retronova.game.Game;
 import com.retronova.game.map.arena.Arena;
-import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
+/**
+ * O relogio da corrida, no alto da tela: o ponteiro da uma volta so, a corrida
+ * inteira, e o texto diz quanto falta ate os 30 minutos, quando nasce o Rato Rei.
+ */
 public class WaveDisplay {
 
     private final UiSprite clock;
     private final Point position;
-    private int amountOfEnemies;
 
     WaveDisplay() {
         this.clock = new UiSprite("ui", "clock");
@@ -27,8 +28,6 @@ public class WaveDisplay {
 
     public void tick() {
         this.position.setLocation(Engine.window.getWidth()/2, Configs.Margin());
-        this.amountOfEnemies = (int) Game.getMap().getEntities(Enemy.class).stream()
-                .filter(Enemy::alvoAutomatico).count();
     }
 
     public void render(Graphics2D g) {
@@ -36,7 +35,7 @@ public class WaveDisplay {
         int y = this.position.y;
         if(Game.getMap() instanceof Arena) {
             renderClock(x, y, g);
-            renderValues(x, y, g);
+            renderTimer(x, y, g);
         }
     }
 
@@ -46,10 +45,7 @@ public class WaveDisplay {
         int xCenter = x + 12 * Configs.HudScale();
         int yCenter = y + 12 * Configs.HudScale();
         int waveSeconds = Game.getWave().getSeconds();
-        // Na corrida sem fim o ponteiro da uma volta so: a corrida inteira, ate o chefe.
-        double rad = Game.getWave().semFim()
-                ? (Math.PI * 2) * Math.min(1d, waveSeconds / (Waves.DURACAO_MINUTOS * 60d))
-                : ((Math.PI*2)/60) * waveSeconds;
+        double rad = (Math.PI * 2) * Math.min(1d, waveSeconds / (Waves.DURACAO_MINUTOS * 60d));
         int xPole = (int)(xCenter + Math.cos(rad - Math.PI/2) * (6*Configs.HudScale()));
         int yPole = (int)(yCenter + Math.sin(rad - Math.PI/2) * (6*Configs.HudScale()));
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -58,9 +54,8 @@ public class WaveDisplay {
     }
 
     /**
-     * Na corrida sem fim o painel e so o relogio: quanto falta ate os 30 minutos,
-     * quando nasce o chefe final. Abates e inimigos vivos saíram — ninguem decide
-     * nada olhando para eles no meio da horda.
+     * O painel e so o relogio: quanto falta ate os 30 minutos. Abates e inimigos
+     * vivos sairam — ninguem decide nada olhando para eles no meio da horda.
      */
     private void renderTimer(int x, int y, Graphics2D g) {
         int s = Configs.HudScale();
@@ -80,49 +75,6 @@ public class WaveDisplay {
             TextFx.draw(g, "/" + Waves.DURACAO_MINUTOS + ":00", miuda,
                     tx + FontHandler.getWidth(texto, font) + 2 * s, ty, Palette.LIGHT, s);
         }
-    }
-
-    private void renderValues(int x, int y, Graphics2D g) {
-        if (Game.getWave().semFim()) {
-            renderTimer(x, y, g);
-            return;
-        }
-        Font font = FontHandler.font(FontHandler.Septem, Configs.HudScale()*6);
-        g.setFont(font);
-
-        int xLevel = x + 25 * Configs.HudScale();
-        int yLevel = y + 7 * Configs.HudScale();
-        // Na corrida sem fim nao ha sala nem fatia de onda: o que importa e quanto
-        // tempo o gato aguenta e quantos ja derrubou.
-        boolean semFim = Game.getWave().semFim();
-        int seg = Game.getWave().getSeconds();
-        String level = semFim
-                ? String.format("Time: %02d:%02d", seg / 60, seg % 60)
-                : "Level: " + (Game.getGame().getLevel()+1);
-        g.setColor(Palette.DEEP);
-        g.drawString(level, xLevel + Configs.HudScale(), yLevel + Configs.HudScale());
-        g.setColor(Color.white);
-        g.drawString(level, xLevel, yLevel);
-
-        int xCount = x + 25 * Configs.HudScale();
-        int yCount = y + 13 * Configs.HudScale();
-        String count = semFim
-                ? "Kills: " + Game.getWave().abates()
-                : "Spawns: " + Game.getWave().currentSpawn() + " / " + Game.getWave().amountSpawns();
-        g.setColor(Palette.DEEP);
-        g.drawString(count, xCount + Configs.HudScale(), yCount + Configs.HudScale());
-        g.setColor(Color.white);
-        g.drawString(count, xCount, yCount);
-
-        int xAmount = x + 25 * Configs.HudScale();
-        int yAmount = y + 19 * Configs.HudScale();
-        String amount = "Enemies: " + this.amountOfEnemies;
-        g.setColor(Palette.DEEP);
-        g.drawString(amount, xAmount + Configs.HudScale(), yAmount + Configs.HudScale());
-        g.setColor(Color.white);
-        g.drawString(amount, xAmount, yAmount);
-
-
     }
 
 }

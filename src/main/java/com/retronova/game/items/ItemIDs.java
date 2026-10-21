@@ -80,7 +80,7 @@ public enum ItemIDs {
      * a escolha do jogador vale nada — pior que nao oferecer.
      *
      * MORA AQUI PORQUE O CONJUNTO E UM SO. Ele estava escrito identico em dois
-     * lugares, a carta de recompensa e a loja, e conjunto duplicado so fica igual
+     * lugares, a carta de fim de sala e a loja, e conjunto duplicado so fica igual
      * enquanto ninguem mexe: bastaria alguem religar a racao num dos dois para o
      * jogo passar a oferecer na loja o que a carta recusa. Com um dono, religar um
      * item e apagar uma linha.

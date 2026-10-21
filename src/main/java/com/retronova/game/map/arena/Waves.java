@@ -1,133 +1,35 @@
 package com.retronova.game.map.arena;
 
 import com.retronova.engine.Engine;
-import com.retronova.engine.io.Resources;
 import com.retronova.game.Game;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.EntityIDs;
 import com.retronova.game.objects.tiles.Tile;
 import com.retronova.game.objects.tiles.Void;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 import java.awt.Point;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Waves implements Runnable {
+/**
+ * A CORRIDA SEM FIM. Nao ha ondas nem salas: a horda nunca para, e o que sobe e o
+ * RELOGIO. Cada minuto traz mais ratos, mais depressa, mais fortes e de tipos
+ * novos, chefes a cada cinco minutos e cercos cada vez maiores, ate o Rato Rei aos
+ * trinta. E o laco do Vampire Survivors: a pergunta deixa de ser "passo desta
+ * sala?" e vira "quanto tempo eu aguento?".
+ *
+ * O nome ficou do tempo em que o jogo era dividido em ondas, lidas de JSON, cada
+ * uma numa sala. Aquele modo saiu inteiro do codigo quando a corrida sem fim
+ * passou a ser o unico caminho do jogo.
+ */
+public class Waves {
 
-    // RITMO DE HORDA, a la Vampire Survivors.
-    //
-    // Antes cada fatia do JSON nascia de uma vez, e a primeira onda inteira eram
-    // cinco zumbis em sessenta segundos: o jogador limpava a tela e ficava
-    // esperando. Agora cada fatia vira um fio continuo de pequenos grupos, com mais
-    // bichos e mais frageis — morrer rapido e em quantidade e o que da o ritmo.
-    // O JSON continua dizendo a PROPORCAO entre ondas; estes numeros dizem o ritmo.
-
-    /**
-     * RAMPA POR SALA: 0 na primeira arena, 1 da quinta em diante.
-     *
-     * A horda nascia no ritmo cheio desde a primeira sala, contra um gato de
-     * nivel 1 com a arma inicial — muito rato para um gato fraco. O comeco tem de
-     * ser facil: e onde o jogador aprende o laco (matar, subir, escolher) e sente
-     * o gato crescer. Densidade, endurecimento, elites e cerco sobem juntos com a
-     * rampa, e so na quinta sala chegam ao ritmo de antes.
-     */
-    private double rampa() {
-        return Math.min(1.0, nivel / 4.0);
-    }
-
-    /** Multiplica a quantidade do JSON: 3x na primeira sala, 5x da quinta em diante. */
-    private double densidade() {
-        return 3.0 + 2.0 * rampa();
-    }
-    /** Em quantos grupos cada fatia do JSON e dividida. */
-    private static final int GRUPOS_POR_FATIA = 12;
-    /** Vida dos bichos de horda; chefe (fatia de um so) fica intacto. */
+    /** Vida dos bichos de horda no minuto zero; chefe fica intacto. */
     private static final double VIDA_HORDA = 0.5;
-
-    private static final int M;
-
-    private static final JSONObject[] controller;
-
-    static {
-        M = 60 * 60;
-        controller = new JSONObject[3];
-        try {
-            controller[0] = Resources.getJsonFile("maps/waves", "easy");
-            controller[1] = Resources.getJsonFile("maps/waves", "normal");
-            controller[2] = Resources.getJsonFile("maps/waves", "hard");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private final Arena gameMap;
 
-    private final int period;
-    private final int[] amount;
-    private final EntityIDs[] types;
-
-    /** Em que sala esta onda acontece. Decide a dureza dos bichos. */
-    private final int nivel;
-
-    private int counter;
-    private int lastCounter;
-
-    private volatile int step;
-    /** Quantos grupos ja nasceram nesta onda. step = grupo / GRUPOS_POR_FATIA. */
-    private volatile int grupo;
-    private volatile List<Entity> listAppend;
-    private boolean end;
-
-    public Waves(Arena gameMap, int waveLevel, int difficult) {
-        this.gameMap = gameMap;
-        this.nivel = waveLevel;
-        this.semFim = difficult == 0;
-        // Bancada: -Dcd.minuto=N comeca a corrida no minuto N, para medir a horda cheia.
-        this.ticksDaCorrida = Long.getLong("cd.minuto", 0L) * 3600;
-        JSONArray listWaves = (JSONArray) controller[difficult].get("waves");
-        JSONObject wave = (JSONObject) listWaves.get(waveLevel);
-        this.period = ((Number)wave.get("period")).intValue();
-        this.amount = new int[this.period];
-        JSONArray listAmount = (JSONArray) wave.get("amount");
-        for(int i = 0; i < amount.length; i++) {
-            int currentAmount = ((Number)listAmount.get(i)).intValue();
-            this.amount[i] = currentAmount;
-        }
-        JSONArray listTypes = (JSONArray) wave.get("enemies");
-        this.types = new EntityIDs[listTypes.size()];
-        EntityIDs[] types = EntityIDs.values();
-        for(int i = 0; i < listTypes.size(); i++) {
-            String type = String.valueOf(listTypes.get(i));
-            for(int j = 0; j < types.length; j++) {
-                if(type.equalsIgnoreCase(types[j].name())) {
-                    this.types[i] = types[j];
-                }
-            }
-        }
-    }
-
-    public int getSeconds() {
-        if (semFim) {
-            return (int) (ticksDaCorrida / 60);
-        }
-        return (int)((this.counter/60d));
-    }
-
-    // -------------------------------------------------------- corrida sem fim
-
-    /**
-     * A CORRIDA SEM FIM. Na dificuldade normal nao ha mais ondas nem salas: a
-     * horda nunca para, e o que sobe e o RELOGIO. Cada minuto traz mais ratos,
-     * mais depressa, mais fortes e de tipos novos, chefes a cada cinco minutos e
-     * cercos cada vez maiores — a corrida termina quando o gato cai. E o laco do
-     * Vampire Survivors: a pergunta deixa de ser "passo desta sala?" e vira
-     * "quanto tempo eu aguento?".
-     */
-    private final boolean semFim;
     private long ticksDaCorrida;
     private int abates;
     private int ateOProximoGrupo = 60 * 2;
@@ -146,22 +48,56 @@ public class Waves implements Runnable {
             {3.0, EntityIDs.MouseSquire},
             {4.5, EntityIDs.MouseVampire},
             {6.0, EntityIDs.RatExplode},
-            // MonarkMouse fica de fora: o sprite dele (monarkmouse.png) nao existe e
-            // ele derrubava o jogo ao nascer. Volta quando a arte existir.
     };
     private static final EntityIDs[] CHEFES = {EntityIDs.KingCursedCatBoss, EntityIDs.CatToyBoss};
 
+    public Waves(Arena gameMap) {
+        this.gameMap = gameMap;
+        // Bancada: -Dcd.minuto=N comeca a corrida no minuto N, para medir a horda cheia.
+        this.ticksDaCorrida = Long.getLong("cd.minuto", 0L) * 3600;
+    }
+
+    public int getSeconds() {
+        return (int) (ticksDaCorrida / 60);
+    }
+
+    // ------------------------------------------------------------ retomada
+
     /**
-     * Quantos segundos faltam para o próximo chefe nascer, na corrida sem fim.
+     * O que o relogio da corrida precisa para continuar de onde parou.
+     *
+     * SEM ISTO A RETOMADA RECOMECAVA A CORRIDA. O gato voltava com a build do
+     * minuto vinte num relogio zerado: horda de minuto zero, chefe do minuto cinco
+     * de novo, e os trinta minutos inteiros pela frente outra vez. Os bichos vivos
+     * nao entram — a horda se refaz sozinha em segundos a partir do relogio —, mas
+     * o que o relogio JA DEU tem de ir junto: os chefes que ja nasceram nao nascem
+     * de novo, e o anel do cerco segue no compasso em que estava.
+     */
+    public record Estado(long ticks, int abates, int proximoChefe, boolean reiNasceu, int ateOCerco) {
+    }
+
+    public Estado estado() {
+        return new Estado(ticksDaCorrida, abates, proximoChefe, reiNasceu, ateOCerco);
+    }
+
+    public void repor(Estado e) {
+        this.ticksDaCorrida = Math.max(0, e.ticks());
+        this.abates = Math.max(0, e.abates());
+        this.proximoChefe = Math.max(1, e.proximoChefe());
+        this.reiNasceu = e.reiNasceu();
+        this.ateOCerco = e.ateOCerco() > 0 ? e.ateOCerco() : PRIMEIRO_CERCO;
+    }
+
+    // ------------------------------------------------------------ chefes
+
+    /**
+     * Quantos segundos faltam para o próximo chefe nascer.
      *
      * É o que deixa a música se recolher antes da hora (ver TrilhaDaArena).
-     * {@link Integer#MAX_VALUE} quando não há chefe por vir: fora da corrida sem
-     * fim, ou depois de o Rato Rei já ter nascido.
+     * {@link Integer#MAX_VALUE} quando não há chefe por vir: depois de o Rato Rei
+     * já ter nascido.
      */
     public int segundosAteOProximoChefe() {
-        if (!semFim) {
-            return Integer.MAX_VALUE;
-        }
         return segundosAteOProximoChefe(minutos(), proximoChefe, reiNasceu);
     }
 
@@ -177,10 +113,6 @@ public class Waves implements Runnable {
         return (int) Math.max(0, Math.ceil((proximo - minutos) * 60));
     }
 
-    public boolean semFim() {
-        return semFim;
-    }
-
     public int abates() {
         return abates;
     }
@@ -194,7 +126,7 @@ public class Waves implements Runnable {
         return ticksDaCorrida / 3600.0;
     }
 
-    private void tickSemFim() {
+    public void tick() {
         ticksDaCorrida++;
         double min = minutos();
         // Aos 30 minutos, o fim da corrida: o Rato Rei no lugar do chefe comum.
@@ -208,9 +140,9 @@ public class Waves implements Runnable {
             proximoChefe++;
             nascerGrupo(1, CHEFES[qual], true);
         }
-        // Cerco a partir de 1min15, a cada 40s, cada vez maior.
-        if (ticksDaCorrida >= 60 * 75 && --ateOCerco <= 0) {
-            ateOCerco = 60 * 40;
+        // Cerco a partir de 1min35, a cada 40s, cada vez maior.
+        if (ticksDaCorrida >= INICIO_DO_CERCO && --ateOCerco <= 0) {
+            ateOCerco = INTERVALO_DO_CERCO;
             cercar();
         }
         if (--ateOProximoGrupo > 0) {
@@ -295,7 +227,20 @@ public class Waves implements Runnable {
         gameMap.putAll(spawner(grupo));
     }
 
-    /** Dureza pelo tempo, vida de horda e chance de elite, para quem nasce na corrida sem fim. */
+    /**
+     * Devolve a corrida um chefe que estava vivo quando ela foi gravada.
+     *
+     * O relogio retomado ja passou do minuto em que ele nasceu, entao sem isto
+     * ele simplesmente sumiria — e fechar o jogo viraria um jeito de pular chefe.
+     * Ele volta na dureza do minuto gravado e com a fracao de vida que tinha.
+     */
+    public void devolverChefe(EntityIDs tipo, double fracaoDeVida) {
+        Entity e = prepararBicho(Entity.build(tipo.ordinal(), 0, 0), true);
+        e.setLife(Math.max(1, e.getLifeSize() * Math.min(1, fracaoDeVida)));
+        gameMap.putAll(spawner(List.of(e)));
+    }
+
+    /** Dureza pelo tempo, vida de horda e chance de elite, para quem nasce. */
     private Entity prepararBicho(Entity e, boolean chefe) {
         if (e instanceof com.retronova.game.objects.entities.enemies.Enemy bicho) {
             bicho.escalarPara(durezaDoTempo());
@@ -314,93 +259,14 @@ public class Waves implements Runnable {
         return e;
     }
 
-    public int currentSpawn() {
-        return this.step;
-    }
-
-    public int amountSpawns() {
-        return this.amount.length;
-    }
-
-    public boolean ended() {
-        if (semFim) {
-            return false;   // a corrida sem fim so acaba com o gato
-        }
-        return this.end;
-    }
-
-    private void periodic(){
-        if(end){
-            return;
-        }
-        counter++;
-        if(this.gameMap.enemiesEmpty()) {
-            counter+=5;
-        }
-        if(counter > M){
-            counter = 0;
-            end = true;
-            return;
-        }
-        if(counter > lastCounter){
-            lastCounter += Math.max(1, M / (period * GRUPOS_POR_FATIA));
-            new Thread(this, "Waves-Thread").start();
-        }
-    }
-
-    private synchronized List<Entity> listEntity(){
-        List<Entity> lista = new ArrayList<>();
-        int fatia = Math.min(step, amount.length - 1);
-        boolean chefe = amount[fatia] <= 1;
-        int quantos;
-        if (chefe) {
-            // Fatia de um so e chefe: nasce uma vez, no primeiro grupo, inteiro.
-            quantos = grupo % GRUPOS_POR_FATIA == 0 ? amount[fatia] : 0;
-        } else {
-            // O total exato da fatia, repartido entre os grupos. Arredondar cada
-            // grupo para cima inflava a conta: 6 bichos previstos viravam 12.
-            int total = (int) Math.round(amount[fatia] * densidade());
-            int g = grupo % GRUPOS_POR_FATIA;
-            quantos = (g + 1) * total / GRUPOS_POR_FATIA - g * total / GRUPOS_POR_FATIA;
-        }
-        for(int i = 0; i < quantos; i++){
-            int id = types[Engine.RAND.nextInt(types.length)].ordinal();
-            Entity e = Entity.build(id, 0, 0);
-            // A DUREZA VEM DA SALA, e e aplicada AQUI porque este e o unico lugar
-            // que cria inimigo de onda. Espalhar a conta pelas dez classes daria
-            // dez lugares para alguem esquecer, e o bicho esquecido nasceria em
-            // nivel de fabrica na sala vinte sem nada acusando.
-            if (e instanceof com.retronova.game.objects.entities.enemies.Enemy bicho) {
-                bicho.escalarPara(this.nivel);
-                if (!chefe) {
-                    bicho.escalarVida(VIDA_HORDA);
-                    // Endurecimento dentro da onda: 30% do ritmo na primeira sala.
-                    bicho.evoluir((int) (getSeconds() * (0.3 + 0.7 * rampa())));
-                    // Elite: quase nenhuma na primeira sala; 3% a ~9% da quinta em diante.
-                    double chanceElite = (0.005 + 0.025 * rampa()) + 0.001 * getSeconds() * rampa();
-                    if (Engine.RAND.nextDouble() < chanceElite) {
-                        bicho.tornarElite();
-                    }
-                }
-            }
-            lista.add(e);
-        }
-        return lista;
-    }
-
-    private synchronized List<Entity> spawner(List<Entity> entidades) {
+    private List<Entity> spawner(List<Entity> entidades) {
         // NASCER AO REDOR, LOGO FORA DA TELA.
         //
-        // Antes: o contador de tentativas era um so para o grupo INTEIRO, contando
-        // ate as que deram certo; passadas 200, o resto do grupo era sorteado pelo
-        // MAPA TODO — e com hordas grandes isso era quase sempre. Era por isso que
-        // ratos brotavam em qualquer canto.
-        //
-        // Agora o grupo chega JUNTO, de uma direcao so (grupos diferentes, direcoes
+        // O grupo chega JUNTO, de uma direcao so (grupos diferentes, direcoes
         // diferentes: e isso que faz a horda vir de todos os lados), numa elipse
         // logo alem da borda da tela — calculada da janela e do zoom, entao o
         // nascimento acompanha a camera. Ponto em parede procura o chao mais
-        // proximo dali; nunca cai no sorteio do mapa.
+        // proximo dali; sem chao por perto, o bicho fica para o proximo grupo.
         List<Entity> list = new ArrayList<>();
         com.retronova.game.objects.entities.Player gato = Game.getPlayer();
         if (gato == null) {
@@ -426,7 +292,7 @@ public class Waves implements Runnable {
                 lugar = chaoPerto(x, y, 3);
             }
             if (lugar == null) {
-                continue;       // sem chao nenhum por perto: esse fica para o proximo grupo
+                continue;
             }
             Entity e = entidades.get(i);
             e.setX(lugar.x * s);
@@ -485,8 +351,10 @@ public class Waves implements Runnable {
     // -------------------------------------------------------------- cerco
 
     /** De quanto em quanto tempo a horda fecha um anel completo em volta do gato. */
-    private static final int INTERVALO_DO_CERCO = 60 * 25;
-    /** Primeiro cerco: depois de a onda ter tempo de aquecer. */
+    private static final int INTERVALO_DO_CERCO = 60 * 40;
+    /** A contagem do cerco so anda depois de 1min15, para a horda ter tempo de aquecer. */
+    private static final int INICIO_DO_CERCO = 60 * 75;
+    /** Primeira contagem: o primeiro anel fecha 20 s depois disso, perto de 1min35. */
     private static final int PRIMEIRO_CERCO = 60 * 20;
     private static final double RAIO_DO_CERCO = 8.5;
     private int ateOCerco = PRIMEIRO_CERCO;
@@ -494,26 +362,20 @@ public class Waves implements Runnable {
     /**
      * O CERCO: um anel inteiro de ratos surgindo em volta do gato ao mesmo tempo.
      *
-     * E o pico de tensao da onda, e o momento que o dano em area existe para
+     * E o pico de tensao da corrida, e o momento que o dano em area existe para
      * resolver — dezenas de alvos equidistantes, todos chegando juntos. Copiado
      * do anel de morcegos do Vampire Survivors: a saida e abrir caminho por um
      * lado, ou esperar a Furia encher e explodir o anel inteiro.
+     *
+     * O anel e de um tipo so, o mais fraco: e um teste de area, nao de resistencia.
      */
     private void cercar() {
-        int fatia = Math.min(step, amount.length - 1);
-        // Sem cerco na primeira sala: ali o jogador ainda esta aprendendo a andar.
-        if (!semFim && (nivel == 0 || amount[fatia] <= 1) || com.retronova.game.Game.getPlayer() == null) {
-            return;     // onda de chefe: o chefe ja e o pico
-        }
         com.retronova.game.objects.entities.Player gato = Game.getPlayer();
+        if (gato == null) {
+            return;
+        }
         int s = GameObject.SIZE();
-        // Anel menor no comeco: 10 ratos na segunda sala, 18 da quinta em diante.
-        int quantos = semFim
-                ? Math.min(30, 8 + (int) (3 * minutos()))
-                : 10 + (int) Math.round(8 * rampa());
-        // Na corrida sem fim o anel e de um tipo so, o mais fraco liberado: e um
-        // teste de area, nao de resistencia.
-        EntityIDs tipoDoAnel = semFim ? EntityIDs.Zombie : types[0];
+        int quantos = Math.min(30, 8 + (int) (3 * minutos()));
         double gx = gato.getX() / s, gy = gato.getY() / s;
         List<Entity> anel = new ArrayList<>();
         for (int i = 0; i < quantos; i++) {
@@ -524,56 +386,16 @@ public class Waves implements Runnable {
             if (tile == null || tile.isSolid() || tile instanceof Void) {
                 continue;
             }
-            Entity e = Entity.build(tipoDoAnel.ordinal(), 0, 0);
-            if (semFim) {
-                prepararBicho(e, false);
-            } else if (e instanceof com.retronova.game.objects.entities.enemies.Enemy bicho) {
-                bicho.escalarPara(this.nivel);
-                bicho.escalarVida(VIDA_HORDA);
-                bicho.evoluir((int) (getSeconds() * (0.3 + 0.7 * rampa())));
-            }
+            Entity e = prepararBicho(Entity.build(EntityIDs.Zombie.ordinal(), 0, 0), false);
             e.setX(x * s);
             e.setY(y * s);
             anel.add(e);
         }
         if (!anel.isEmpty()) {
-            Game.getMap().putAll(anel);
-            Game.getMap().put(new com.retronova.game.objects.particles.Word("SURROUNDED!",
+            gameMap.putAll(anel);
+            gameMap.put(new com.retronova.game.objects.particles.Word("SURROUNDED!",
                     gato.getX() + gato.getWidth() / 2.0, gato.getY() - s, 2));
             com.retronova.engine.sound.Sound.play(com.retronova.engine.sound.Sounds.Zombie);
-        }
-    }
-
-    public void tick() {
-        if (semFim) {
-            tickSemFim();
-            return;
-        }
-        if (!end && --ateOCerco <= 0) {
-            ateOCerco = INTERVALO_DO_CERCO;
-            cercar();
-        }
-        periodic();
-        // Grupo vazio (o resto de uma fatia de chefe) tambem conta como grupo:
-        // senao a contagem empacava e a onda nunca passava para a fatia seguinte.
-        if(listAppend != null) {
-            Game.getMap().putAll(listAppend);
-            listAppend = null;
-            synchronized (this) {
-                grupo++;
-                step = Math.min(grupo / GRUPOS_POR_FATIA, amount.length - 1);
-            }
-        }
-    }
-
-    @Override
-    public void run() {
-        try {
-            List<Entity> enemies = listEntity();
-            listAppend = spawner(enemies);
-        }catch (Exception e) {
-            System.err.println("Erro em waves...");
-            e.printStackTrace();
         }
     }
 }

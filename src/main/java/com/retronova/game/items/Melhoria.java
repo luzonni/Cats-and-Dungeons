@@ -3,7 +3,10 @@ package com.retronova.game.items;
 import com.retronova.game.objects.entities.Modifiers;
 
 /**
- * O QUE UMA CARTA DE FIM DE TURNO ENTREGA.
+ * UMA MELHORIA DE ATRIBUTO COM RARIDADE — o premio de carta do caça-niquel do
+ * bau (ver Roleta). Nasceu como a carta de fim de sala, quando a corrida era
+ * dividida em salas; a sala saiu e a melhoria ficou, como um dos premios da
+ * maquina.
  *
  * ---------------------------------------------------------------------------
  * POR QUE AS CARTAS DEIXARAM DE SER ARMAS
@@ -23,8 +26,8 @@ import com.retronova.game.objects.entities.Modifiers;
  * ---------------------------------------------------------------------------
  * A CURVA DE RETORNO DECRESCENTE, e por que ela existe
  *
- * Uma corrida tem vinte salas. Sem freio, pegar "dano" vinte vezes seria a
- * jogada certa sempre, e a escolha de fim de turno viraria uma formalidade.
+ * Uma corrida abre baus a perder de vista. Sem freio, "dano" vinte vezes seria o
+ * melhor premio sempre, e a variedade da maquina viraria uma formalidade.
  *
  * A curva é a do Pom of Power do Hades: a primeira cópia vale inteira, a segunda
  * oitenta por cento, depois sessenta, quarenta, trinta, vinte, quinze e dez, com

@@ -33,6 +33,22 @@ public final class Estatisticas {
         conquistasDaCorrida.clear();
     }
 
+    /**
+     * Retomada: os numeros que a corrida ja tinha juntado.
+     *
+     * A VITORIA VOLTA SEM PAGAR DE NOVO. O bonus foi depositado no Meta quando o
+     * Rato Rei caiu; aqui so se lembra que ele caiu, para a tela final somar o
+     * bonus no que mostra e para uma segunda queda nao contar.
+     */
+    public static void repor(int bausGravados, int maiorHordaGravada, boolean venceuGravado,
+                             Map<String, Double> danoGravado) {
+        baus = Math.max(0, bausGravados);
+        maiorHorda = Math.max(0, maiorHordaGravada);
+        venceu = venceuGravado;
+        danoPorFonte.clear();
+        danoPorFonte.putAll(danoGravado);
+    }
+
     // ------------------------------------------------------------ vitoria
 
     private static boolean venceu;

@@ -4,6 +4,12 @@ import com.retronova.engine.Engine;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
 
+/**
+ * Moeda no chao, que o gato recolhe ao passar.
+ *
+ * EM ESPERA: nada cria moedas hoje. Fica pronta para quando o dinheiro ganhar um
+ * papel na corrida — ver Seller e docs/planejamento/ROADMAP.md.
+ */
 public class Coin extends Utility {
 
     private int count;

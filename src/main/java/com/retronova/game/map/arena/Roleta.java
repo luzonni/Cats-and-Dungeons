@@ -39,8 +39,8 @@ import java.util.List;
  * cassino, e e por isso que ele prende.
  *
  * O premio e decidido ANTES do giro, como em toda maquina de verdade: os rolos
- * sao so a cerimonia. Nao ha escolha — a escolha mora na Recompensa de fim de
- * sala; aqui o jogador so torce.
+ * sao so a cerimonia. Nao ha escolha — a escolha mora nas cartas de nivel
+ * (SubirDeNivel); aqui o jogador so torce.
  */
 public class Roleta implements Activity {
 
@@ -195,7 +195,7 @@ public class Roleta implements Activity {
             ArmaExtra a = armas.get(Engine.RAND.nextInt(armas.size()));
             return new Premio(null, a, melhorias.nivel(a) + 1);
         }
-        Melhorias.Carta c = melhorias.oferecer(1, Game.getGame().getLevel(), promocao).getFirst();
+        Melhorias.Carta c = melhorias.oferecer(1, promocao).getFirst();
         return new Premio(c, null, 0);
     }
 
@@ -289,6 +289,7 @@ public class Roleta implements Activity {
                 gato.getMelhorias().aplicar(gato, vencedor.carta().melhoria(),
                         vencedor.carta().raridade());
             }
+            com.retronova.game.Corrida.gravar();
             Sound.play(Sounds.Button);
             Engine.pause(null);
         }

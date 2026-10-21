@@ -832,7 +832,7 @@ public abstract class Item {
      * De que elemento esta arma e.
      *
      * Na base para que QUALQUER item responda, tenha elemento ou nao — assim quem
-     * pergunta (a carta de recompensa, a loja) nao precisa saber quais classes sao
+     * pergunta (a carta, a loja) nao precisa saber quais classes sao
      * elementais. Quem tem sobrescreve.
      */
     public Elemento elemento() {
