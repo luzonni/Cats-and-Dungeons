@@ -90,16 +90,17 @@ public class Engine implements Runnable {
                 com.retronova.game.Game.depoisDeUmSegundo =
                         () -> pause(new com.retronova.game.map.arena.SubirDeNivel());
             } else if (System.getProperty("cd.rei") != null) {
-                // -Dcd.rei=N chama o Rato Rei ao lado do gato, ja na fase N (1, 2 ou 3),
+                // -Dcd.rei=N chama o Rato Rei ao lado do gato, ja na fase N (1, 2 ou 3);
+                // N=4 o chama com 1 de vida, para ver a vitoria sem lutar a luta toda,
                 // para ver cada fase da luta sem esperar os trinta minutos.
-                int fase = Math.max(1, Math.min(3, Integer.getInteger("cd.rei", 1)));
+                int fase = Math.max(1, Math.min(4, Integer.getInteger("cd.rei", 1)));
                 com.retronova.game.Game.depoisDeUmSegundo = () -> {
                     var gato = com.retronova.game.Game.getPlayer();
                     var rei = com.retronova.game.objects.entities.Entity.build(
                             com.retronova.game.objects.entities.EntityIDs.RatoRei.ordinal(), 0, 0);
                     rei.setX(gato.getX() + 6 * com.retronova.game.objects.GameObject.SIZE());
                     rei.setY(gato.getY());
-                    rei.setLife(rei.getLifeSize() * (1 - (fase - 1) / 3.0) - 1);
+                    rei.setLife(fase == 4 ? 1 : rei.getLifeSize() * (1 - (fase - 1) / 3.0) - 1);
                     com.retronova.game.Game.getMap().put(rei);
                 };
             }
