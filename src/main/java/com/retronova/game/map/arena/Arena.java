@@ -143,19 +143,12 @@ public class Arena extends GameMap {
             passagemParaACalma();
             return;
         }
-        Musics desejada = temChefe() ? Musics.FightBoss : Musics.combate();
-        // A pergunta e "a faixa certa ESTA TOCANDO?", e nao "e a mesma que eu
-        // subi?". Comparando com o campo lembrado, trocar de musica pelo menu
-        // fazia a arena parar e retocar uma faixa que ja estava no ar — o segundo
-        // recomeco que se ouvia ao voltar para o jogo.
-        if (Sound.playing(desejada)) {
-            trilha = desejada;
-            return;
-        }
-        Musics.pararCombate();
-        Sound.play(desejada, true);
-        this.trilha = desejada;
+        // Qual faixa e a que volume: intensidade da horda, calmaria antes do chefe
+        // e cruzamento nas trocas. Ver TrilhaDaArena.
+        direcaoMusical.tick();
     }
+
+    private final TrilhaDaArena direcaoMusical = new TrilhaDaArena();
 
     /**
      * Quadros da passagem de uma trilha para a outra.
@@ -216,14 +209,6 @@ public class Arena extends GameMap {
         liberarSaida();
     }
 
-    private boolean temChefe() {
-        for (Enemy e : Game.getMap().getEntities(Enemy.class)) {
-            if (e.chefe()) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * A camera vai ate a alavanca e fecha nela.

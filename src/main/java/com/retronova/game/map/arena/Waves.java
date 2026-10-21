@@ -151,6 +151,32 @@ public class Waves implements Runnable {
     };
     private static final EntityIDs[] CHEFES = {EntityIDs.KingCursedCatBoss, EntityIDs.CatToyBoss};
 
+    /**
+     * Quantos segundos faltam para o próximo chefe nascer, na corrida sem fim.
+     *
+     * É o que deixa a música se recolher antes da hora (ver TrilhaDaArena).
+     * {@link Integer#MAX_VALUE} quando não há chefe por vir: fora da corrida sem
+     * fim, ou depois de o Rato Rei já ter nascido.
+     */
+    public int segundosAteOProximoChefe() {
+        if (!semFim) {
+            return Integer.MAX_VALUE;
+        }
+        return segundosAteOProximoChefe(minutos(), proximoChefe, reiNasceu);
+    }
+
+    /** A mesma conta, pura, para teste: chefe gato a cada 5 min antes dos 30, o rei aos 30. */
+    static int segundosAteOProximoChefe(double minutos, int proximoChefe, boolean reiNasceu) {
+        double proximo = reiNasceu ? Double.MAX_VALUE : DURACAO_MINUTOS;
+        if (proximoChefe * 5 < DURACAO_MINUTOS) {
+            proximo = Math.min(proximo, proximoChefe * 5);
+        }
+        if (proximo == Double.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        return (int) Math.max(0, Math.ceil((proximo - minutos) * 60));
+    }
+
     public boolean semFim() {
         return semFim;
     }
