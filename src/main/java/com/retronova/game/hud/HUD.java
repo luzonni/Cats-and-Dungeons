@@ -29,6 +29,7 @@ public class HUD implements Activity {
     private final Hotbar hotbar;
     private final WaveDisplay waveDisplay;
     private final BarraDeChefe barraDeChefe = new BarraDeChefe();
+    private final FeedbackDeDano feedbackDeDano;
 
     private final Player player;
     /** Escala do HUD com que os sprites atuais foram recortados. */
@@ -38,6 +39,7 @@ public class HUD implements Activity {
         this.player = player;
         this.hotbar = new Hotbar(player);
         this.waveDisplay = new WaveDisplay();
+        this.feedbackDeDano = new FeedbackDeDano(player);
         recriar();
     }
 
@@ -96,6 +98,7 @@ public class HUD implements Activity {
         hotbar.tick();
         waveDisplay.tick();
         barraDeChefe.tick();
+        feedbackDeDano.tick();
         count++;
         if(count > 5) {
             indexBottle++;
@@ -109,6 +112,8 @@ public class HUD implements Activity {
     @Override
     public void render(Graphics2D g) {
         vignette(g);
+        // Por baixo do retrato e das barras: o clarao nunca tapa a vida.
+        feedbackDeDano.render(g);
         bust(g);
         bottleLife(g);
         renderXpBar(g);
