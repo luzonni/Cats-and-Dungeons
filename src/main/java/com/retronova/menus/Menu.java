@@ -99,8 +99,9 @@ public class Menu implements Activity {
         for (int i = 0; i < naColuna; i++) {
             botoes.get(i).setBounds(new Rectangle(x, y + i * espaco, largura, altura));
         }
-        // No canto superior direito, quadrado, com a margem da interface.
-        int lado = (int) (altura * 1.3);
+        // No canto superior direito, pequeno e quadrado, com a margem da interface.
+        // Era 1,3x a altura de um botão: grande demais para um atalho secundário.
+        int lado = 13 * Configs.UiScale();
         trofeu.setBounds(new Rectangle(Engine.window.getWidth() - Configs.Margin() - lado,
                 Configs.Margin(), lado, lado));
     }
@@ -134,7 +135,16 @@ public class Menu implements Activity {
             }
             botao.setFocused(foco == i);
         }
+        // O troféu sobe e acende ao passar o mouse (ou ao focar), e desce ao sair.
+        boolean sobre = trofeu.isHovered() || trofeu.isFocused();
+        hoverDoTrofeu += ((sobre ? 1 : 0) - hoverDoTrofeu) * 0.35;
+        if (sobre) {
+            Engine.window.pointing();
+        }
     }
+
+    /** 0 parado, 1 com o mouse em cima; suavizado a cada tick. */
+    private double hoverDoTrofeu;
 
     private void navegarPeloTeclado() {
         if (KeyBoard.KeyPressed("Down")) {
@@ -150,6 +160,9 @@ public class Menu implements Activity {
     public void render(Graphics2D g) {
         cenario.render(g);
         for (int i = 0; i < botoes.size(); i++) {
+            if (botoes.get(i) == trofeu) {
+                continue;           // o troféu tem desenho próprio, logo abaixo
+            }
             int dx = deslocamentoDeSaida(i);
             g.translate(dx, 0);
             botoes.get(i).render(g);
@@ -174,23 +187,42 @@ public class Menu implements Activity {
         int dx = deslocamentoDeSaida(botoes.indexOf(trofeu));
         g.translate(dx, 0);
 
-        // O corpo do botão tem a faixa das orelhas em cima; o ícone vai no resto.
-        int corpoY = r.y + 6 * s;
-        int corpoH = r.height - 6 * s;
-        int celula = Math.max(1, corpoH * 7 / 10 / 9);
+        // UM QUADRADO NEUTRO, e não um botão com orelhas. O ouro do troféu competia
+        // com o resto do menu, que é todo em ardósia; aqui o ícone usa a cor de
+        // texto secundário e só clareia quando o mouse chega perto.
+        //
+        // E ele REAGE: sobe até 2 pixels, a borda acende e o ícone vai para o
+        // branco. A subida é suavizada em tick(), então não pula. A cor só troca em
+        // dois valores (e não num degradê) porque os ícones são pintados uma vez e
+        // guardados por cor — um degradê criaria uma imagem nova a cada quadro.
+        double h = hoverDoTrofeu;
+        boolean aceso = h > 0.5;
+        int sobe = (int) Math.round(2 * s * h);
+        int y = r.y - sobe;
+
+        g.setColor(new Color(0, 0, 0, 70));                       // sombra no "chão"
+        g.fillRoundRect(r.x + s, r.y + 2 * s, r.width, r.height, 5 * s, 5 * s);
+        g.setColor(aceso ? Palette.ACCENT : Palette.OUTLINE);     // borda
+        g.fillRoundRect(r.x - s, y - s, r.width + 2 * s, r.height + 2 * s, 6 * s, 6 * s);
+        g.setColor(aceso ? Palette.MAIN : Palette.DEEP);          // corpo
+        g.fillRoundRect(r.x, y, r.width, r.height, 5 * s, 5 * s);
+        g.setColor(new Color(255, 255, 255, (int) (22 + 28 * h))); // brilho no topo
+        g.fillRect(r.x + 2 * s, y + s, r.width - 4 * s, s);
+
+        int celula = Math.max(1, (int) Math.round(r.width * 0.6 / 9));
         int lado = Icones.lado(celula);
-        Color ouro = trofeu.isHovered() ? new Color(0xFFE680) : new Color(0xFFD23F);
-        Icones.desenhar(g, "TROFEU", ouro, r.x + (r.width - lado) / 2, corpoY + (corpoH - lado) / 2, celula);
+        Icones.desenhar(g, "TROFEU", aceso ? Palette.TEXT : Palette.LIGHT,
+                r.x + (r.width - lado) / 2, y + (r.height - lado) / 2, celula);
 
         if (Conquistas.temNovas()) {
             // Pulsa devagar: chama atenção sem gritar.
             double pulso = 0.5 + 0.5 * Math.sin((transicao < 0 ? Engine.alpha() : 0) + System.nanoTime() / 2.5e8);
-            int d = 7 * s;
-            int bx = r.x + r.width - d + 2 * s, by = r.y + 2 * s;
+            int d = 5 * s;
+            int bx = r.x + r.width - d + 2 * s, by = y - 2 * s;
             g.setColor(new Color(0xE0475F));
             g.fillOval(bx - (int) (pulso * s), by - (int) (pulso * s), d + (int) (2 * pulso * s), d + (int) (2 * pulso * s));
-            Font f = FontHandler.font(FontHandler.Game, 5f * s);
-            TextFx.draw(g, "!", f, bx + d / 2 - FontHandler.getWidth("!", f) / 2, by + d - s, Palette.TEXT, s);
+            g.setColor(new Color(0xFFD0D6));                        // brilho do ponto
+            g.fillRect(bx + s, by + s, Math.max(1, s), Math.max(1, s));
         }
         if (trofeu.isHovered() || trofeu.isFocused()) {
             Font f = FontHandler.font(FontHandler.Septem, 6f * s);
