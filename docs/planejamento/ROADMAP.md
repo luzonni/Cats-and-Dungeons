@@ -17,6 +17,11 @@ Revisado em **2026-10-21** contra o código (commit `8a9cbb8` e a limpeza que ve
 - [x] Interpolação de mundo, câmera e menus entre ticks; 165 e 240 FPS
 - [x] Ritmo de quadros uniforme e opção de VSync
 - [x] Medidor de quadros (`-Dcd.perf`) e modo bancada (`-Dcd.bench`)
+- [x] Modo foto (`-Dcd.foto`): capturas de tela por roteiro, isoladas dos saves
+- [x] Sistema único de menus (`TelaDeMenu`): mesma moldura, pilha, voltar e
+      transição em todas as telas; a mesma tela de opções no título e na pausa
+- [x] Hover e foco únicos (`Realce`), sem contorno, e cartas únicas (`MaoDeCartas`)
+- [x] Pausa que congela animações e abafa a música
 - [x] Tirar o `Repulsion` da thread paralela e trazer para o tick principal
 - [x] Encerrar as threads pendentes ao fechar o jogo — a que ficava presa era a
       do `Repulsion`, uma por troca de mapa; a das waves saiu com o modo por ondas

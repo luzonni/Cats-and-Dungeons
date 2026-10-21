@@ -136,6 +136,109 @@ do zumbi. Está no histórico do git, antes da branch `docs/estado-atual`.
 - Inimigos e gato ganham movimento no desenho (quique, achata-estica, virada)
   sem quadro novo de arte: `Game.animarBicho` e `Game.animarGato`.
 
+## Interface
+
+Tudo o que é compartilhado entre telas fica em `menus/shared/`. Uma tela nova
+monta a partir daqui e não redesenha título, rodapé, hover ou carta.
+
+### Sistema de menus (`TelaDeMenu`)
+
+Toda tela de menu estende `TelaDeMenu`: Menu, Saves, Personagens, Options,
+Pause, TelaDeConquistas, GameOver e Vitoria. A moldura é sempre a mesma:
+
+```
+┌────────────────────────────────────────────┐
+│                  Título                    │  baseDoTitulo(), fonte Game 14·s
+│                                            │
+│            área do conteúdo                │  areaDoConteudo()
+│                                            │
+│   [Enter] Select   [Q/E] Tabs   [Esc] Back │  Rodape: dicas do modo de entrada
+└────────────────────────────────────────────┘
+```
+
+- **Fundo pelo contexto.** Fora da corrida, a ilustração viva da tela inicial
+  (`Cenario`) com o véu `Palette.VEIL`; a tela inicial dispensa o véu
+  (`veuSobreAIlustracao()`). Dentro da corrida, o jogo congelado com o véu.
+- **Pilha e voltar.** `TelaDeMenu.abrir(tela)` empilha: fora da corrida com
+  `Engine.heapActivity`; dentro dela como sobreposição (`Engine.pause`), guardando
+  a tela de baixo. `voltar()` desempilha pelo mesmo caminho, e Esc e B chamam
+  `voltar()` em toda tela. `voltarAoMenuPrincipal()` desempilha até a tela
+  inicial: "Main Menu" sempre volta ao título, e não a Saves.
+- **Uma tela de opções só.** `Options` abre igual da tela inicial e da pausa;
+  só o fundo muda. As abas (Video, Audio, Interface) usam `Abas`, com o mouse, Q/E
+  e LB/RB.
+- **Transição única.** Toda tela entra em `TRANSICAO = 9` ticks (0,15 s):
+  opacidade de 0 a 1 e o conteúdo subindo `SUBIDA = 6` pixels, com ease-out.
+  O valor segue a Nielsen Norman (0,1 s é instantâneo, 0,4 s já é espera).
+- **A pausa congela de verdade.** O `Engine` não roda o tick de quem está por
+  baixo. As animações do corpo, o tremor da câmera, a aura das elites e o pulso
+  da Fúria passaram a usar `Game.tempoVisual()`, que só anda com o jogo rodando.
+  A música é abafada a 35% (`Sound.ABAFADO_NA_PAUSA`) e volta ao sair.
+- **Mouse, teclado e controle.** O foco anda por setas e D-pad; Enter e A
+  confirmam; Esc e B voltam. Um mouse parado não rouba o foco do teclado
+  (`Entrada.porMouse()`).
+
+Para criar uma tela: estender `TelaDeMenu`, passar o título ao `super`,
+posicionar os elementos em `posicionar()` a partir de `areaDoConteudo()`, tratar
+a entrada em `atualizar()`, desenhar em `desenharConteudo()` e devolver as dicas
+em `dicas()` (`Rodape.SELECIONAR`, `VOLTAR`, `ABAS`, `AJUSTAR` ou uma
+`Rodape.Dica` própria). Abrir com `TelaDeMenu.abrir(new MinhaTela())`.
+
+### Hover e foco (`Realce`)
+
+O padrão é o dos botões da tela inicial: o elemento **cresce a partir do
+centro, ganha um brilho suave por trás e clareia**. Nenhum hover usa contorno.
+
+- `Realce.Estado`: a rampa de 0 a 1, com `tick(aceso)` e `noQuadro()`.
+- `crescer`, `brilho`, `clarear` e `realcar` (crescer mais brilho) desenham o
+  hover.
+- `marcadorDeFoco` desenha o foco do teclado e do controle: o mesmo realce mais
+  duas setas que respiram dos lados. A Xbox Accessibility Guideline 113 pede foco
+  sempre visível e avisa que só um brilho sutil não basta.
+- `folgaEntreVizinhos(s)` é o vão mínimo entre dois botões lado a lado, para as
+  setas de um não encostarem no outro.
+
+Usam o `Realce`: `Button`, as casas do inventário e da loja (`Slot`), o botão de
+comprar, as abas do inventário, as linhas de opção, os espaços de save, os gatos
+da seleção, o troféu, a loja do fim de corrida e os botões Reroll e Skip.
+
+### Cartas (`MaoDeCartas`)
+
+Uma mão de cartas para escolher uma. O padrão é a carta de buff do subir de
+nível: 88×128 pixels nativos, faixa colorida com o rótulo, medalhão claro com o
+ícone, nome em fonte Game, efeito na cor da carta e a tecla de atalho no pé.
+O componente traz o comportamento junto: entrada virando uma carta por vez,
+carta sob o mouse ou o foco subindo com brilho na cor dela, teclas 1 a 3, setas e
+Enter, clarão na escolhida e fechamento.
+
+Cada carta só varia no conteúdo:
+`new MaoDeCartas.Carta(rotulo, cor, icone, nome, efeito)`. O `icone` é quem
+desenha o medalhão: `SubirDeNivel` usa `Icones.desenhar`, e
+`EscolhaDeElemento` usa `Relevo.desenhar` com o selo do elemento. O efeito
+aceita várias linhas separadas por `\n`.
+
+Uso: criar com a lista de cartas; a cada tick chamar `posicionar(y, s)` e
+`tick()`, que devolve o índice escolhido naquele tick (ou -1); fechar a tela
+quando `fechou()` for verdadeiro. `pronta()` diz se a mão já aceita entrada, para
+os controles em volta dela (Reroll, Skip).
+
+### Transmutação da arma (`Transmutacao`)
+
+Ao escolher o elemento, a arma da mão vira a variante elemental em **18 ticks
+(0,3 s)**, sem bloquear nada:
+
+1. **Estourar (6 ticks):** a arma pula um pouco da mão e branqueia. No pico ela
+   troca, escondida no branco; nesse quadro tocam o som do elemento, um anel abre
+   na cor do elemento (`OndaDeChoque`) e o nome da arma nova sobe sobre o gato
+   nessa cor (`Word`).
+2. **Assentar (12 ticks):** a arma nova volta para a mão, maior do que é, e
+   encolhe até o tamanho dela com um passo além, perdendo o branco.
+
+A arma anima a partir da pose da mão (`Item.renderNaMao`; o `Bow` o sobrescreve
+para manter a mira), então o primeiro e o último quadro são a arma em mãos, sem
+salto. O gato anda, ataca e usa habilidades o tempo todo. Antes eram 136 ticks
+(2,3 s) com a arma parada acima da cabeça.
+
 ## Persistência
 
 Tudo é JSON, gravado ao lado do executável (no `run`, a raiz do projeto):

@@ -170,3 +170,32 @@ documentação.
 - O corte do Presságio "nas últimas salas" saiu junto com as salas: ele é sempre
   oferecido.
 - Comentários que descreviam o fluxo por salas foram atualizados.
+
+## Interface única (2026-10-21, branch `feature/menus-e-ui`)
+
+Esta seção também não é reconstrução. Ver
+[ARQUITETURA.md](../ARQUITETURA.md#interface).
+
+- **Um sistema de menus.** Toda tela de menu (título, saves, seleção de gato,
+  opções, pausa, conquistas, fim de corrida, vitória) estende `TelaDeMenu`: o
+  mesmo título, a mesma área de conteúdo, um rodapé com as teclas do modo de
+  entrada atual e a mesma entrada de 0,15 s. Esc e B sempre voltam.
+- **Opções é uma tela só**, aberta da tela inicial e da pausa, com abas Video,
+  Audio e Interface trocadas por Q/E ou LB/RB. Apply e Back alcançáveis pelo
+  teclado e pelo controle.
+- **Pilha de telas consertada.** "Main Menu" sempre volta à tela inicial;
+  "Try Again" e "Main Menu" deixaram de empilhar uma tela nova a cada corrida.
+- **A pausa congela de verdade:** o corpo dos bichos, o tremor da câmera, a aura
+  das elites e o pulso da Fúria param, e a música abaixa.
+- **Um hover e um foco** (`Realce`), tirados dos botões da tela inicial: cresce,
+  brilha e clareia, sem contorno grosso. O foco de teclado e controle soma duas
+  setas que respiram. Vale para botões, inventário, loja, abas, opções, saves,
+  gatos, troféu e loja do fim de corrida. O item do inventário não encolhe mais
+  sob o mouse.
+- **Cartas de elemento iguais às de buff** (`MaoDeCartas`): mesmo tamanho,
+  moldura, faixa, medalhão, tipografia, entrada, hover e teclas 1 a 3.
+- **Transmutação da arma em 0,3 s**, sem tirar a arma da mão por dois segundos:
+  estoura em branco, troca, um anel na cor do elemento abre e o nome da arma
+  nova sobe sobre o gato. Antes eram 2,3 s.
+- **Modo foto** (`-Dcd.foto`) para conferir telas por roteiro sem tocar nos
+  saves nem nas configurações.
