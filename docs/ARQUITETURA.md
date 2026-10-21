@@ -8,7 +8,7 @@ para o desenho, `javax.sound.sampled` para o áudio (via TinySound) e
 `java.awt.event` para a entrada.
 
 Isso é uma escolha, não uma limitação: o laço de jogo, o sistema de física, o
-pathfinding, o renderizador e a interface foram escritos do zero. O que o
+renderizador e a interface foram escritos do zero. O que o
 projeto chama de "engine" é o pacote `com.retronova.engine`, camada interna
 própria — não um motor de terceiros.
 
@@ -50,7 +50,7 @@ atual e à divisão clara entre motor e jogo.
 | `game.map` | Mapa base, câmera, luz e sombra (`Atmosfera`) |
 | `game.map.arena` | Arena, horda (`Waves`), campo gerado (`Gerador`), cartas de nível, caça-níquel, escolha de elemento, música da arena |
 | `game.map.room` | Salas desenhadas à mão (hoje só a antecâmara) |
-| `game.objects` | Entidades, tiles, partículas, física, pathfinding e o golpe com aviso (`Investida`) |
+| `game.objects` | Entidades, tiles, partículas, física e o golpe com aviso (`Investida`) |
 | `game.objects.entities` | Gato, inimigos, mobília, projéteis e as mecânicas de corrida: `Bonus`, `Arsenal`, `ArmasDeArea`, `Furia`, `Habilidades` |
 | `game.items` | Armas da mão, consumíveis, `Elemento`, `Classe`, raridades, `Melhoria`, `Passiva`, `ArmaExtra`, `Evolucao` |
 | `game.hud` / `game.interfaces` | HUD (relógio, barra de chefe, flash de dano) e telas in-game (inventário, lojas) |
@@ -91,12 +91,12 @@ Menu ─ Play ─▶ Saves ─ espaço vazio ─▶ Personagens ─ Embark ─�
                                               GameOver (resumo + loja permanente)
 ```
 
-**A corrida sem fim.** O portão da antecâmara executa `LOAD ARENA EASY`, e a
-dificuldade 0 é a única usada hoje. Nela a `Arena` monta o campo com
-`Gerador.cisterna` (160×160 tiles, só a borda de parede) e o `Waves` roda em
-modo `semFim`: não há ondas nem salas, só o relógio. Por minuto de corrida entram
-tipos novos de inimigo, grupos maiores e mais frequentes, cercos a cada 40 s
-(a partida de 1min15), um chefe a cada cinco minutos e o Rato Rei aos 30.
+**A corrida sem fim.** O portão da antecâmara executa `LOAD ARENA` (o `EASY`
+que segue no mapa é ignorado). A `Arena` monta o campo com `Gerador.cisterna`
+(160×160 tiles, só a borda de parede) e o `Waves` comanda a horda: não há ondas
+nem salas, só o relógio. Por minuto de corrida entram tipos novos de inimigo,
+grupos maiores e mais frequentes, cercos a cada 40 s (o primeiro perto de
+1min35), um chefe a cada cinco minutos e o Rato Rei aos 30.
 
 O gato não atira: as armas procuram o alvo alcançável mais próximo e atacam
 sozinhas (`Item.alvoAlcancavel`). O jogador anda, dá dash e escolhe cartas.
@@ -116,10 +116,11 @@ regras que valem para todo inimigo: ninguém age enquanto o gato cai, ninguém a
 além da coleira de 20 tiles e, no campo aberto, quem ficou para trás reaparece
 perto do gato (`Arena.trazerDePerto`).
 
-**O modo antigo, por ondas e salas,** continua no código e não é alcançado:
-dificuldades 1 e 2 (`normal`, `hard`), as plantas `cistern_1` a `cistern_6`, o
-`Waves.periodic`, a `Recompensa` de fim de sala, o vendedor que aparecia ao lado
-da alavanca e o `TrapDoor`. Ver [pontos frágeis](#pontos-frágeis-conhecidos).
+**O modo antigo, por ondas e salas,** saiu do código em 2026-10-21, porque
+nenhum caminho do jogo chegava nele: as dificuldades `normal` e `hard`, as
+plantas `cistern_1` a `cistern_6`, os JSON de `maps/waves/`, a `Recompensa` de
+fim de sala, o vendedor que aparecia ao lado da alavanca, o `TrapDoor` e o A\*
+do zumbi. Está no histórico do git, antes da branch `docs/estado-atual`.
 
 ## Desenho
 
@@ -142,15 +143,32 @@ Tudo é JSON, gravado ao lado do executável (no `run`, a raiz do projeto):
 | Arquivo | Dono | O que guarda |
 |---|---|---|
 | `config.json` | `Configs` | opções; gravação atômica com `.tmp` e `.bak` |
-| `saves/corrida-N.json` (N = 1 a 3) | `Corrida` | a corrida interrompida: gato, nível, vida, XP, inventário, melhorias, passivas, armas extras, evoluções, elemento |
+| `saves/corrida-N.json` (N = 1 a 3) | `Corrida` | a corrida interrompida. O gato: nível, vida, XP, inventário, melhorias, passivas, armas extras, evoluções, elemento. O andamento: relógio, abates, próximo chefe, Rato Rei, cerco, chefes vivos (tipo e fração de vida), níveis pendentes, trocas e pulos, carga da Fúria, números da tela final, vitória |
 | `saves/meta.json` | `Meta` | ouro e níveis dos upgrades permanentes |
 | `saves/conquistas.json` | `Conquistas` | o progresso das conquistas |
 
 **Permadeath.** Cada partida grava sempre no mesmo espaço, escolhido no início;
 ler um save o apaga, e o jogo regrava no primeiro tick; morrer apaga. Assim não
-há como guardar uma cópia antes do perigo. O ponto de retomada é gravado em
-`Game.changeMap` (ao entrar num mapa) e depois de cada escolha que não pode ser
-re-sorteada (elemento, recompensa). O espaço 0 é o da bancada e nunca grava.
+há como guardar uma cópia antes do perigo. O espaço 0 é o da bancada e nunca
+grava.
+
+**Quando grava**, sempre só no campo (a antecâmara não tem save — a corrida ainda
+não começou):
+
+1. ao entrar no campo (`Game.changeMap`);
+2. depois de cada escolha que não pode ser re-sorteada: elemento, carta de nível,
+   prêmio do caça-níquel — gravar antes faria do save uma máquina de re-rolar;
+3. a cada minuto do relógio (`Arena.gravarACadaMinuto`), contra fechamento à força;
+4. ao sair pela pausa ("Main Menu" ou "Quit").
+
+**O que não grava:** inimigos comuns, projéteis, partículas e o campo. A horda é
+função do relógio e se refaz em segundos; o campo é sorteado de novo. Os chefes
+vivos são a exceção — sem eles, fechar o jogo pularia o chefe.
+
+**Ordem da retomada** (`Game.retomar`): bônus de início (gato e upgrades
+permanentes) → o gato do save → o campo → os reinícios de corrida → o andamento
+do save → no primeiro tick, os chefes e a regravação. Os bônus vêm antes porque
+o upgrade de vida enche a barra; a vida gravada tem de ser a última palavra.
 
 `Meta` e `Conquistas` ficam fora dos espaços: apagar uma corrida não apaga o que
 foi conquistado. No modo bancada (`-Dcd.bench`) nenhum dos dois grava.
@@ -274,33 +292,30 @@ números do mundo linear são convertidos para a posição equivalente na curva
 
 ## Pontos frágeis conhecidos
 
-Registrados para não se perderem. Revistos em 2026-10-21 contra o código.
+Registrados para não se perderem. Revistos em 2026-10-21.
 
-**Threads e janela**
+**Resolvidos em 2026-10-21**, mantidos aqui como registro:
 
-- `Repulsion` roda numa thread paralela alterando posições enquanto o laço
-  principal lê e desenha. O `Game.tick` a acorda com `notify` a cada tick.
-- `resetWindow()` (F11, troca de resolução) é chamado pela thread do `Engine`,
-  fora da EDT.
-- O `Waves` abre uma thread nova a cada leva de inimigos — mas só no modo
-  antigo, por ondas. A corrida sem fim nasce os grupos no próprio tick.
-- "Threads não-daemon impedem o processo de encerrar": a janela usa
-  `EXIT_ON_CLOSE`, que chama `System.exit`. **A confirmar** se o problema ainda
-  acontece.
+- O `Repulsion` rodava numa thread paralela, mexendo em posições enquanto o laço
+  principal lia e desenhava — e a thread nunca terminava: o `dispose` baixava uma
+  flag, mas ela dormia num `wait` que ninguém mais acordava, e cada troca de mapa
+  deixava uma presa para trás. Agora roda no `Game.tick`.
+- `resetWindow()` (F11, troca de resolução) recriava a janela na thread do
+  `Engine`, fora da EDT. Agora passa pela EDT com `invokeAndWait`.
+- O `Waves` abria uma thread por leva de inimigos no modo por ondas; o modo saiu.
+- O `Game.tick` contava um segundo a cada 61 ticks.
+- O save da corrida sem fim não guardava o relógio, e a retomada com o upgrade
+  Vitality curava o gato. Ver [Persistência](#persistência).
 
-**Corrida**
+**Em aberto**
 
-- **O save da corrida sem fim é pobre.** Ele é gravado ao entrar na arena e
-  depois da escolha de elemento (aos 45 s); nada mais o regrava durante os 30
-  minutos. Quem sai pelo "Save and Quit" da pausa volta ao estado daquele ponto,
-  e o relógio da horda (`Waves.ticksDaCorrida`) não é gravado, então ele
-  recomeça do zero. A pausa avisa "Your run is saved at the start of this
-  room", texto do modo por salas. **A confirmar em jogo.**
-- Ao retomar, `Meta.aplicar` roda depois de a vida gravada ser reposta e, com o
-  upgrade Vitality, enche a vida até o máximo. **A confirmar em jogo.**
-- O modo por ondas e salas (dificuldades 1 e 2, `Recompensa`, `TrapDoor`, as
-  plantas `cistern_1` a `6`, `normal`, `hard`) não é alcançado. Os comentários
-  de `Arena`, `Roleta` e `Melhorias` ainda descrevem esse fluxo.
-- Não há fonte de moeda dentro da corrida: o gato começa com 100 e só a loja da
-  antecâmara as consome. `Coin` e `GumMachine` existem, mas nenhum mapa ou
-  inimigo os cria.
+- **Retomar limpa a tela.** Como os inimigos comuns não são gravados, quem sai no
+  meio de um cerco volta com a tela vazia. A horda se refaz em segundos, e o aviso
+  da pausa diz isso ("Enemies on screen are not kept"), mas é uma brecha
+  consciente.
+- **Dinheiro em espera.** Não há fonte de moeda dentro da corrida: o gato começa
+  com 100 e só a loja da antecâmara as consome. `Seller`, `Store`, `Coin` e
+  `GumMachine` (com `GumInterface` e `GumPanel`) ficam no código, marcados como
+  em espera, até o dinheiro ganhar papel na corrida.
+- `tools/GenCisterna.java` ainda escreve as plantas `cistern_1` a `6`, que o jogo
+  não lê mais; os tiles que ele gera continuam em uso pelo `Gerador`.

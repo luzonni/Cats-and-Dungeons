@@ -35,8 +35,8 @@ O sorteio favorece os tipos liberados mais recentemente. Regras gerais:
 - **Elite.** Chance de `0,2% + 0,8% por minuto`, até 6%. Elite tem 5× a vida,
   6× o XP, +30% de dano, aura dourada, e sempre larga um baú.
 - **Armadura.** Vida extra que não olha o tipo do dano, mostrada em amarelo
-  sobre a barra de vida. Só chefes e o `MonarkMouse` têm.
-- **Cerco.** A partir de 1min15, a cada 40 s, um anel de 8 a 30 zumbis em volta
+  sobre a barra de vida. Só os chefes têm.
+- **Cerco.** O primeiro perto de 1min35, depois a cada 40 s, um anel de 8 a 30 zumbis em volta
   do gato, com o aviso "SURROUNDED!".
 - **Coleira.** Inimigo a mais de 20 tiles do gato não age, e é trazido de volta
   para perto, fora da tela. No máximo 170 vivos ao mesmo tempo.
@@ -105,12 +105,6 @@ O mob mais básico: fraco e sem resistência.
 - **No jogo:** 40 de vida, velocidade 1,2, golpe pesado de 4, resiste 50% a fogo,
   5 de XP. É o tipo dos cercos.
 
-### 7. Rato Monarca — `MonarkMouse`
-
-Ver em Bosses. No código é um inimigo comum com armadura (120 de vida, 60 de
-armadura), mas está **fora da horda**: o sprite `monarkmouse.png` não existe e o
-jogo caía quando ele nascia.
-
 ## Bosses
 
 Todo chefe herda de `Chefe`, que dá fases por fração de vida e a barra de vida
@@ -141,19 +135,21 @@ enquanto ele se move sozinho pelo ambiente.
 - **Plano:** resiste a veneno e a ataques físicos leves; invoca ratos pequenos em
   grande quantidade; desaparece por um momento e reaparece em outra parte do
   mapa.
-- **No jogo:** sem sprite e fora da horda (ver acima). **Não implementados:**
-  invocação e teletransporte.
+- **No jogo:** não existe mais. A classe chegou a existir (120 de vida, 60 de
+  armadura, golpe pesado de 12), mas sem sprite — `monarkmouse.png` nunca foi
+  feito e o jogo caía quando ele nascia — e fora da horda. Removida em
+  2026-10-21; está no histórico do git. Volta quando houver arte.
 
 ### 4. Gato Chorão — `CryingCat`
 
 Sem especificação escrita até o momento.
 
-- **No jogo:** 1500 de vida, velocidade 4, golpe médio de 22. Nunca nasce: não
-  está na horda nem em nenhum mapa.
+- **No jogo:** não existe mais. A classe (1500 de vida, golpe médio de 22) nunca
+  nascia, e foi removida em 2026-10-21.
 
-> ⚠️ O sprite `cryingcat.png` continua corrompido: é um arquivo **WebP** com
-> extensão `.png`, e o `ImageIO` não consegue lê-lo. O boss carrega com a
-> textura de erro. Conferido em 2026-10-21.
+> ⚠️ O sprite `cryingcat.png` continua no repositório e continua corrompido: é
+> um arquivo **WebP** com extensão `.png`, que o `ImageIO` não lê. Precisa ser
+> refeito antes de o chefe voltar.
 
 ### 5. Rato Rei — `RatoRei` (chefe final)
 

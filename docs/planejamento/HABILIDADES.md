@@ -19,7 +19,7 @@ refeita por outro caminho, no modelo do **Vampire Survivors** e não do Hades:
 
 | O que o plano previa | O que existe hoje |
 |---|---|
-| Cartas de fim de sala (`Recompensa`) | A corrida não tem salas. A `Recompensa` ficou no código, sem ser alcançada |
+| Cartas de fim de sala (`Recompensa`) | A corrida não tem salas. A `Recompensa` ficou sem uso e foi removida em 2026-10-21 (está no histórico do git) |
 | Melhorias de atributo empilháveis | Continuam (`Melhoria`), mas só saem do caça-níquel do baú (`Roleta`) |
 | Encaixes que descartam (ATAQUE, DASH, PULSO, REVIDE) | Não existem. As cartas de nível (`SubirDeNivel`) oferecem atributo com raridade, passiva ou nível de arma extra, e tudo empilha |
 | Vocabulário de status | Não existe. `EFFECT_POISON` e `EFFECT_REGENERATION` seguem sem uso |
@@ -139,7 +139,7 @@ Levantado, não presumir de novo:
 |---|---|---|
 | `Melhoria` (7 atributos + `Modifiers`) | `game/items/Melhoria.java` | pronto; hoje sai só do caça-níquel |
 | `Melhorias` (livro-caixa, `oferecer`, serialização) | `game/items/Melhorias.java` | pronto; também guarda pontos de nível, armas extras, passivas e evoluções |
-| `Recompensa` (tela de 3 cartas) | `game/map/arena/Recompensa.java` | pronta, **sem uso** na corrida sem fim |
+| `Recompensa` (tela de 3 cartas) | removida em 2026-10-21 | estava sem uso na corrida sem fim; está no histórico do git |
 | `SubirDeNivel` (3 cartas por nível, reroll e skip) | `game/map/arena/SubirDeNivel.java` | pronto — nasceu depois deste plano |
 | `Passiva` (7 gerais + 3 exclusivas) | `game/items/Passiva.java` | pronto — nasceu depois deste plano |
 | `ArmaExtra` + `Evolucao` | `game/items/` | pronto — nasceu depois deste plano |
@@ -239,7 +239,7 @@ houver o que combinar.
 - [ ] Os cinco ganchos, com as duas naturezas (aviso e filtro)
 - [ ] Proteger a lista de inscritos contra modificação durante o callback
 - [ ] Tipo `Encaixe` + o livro-caixa aceitando os dois tipos de carta
-- [ ] `Recompensa` oferecendo carta de encaixe e mostrando o **descarte**
+- [ ] Uma tela de carta (a `Recompensa` foi removida; hoje seria a `SubirDeNivel`) oferecendo carta de encaixe e mostrando o **descarte**
       quando o encaixe já está ocupado
 
 ### Fase 1 — habilidades globais que leem o elemento

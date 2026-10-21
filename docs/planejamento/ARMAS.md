@@ -2,7 +2,7 @@
 
 Planejamento do arsenal. ✅ marca o que já existe no jogo.
 
-Revisado em **2026-10-21** contra o código. Desde a versão anterior deste
+Revisado em **2026-10-21** contra o código, depois da limpeza do modo por salas. Desde a versão anterior deste
 documento (2026-09-06) o arsenal passou a ter três camadas: a **arma da mão**,
 que define o gato; as **armas extras**, que se acumulam durante a corrida; e as
 **passivas**, que mudam as regras. Os itens consumíveis continuam existindo, mas
@@ -26,9 +26,24 @@ variantes de fogo, gelo, água, terra, ar e lendária. Cada elemento muda dano e
 cadência (`Elemento.java`): terra bate 45% mais e é 40% mais lenta; ar bate 22%
 menos e é 25% mais rápida.
 
-As variantes elementais, os consumíveis, `Bomb` e `GasBomb` estão **fora do
-catálogo** (`ItemIDs.EM_ESPERA`): existem e são construíveis, mas não são
-oferecidos.
+### Onde se consegue outra arma da mão
+
+Só na **loja da antecâmara**, antes de a corrida começar — e ela faz parte da
+mecânica de dinheiro, que está **em espera** (ver
+[ROADMAP.md](ROADMAP.md), seção "Dinheiro"). O gato começa com 100 moedas e
+nada dentro da corrida rende mais.
+
+A loja monta uma vitrine fixa, uma fileira por família (`Seller.VITRINE`), com
+**todas as armas**, inclusive as variantes elementais, a 10 moedas cada; o JSON
+do mapa só muda preço e quantidade das que cita. O gato só consegue comprar as da
+própria família (`Store`, por `Player.sabeUsar`).
+
+`ItemIDs.EM_ESPERA` (consumíveis, `Bomb`, `GasBomb` e as variantes elementais)
+tira itens do que é oferecido **fora** da vitrine fixa. **Inconsistência
+registrada:** o comentário do `ItemIDs` diz que as variantes elementais não são
+oferecidas na loja, mas a vitrine as lista uma a uma, então elas aparecem. Já os
+consumíveis, `Bomb` e `GasBomb` não aparecem — nem a `Feed` que o mapa da
+antecâmara pede.
 
 ### O plano original, item a item
 
@@ -36,7 +51,7 @@ oferecidos.
 |---|---|---|---|
 | 1 | Espada | Espada flamejante · Espada de vida (restaura % ao usar) | ✅ espada e espada de fogo. A "espada de vida" não existe com esse nome; quem rouba vida é o `BloodyAxe` (6% do dano) — **a confirmar** se ela foi substituída por ele |
 | 2 | Arco | Arco elétrico | ✅ |
-| 3 | Bomba | Bomba de gás (dano em área enquanto o gás durar) | ✅ (fora do catálogo hoje) |
+| 3 | Bomba | Bomba de gás (dano em área enquanto o gás durar) | ✅ existem, mas fora da loja (`EM_ESPERA`): nenhum caminho do jogo as entrega hoje |
 | 4 | Laser | — | ✅ |
 | 5 | Garra (tipo luva) | Dá dano e empurra o jogador | ✅ `ClawBlades`: golpe curto e repetido que cura ao acertar. **A confirmar** se o empurrão no jogador foi abandonado |
 | 6 | Bola de lã | — | ✅ |
@@ -93,8 +108,11 @@ dano recebido, Azrael +20% de área.
 
 ## Itens consumíveis
 
-O plano antigo chamava estes itens de "passivos". Eles existem, mas saíram do
-catálogo e hoje só aparecem se o mapa os puser (a antecâmara vende `Feed`):
+O plano antigo chamava estes itens de "passivos". As classes existem, mas **hoje
+nenhum caminho do jogo entrega um consumível**: estão fora da loja
+(`ItemIDs.EM_ESPERA`), o caixote com loot que os soltava saiu com o modo por
+salas, e a máquina de chiclete, que sorteia alguns deles, está em espera com o
+dinheiro. Continuam construíveis, e o save sabe gravá-los.
 
 | # | Item planejado | Efeito planejado | No jogo |
 |---|---|---|---|
