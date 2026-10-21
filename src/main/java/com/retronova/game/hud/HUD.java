@@ -28,6 +28,7 @@ public class HUD implements Activity {
 
     private final Hotbar hotbar;
     private final WaveDisplay waveDisplay;
+    private final BarraDeChefe barraDeChefe = new BarraDeChefe();
 
     private final Player player;
     /** Escala do HUD com que os sprites atuais foram recortados. */
@@ -94,6 +95,7 @@ public class HUD implements Activity {
         createVignette();
         hotbar.tick();
         waveDisplay.tick();
+        barraDeChefe.tick();
         count++;
         if(count > 5) {
             indexBottle++;
@@ -111,6 +113,7 @@ public class HUD implements Activity {
         bottleLife(g);
         renderXpBar(g);
         waveDisplay.render(g);
+        barraDeChefe.render(g);
         hotbar.render(g);
     }
 
