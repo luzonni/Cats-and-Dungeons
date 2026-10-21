@@ -197,6 +197,27 @@ public class Game implements Activity {
      */
     private boolean acabou;
 
+    /**
+     * O chefe final caiu. Mostra a tela de vitoria por cima da corrida, que fica
+     * pausada, e deixa o jogador escolher entre seguir ou encerrar.
+     *
+     * Nao faz nada na segunda chamada: a vitoria so conta uma vez por corrida.
+     */
+    public void vencer() {
+        if (Estatisticas.registrarVitoria(player.getName())) {
+            Engine.pause(new com.retronova.menus.Vitoria());
+        }
+    }
+
+    /**
+     * Encerra a corrida por escolha do jogador, depois de vencer. E o mesmo fim
+     * de quando o gato cai — apaga o save, soma o ouro, abre o resumo —, so que
+     * com o gato vivo.
+     */
+    public void encerrarCorrida() {
+        gameOver();
+    }
+
     private void gameOver() {
         this.acabou = true;
         // MORREU, NAO HA O QUE RETOMAR. Sem isto o save do inicio da sala ficaria

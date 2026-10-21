@@ -66,14 +66,16 @@ public class WaveDisplay {
         int s = Configs.HudScale();
         int total = Waves.DURACAO_MINUTOS * 60;
         int seg = Game.getWave().getSeconds();
-        boolean chefe = seg >= total;
+        // "BOSS!" so enquanto o rei esta de pe: depois de vencido o relogio volta a contar.
+        boolean chefe = seg >= total && !com.retronova.game.Estatisticas.venceu();
         String texto = chefe ? "BOSS!" : String.format("%02d:%02d", seg / 60, seg % 60);
+        boolean passou = seg >= total;
         Font font = FontHandler.font(FontHandler.Game, s * 8);
         int alt = FontHandler.getHeight(texto, font);
         int tx = x + 26 * s;
         int ty = y + 12 * s + alt / 2;
         TextFx.draw(g, texto, font, tx, ty, chefe ? Palette.WARN : Palette.TEXT, s);
-        if (!chefe) {
+        if (!chefe && !passou) {
             Font miuda = FontHandler.font(FontHandler.Septem, s * 6);
             TextFx.draw(g, "/" + Waves.DURACAO_MINUTOS + ":00", miuda,
                     tx + FontHandler.getWidth(texto, font) + 2 * s, ty, Palette.LIGHT, s);

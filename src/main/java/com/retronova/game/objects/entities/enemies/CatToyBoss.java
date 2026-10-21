@@ -10,11 +10,22 @@ import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 
-public class CatToyBoss extends Enemy {
+public class CatToyBoss extends Chefe {
 
     @Override
-    public boolean chefe() {
-        return true;
+    public String nome() {
+        return "Toy Cat";
+    }
+
+    @Override
+    public int fases() {
+        return 2;
+    }
+
+    /** Na segunda fase ele acelera: o mesmo golpe, só que sem folga para respirar. */
+    @Override
+    protected void aoMudarDeFase(int nova) {
+        setSpeed(getSpeed() * 1.25);
     }
 
 
@@ -37,6 +48,7 @@ public class CatToyBoss extends Enemy {
 
     @Override
     public void tick() {
+        verificarFase();
         if (tickGolpe()) {
             return;
         }

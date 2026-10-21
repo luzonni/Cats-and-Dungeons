@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * codigo porque nao ha arte para eles — e um simbolo de rolo precisa ser lido
  * de relance, girando, coisa que o nome escrito nao e.
  */
-final class Icones {
+public final class Icones {
 
     private Icones() {
     }
@@ -184,6 +184,17 @@ final class Icones {
                     "#+###....",
                     ".##.#....",
                     "....#...."}),
+            // Troféu das conquistas: taça com alças, haste e base.
+            Map.entry("TROFEU", new String[]{
+                    ".#######.",
+                    "#.#+###.#",
+                    "#.#####.#",
+                    "##.###.##",
+                    ".#.###.#.",
+                    "...###...",
+                    "....#....",
+                    "..#####..",
+                    ".#######."}),
             Map.entry("VOLEIO", new String[]{
                     "#...#...#",
                     "+#..+..#+",
@@ -257,7 +268,7 @@ final class Icones {
      * nao ha celula acima) e uma sombra na de baixo (onde nao ha celula abaixo).
      * A luz vem de cima, entao o icone le como uma peca em alto-relevo.
      */
-    static void desenhar(Graphics2D g, String chave, Color cor, int x, int y, int celula) {
+    public static void desenhar(Graphics2D g, String chave, Color cor, int x, int y, int celula) {
         // DESENHADO UMA VEZ, DEPOIS SO COPIADO. Celula por celula, com as quatro
         // camadas, um icone sao uns trezentos retangulos — e a roleta mostra uns
         // quinze por quadro, mais tres fantasmas de borrao cada: dezoito mil
@@ -391,7 +402,7 @@ final class Icones {
                 Math.round(a.getBlue() + (b.getBlue() - a.getBlue()) * t));
     }
 
-    static int lado(int celula) {
+    public static int lado(int celula) {
         return 9 * celula;
     }
 }

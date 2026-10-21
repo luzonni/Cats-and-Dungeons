@@ -29,6 +29,43 @@ public final class Estatisticas {
         danoPorFonte.clear();
         baus = 0;
         maiorHorda = 0;
+        venceu = false;
+        conquistasDaCorrida.clear();
+    }
+
+    // ------------------------------------------------------------ vitoria
+
+    private static boolean venceu;
+
+    /**
+     * Registra a vitoria sobre o chefe final e DEPOSITA o bonus na hora.
+     *
+     * Na hora, e nao no fim da corrida: o jogador pode escolher continuar jogando,
+     * e se fechar o jogo no meio disso o bonus nao pode se perder. A segunda
+     * chamada nao paga de novo.
+     *
+     * @return true se foi a primeira vez nesta corrida
+     */
+    public static boolean registrarVitoria(String gato) {
+        if (venceu) {
+            return false;
+        }
+        venceu = true;
+        Meta.depositar(Meta.BONUS_DE_VITORIA);
+        conquistasDaCorrida.addAll(Conquistas.registrarVitoria(gato));
+        return true;
+    }
+
+    /** O que esta corrida desbloqueou, na ordem, para a tela final avisar. */
+    private static final java.util.List<Conquistas.Conquista> conquistasDaCorrida = new java.util.ArrayList<>();
+
+    public static java.util.List<Conquistas.Conquista> conquistasDaCorrida() {
+        return java.util.Collections.unmodifiableList(conquistasDaCorrida);
+    }
+
+    /** O chefe final caiu nesta corrida? */
+    public static boolean venceu() {
+        return venceu;
     }
 
     /** Quem esta batendo agora. Chame com null para voltar a arma da mao. */
@@ -66,6 +103,12 @@ public final class Estatisticas {
         gato = nomeDoGato;
         ouroGanho = Meta.ouroDaCorrida(segundos, abates);
         Meta.depositar(ouroGanho);
+        // O bonus de vitoria ja foi depositado em registrarVitoria; aqui so entra no
+        // numero mostrado, para a tela final somar o que o jogador de fato ganhou.
+        if (venceu) {
+            ouroGanho += Meta.BONUS_DE_VITORIA;
+        }
+        conquistasDaCorrida.addAll(Conquistas.registrarCorrida(segundos, abates, nivel, baus, maiorHorda));
     }
 
     public static int segundos() {

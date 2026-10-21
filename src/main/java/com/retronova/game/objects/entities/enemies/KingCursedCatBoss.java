@@ -10,11 +10,22 @@ import com.retronova.game.objects.entities.Player;
 
 import java.awt.*;
 
-public class KingCursedCatBoss extends Enemy {
+public class KingCursedCatBoss extends Chefe {
 
     @Override
-    public boolean chefe() {
-        return true;
+    public String nome() {
+        return "Cursed Cat King";
+    }
+
+    @Override
+    public int fases() {
+        return 2;
+    }
+
+    /** Na segunda fase ele acelera: o mesmo golpe, só que sem folga para respirar. */
+    @Override
+    protected void aoMudarDeFase(int nova) {
+        setSpeed(getSpeed() * 1.25);
     }
 
 
@@ -36,6 +47,7 @@ public class KingCursedCatBoss extends Enemy {
 
     @Override
     public void tick() {
+        verificarFase();
         if (tickGolpe()) {
             return;
         }

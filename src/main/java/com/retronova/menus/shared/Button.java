@@ -249,6 +249,10 @@ public class Button {
         return this.hovered;
     }
 
+    public boolean isFocused() {
+        return this.focused;
+    }
+
     public void setBounds(Rectangle bounds) {
         this.bounds = bounds;
     }
