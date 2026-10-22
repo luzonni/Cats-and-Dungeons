@@ -13,6 +13,12 @@ import java.util.Random;
  * ---------------------------------------------------------------------------
  * O QUE CADA UM FAZ NO MOMENTO
  *
+ *   bau_aparece.wav         o baú CHEGANDO na tela: um brilho que desce e o baque
+ *                           de madeira quando ele assenta. É o "achei um baú".
+ *   bau_previa_<grau>.wav   o TIC de cada ícone da prévia, pelo grau dele: mais
+ *                           alto e mais brilhante quanto maior o grau. Baixo de
+ *                           propósito — toca sete vezes por segundo enquanto o
+ *                           jogador decide abrir.
  *   bau_tremor.wav          o baú CHACOALHA antes de abrir: batidas curtas de
  *                           madeira com um tilintar de ferragem. É a antecipação
  *                           — dura o mesmo que o tremor da tela.
@@ -46,12 +52,55 @@ public class GenSonsDoBau {
     private static final Random R = new Random(0xBA0);
 
     public static void main(String[] args) throws Exception {
+        gravar(normalizado(aparece(), -22), "bau_aparece");
         gravar(normalizado(tremor(), -24), "bau_tremor");
         gravar(normalizado(abre(), -20), "bau_abre");
         String[] graus = {"comum", "raro", "epico", "lendario"};
         for (int g = 0; g < graus.length; g++) {
             gravar(normalizado(premio(g), -20), "bau_premio_" + graus[g]);
+            gravar(normalizado(previa(g), -30), "bau_previa_" + graus[g]);
         }
+    }
+
+    /**
+     * O baú aparecendo na tela: um brilho que desce em notas rápidas e o baque
+     * macio de madeira quando ele assenta, em 0,45 s.
+     */
+    private static double[] aparece() {
+        double[] v = new double[amostras(0.45)];
+        double[] notas = {1318.51, 987.77, 830.61, 659.25};      // Mi maior, descendo
+        for (int n = 0; n < notas.length; n++) {
+            sino(v, amostras(n * 0.04), notas[n], 0.35, 0.25);
+        }
+        int baque = amostras(0.18);
+        for (int j = 0; j < amostras(0.2) && baque + j < v.length; j++) {
+            double t = j / TAXA;
+            v[baque + j] += 0.9 * Math.exp(-t * 26) * Math.sin(2 * Math.PI * (90 * Math.exp(-t * 6) + 60) * t);
+        }
+        return v;
+    }
+
+    /**
+     * O tic da prévia, um por ícone que passa, por grau. Curto (70 ms) e baixo
+     * (-30 dB RMS): passa sete vezes por segundo, e não pode cansar. A altura e o
+     * brilho sobem com o grau, a mesma escada da revelação.
+     */
+    private static double[] previa(int grau) {
+        double[] alturas = {392.00, 523.25, 659.25, 987.77};
+        double[] v = new double[amostras(0.07 + 0.03 * grau)];
+        double f = alturas[grau];
+        for (int i = 0; i < v.length; i++) {
+            double t = i / TAXA;
+            double env = Math.min(1, t / 0.002) * Math.exp(-t * (60 - 10 * grau));
+            // Quadrada suavizada nos graus baixos (seca), senoide com oitava nos altos (sino).
+            double base = grau < 2 ? Math.tanh(3 * Math.sin(2 * Math.PI * f * t)) * 0.6
+                    : Math.sin(2 * Math.PI * f * t) + 0.4 * Math.sin(2 * Math.PI * 2 * f * t);
+            v[i] = env * base;
+            if (grau == 3) {
+                v[i] += env * 0.3 * Math.sin(2 * Math.PI * 3 * f * t);
+            }
+        }
+        return v;
     }
 
     // ------------------------------------------------------------ os sons

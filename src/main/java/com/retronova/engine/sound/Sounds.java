@@ -135,7 +135,13 @@ public enum Sounds {
 	BauPremioComum("bau_premio_comum"),
 	BauPremioRaro("bau_premio_raro"),
 	BauPremioEpico("bau_premio_epico"),
-	BauPremioLendario("bau_premio_lendario");
+	BauPremioLendario("bau_premio_lendario"),
+	// O baú chegando na tela e o tic de cada ícone da prévia, por grau.
+	BauAparece("bau_aparece"),
+	BauPreviaComum("bau_previa_comum"),
+	BauPreviaRaro("bau_previa_raro"),
+	BauPreviaEpico("bau_previa_epico"),
+	BauPreviaLendario("bau_previa_lendario");
 
 	
 	private final String ResourceName;
