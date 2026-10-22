@@ -245,7 +245,8 @@ Uma mão de cartas para escolher uma. O padrão é a carta de buff do subir de
 nível: 88×128 pixels nativos, faixa colorida com o rótulo, medalhão claro com o
 ícone, nome em fonte Game, efeito na cor da carta e a tecla de atalho no pé.
 O componente traz o comportamento junto: entrada virando uma carta por vez,
-carta sob o mouse ou o foco subindo com brilho na cor dela, teclas 1 a 3, setas e
+carta sob o mouse ou o foco com o realce comum (cresce, brilho suave na cor dela,
+clareia; setas no foco do teclado), teclas 1 a 3, setas e
 Enter, clarão na escolhida e fechamento.
 
 **Cores:** a moldura, o corpo, o texto da faixa, o medalhão e a caixa da tecla vêm

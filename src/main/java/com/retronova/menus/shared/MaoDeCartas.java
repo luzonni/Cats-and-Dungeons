@@ -33,7 +33,8 @@ import java.util.List;
  * entre elas é só o conteúdo de cada carta (ver {@link Carta}).
  *
  * O COMPORTAMENTO VEM JUNTO, e não só o desenho: as cartas viram uma depois da
- * outra ao entrar, a de baixo do mouse ou do foco sobe e brilha na cor dela, os
+ * outra ao entrar, a de baixo do mouse ou do foco recebe o realce comum do jogo
+ * (cresce, brilha suave na cor dela e clareia; no teclado, as setas), os
  * números 1, 2 e 3 escolhem direto, e a escolhida pisca e fica enquanto as outras
  * apagam antes de a tela fechar.
  */
@@ -63,15 +64,17 @@ public final class MaoDeCartas {
     public static final int ENTRADA = 26;
     /** Ticks entre escolher e fechar: a escolhida pisca e as outras apagam. */
     public static final int FECHAR = 18;
-    /** Tamanho da carta e o vão entre elas, em pixels nativos. */
-    public static final int LARGURA = 88, ALTURA = 128, VAO = 10;
-    /** Quanto a carta sob o mouse ou o foco sobe, em pixels nativos. */
-    public static final int SUBIDA = 5;
+    /** Tamanho da carta, em pixels nativos. */
+    public static final int LARGURA = 88, ALTURA = 128;
+    /** O vão entre cartas: o bastante para as setas do foco de uma não encostarem na outra. */
+    public static final int VAO = 2 * (Realce.SETA + Realce.AFASTAMENTO + 2);
 
     // ----------------------------------------------------------- estado
 
     private final List<Carta> cartas = new ArrayList<>();
     private final List<Rectangle> caixas = new ArrayList<>();
+    /** O realce de cada carta, em rampa (ver Realce). */
+    private final List<Realce.Estado> realces = new ArrayList<>();
     private int foco = -1;
     private int tempo;
     private int escolhido = -1;
@@ -86,6 +89,10 @@ public final class MaoDeCartas {
     public void trocar(List<Carta> novas) {
         cartas.clear();
         cartas.addAll(novas);
+        realces.clear();
+        for (int i = 0; i < novas.size(); i++) {
+            realces.add(new Realce.Estado());
+        }
         caixas.clear();
         tempo = ENTRADA / 2;
         foco = Math.min(foco, cartas.size() - 1);
@@ -149,6 +156,9 @@ public final class MaoDeCartas {
      */
     public int tick() {
         tempo++;
+        for (int i = 0; i < realces.size(); i++) {
+            realces.get(i).tick(i == foco && escolhido < 0 && tempo >= ENTRADA);
+        }
         if (escolhido >= 0) {
             fechando++;
             return -1;
@@ -222,24 +232,21 @@ public final class MaoDeCartas {
             float apaga = (float) Math.min(1, (fechando + Engine.alpha()) / 6.0);
             g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida * (1 - apaga * 0.85f)));
         }
-        double sobe = sob ? SUBIDA * s : 0;
-        double cresce = eleita ? 1 + 0.08 * Math.sin(Math.min(1, fechando / 8.0) * Math.PI) : 1;
+        // O HOVER E O FOCO SÃO O PADRÃO DA TELA INICIAL (ver Realce): a carta cresce
+        // a partir do centro, ganha um brilho suave por trás e clareia, em rampa.
+        // Antes ela subia e ganhava um halo grosso e pulsante na cor dela — o
+        // contorno grosso que o padrão aboliu, e que ficou só aqui.
+        float h = eleita ? 1f : realces.get(i).noQuadro();
+        double realce = 1 + h * (2.0 * Realce.CRESCIMENTO) / LARGURA;
+        double cresce = eleita ? 1 + 0.08 * Math.sin(Math.min(1, fechando / 8.0) * Math.PI) : realce;
         AffineTransform antes = g.getTransform();
-        g.translate(r.getCenterX(), r.getCenterY() - sobe);
+        g.translate(r.getCenterX(), r.getCenterY());
         g.scale(vira * cresce, cresce);
         g.translate(-r.getCenterX(), -r.getCenterY());
 
         int x = r.x, y = r.y, cw = r.width, ch = r.height;
         Color cor = c.cor();
-        if (sob || eleita) {
-            // O brilho na cor da carta: a mesma ideia do realce comum (ver Realce),
-            // pulsando, porque aqui ele marca uma DECISÃO e não só onde o mouse está.
-            double brilho = 0.5 + 0.5 * Math.sin(quadro * 0.2);
-            for (int k = 3; k >= 1; k--) {
-                g.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), (int) ((45 + 45 * brilho) / k)));
-                g.fillRoundRect(x - 3 * k * s, y - 3 * k * s, cw + 6 * k * s, ch + 6 * k * s, 14 * s, 14 * s);
-            }
-        }
+        Realce.brilhoArredondado(g, new Rectangle(x - 2 * s, y - 2 * s, cw + 4 * s, ch + 4 * s), h, s, cor, 12 * s);
         g.setColor(new Color(0, 0, 0, 90));
         g.fillRoundRect(x + 2 * s, y + 4 * s, cw, ch, 10 * s, 10 * s);
         g.setColor(Palette.DARKEST);
@@ -286,11 +293,22 @@ public final class MaoDeCartas {
         g.setColor(Palette.DARKEST);
         g.fillRoundRect(x + cw / 2 - tq / 2, y + ch - tq - 4 * s, tq, tq, 4 * s, 4 * s);
         centro(g, String.valueOf(i + 1), tecla, x + cw / 2, y + ch - 6 * s, sob ? cor : Palette.ACCENT, s);
+        // O estado claro do realce, por cima da carta inteira.
+        if (h > 0.02f && !eleita) {
+            g.setColor(new Color(255, 255, 255, (int) (Realce.CLAREAMENTO * h)));
+            g.fillRoundRect(x, y, cw, ch, 10 * s, 10 * s);
+        }
         if (eleita && fechando < 8) {
             g.setColor(new Color(255, 255, 255, (int) (200 * (1 - fechando / 8.0))));
             g.fillRoundRect(x, y, cw, ch, 10 * s, 10 * s);
         }
         g.setTransform(antes);
+        // O foco do teclado e do controle soma as setas, como em todo o jogo.
+        if (sob && !eleita && escolhido < 0 && Entrada.porFoco()) {
+            int cx = (int) r.getCenterX(), cy = (int) r.getCenterY();
+            int w = (int) (cw * realce), hh = (int) (ch * realce);
+            Realce.marcadorDeFoco(g, new Rectangle(cx - w / 2, cy - hh / 2, w, hh), s);
+        }
     }
 
     // ----------------------------------------------------------- texto

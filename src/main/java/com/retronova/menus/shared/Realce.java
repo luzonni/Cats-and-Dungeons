@@ -123,6 +123,26 @@ public final class Realce {
         g2.dispose();
     }
 
+    /**
+     * O mesmo brilho, para elementos de cantos arredondados (as cartas): mesmas
+     * camadas e mesma opacidade, só sem as quinas retas aparecendo por fora da
+     * curva. A cor é a do elemento, como o brilho do gato na seleção.
+     */
+    public static void brilhoArredondado(Graphics2D g, Rectangle r, float intensidade, int s, Color cor, int arco) {
+        if (intensidade <= 0.02f) {
+            return;
+        }
+        Graphics2D g2 = (Graphics2D) g.create();
+        for (int i = CAMADAS; i >= 1; i--) {
+            int margem = i * s;
+            int alfa = (int) (ALFA * 2 * intensidade * (1f - (i - 1) / (float) CAMADAS));
+            g2.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), Math.max(0, Math.min(255, alfa))));
+            g2.fillRoundRect(r.x - margem, r.y - margem, r.width + margem * 2, r.height + margem * 2,
+                    arco + margem * 2, arco + margem * 2);
+        }
+        g2.dispose();
+    }
+
     /** Clareia o elemento por cima: o "estado claro" de quem não tem sprite próprio para ele. */
     public static void clarear(Graphics2D g, Rectangle r, float intensidade) {
         if (intensidade <= 0.02f) {
