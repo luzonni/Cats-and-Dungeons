@@ -305,6 +305,7 @@ public class Game implements Activity {
             Corrida.gravar();
         }
         count++;
+        animarPortal();
         if(count >= 60) {
             count = 0;
             seconds++;
@@ -528,12 +529,21 @@ public class Game implements Activity {
             portal = new studio.retrozoni.sheeter.SpriteSheet(
                     "sprites/objects/furniture", new String[]{"portalCistern"});
         }
-        // Roda os quadros junto com o relogio do jogo, para os varios portais de uma
-        // onda nao piscarem todos no mesmo compasso de um sprite parado.
-        if (count % 6 == 0) {
+        return portal.getSprite();
+    }
+
+    /**
+     * Roda os quadros do portal junto com o relógio do jogo, um a cada 6 ticks.
+     *
+     * NO TICK, E NÃO NO DESENHO. Avançava dentro de portalDosBichos, que é chamado
+     * uma vez por portal desenhado em cada quadro: a 240 FPS, e com vários portais
+     * na tela, o portal girava várias vezes mais rápido que a 60. O ritmo de tudo o
+     * que anima tem de ser o dos ticks, que não depende do FPS.
+     */
+    private void animarPortal() {
+        if (portal != null && count % 6 == 0) {
             portal.plusIndex();
         }
-        return portal.getSprite();
     }
 
     /**
