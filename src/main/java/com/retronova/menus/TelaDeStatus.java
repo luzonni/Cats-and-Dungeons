@@ -88,11 +88,19 @@ public class TelaDeStatus extends TelaDeMenu {
     }
 
     private final List<List<Bloco>> colunas = new ArrayList<>();
-    /** As caixas de todas as linhas visíveis, por coluna, para foco e mouse. */
+    /** Todas as linhas de cada coluna, em ordem, sem os títulos. O foco é um índice aqui. */
+    private final List<List<Linha>> todas = new ArrayList<>();
+    /** A caixa de cada linha de {@link #todas}, ou null se ela está rolada para fora. */
     private final List<List<Rectangle>> caixas = new ArrayList<>();
-    private final List<List<Linha>> visiveis = new ArrayList<>();
+    /** Os títulos de bloco que aparecem, com a caixa: o desenho percorre só o que coube. */
+    private final List<List<Titulo>> titulos = new ArrayList<>();
+    /** Por coluna: a primeira linha mostrada, e quantas ficaram acima e abaixo do que cabe. */
+    private int[] rolagem = new int[0], acima = new int[0], abaixo = new int[0];
     private Rectangle painel = new Rectangle();
     private int coluna, linha = -1;
+
+    private record Titulo(String texto, Rectangle caixa) {
+    }
 
     public TelaDeStatus() {
         super("Status");
@@ -269,6 +277,8 @@ public class TelaDeStatus extends TelaDeMenu {
     private static final int LINHA = 10, LINHA_DUPLA = 17, TITULO = 13, VAO_DE_BLOCO = 6;
     /** Altura da faixa de detalhe no pé do painel, em pixels nativos. */
     private static final int DETALHE = 20;
+    /** Altura dos avisos "N more above / below" das colunas roladas. */
+    private static final int AVISO = 9;
 
     @Override
     protected void posicionar() {
@@ -278,37 +288,100 @@ public class TelaDeStatus extends TelaDeMenu {
         int altura = area.height;
         painel = new Rectangle(Engine.window.largura() / 2 - largura / 2, area.y, largura, altura);
 
-        int pad = 10 * s, vao = 10 * s;
-        int colW = (largura - 2 * pad - 2 * vao) / 3;
+        if (rolagem.length != colunas.size()) {
+            rolagem = new int[colunas.size()];
+            acima = new int[colunas.size()];
+            abaixo = new int[colunas.size()];
+        }
+        todas.clear();
         caixas.clear();
-        visiveis.clear();
+        titulos.clear();
         for (int c = 0; c < colunas.size(); c++) {
-            int x = painel.x + pad + c * (colW + vao);
-            int y = painel.y + pad;
-            int fim = painel.y + painel.height - pad - DETALHE * s;
-            List<Rectangle> rc = new ArrayList<>();
-            List<Linha> lv = new ArrayList<>();
+            List<Linha> lc = new ArrayList<>();
             for (Bloco b : colunas.get(c)) {
-                y += TITULO * s;
-                for (Linha l : b.linhas()) {
-                    int h = (l.dupla() ? LINHA_DUPLA : LINHA) * s;
-                    // SEM ROLAGEM: o que não cabe some, e a última linha que cabe
-                    // avisa quantas ficaram de fora. Em 720p cabem 14 buffs por coluna.
-                    if (y + h > fim) {
-                        break;
-                    }
-                    rc.add(new Rectangle(x, y, colW, h));
-                    lv.add(l);
-                    y += h;
-                }
-                y += VAO_DE_BLOCO * s;
+                lc.addAll(b.linhas());
             }
-            caixas.add(rc);
-            visiveis.add(lv);
+            todas.add(lc);
+            caixas.add(new ArrayList<>());
+            titulos.add(new ArrayList<>());
+            rolagem[c] = Math.max(0, Math.min(rolagem[c], lc.size() - 1));
+            // COM ROLAGEM, e não mais cortando: a coluna dos buffs passava de 14 linhas
+            // em 720p no meio da corrida, e o resto virava um "+4 more" que não havia
+            // como abrir. Primeiro tenta caber; se não couber, reserva o aviso de baixo.
+            if (!disporColuna(c, s, false)) {
+                disporColuna(c, s, true);
+            }
         }
         if (linha >= 0) {
-            coluna = Math.min(coluna, caixas.size() - 1);
-            linha = Math.min(linha, caixas.get(coluna).size() - 1);
+            coluna = Math.min(coluna, todas.size() - 1);
+            linha = Math.min(linha, todas.get(coluna).size() - 1);
+        }
+    }
+
+    /**
+     * Põe a coluna na tela a partir da linha {@code rolagem[c]}: títulos dos blocos
+     * que ainda têm linha à mostra, e as linhas até onde cabem. Devolve se todas as
+     * linhas a partir da rolagem couberam.
+     */
+    private boolean disporColuna(int c, int s, boolean reservarAbaixo) {
+        int pad = 10 * s, vao = 10 * s;
+        int colW = (painel.width - 2 * pad - 2 * vao) / 3;
+        int x = painel.x + pad + c * (colW + vao);
+        int y = painel.y + pad + (rolagem[c] > 0 ? AVISO * s : 0);
+        int fim = painel.y + painel.height - pad - DETALHE * s - (reservarAbaixo ? AVISO * s : 0);
+        List<Rectangle> rc = caixas.get(c);
+        List<Titulo> tc = titulos.get(c);
+        rc.clear();
+        tc.clear();
+        int k = 0, mostradas = 0;
+        boolean cheia = false;
+        for (Bloco b : colunas.get(c)) {
+            int ultimo = k + b.linhas().size();
+            if (ultimo <= rolagem[c] || cheia) {          // bloco todo acima da rolagem, ou já sem espaço
+                for (int i = k; i < ultimo; i++) {
+                    rc.add(null);
+                }
+                k = ultimo;
+                continue;
+            }
+            if (y + TITULO * s > fim) {
+                cheia = true;
+                for (int i = k; i < ultimo; i++) {
+                    rc.add(null);
+                }
+                k = ultimo;
+                continue;
+            }
+            tc.add(new Titulo(b.titulo(), new Rectangle(x, y, colW, TITULO * s)));
+            y += TITULO * s;
+            for (Linha l : b.linhas()) {
+                int h = (l.dupla() ? LINHA_DUPLA : LINHA) * s;
+                if (k < rolagem[c] || cheia || y + h > fim) {
+                    cheia |= k >= rolagem[c];
+                    rc.add(null);
+                } else {
+                    rc.add(new Rectangle(x, y, colW, h));
+                    y += h;
+                    mostradas++;
+                }
+                k++;
+            }
+            y += VAO_DE_BLOCO * s;
+        }
+        acima[c] = rolagem[c];
+        abaixo[c] = k - rolagem[c] - mostradas;
+        return abaixo[c] == 0;
+    }
+
+    /** Rola a coluna até a linha i aparecer inteira. */
+    private void mostrar(int c, int i) {
+        if (i < rolagem[c]) {
+            rolagem[c] = i;
+            posicionar();
+        }
+        while (caixas.get(c).get(i) == null && rolagem[c] < i) {
+            rolagem[c]++;
+            posicionar();
         }
     }
 
@@ -323,19 +396,38 @@ public class TelaDeStatus extends TelaDeMenu {
             return;
         }
         int antes = coluna * 1000 + linha;
+        // O FOCO LEVA A ROLAGEM: descer da última linha à mostra rola a coluna, e
+        // subir da primeira também. Assim teclado e controle chegam a todos os buffs.
         if (KeyBoard.KeyPressed("Down")) {
-            linha = linha < 0 ? 0 : Math.min(caixas.get(coluna).size() - 1, linha + 1);
+            linha = linha < 0 ? rolagem[coluna] : Math.min(todas.get(coluna).size() - 1, linha + 1);
+            mostrar(coluna, linha);
         } else if (KeyBoard.KeyPressed("Up")) {
             linha = Math.max(0, linha - 1);
+            mostrar(coluna, linha);
         } else if (KeyBoard.KeyPressed("Right")) {
             mudarDeColuna(1);
         } else if (KeyBoard.KeyPressed("Left")) {
             mudarDeColuna(-1);
         }
+        // A roda do mouse rola a coluna que está debaixo dele.
+        int roda = Mouse.Scroll();
+        if (roda != 0) {
+            for (int c = 0; c < caixas.size(); c++) {
+                if (sobreAColuna(c)) {
+                    if (roda > 0 && abaixo[c] > 0) {
+                        rolagem[c]++;
+                    } else if (roda < 0 && rolagem[c] > 0) {
+                        rolagem[c]--;
+                    }
+                    posicionar();
+                }
+            }
+        }
         if (Entrada.porMouse()) {
             for (int c = 0; c < caixas.size(); c++) {
                 for (int i = 0; i < caixas.get(c).size(); i++) {
-                    if (caixas.get(c).get(i).contains(Mouse.getX(), Mouse.getY())) {
+                    Rectangle r = caixas.get(c).get(i);
+                    if (r != null && r.contains(Mouse.getX(), Mouse.getY())) {
                         coluna = c;
                         linha = i;
                     }
@@ -353,10 +445,25 @@ public class TelaDeStatus extends TelaDeMenu {
             int c = ((coluna + dir * k) % n + n) % n;
             if (!caixas.get(c).isEmpty()) {
                 coluna = c;
-                linha = Math.max(0, Math.min(linha, caixas.get(c).size() - 1));
+                // Na mesma altura, mas dentro do que a coluna nova mostra agora.
+                int ultima = rolagem[c];
+                for (int i = rolagem[c]; i < caixas.get(c).size() && caixas.get(c).get(i) != null; i++) {
+                    ultima = i;
+                }
+                linha = Math.max(rolagem[c], Math.min(Math.max(linha, 0), ultima));
                 return;
             }
         }
+    }
+
+    /** O mouse está na faixa vertical da coluna c, dentro do painel. */
+    private boolean sobreAColuna(int c) {
+        int s = Configs.UiScale();
+        int pad = 10 * s, vao = 10 * s;
+        int colW = (painel.width - 2 * pad - 2 * vao) / 3;
+        int x = painel.x + pad + c * (colW + vao);
+        return Mouse.getX() >= x - vao / 2 && Mouse.getX() < x + colW + vao / 2
+                && painel.contains(Mouse.getX(), Mouse.getY());
     }
 
     @Override
@@ -374,36 +481,46 @@ public class TelaDeStatus extends TelaDeMenu {
         Font titulo = FontHandler.font(FontHandler.Game, 7f * s);
         Font rotulo = FontHandler.font(FontHandler.Game, 6f * s);
         Font efeito = FontHandler.font(FontHandler.Septem, 6f * s);
+        // Os avisos da rolagem na fonte dos valores: na Septem o 7 lia como 1.
+        Font aviso = FontHandler.font(FontHandler.Game, 5f * s);
         int pad = 10 * s;
         for (int c = 0; c < colunas.size(); c++) {
-            int i = 0;
-            List<Rectangle> rc = caixas.get(c);
-            int y = painel.y + pad;
-            for (Bloco b : colunas.get(c)) {
-                int x = rc.isEmpty() ? painel.x + pad : rc.getFirst().x;
-                int w = rc.isEmpty() ? 0 : rc.getFirst().width;
-                TextFx.draw(g, b.titulo(), titulo, x, y + 8 * s, Palette.ACCENT, s);
+            for (Titulo t : titulos.get(c)) {
+                Rectangle r = t.caixa();
+                TextFx.draw(g, t.texto(), titulo, r.x, r.y + 8 * s, Palette.ACCENT, s);
                 g.setColor(Palette.OUTLINE);
-                g.fillRect(x, y + 10 * s, w, s);
-                y += TITULO * s;
-                int mostradas = 0;
-                for (Linha l : b.linhas()) {
-                    if (i >= rc.size() || visiveis.get(c).get(i) != l) {
-                        break;
-                    }
-                    Rectangle r = rc.get(i);
-                    desenharLinha(g, l, r, c == coluna && i == linha, rotulo, efeito, s);
-                    y = r.y + r.height;
-                    i++;
-                    mostradas++;
+                g.fillRect(r.x, r.y + 10 * s, r.width, s);
+            }
+            List<Rectangle> rc = caixas.get(c);
+            int base = Integer.MIN_VALUE;
+            for (int i = 0; i < rc.size(); i++) {
+                Rectangle r = rc.get(i);
+                if (r != null) {
+                    desenharLinha(g, todas.get(c).get(i), r, c == coluna && i == linha, rotulo, efeito, s);
+                    base = Math.max(base, r.y + r.height);
                 }
-                if (mostradas < b.linhas().size() && !rc.isEmpty()) {
-                    String resto = "+" + (b.linhas().size() - mostradas) + " more";
-                    TextFx.draw(g, resto, efeito, x, y + 7 * s, Palette.LIGHT, s);
-                }
-                y += VAO_DE_BLOCO * s;
+            }
+            // OS AVISOS DA ROLAGEM: quantas linhas há acima e abaixo do que se vê.
+            if (titulos.get(c).isEmpty() && base == Integer.MIN_VALUE) {
+                continue;
+            }
+            int x = titulos.get(c).isEmpty() ? firstX(rc) : titulos.get(c).getFirst().caixa().x;
+            if (acima[c] > 0) {
+                TextFx.draw(g, acima[c] + " more above", aviso, x, painel.y + pad + 6 * s, Palette.LIGHT, s);
+            }
+            if (abaixo[c] > 0) {
+                TextFx.draw(g, abaixo[c] + " more below", aviso, x, base + 7 * s, Palette.LIGHT, s);
             }
         }
+    }
+
+    private int firstX(List<Rectangle> rc) {
+        for (Rectangle r : rc) {
+            if (r != null) {
+                return r.x;
+            }
+        }
+        return painel.x + 10 * Configs.UiScale();
     }
 
     private void desenharLinha(Graphics2D g, Linha l, Rectangle r, boolean focada, Font rotulo, Font efeito, int s) {
@@ -450,8 +567,8 @@ public class TelaDeStatus extends TelaDeMenu {
         g.fillRect(x, y, w, s);
         String texto = "Select a line to see what it does.";
         Color cor = Palette.LIGHT;
-        if (linha >= 0 && coluna < visiveis.size() && linha < visiveis.get(coluna).size()) {
-            Linha l = visiveis.get(coluna).get(linha);
+        if (linha >= 0 && coluna < todas.size() && linha < todas.get(coluna).size()) {
+            Linha l = todas.get(coluna).get(linha);
             if (l.ajuda() != null && !l.ajuda().isEmpty()) {
                 texto = l.rotulo() + ": " + l.ajuda();
                 cor = Palette.TEXT;
