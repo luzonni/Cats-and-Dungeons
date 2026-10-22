@@ -167,27 +167,33 @@ imagem do jogo, em pixels da tela (`uiScale=1`). O DPI do sistema não entra.
 - **Resolução de referência: 640×360.** É nela que o HUD foi desenhado, em pixels
   de arte. O fator da tela é `min(largura/640, altura/360)`, pelo lado mais
   apertado, para nada sair da tela em outra proporção.
-- **Fórmulas, sempre multiplicativas e a partir dos valores de referência:**
-  - HUD = `arredonda(fator × Interface% × HUD%)`, no teto do layout (abaixo);
-  - menus = `arredonda(fator × 1,125 × Interface% × Menus%)`, no teto de 320×180
-    pixels de arte por tela (os menus são compostos em 384×216). O 1,125 faz o
-    100% valer 2 em 720p e 3 em 1080p: com 1,5 (a primeira versão) o padrão
-    ficava grande demais, e o tamanho escolhido nos testes foi o antigo 75%;
+- **Padrão pela resolução, e passos inteiros a partir dele:**
+  - HUD padrão = `arredonda(fator)`, no teto do layout (abaixo);
+  - menus padrão = `arredonda(fator × 1,125)`: 2 em 720p e 3 em 1080p, o tamanho
+    escolhido nos testes (com 1,5, a primeira versão, o padrão era grande demais).
+    O teto é a tela comportar 384×224 pixels de arte, o que o painel de Settings
+    ocupa com título, abas, Resume e rodapé;
+  - escala = padrão + passo, entre o mínimo legível e o teto (`EscalaDaInterface.Faixa`);
   - margem = `arredonda(fator × margem de referência)`.
-- **Escala inteira, arredondada uma vez, no fim.** Fator quebrado borra a pixel
-  art (suavizada) ou deixa pixels de larguras diferentes (vizinho mais próximo).
-  As resoluções 16:9 comuns são múltiplas de 640×360 (720p = 2, 1080p = 3, 1440p =
-  4, 4K = 6), e entre elas 100% ocupa **exatamente a mesma fração** da tela. Fora
-  delas (1366×768, 1600×900), o erro é o de arredondar para o pixel inteiro.
+- **Escala inteira.** Fator quebrado borra a pixel art (suavizada) ou deixa pixels
+  de larguras diferentes (vizinho mais próximo); é o modelo do Minecraft (GUI Scale
+  1 a 4 e Auto). As resoluções 16:9 comuns são múltiplas de 640×360 (720p = 2,
+  1080p = 3, 1440p = 4, 4K = 6), e entre elas o padrão ocupa **exatamente a mesma
+  fração** da tela. Fora delas (1366×768, 1600×900), o erro é o de arredondar
+  para o pixel inteiro.
 - **Tamanho mínimo legível:** a partir de 1280×720 nenhuma camada desce de 2, porque
   as fontes de pixel art têm de 5 a 8 pixels e, em escala 1, ficam ilegíveis.
-- **Preferências (Settings → Interface):** Interface size, Menu size e HUD size
-  de 50% a 200% em passos de 5% (padrão 100%), Margin de 0 a 16 pixels de
-  referência (padrão 7) e Reset interface. O máximo de cada slider é o que cabe na
-  tela atual (`OptionRow.ate`). Os valores antigos (GUI size 1/2/3, HUD size em
-  pixels, Margin em pixels) migram sozinhos. Como a escala é inteira, nem todo
-  passo de 5% muda o tamanho visível: o desenho troca quando o produto cruza a
-  metade entre dois inteiros.
+- **Preferências (Settings → Interface):** Menu size e HUD size em passos
+  (Smaller, Small, Default, Large, Larger, Largest), um bloco por tamanho que a
+  tela atual comporta; Margin de 0 a 16 pixels de referência (padrão 7) e Reset
+  interface. Passo gravado que a tela não comporta (Largest de 4K aberto em 720p)
+  vale o maior que cabe, sem perder a escolha.
+- **Por que passos, e não por cento:** a primeira versão tinha Interface, Menu e
+  HUD size de 50% a 200%, multiplicados. Com escala inteira, em 1080p os menus têm
+  uns quatro tamanhos reais e a barra oferecia 31 posições: a maioria não mudava
+  nada, o "200%" aparecia cheio com a escala presa no teto, e acima de 100% não
+  fazia sentido com um padrão que já vem da resolução. Os valores antigos (por
+  cento, GUI size, HUD size e Margin em pixels) migram sozinhos.
 
 **Layout por âncoras** (`game/hud/LayoutDoHud.java`). Cada peça do HUD tem uma
 âncora, um deslocamento e um tamanho em pixels de arte:
@@ -213,7 +219,7 @@ A posição na tela sai da âncora, da margem e da escala a cada leitura
 Tudo é recalculado a cada tick a partir da imagem do jogo. Por isso trocar
 resolução, janela ou monitor, ou mexer num slider, vale no quadro seguinte, sem
 recriar nada. **F7** desenha as caixas, as âncoras e a margem. `LayoutDoHudTest`
-cobre a matriz inteira: resoluções, por cento e margens.
+cobre a matriz inteira: resoluções, passos e margens.
 
 **Para acrescentar uma peça ao HUD:**
 
@@ -351,12 +357,15 @@ Um componente só, `menus/Configuracoes.java`, com duas portas:
   comum (`Confirm`). O foco abre em Continue. O detalhe da corrida fica na tela
   de Status (tecla E), e não aqui.
 - **Abas de configuração:** as mesmas linhas nos dois acessos (`OptionRow`).
-  Valor numérico (slider e stepper) é uma barra arrastável no estilo do Forza
-  Horizon: trilha fina, trecho escolhido aceso, marcador quadrado e o número à
-  direita; arrasta com o mouse ou anda com Left/Right (o teclado e o D-pad
-  repetem ao segurar). O trecho além do que cabe na tela fica pontilhado, com um
-  traço no teto. Escolha entre opções (ciclo `−/+`) e sim/não (toggle) continuam
-  com botões. Resolução e tela cheia esperam o
+  Valor contínuo (volume, zoom, margem) é uma barra arrastável no idioma dos
+  toggles: contorno de um pixel, miolo fundo, trecho escolhido cheio e o número
+  à direita. Tamanho (Menu size, HUD size) é uma fila de blocos, um por tamanho
+  que a tela comporta, com o nome à direita (`OptionRow.tamanho`). Os dois
+  respondem ao clique, ao arrasto e a Left/Right (o teclado e o D-pad repetem ao
+  segurar). O arrasto mede contra a barra como estava ao começar, e o bloco de
+  tamanho se aplica ao soltar: aplicar no meio redimensionava a linha debaixo do
+  mouse, que escolhia outro valor, e a tela piscava. Escolha entre opções (ciclo
+  `−/+`) e sim/não (toggle) continuam com botões. Resolução e tela cheia esperam o
   Apply, que só redimensiona a janela (ver [Janela, resolução e DPI](#janela-resolução-e-dpi)); o resto se aplica na hora.
 - **Rodapé por aba:** na Run, `Enter Select`; nas de configuração,
   `Left/Right Adjust`. As duas mostram `Q/E Tabs` e o `Esc` (Back ou Resume).

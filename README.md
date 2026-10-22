@@ -77,7 +77,7 @@ registrados de propósito, para não se perderem de novo.
   como estão — a arte de fora entra já dentro da identidade visual daqui.
 * **Escala automática:** a interface acompanha a resolução escolhida a partir de
   uma referência de 640×360, em escala inteira e na mesma proporção do 720p ao 4K;
-  o jogador ajusta interface, menus e HUD em por cento, e o HUD nunca
+  o jogador ajusta menus e HUD em passos que se veem, e o HUD nunca
   cresce além do que cabe na tela.
 * **Vídeo estável:** lógica em passo fixo de 60 Hz com desenho
   interpolado, limitador preciso (timer de 1 ms no Windows), limite "igual ao

@@ -288,7 +288,7 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
 | Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
-| Escala da interface | `EscalaDaInterface` (`REF_LARGURA × REF_ALTURA = 640×360`, `MENUS_POR_REFERENCIA = 1.125`, `PCT_MINIMO = 50`, `PCT_MAXIMO = 200`, `PASSO = 5`, `MARGEM_PADRAO = 7`, `MARGEM_MAXIMA = 16`, `ESCALA_LEGIVEL = 2`) |
+| Escala da interface | `EscalaDaInterface` (`REF_LARGURA × REF_ALTURA = 640×360`, `MENUS_POR_REFERENCIA = 1.125`, `MENU_MINIMO_LARGURA × MENU_MINIMO_ALTURA = 384×224`, `TAMANHO_MINIMO = -2`, `TAMANHO_MAXIMO = 3`, `MARGEM_PADRAO = 7`, `MARGEM_MAXIMA = 16`, `ESCALA_LEGIVEL = 2`) |
 | Peças e teto do HUD | `LayoutDoHud` (`Peca`: âncora, deslocamento e tamanho de cada peça; `VAO = 4`, `FRACAO_DA_ALTURA = 0.5`) |
 | Laço: recuperação de ticks, superfície perdida | `Engine` (`MAX_CATCHUP = 5`, `QUADROS_ATE_RECRIAR = 60`) |
 | Resoluções oferecidas | `Window.COMUNS` (mais a do monitor) |

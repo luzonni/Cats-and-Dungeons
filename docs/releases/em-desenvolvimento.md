@@ -278,3 +278,11 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
   e anda com as setas; os de sim/não e de lista continuam com botões. Os tamanhos
   andam de 5 em 5% (eram 25%) e o zoom da câmera também. O Menu size 100% passa a
   ser o antigo 75% (2 em 720p, 3 em 1080p), que é o tamanho escolhido nos testes.
+- **Tamanhos em passos, sem piscar** (`894f483`). Arrastar o tamanho do menu
+  fazia a tela piscar: a escala nova mudava a barra debaixo do mouse, que pegava
+  outro valor, a cada quadro. E com escala inteira os 5% quase nunca mudavam
+  nada. Menu size e HUD size viram blocos, um por tamanho que a tela comporta
+  (Small, Default, Large...), aplicados ao soltar; o Interface size sai; a barra
+  dos valores contínuos ganha contorno e preenchimento, como os toggles; e os
+  menus passam a exigir 384×224 pixels de arte, para o Resume nunca encostar no
+  rodapé.
