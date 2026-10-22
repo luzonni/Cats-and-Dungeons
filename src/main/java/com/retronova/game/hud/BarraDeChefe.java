@@ -58,7 +58,8 @@ final class BarraDeChefe {
         int w = Math.min(Engine.window.largura() - 40 * s, 180 * s);
         int h = 6 * s;
         int x = Engine.window.largura() / 2 - w / 2;
-        int y = Configs.Margin() + 36 * s;
+        // A barra fica 9 pixels de arte abaixo do topo da peça: o nome vai em cima dela.
+        int y = LayoutDoHud.caixa(LayoutDoHud.Peca.CHEFE).y + 9 * s;
 
         Font fonte = FontHandler.font(FontHandler.Game, 7f * s);
         String nome = chefe.nome();
