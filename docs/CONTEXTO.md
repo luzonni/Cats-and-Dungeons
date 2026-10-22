@@ -84,7 +84,7 @@ src/main/java/com/retronova/
 │   ├── Conquistas.java        10 conquistas
 │   ├── Estatisticas.java      números da corrida para a tela final
 │   ├── hud/                   HUD, hotbar, relógio, barra de chefe, flash de dano
-│   ├── interfaces/            inventário, loja, máquina de chiclete, Grade (foco)
+│   ├── interfaces/            loja, máquina de chiclete, Grade (foco); inventário desativado
 │   ├── items/                 armas da mão, consumíveis, Elemento, Classe,
 │   │                          Melhoria/Melhorias, Passiva, ArmaExtra, Evolucao
 │   ├── map/                   GameMap, Camera, Atmosfera (luz e sombra)
@@ -132,6 +132,8 @@ docs/                          esta pasta
 | Chefes | `enemies/Chefe.java`, `RatoRei.java`, `CatToyBoss.java`, `KingCursedCatBoss.java` |
 | Golpe com aviso | `game/objects/Investida.java` |
 | Subir de nível (3 cartas) | `game/map/arena/SubirDeNivel.java` |
+| Status do gato (tecla E) | `menus/TelaDeStatus.java` |
+| Portal de nascimento (cor e brilho) | `game/map/arena/Chegada.java` (`Tom`) |
 | Baú → caça-níquel | `utilities/Bau.java` → `game/map/arena/Roleta.java` |
 | Escolha de elemento (aos 45 s) | `game/map/arena/EscolhaDeElemento.java` |
 | Save | `game/Corrida.java`, `menus/Saves.java` |
@@ -197,6 +199,8 @@ docs/                          esta pasta
 | Música que acompanha a corrida | ✅ | |
 | Save no meio da corrida | ✅ | relógio, chefes vivos e números da corrida vão junto; ver ARQUITETURA |
 | Dinheiro | ⏸️ | **em espera, por decisão**: o gato começa com 100, nada rende moeda, só a antecâmara vende. `Seller`, `Store`, `Coin` e `GumMachine` ficam no código sem uso até o dinheiro ganhar papel |
+| Inventário | ⏸️ | **desativado, não removido**: o E abre a tela de Status (`TelaDeStatus`). Os dados do `Inventory` seguem em uso (arma da mão, hotbar, loja) |
+| Tela de Status (tecla E) | ✅ | atributos finais com bônus, armas, buffs; pausa a corrida |
 | Plano de cartas com encaixes e status (HABILIDADES.md) | 🧪 | nenhuma fase implementada |
 
 Removidos em 2026-10-21 por serem inalcançáveis: o modo por ondas e salas
@@ -260,6 +264,7 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Hover e foco: velocidade, crescimento, brilho, setas | `Realce` (`VELOCIDADE`, `CRESCIMENTO`, `CAMADAS`, `ALFA`, `CLAREAMENTO`, `SETA`, `AFASTAMENTO`, `RESPIRO`, `PERIODO_DO_RESPIRO`) |
 | Cartas: entrada, fechamento, tamanho, subida | `MaoDeCartas` (`ENTRADA = 26`, `FECHAR = 18`, `LARGURA`, `ALTURA`, `VAO`, `SUBIDA`) |
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
+| Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
 
 ## 9. Próximos passos conhecidos

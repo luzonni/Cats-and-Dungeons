@@ -53,7 +53,7 @@ atual e à divisão clara entre motor e jogo.
 | `game.objects` | Entidades, tiles, partículas, física e o golpe com aviso (`Investida`) |
 | `game.objects.entities` | Gato, inimigos, mobília, projéteis e as mecânicas de corrida: `Bonus`, `Arsenal`, `ArmasDeArea`, `Furia`, `Habilidades` |
 | `game.items` | Armas da mão, consumíveis, `Elemento`, `Classe`, raridades, `Melhoria`, `Passiva`, `ArmaExtra`, `Evolucao` |
-| `game.hud` / `game.interfaces` | HUD (relógio, barra de chefe, flash de dano) e telas in-game (inventário, lojas) |
+| `game.hud` / `game.interfaces` | HUD (relógio, barra de chefe, flash de dano) e telas in-game (lojas; o inventário está desativado) |
 | `com.retronova.menus` | Menu, saves, seleção de personagem, opções, pausa, fim de corrida, vitória, conquistas |
 
 ## Laço principal
@@ -248,6 +248,12 @@ O componente traz o comportamento junto: entrada virando uma carta por vez,
 carta sob o mouse ou o foco subindo com brilho na cor dela, teclas 1 a 3, setas e
 Enter, clarão na escolhida e fechamento.
 
+**Cores:** a moldura, o corpo, o texto da faixa, o medalhão e a caixa da tecla vêm
+da `Palette` (`DARKEST`, `DEEP`, `ACCENT`). Só a cor de cada carta é própria,
+porque diz o que ela é: raridade, passiva, arma ou elemento. A tela de Level Up
+usa o véu `Palette.VEIL` e o título em `Palette.TEXT` com halo `Palette.ACCENT`.
+Antes título e halo eram um dourado alaranjado solto no código.
+
 Cada carta só varia no conteúdo:
 `new MaoDeCartas.Carta(rotulo, cor, icone, nome, efeito)`. O `icone` é quem
 desenha o medalhão: `SubirDeNivel` usa `Icones.desenhar`, e
@@ -258,6 +264,46 @@ Uso: criar com a lista de cartas; a cada tick chamar `posicionar(y, s)` e
 `tick()`, que devolve o índice escolhido naquele tick (ou -1); fechar a tela
 quando `fechou()` for verdadeiro. `pronta()` diz se a mão já aceita entrada, para
 os controles em volta dela (Reroll, Skip).
+
+### Status do gato (`TelaDeStatus`) e o inventário desativado
+
+O **E** (Y no controle) abre `menus/TelaDeStatus.java`, uma `TelaDeMenu` que
+**pausa a corrida**, como as telas de pausa do Vampire Survivors e do Brotato.
+Ler uma ficha com a horda crescendo seria punir quem quer entender a build. Três
+colunas:
+
+| Coluna | Conteúdo |
+|---|---|
+| Cat | vida, dano, golpes por segundo, velocidade, alcance, redução de dano, sorte, crítico, área, regeneração, ganho de XP, alcance do ímã |
+| Weapons + Run | arma da mão, elemento com dano e cadência, armas extras com nível ou evolução; nível e XP, abates, ouro, trocas e pulos de carta |
+| Buffs | passivas com nível e efeito acumulado, cartas de atributo e melhorias da roleta com quantidade e total |
+
+Os valores são os **finais**, lidos dos mesmos getters que o gameplay usa
+(`Entity.getDamage`, `Bonus.critico`, `Melhorias.somaDosPontos`...). O bônus de
+cartas e upgrades aparece entre parênteses ("9 (+2)"). As linhas recebem foco
+pelas setas, pelo D-pad e pelo mouse, e uma faixa no pé do painel explica a linha
+focada. E, Esc e B fecham.
+
+**O inventário está desativado, não removido.** A tela de inventário e a ficha
+antiga de sprite (`interfaces/shared/Status`) deixaram de ser abas da `Inter`
+(ver `Game`). Os dados do `Inventory` continuam em uso: a arma da mão, a hotbar
+e a loja do vendedor. Para religar a tela, basta registrar "inventory" de novo na
+`Inter`.
+
+### Portal de nascimento (`Chegada.Tom`)
+
+O portal é o mesmo desenho (`portalCistern.png`) para todos, tingido em tempo de
+carga a partir de uma rampa de três cores pela luminosidade de cada pixel:
+
+- **`Tom.PERIGO` (inimigos):** o carmim das bandeiras da arte, a única família
+  quente da ilustração e a cor de aviso da interface (`Palette.WARN`), levado ao
+  claro para ler sobre a pedra e o mato. Por baixo, um brilho pulsante na mesma
+  cor. O verde de antes era a única cor da cena que não vinha da arte.
+- **`Tom.CHEGADA` (gato e vendedor):** a luz da lua da paleta
+  (`DEEP → LIGHT → TEXT`), sem brilho: chegada sem ameaça.
+
+A rampa de cada tom, `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO` e `TAMANHO`
+ficam em `Chegada`.
 
 ### Transmutação da arma (`Transmutacao`)
 

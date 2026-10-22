@@ -205,3 +205,13 @@ Esta seção também não é reconstrução. Ver
   da corrida e o aviso do save) e as abas Video, Audio e Interface. Pela tela
   inicial, o mesmo painel abre sem a aba Run. "Options" passou a se chamar
   "Settings". O HUD some enquanto um menu está aberto sobre a corrida.
+- **Tela de Status na tecla E.** O E deixou de abrir o inventário (desativado,
+  não removido: o jogo não tem inventário como mecânica). A tela nova pausa a
+  corrida e mostra os atributos finais com o bônus entre parênteses, a arma da
+  mão com o elemento, as armas extras, os números da corrida e todos os buffs
+  com nível, quantidade e total.
+- **Portal dos inimigos em carmim.** O verde não vinha da arte. Agora é o
+  vermelho das bandeiras, com um brilho pulsante por baixo para ler sobre
+  qualquer chão; o gato e o vendedor chegam por um portal na luz da lua.
+- **Level Up na paleta do projeto.** Título, halo, véu, moldura das cartas e
+  faixa da build vêm da `Palette`, no lugar do dourado alaranjado solto.
