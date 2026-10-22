@@ -3,6 +3,7 @@ package com.retronova.menus;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Debugging;
 import com.retronova.engine.Engine;
+import com.retronova.engine.EscalaDaInterface;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.graphics.TextFx;
@@ -60,9 +61,6 @@ public class Configuracoes extends TelaDeMenu {
 
     /** Limites de quadros, na ordem do ciclo: o do monitor primeiro, sem limite por último. */
     private static final int[] FPS_VALORES = {Configs.LIMITE_MONITOR, 30, 60, 120, 144, 165, 240, Configs.SEM_LIMITE};
-    /** Tamanhos de GUI, como no Minecraft. 0 = automático. Ver Configs.UiScale(). */
-    private static final int[] ESCALAS_UI = {0, 1, 2, 3};
-    private static final String[] ROTULOS_ESCALA = {"Auto", "1", "2", "3"};
 
     /** O aviso do save, na aba Run, em duas linhas para caber no painel. */
     private static final String[] AVISO = {"Leaving saves your run.", "Enemies on screen are not kept."};
@@ -243,18 +241,29 @@ public class Configuracoes extends TelaDeMenu {
                 .desc("Track for normal arenas. Plays here so you can compare. Boss fights have their own."));
 
         List<OptionRow> ui = new ArrayList<>();
-        ui.add(OptionRow.cycle("GUI size", Configuracoes::indiceEscala,
-                v -> Configs.setUiScale(ESCALAS_UI[v]), ROTULOS_ESCALA)
-                .desc("Size of menus, buttons and text: 1 small, 2 normal, 3 large. Auto = 2."));
-        ui.add(OptionRow.stepper("HUD size", Configs::HudScale, Configs::setHudScale, 2, 6, 1)
-                .ate(Configs::HudScaleMaxima)
-                .desc("Scale of the in-game interface: life bar, clock, hotbar. Capped at what fits "
-                        + "this resolution, so nothing overlaps."));
+        // TAMANHOS EM POR CENTO DO PADRÃO, e o mesmo valor dá a mesma proporção em
+        // qualquer resolução (ver EscalaDaInterface). O máximo de cada um é o que
+        // cabe na tela atual: acima disso a escolha não teria efeito.
+        int min = EscalaDaInterface.PCT_MINIMO, max = EscalaDaInterface.PCT_MAXIMO, passo = EscalaDaInterface.PASSO;
+        ui.add(OptionRow.stepper("Interface size", Configs::InterfacePct, Configs::setInterfacePct, min, max, passo, "%")
+                .ate(Configs::InterfacePctMaximo)
+                .desc("Overall size of menus and HUD together. Scales with your resolution: 100% takes the same "
+                        + "share of the screen at any resolution."));
+        ui.add(OptionRow.stepper("Menu size", Configs::MenusPct, Configs::setMenusPct, min, max, passo, "%")
+                .ate(Configs::MenusPctMaximo)
+                .desc("Size of menus, buttons and cards, on top of Interface size."));
+        ui.add(OptionRow.stepper("HUD size", Configs::HudPct, Configs::setHudPct, min, max, passo, "%")
+                .ate(Configs::HudPctMaximo)
+                .desc("Size of the in-game HUD: life, clock, XP, hotbar. Capped at what fits this resolution, "
+                        + "so nothing overlaps."));
+        ui.add(OptionRow.stepper("Margin", Configs::MargemDeReferencia, Configs::setMargemDeReferencia,
+                0, EscalaDaInterface.MARGEM_MAXIMA, 1)
+                .desc("Distance between the interface and the edges of the screen. Scales with your resolution."));
+        ui.add(OptionRow.acao("Reset interface", Configs::restaurarInterface)
+                .desc("Back to 100% sizes and the default margin."));
         ui.add(OptionRow.toggle("Show hitboxes",
                 () -> Configs.Hitboxes() ? 1 : 0, v -> Debugging.mostrarHitBox(v != 0))
                 .desc("Draws the collision box over entities. Same as pressing F4 in game."));
-        ui.add(OptionRow.stepper("Margin", Configs::Margin, Configs::setMargin, 0, 40, 5)
-                .desc("Distance between the interface and the edges of the screen."));
         ui.add(OptionRow.toggle("Controller vibration",
                 () -> Configs.Rumble() ? 1 : 0, v -> Configs.setRumble(v != 0))
                 .desc("Rumble on an Xbox controller when the cat takes damage."));
@@ -262,16 +271,6 @@ public class Configuracoes extends TelaDeMenu {
         linhas.add(video);
         linhas.add(audio);
         linhas.add(ui);
-    }
-
-    private static int indiceEscala() {
-        int atual = Configs.UiScaleSetting();
-        for (int i = 0; i < ESCALAS_UI.length; i++) {
-            if (ESCALAS_UI[i] == atual) {
-                return i;
-            }
-        }
-        return 0;   // valor desconhecido cai no automático
     }
 
     private static int indiceFps() {

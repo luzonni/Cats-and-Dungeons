@@ -41,9 +41,13 @@ public class Configs {
         DEFAULTS.put("vsync", true);
         DEFAULTS.put("fullscreen", false);
         DEFAULTS.put("SCALE", 4);
-        DEFAULTS.put("UISCALE", 0);        // 0 = automática, ver autoUiScale()
-        DEFAULTS.put("HUDSCALE", 4);
-        DEFAULTS.put("MARGIN", 20);
+        // Interface em POR CENTO do tamanho padrão e margem em pixels de
+        // referência (ver EscalaDaInterface): o mesmo valor, a mesma proporção em
+        // qualquer resolução.
+        DEFAULTS.put("UI_PCT", EscalaDaInterface.PCT_PADRAO);
+        DEFAULTS.put("HUD_PCT", EscalaDaInterface.PCT_PADRAO);
+        DEFAULTS.put("MENUS_PCT", EscalaDaInterface.PCT_PADRAO);
+        DEFAULTS.put("MARGEM_REF", EscalaDaInterface.MARGEM_PADRAO);
         DEFAULTS.put("ZOOM", 80);         // por cento; ver Zoom(). Era 130: perto demais para ler a horda chegando
         DEFAULTS.put("NeatGraphics", true);   // barato desde que o OpenGL liga de verdade (Main)
         // OITENTA, E NAO OS VINTE DE ANTES. Vinte nao era gosto de ninguem: era o
@@ -111,6 +115,9 @@ public class Configs {
         }
         if (objeto.get("AUDIOVERSION") == null) {
             migrarAudio();
+        }
+        if (objeto.get("UI_PCT") == null) {
+            migrarEscala(objeto);
         }
         if (objeto.get("resW") == null) {
             migrarResolucao(objeto.get("indexResolution"));
@@ -362,49 +369,143 @@ public class Configs {
         }
     }
 
-    /** Resolução lógica de referência para a UI. Múltiplos inteiros dela dão a escala. */
-    private static final int REF_W = 320, REF_H = 180;
+    // ------------------------------------------------- escala da interface
+    //
+    // TODA A CONTA MORA EM EscalaDaInterface; aqui só as preferências gravadas e as
+    // leituras de todo quadro, que passam por lá com o tamanho da imagem do jogo.
+    // As preferências são em POR CENTO do tamanho padrão (50 a 200, passos de 25)
+    // e a margem em pixels de referência: o mesmo valor dá a mesma proporção em
+    // qualquer resolução.
 
-    /**
-     * Escala da interface, no estilo do "GUI Scale" do Minecraft: a preferência
-     * é um tamanho 1, 2 ou 3 (0 = automático, igual ao 2), e não o multiplicador
-     * cru. O tamanho é relativo à janela — 3 é o maior múltiplo que cabe, cada
-     * passo abaixo tira um —, então "1" continua legível num monitor 4K.
-     * Valores antigos fora de 0..3 (o multiplicador cru de antes) viram automático.
-     */
+    private static int largura() {
+        return Engine.window == null ? 0 : Engine.window.largura();
+    }
+
+    private static int altura() {
+        return Engine.window == null ? 0 : Engine.window.altura();
+    }
+
+    /** Pixels de tela por pixel de arte dos menus (Interface% × Menus%). */
     public static int UiScale() {
-        int tamanho = UiScaleSetting();
-        if (tamanho < 1 || tamanho > 3) {
-            tamanho = 2;
-        }
-        return Math.max(2, autoUiScale() - (3 - tamanho));
-    }
-
-    /** Valor cru da preferência, sem resolver o automático. 0 = automática. */
-    public static int UiScaleSetting() {
-        return inteiro("UISCALE");
+        return EscalaDaInterface.menus(largura(), altura(), InterfacePct(), MenusPct());
     }
 
     /**
-     * Maior múltiplo inteiro de 320x180 que cabe na janela, limitado entre 2 e 10.
-     * Só múltiplos inteiros: fator fracionário desalinha e borra a pixel art.
+     * Pixels de tela por pixel de arte do HUD EM VIGOR (Interface% × HUD%), no teto
+     * do que cabe sem sobrepor peças (ver LayoutDoHud).
      */
-    public static int autoUiScale() {
-        if (Engine.window == null) {
-            return 3;
-        }
-        int largura = Engine.window.largura();
-        int altura = Engine.window.altura();
-        if (largura <= 0 || altura <= 0) {
-            return 3;
-        }
-        int escala = Math.min(largura / REF_W, altura / REF_H);
-        return Math.max(2, Math.min(10, escala));
+    public static int HudScale() {
+        return Math.min(EscalaDaInterface.hud(largura(), altura(), InterfacePct(), HudPct()), HudScaleMaxima());
     }
 
-    public static void setUiScale(int uiScale) {
-        VALUES.put("UISCALE", uiScale);
+    /** A maior escala do HUD que cabe na imagem do jogo agora. */
+    public static int HudScaleMaxima() {
+        if (Engine.window == null) {
+            return Integer.MAX_VALUE;
+        }
+        return com.retronova.game.hud.LayoutDoHud.escalaMaxima(largura(), altura(), Margin());
+    }
+
+    /** A margem das bordas em pixels de tela: a de referência, na escala da tela. */
+    public static int Margin() {
+        return EscalaDaInterface.margem(largura(), altura(), MargemDeReferencia());
+    }
+
+    /** Tamanho geral da interface, em por cento: multiplica menus e HUD. */
+    public static int InterfacePct() {
+        return EscalaDaInterface.pctValido(inteiro("UI_PCT"));
+    }
+
+    public static int HudPct() {
+        return EscalaDaInterface.pctValido(inteiro("HUD_PCT"));
+    }
+
+    public static int MenusPct() {
+        return EscalaDaInterface.pctValido(inteiro("MENUS_PCT"));
+    }
+
+    public static int MargemDeReferencia() {
+        return Math.max(0, Math.min(EscalaDaInterface.MARGEM_MAXIMA, inteiro("MARGEM_REF")));
+    }
+
+    public static void setInterfacePct(int pct) {
+        VALUES.put("UI_PCT", EscalaDaInterface.pctValido(pct));
         update();
+    }
+
+    public static void setHudPct(int pct) {
+        VALUES.put("HUD_PCT", EscalaDaInterface.pctValido(pct));
+        update();
+    }
+
+    public static void setMenusPct(int pct) {
+        VALUES.put("MENUS_PCT", EscalaDaInterface.pctValido(pct));
+        update();
+    }
+
+    public static void setMargemDeReferencia(int margem) {
+        VALUES.put("MARGEM_REF", Math.max(0, Math.min(EscalaDaInterface.MARGEM_MAXIMA, margem)));
+        update();
+    }
+
+    /** Volta tamanhos e margem da interface ao padrão. */
+    public static void restaurarInterface() {
+        VALUES.put("UI_PCT", EscalaDaInterface.PCT_PADRAO);
+        VALUES.put("HUD_PCT", EscalaDaInterface.PCT_PADRAO);
+        VALUES.put("MENUS_PCT", EscalaDaInterface.PCT_PADRAO);
+        VALUES.put("MARGEM_REF", EscalaDaInterface.MARGEM_PADRAO);
+        update();
+    }
+
+    /**
+     * Os maiores por cento que ainda cabem na tela atual, para o máximo de cada
+     * slider: o HUD no teto do layout, os menus no teto dos menus.
+     */
+    public static int HudPctMaximo() {
+        int w = largura(), h = altura(), ui = InterfacePct();
+        return EscalaDaInterface.maiorPctQueCabe(p -> EscalaDaInterface.hud(w, h, ui, p), HudScaleMaxima());
+    }
+
+    public static int MenusPctMaximo() {
+        int w = largura(), h = altura(), ui = InterfacePct();
+        return EscalaDaInterface.maiorPctQueCabe(
+                p -> (int) Math.round(EscalaDaInterface.fator(w, h) * EscalaDaInterface.MENUS_POR_REFERENCIA
+                        * ui / 100.0 * p / 100.0),
+                EscalaDaInterface.tetoDosMenus(w, h));
+    }
+
+    public static int InterfacePctMaximo() {
+        int w = largura(), h = altura(), hud = HudPct(), menus = MenusPct();
+        int peloHud = EscalaDaInterface.maiorPctQueCabe(p -> EscalaDaInterface.hud(w, h, p, hud), HudScaleMaxima());
+        int pelosMenus = EscalaDaInterface.maiorPctQueCabe(
+                p -> (int) Math.round(EscalaDaInterface.fator(w, h) * EscalaDaInterface.MENUS_POR_REFERENCIA
+                        * p / 100.0 * menus / 100.0),
+                EscalaDaInterface.tetoDosMenus(w, h));
+        return Math.min(peloHud, pelosMenus);
+    }
+
+    /**
+     * Arquivo de antes da escala em por cento: traduz as preferências antigas.
+     *
+     *   - GUI size 1/2/3 (0 = automático = 2) vira Menus 75/100/125%;
+     *   - HUD size, o multiplicador cru, vira por cento do padrão de 1080p (3);
+     *   - Margin em pixels vira pixels de referência (um terço, o fator de 1080p).
+     */
+    private static void migrarEscala(JSONObject antigo) {
+        Object gui = antigo.get("UISCALE");
+        if (gui instanceof Number n) {
+            int t = n.intValue();
+            VALUES.put("MENUS_PCT", t == 1 ? 75 : t == 3 ? 125 : 100);
+        }
+        Object hud = antigo.get("HUDSCALE");
+        if (hud instanceof Number n) {
+            VALUES.put("HUD_PCT", EscalaDaInterface.pctValido((int) Math.round(n.intValue() / 3.0 * 100)));
+        }
+        Object margem = antigo.get("MARGIN");
+        if (margem instanceof Number n) {
+            VALUES.put("MARGEM_REF", Math.max(0, Math.min(EscalaDaInterface.MARGEM_MAXIMA,
+                    (int) Math.round(n.intValue() / 3.0))));
+        }
     }
 
     /**
@@ -424,42 +525,6 @@ public class Configs {
         VALUES.put("ZOOM", zoom);
     }
 
-    /**
-     * A escala do HUD EM VIGOR: a escolhida, limitada à maior que cabe na imagem do
-     * jogo (ver LayoutDoHud). Sem o limite, HUD grande em resolução pequena punha
-     * o relógio em cima da barra de vida.
-     */
-    public static int HudScale() {
-        return Math.min(HudScaleEscolhida(), HudScaleMaxima());
-    }
-
-    /** A escala do HUD gravada nas opções, sem o limite da tela. */
-    public static int HudScaleEscolhida() {
-        return inteiro("HUDSCALE");
-    }
-
-    /** A maior escala do HUD que cabe na imagem do jogo agora. */
-    public static int HudScaleMaxima() {
-        if (Engine.window == null) {
-            return Integer.MAX_VALUE;
-        }
-        return com.retronova.game.hud.LayoutDoHud.escalaMaxima(
-                Engine.window.largura(), Engine.window.altura(), Margin());
-    }
-
-    public static void setHudScale(int HUDSCALE) {
-        VALUES.put("HUDSCALE", HUDSCALE);
-        update();
-    }
-
-    public static int Margin() {
-        return inteiro("MARGIN");
-    }
-
-    public static void setMargin(int MARGIN) {
-        VALUES.put("MARGIN", MARGIN);
-        update();
-    }
 
     public static boolean isNeatGraphics() {
         return (boolean) VALUES.get("NeatGraphics");
