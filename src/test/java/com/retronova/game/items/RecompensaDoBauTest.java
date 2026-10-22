@@ -69,7 +69,7 @@ class RecompensaDoBauTest {
     @DisplayName("a prévia lista as armas disponíveis e todas as melhorias")
     void previaCobreOPool() {
         Melhorias m = new Melhorias();
-        List<String> possiveis = RecompensaDoBau.possiveis(m);
+        List<String> possiveis = RecompensaDoBau.possiveis(m).stream().map(RecompensaDoBau.Premio::icone).toList();
         for (ArmaExtra a : m.armasDisponiveis()) {
             assertTrue(possiveis.contains(a.name()), a.name());
         }

@@ -166,18 +166,20 @@ public final class RecompensaDoBau {
     }
 
     /**
-     * Os ícones do que PODERIA sair deste baú: as armas disponíveis e as
-     * melhorias de atributo, para a prévia da tela. Só leitura, não sorteia.
+     * Uma amostra de cada coisa que PODERIA sair deste baú — as armas disponíveis
+     * no próximo nível e cada melhoria de atributo —, para a prévia da tela. Só
+     * leitura: não sorteia nem conta. As melhorias vêm como comuns; o grau só se
+     * sabe ao abrir.
      */
-    public static List<String> possiveis(Melhorias melhorias) {
-        List<String> icones = new ArrayList<>();
+    public static List<Premio> possiveis(Melhorias melhorias) {
+        List<Premio> amostras = new ArrayList<>();
         for (ArmaExtra a : melhorias.armasDisponiveis()) {
-            icones.add(a.name());
+            amostras.add(new Premio(null, a, melhorias.nivel(a) + 1));
         }
         for (Melhoria m : Melhoria.values()) {
-            icones.add(m.name());
+            amostras.add(new Premio(new Melhorias.Carta(m, Raridade.COMUM, melhorias.quantas(m)), null, 0));
         }
-        return icones;
+        return amostras;
     }
 
     /** Entrega o prêmio ao gato e grava a corrida. */
