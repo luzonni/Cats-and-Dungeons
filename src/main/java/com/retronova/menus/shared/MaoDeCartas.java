@@ -100,6 +100,7 @@ public final class MaoDeCartas {
     // troca todos (ver EscolhaDeElemento).
     private int atrasoPorCarta = 5, duracaoDaVirada = 12, subida = 0;
     private int entrada = ENTRADA, fechar = FECHAR;
+    private int vaoEntreCartas = VAO;
     private Enfeite enfeite;
     private java.util.function.IntConsumer somDoFoco = i -> Sound.play(Sounds.Hover);
     private java.util.function.IntConsumer somDaEscolha = i -> Sound.play(Sounds.Conquista);
@@ -131,6 +132,12 @@ public final class MaoDeCartas {
         this.fechar = ticks;
         this.destinoDoVoo = destino;
         this.inicioDoVoo = inicioDoVoo;
+        return this;
+    }
+
+    /** Vão entre as cartas, em pixels nativos: um enfeite largo pede mais. */
+    public MaoDeCartas comVao(int vao) {
+        this.vaoEntreCartas = vao;
         return this;
     }
 
@@ -211,7 +218,7 @@ public final class MaoDeCartas {
 
     /** Centraliza a fileira na horizontal, com o topo das cartas em y. */
     public void posicionar(int y, int s) {
-        int cw = LARGURA * s, ch = ALTURA * s, vao = VAO * s;
+        int cw = LARGURA * s, ch = ALTURA * s, vao = vaoEntreCartas * s;
         int total = cartas.size() * cw + (cartas.size() - 1) * vao;
         int x = Engine.window.largura() / 2 - total / 2;
         caixas.clear();

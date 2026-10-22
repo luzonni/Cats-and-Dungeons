@@ -108,6 +108,14 @@ public class EscolhaDeElemento implements Activity {
     public static final int VINHETA = 200;
     /** Ticks que o segundo anel do pulso espera depois do primeiro. */
     public static final int ATRASO_DO_SEGUNDO_PULSO = 10;
+    /** Partículas por tick em volta de cada carta, parada e com o foco. */
+    public static final double FAISCAS_PARADA = 0.5, FAISCAS_NO_FOCO = 1.6;
+    /** Teto de partículas na tela, para a cerimônia nunca pesar. */
+    public static final int MAX_FAISCAS = 360;
+    /** Opacidade da aura parada e com o foco (0-255, na camada mais interna). */
+    public static final int AURA_PARADA = 30, AURA_NO_FOCO = 70;
+    /** Ticks entre duas passagens do brilho diagonal pela carta. */
+    public static final int PERIODO_DO_BRILHO = 150;
 
     private final List<Elemento> oferta = new ArrayList<>();
     private final MaoDeCartas cartas;
@@ -130,8 +138,22 @@ public class EscolhaDeElemento implements Activity {
         Collections.shuffle(possiveis, Engine.RAND);
         oferta.addAll(possiveis.subList(0, Math.min(QUANTOS, possiveis.size())));
         cartas = new MaoDeCartas(oferta.stream().map(EscolhaDeElemento::carta).toList())
-                .comEntrada(ATRASO_ENTRE_CARTAS, VIRADA, SUBIDA);
+                .comEntrada(ATRASO_ENTRE_CARTAS, VIRADA, SUBIDA)
+                // Mais vão que o das cartas de buff: a moldura dupla e as pedras saem
+                // 4 px para fora de cada lado, e as setas do foco precisam de espaço.
+                .comVao(MaoDeCartas.VAO + 10)
+                .comEnfeite(new Destaque())
+                // O SOM DO ELEMENTO NO FOCO, e não o clique genérico: o jogador ouve
+                // o fogo antes de escolher o fogo. É o mesmo som do golpe na corrida.
+                .comSons(i -> tocar(oferta.get(i).som()), i -> tocar(oferta.get(i).som()));
+        acumulado = new double[oferta.size()];
         posicionar();
+    }
+
+    private static void tocar(com.retronova.engine.sound.Sounds som) {
+        if (som != null) {
+            com.retronova.engine.sound.Sound.play(som);
+        }
     }
 
     /**
@@ -176,6 +198,10 @@ public class EscolhaDeElemento implements Activity {
         int i = cartas.tick();
         if (i >= 0) {
             escolhido = i;
+        }
+        moverFaiscas();
+        if (escolhido < 0) {
+            soltarFaiscas();
         }
         if (cartas.fechou()) {
             Game.getPlayer().escolherElemento(oferta.get(escolhido));
@@ -226,9 +252,202 @@ public class EscolhaDeElemento implements Activity {
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida));
         desenharTitulo(g, tempo, w, s);
         if (t > ANTECIPACAO) {
+            // AS PARTÍCULAS POR TRÁS DAS CARTAS: aparecem em volta da silhueta e
+            // nunca tapam o texto, que é o que o jogador está lendo para decidir.
+            desenharFaiscas(g, s);
             cartas.render(g, s);
         }
         g.setComposite(original);
+    }
+
+    // ---------------------------------------------------- carta em destaque
+
+    /**
+     * A VARIANTE DE DESTAQUE da carta comum (ver MaoDeCartas.Enfeite).
+     *
+     * A HIERARQUIA SE LÊ ANTES DO TEXTO. O Hades separa a raridade das bênçãos
+     * pela cor da borda, e o jogador sabe o que tem na mão antes de ler o nome; o
+     * Balatro faz o mesmo com o brilho das cartas raras. Aqui a carta de elemento
+     * tem o que a de buff não tem: moldura dupla na cor do elemento com pedras nos
+     * cantos, uma aura que respira e um brilho que atravessa a carta de tempos em
+     * tempos. O foco usa o realce comum (ver Realce) e, por cima dele, a aura cresce
+     * e as partículas triplicam.
+     */
+    private final class Destaque implements MaoDeCartas.Enfeite {
+
+        @Override
+        public void atras(Graphics2D g, int i, Rectangle r, float realce, int s) {
+            Color cor = oferta.get(i).cor();
+            double respiro = 0.5 + 0.5 * Math.sin((t + Engine.alpha()) * 0.08 + i * 1.7);
+            double forca = AURA_PARADA + (AURA_NO_FOCO - AURA_PARADA) * realce + 12 * respiro;
+            for (int k = 6; k >= 1; k--) {
+                int m = k * 3 * s;
+                int alfa = (int) (forca * (1 - (k - 1) / 6.0));
+                g.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), Math.max(0, Math.min(255, alfa))));
+                g.fillRoundRect(r.x - m, r.y - m, r.width + 2 * m, r.height + 2 * m, 12 * s + 2 * m, 12 * s + 2 * m);
+            }
+        }
+
+        @Override
+        public void frente(Graphics2D g, int i, Rectangle r, float realce, int s) {
+            Color cor = oferta.get(i).cor();
+            Color clara = clarear(cor, 70);
+            // Moldura dupla: a borda na cor do elemento e um fio claro por dentro.
+            g.setColor(cor);
+            for (int k = 0; k < 2 * s; k++) {
+                g.drawRoundRect(r.x - 4 * s + k, r.y - 4 * s + k, r.width + 8 * s - 2 * k, r.height + 8 * s - 2 * k,
+                        14 * s, 14 * s);
+            }
+            g.setColor(new Color(clara.getRed(), clara.getGreen(), clara.getBlue(), 160));
+            g.drawRoundRect(r.x - s, r.y - s, r.width + 2 * s, r.height + 2 * s, 11 * s, 11 * s);
+            // Pedras nos cantos: o carimbo de "carta rara".
+            int[][] cantos = {{r.x - 3 * s, r.y - 3 * s}, {r.x + r.width + 3 * s, r.y - 3 * s},
+                    {r.x - 3 * s, r.y + r.height + 3 * s}, {r.x + r.width + 3 * s, r.y + r.height + 3 * s}};
+            for (int[] c : cantos) {
+                pedra(g, c[0], c[1], 4 * s, cor, clara);
+            }
+            // O brilho diagonal que atravessa a carta, preso dentro dela.
+            double p = ((t + Engine.alpha() + i * 40) % PERIODO_DO_BRILHO) / 40.0;
+            if (p < 1) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.clip(new java.awt.geom.RoundRectangle2D.Double(r.x, r.y, r.width, r.height, 10 * s, 10 * s));
+                int x = (int) (r.x - r.height + (r.width + 2 * r.height) * p);
+                int larg = 10 * s;
+                g2.setColor(new Color(255, 255, 255, 46));
+                g2.fillPolygon(new int[]{x, x + larg, x + larg + r.height, x + r.height},
+                        new int[]{r.y + r.height, r.y + r.height, r.y, r.y}, 4);
+                g2.dispose();
+            }
+        }
+
+        /** Um losango de pixel art, com contorno. */
+        private void pedra(Graphics2D g, int cx, int cy, int raio, Color cor, Color clara) {
+            int[] xs = {cx, cx + raio, cx, cx - raio};
+            int[] ys = {cy - raio, cy, cy + raio, cy};
+            g.setColor(Palette.DARKEST);
+            g.fillPolygon(new int[]{cx, cx + raio + 2, cx, cx - raio - 2}, new int[]{cy - raio - 2, cy, cy + raio + 2, cy}, 4);
+            g.setColor(cor);
+            g.fillPolygon(xs, ys, 4);
+            g.setColor(clara);
+            g.fillRect(cx - raio / 3, cy - raio / 2, Math.max(1, raio / 3), Math.max(1, raio / 3));
+        }
+    }
+
+    // ---------------------------------------------------------- partículas
+
+    /** Uma partícula em pixels da tela. Mexida no tick, desenhada no quadro. */
+    private static final class Faisca {
+        double x, y, vx, vy;
+        int vida, total;
+        Color cor;
+        Elemento tipo;
+    }
+
+    private final List<Faisca> faiscas = new ArrayList<>();
+    /** Fração de partícula acumulada por carta, para taxas abaixo de uma por tick. */
+    private double[] acumulado;
+
+    /**
+     * Partículas em volta das cartas que já entraram, no jeito de cada elemento.
+     *
+     * CADA ELEMENTO SE MEXE DO SEU JEITO, porque a cor sozinha separa mal fogo de
+     * terra e gelo de água: a brasa sobe, o floco cai balançando, a bolha sobe
+     * ondulando, a poeira cai pesada e o ar corre de lado. Nascem numa faixa FORA
+     * da carta, para nunca taparem o texto dela.
+     */
+    private void soltarFaiscas() {
+        int s = MaoDeCartas.escala();
+        for (int i = 0; i < oferta.size(); i++) {
+            if (t < ANTECIPACAO + i * ATRASO_ENTRE_CARTAS + VIRADA) {
+                continue;               // ainda virando
+            }
+            acumulado[i] += FAISCAS_PARADA + (FAISCAS_NO_FOCO - FAISCAS_PARADA) * cartas.realce(i);
+            while (acumulado[i] >= 1 && faiscas.size() < MAX_FAISCAS) {
+                acumulado[i] -= 1;
+                faiscas.add(nascer(oferta.get(i), cartas.caixa(i), s));
+            }
+            acumulado[i] = Math.min(acumulado[i], 1);
+        }
+    }
+
+    private static Faisca nascer(Elemento e, Rectangle r, int s) {
+        java.util.Random rnd = Engine.RAND;
+        Faisca f = new Faisca();
+        f.tipo = e;
+        f.total = f.vida = 40 + rnd.nextInt(40);
+        f.cor = rnd.nextInt(3) == 0 ? clarear(e.cor(), 90) : e.cor();
+        // NASCEM FORA DA SILHUETA: nas laterais, coladas na moldura, e — conforme o
+        // sentido do movimento — acima do topo ou abaixo da base, para seguirem para
+        // longe da carta. Desenhadas por trás dela, as que nascessem por dentro
+        // seriam invisíveis.
+        double margem = 10 * s;
+        boolean lateral = rnd.nextDouble() < 0.7;
+        double xLateral = rnd.nextBoolean() ? r.x - 4 * s - rnd.nextDouble() * margem
+                : r.x + r.width + 4 * s + rnd.nextDouble() * margem;
+        double xAoLongo = r.x + rnd.nextDouble() * r.width;
+        switch (e) {
+            case FOGO, AGUA -> {        // sobem
+                f.x = lateral ? xLateral : xAoLongo;
+                f.y = lateral ? r.y + rnd.nextDouble() * r.height : r.y - 4 * s - rnd.nextDouble() * margem;
+                f.vy = -(0.4 + rnd.nextDouble() * 0.7) * s;
+                f.vx = (rnd.nextDouble() - 0.5) * 0.3 * s;
+            }
+            case GELO, TERRA -> {       // caem
+                f.x = lateral ? xLateral : xAoLongo;
+                f.y = lateral ? r.y + rnd.nextDouble() * r.height : r.y + r.height + 4 * s + rnd.nextDouble() * margem;
+                f.vy = (e == Elemento.GELO ? 0.25 : 0.4) * s + rnd.nextDouble() * 0.3 * s;
+                f.vx = (rnd.nextDouble() - 0.5) * 0.2 * s;
+            }
+            default -> {                // o ar corre de lado, por cima e por baixo da carta
+                boolean cima = rnd.nextBoolean();
+                f.x = r.x - margem * 2;
+                f.y = cima ? r.y - 4 * s - rnd.nextDouble() * margem : r.y + r.height + 4 * s + rnd.nextDouble() * margem;
+                f.vx = (1.2 + rnd.nextDouble()) * s;
+                f.vy = (rnd.nextDouble() - 0.5) * 0.2 * s;
+                f.total = f.vida = 40 + rnd.nextInt(30);
+            }
+        }
+        return f;
+    }
+
+    private void moverFaiscas() {
+        int s = MaoDeCartas.escala();
+        for (int k = faiscas.size() - 1; k >= 0; k--) {
+            Faisca f = faiscas.get(k);
+            if (--f.vida <= 0) {
+                faiscas.remove(k);
+                continue;
+            }
+            switch (f.tipo) {
+                case GELO -> f.x += Math.sin(f.vida * 0.15) * 0.3 * s;      // o floco balança
+                case AGUA -> f.x += Math.sin(f.vida * 0.25) * 0.4 * s;      // a bolha ondula
+                case TERRA -> f.vy += 0.03 * s;                              // a poeira pesa
+                case FOGO -> f.vx *= 0.97;                                   // a brasa assenta no ar
+                default -> { }
+            }
+            f.x += f.vx;
+            f.y += f.vy;
+        }
+    }
+
+    /** Pixels de arte: quadradinhos, sem antialiasing, como o resto do jogo. */
+    private void desenharFaiscas(Graphics2D g, int s) {
+        for (Faisca f : faiscas) {
+            double vida = f.vida / (double) f.total;
+            int alfa = (int) (230 * Math.min(1, vida * 2.5));
+            g.setColor(new Color(f.cor.getRed(), f.cor.getGreen(), f.cor.getBlue(), Math.max(0, alfa)));
+            int lado = f.tipo == Elemento.AR ? s : (vida > 0.5 ? 2 * s : s);
+            if (f.tipo == Elemento.AR) {
+                g.fillRect((int) f.x, (int) f.y, 4 * s, s);          // o risco do vento
+            } else {
+                g.fillRect((int) f.x, (int) f.y, lado, lado);
+            }
+        }
+    }
+
+    private static Color clarear(Color c, int quanto) {
+        return new Color(Math.min(255, c.getRed() + quanto), Math.min(255, c.getGreen() + quanto),
+                Math.min(255, c.getBlue() + quanto));
     }
 
     /**
