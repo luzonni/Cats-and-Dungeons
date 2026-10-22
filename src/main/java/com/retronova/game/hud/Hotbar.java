@@ -70,17 +70,21 @@ class Hotbar {
         if (escalaAplicada != Configs.HudScale()) {
             recriar();
         }
-        int hotbarWidth = this.sprites[0].getWidth() * 5;
-        int x = Engine.window.largura()/2 - hotbarWidth/2;
-        int y = Engine.window.altura() - this.sprites[0].getHeight() - Configs.Margin();
+        // A posição vem da âncora da peça (ver LayoutDoHud); as casas ficam abaixo
+        // das orelhas, 6 pixels de arte abaixo do topo dela.
+        Rectangle peca = LayoutDoHud.caixa(LayoutDoHud.Peca.HOTBAR);
+        int x = peca.x;
+        int y = peca.y + 6 * Configs.HudScale();
         if(this.bounds == null) {
             this.bounds = new Rectangle[5];
             for(int i = 0; i < 5; i++) {
-                this.bounds[i] = new Rectangle(x + i * sprites[0].getWidth(), y, sprites[0].getWidth(), sprites[0].getHeight());
+                this.bounds[i] = new Rectangle();
             }
         }
+        // Posição E tamanho a cada tick: com a escala do HUD mudando junto com a
+        // resolução, a casa velha ficava do tamanho antigo no lugar novo.
         for(int i = 0; i < 5; i++) {
-            this.bounds[i].setLocation(x + i * sprites[0].getWidth(), y);
+            this.bounds[i].setBounds(x + i * sprites[0].getWidth(), y, sprites[0].getWidth(), sprites[0].getHeight());
         }
     }
 

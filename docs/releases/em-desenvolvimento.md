@@ -258,3 +258,58 @@ era apresentada como um level up. Agora ela tem uma cerimônia própria. Ver
   projeto (`tools/GenSonsDaEscolha.java`), provisórios no timbre.
 - **Confirmação** (`5071c2d`): clarão na cor do elemento, explosão de partículas e
   a carta voando até o gato, onde a arma se transmuta; volta ao jogo em 0,6 s.
+
+## Escala da interface proporcional à resolução (2026-10-22, branch `feat/escala-da-hud`)
+
+Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
+
+- **Um sistema de escala** (`ce50477`). HUD size era um multiplicador cru de
+  pixels, GUI size subtraía passos e Margin era em pixels absolutos: o mesmo valor
+  ocupava o dobro da tela em 1280 do que em 2560. Agora tudo sai de uma referência
+  de 640×360, em por cento (50% a 200%), multiplicado e arredondado uma vez. 100%
+  ocupa a mesma fração em 720p, 1080p, 1440p e 4K. Novos: Interface size, Menu
+  size, HUD size, Margin em pixels de referência e Reset interface; os valores
+  antigos migram sozinhos.
+- **HUD por âncoras** (`3e54d24`). Cada peça tem âncora, deslocamento e tamanho
+  num lugar só (`LayoutDoHud`), e o teto da escala é o maior em que nada sai da
+  tela nem se cruza. F7 desenha as caixas. Teste cobre a matriz de resoluções.
+- **Barras arrastáveis e menu menor** (`3c84675`). Os valores numéricos de
+  Settings viram uma barra no estilo do Forza Horizon, que se arrasta com o mouse
+  e anda com as setas; os de sim/não e de lista continuam com botões. Os tamanhos
+  andam de 5 em 5% (eram 25%) e o zoom da câmera também. O Menu size 100% passa a
+  ser o antigo 75% (2 em 720p, 3 em 1080p), que é o tamanho escolhido nos testes.
+- **Tamanhos em passos, sem piscar** (`894f483`). Arrastar o tamanho do menu
+  fazia a tela piscar: a escala nova mudava a barra debaixo do mouse, que pegava
+  outro valor, a cada quadro. E com escala inteira os 5% quase nunca mudavam
+  nada. Menu size e HUD size viram blocos, um por tamanho que a tela comporta
+  (Small, Default, Large...), aplicados ao soltar; o Interface size sai; a barra
+  dos valores contínuos ganha contorno e preenchimento, como os toggles; e os
+  menus passam a exigir 384×224 pixels de arte, para o Resume nunca encostar no
+  rodapé.
+- **Subtítulo da escolha de elemento legível** (`878ebbd`). O "It shapes your
+  whole run" ficava entre o título e as cartas, e o brilho e os cantos da carta
+  em foco passavam por cima dele. As cartas descem um pouco, o título sobe, e o
+  subtítulo passa para a fonte dos textos das cartas, num tom mais claro.
+- **Fim de corrida mais limpo** (`2825c39`). A tela de fim de corrida passa a ter
+  fundo preto, sem a ilustração do título por trás. As linhas da loja ganham
+  altura, os níveis se alinham ao preço, a dica vai em duas linhas (numa só
+  vazava do painel), e os avisos de conquista saem depois de 4 s em vez de
+  cobrir o ouro e a loja em 720p.
+- **Fim de corrida na identidade visual** (`1aa2b63`). Painéis, loja, avisos de
+  conquista e título passam para as cores da Palette e para o painel padrão dos
+  menus (contorno, corpo fundo e cabeçalho como a aba ativa). Eram cabeçalhos
+  ciano e amarelo, corpo em gradiente roxo e cantos arredondados.
+- **Status fora da arena não derruba mais o jogo** (`ac7b298`). Abrir o Status (E)
+  na sala do começo fechava o jogo: o bloco Run pedia a wave de uma arena que não
+  existe. Agora a linha de abates só aparece dentro da arena.
+- **Seleção de gato mais leve** (`ffb9ca2`). A tela refazia a medida do texto e a
+  cópia do sprite a cada quadro. Agora guarda as duas, e o `FontHandler` guarda as
+  fontes derivadas para todas as telas. Em 1080p sem VSync, o 1% mais lento foi de
+  123–145 fps para 450–500 fps e o pior quadro de 12 ms para 4 ms.
+- **Status rola para mostrar todos os buffs** (`84c446e`). A coluna que não cabia
+  terminava em "+N more". Agora cada coluna rola pelas setas, pelo D-pad e pela
+  roda do mouse, com avisos do que há acima e abaixo. Para testar:
+  `-Dcd.buffs` (`7c97ff3`) dá um nível de cada buff na bancada.
+- **Habilidade do gato dentro da ficha** (`c306e9b`). Na seleção de gato, papel e
+  habilidade numa linha só passavam da chapa (o Azrael); agora a habilidade desce
+  para a linha de baixo quando não cabe.

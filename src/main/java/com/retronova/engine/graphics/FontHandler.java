@@ -5,6 +5,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class FontHandler {
 
@@ -13,8 +15,24 @@ public abstract class FontHandler {
 
     private static Font[] font;
 
+    /**
+     * AS FONTES DERIVADAS, GUARDADAS POR TIPO E TAMANHO. As telas pedem a mesma
+     * fonte a cada quadro (o bloco da seleção de gato pedia seis, até seis vezes
+     * por quadro), e deriveFont monta um Font novo a cada pedido: lixo por quadro
+     * e coleta de lixo a cada dois segundos. Os tamanhos são poucos (múltiplos da
+     * escala), então o mapa fica pequeno.
+     */
+    private static final Map<Long, Font> derivadas = new ConcurrentHashMap<>();
+
+    /**
+     * Um contexto de medida só. Ele é imutável, e criar um (com uma transformação
+     * nova) a cada getWidth era alocação pura em todo texto medido por quadro.
+     */
+    private static final FontRenderContext MEDIDA = new FontRenderContext(new AffineTransform(), false, false);
+
     public static void addFont(String... fonts) {
         font = new Font[fonts.length];
+        derivadas.clear();
         for(int i = 0; i < fonts.length; i++) {
             try {
                 InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("com/retronova/resources/fonts/" + fonts[i] + ".ttf");
@@ -32,17 +50,21 @@ public abstract class FontHandler {
     public static Font font(int type, float size) {
         if(type > font.length-1)
             throw new RuntimeException("Fonte não existe");
-        return font[type].deriveFont(size);
+        long chave = ((long) type << 32) | (Float.floatToIntBits(size) & 0xFFFFFFFFL);
+        Font f = derivadas.get(chave);
+        if (f == null) {
+            f = font[type].deriveFont(size);
+            derivadas.put(chave, f);
+        }
+        return f;
     }
 
     public static int getWidth(String text, Font font) {
-        FontRenderContext frc = new FontRenderContext(new AffineTransform(), false, false);
-        return (int)(font.getStringBounds(text, frc).getWidth());
+        return (int)(font.getStringBounds(text, MEDIDA).getWidth());
     }
 
     public static int getHeight(String text, Font font) {
-        FontRenderContext frc = new FontRenderContext(new AffineTransform(), false, false);
-        return (int)(font.getStringBounds(text, frc).getHeight() - 0.29*font.getSize());
+        return (int)(font.getStringBounds(text, MEDIDA).getHeight() - 0.29*font.getSize());
     }
 
     public static int getSize(int type) {

@@ -30,6 +30,8 @@ public class Debugging {
     public static boolean showEntityHitBox = false;
     public static boolean showParticleHitBox = false;
     public static boolean showTileBox = false;
+    /** F7: caixas, âncoras e margem do HUD (ver LayoutDoHud.desenharDepuracao). */
+    public static boolean showHudLayout = false;
 
     private static Point position;
     private static Font font;
@@ -76,6 +78,9 @@ public class Debugging {
         }
         if(KeyBoard.KeyPressed("F6")) {
             Debugging.showParticleHitBox = !Debugging.showParticleHitBox;
+        }
+        if(KeyBoard.KeyPressed("F7")) {
+            Debugging.showHudLayout = !Debugging.showHudLayout;
         }
     }
 

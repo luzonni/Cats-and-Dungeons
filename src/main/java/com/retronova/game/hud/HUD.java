@@ -120,11 +120,17 @@ public class HUD implements Activity {
         waveDisplay.render(g);
         barraDeChefe.render(g);
         hotbar.render(g);
+        if (com.retronova.engine.Debugging.showHudLayout) {
+            LayoutDoHud.desenharDepuracao(g, Engine.window.largura(), Engine.window.altura(),
+                    Configs.Margin(), Configs.HudScale());
+        }
     }
 
     private void bust(Graphics2D g) {
-        int x = Configs.Margin();
-        int y = Configs.Margin();
+        // A posição vem da âncora da peça (ver LayoutDoHud), e não de uma conta daqui.
+        Rectangle pecaDaVida = LayoutDoHud.caixa(LayoutDoHud.Peca.VIDA);
+        int x = pecaDaVida.x;
+        int y = pecaDaVida.y;
         g.drawImage(this.chains, x, y - (this.frameBust.getHeight() - escalaDoRetrato()), null);
         g.drawImage(this.frameBust, x, y, null);
         g.drawImage(this.bust, x, y, null);
@@ -132,8 +138,9 @@ public class HUD implements Activity {
 
     private void bottleLife(Graphics2D g) {
         Player player = Game.getPlayer();
-        int x = Configs.Margin() + this.frameBust.getWidth();
-        int y = Configs.Margin();
+        Rectangle pecaDaVida = LayoutDoHud.caixa(LayoutDoHud.Peca.VIDA);
+        int x = pecaDaVida.x + this.frameBust.getWidth();
+        int y = pecaDaVida.y;
         g.drawImage(bottle[indexBottle], x, y, Engine.window);
         int s = escalaDoRetrato();
         int w = s * 36;
@@ -172,8 +179,10 @@ public class HUD implements Activity {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Player player = Game.getPlayer();
         int size = Configs.HudScale() * 15;
-        int x = Engine.window.largura() - size - Configs.Margin();
-        int y = Configs.Margin();
+        // A peça XP inclui o anel (um pixel de arte de cada lado) em volta do círculo.
+        Rectangle xp = LayoutDoHud.caixa(LayoutDoHud.Peca.XP);
+        int x = xp.x + Configs.HudScale();
+        int y = xp.y + Configs.HudScale();
         Font font = FontHandler.font(FontHandler.Game,Configs.HudScale() * 8);
         String value = "" + player.getLevel();
         int wf = FontHandler.getWidth(value, font);

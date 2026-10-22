@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.function.IntConsumer;
+import java.util.function.IntFunction;
 import java.util.function.IntSupplier;
 
 /**
@@ -41,7 +42,12 @@ public class OptionRow {
          * Uma ação (Continue, Restart, Quit...): só o rótulo e uma seta no lugar
          * dos controles. Enter, A ou um clique na linha inteira a executam.
          */
-        ACTION
+        ACTION,
+        /**
+         * Um tamanho entre poucos, um bloco para cada (Menu size, HUD size): só os
+         * que existem nesta tela, e cada um muda o desenho de verdade.
+         */
+        TAMANHO
     }
 
     // Geometria em pixels nativos; tudo é multiplicado pela escala da UI.
@@ -50,6 +56,12 @@ public class OptionRow {
     private static final int BTN_W = 12;
     private static final int CONTENT_X = 14, CONTENT_W = 64;
     private static final int PLUS_X = 80;
+    /** Largura da trilha da barra arrastável; o número fica à direita dela, com ~28 livres. */
+    private static final int TRILHA_W = 58;
+    /** Altura da barra, com o contorno: fina, mas com miolo para o preenchimento. */
+    private static final int BARRA_H = 6;
+    /** Os blocos de tamanho: largura, altura e vão; seis cabem em 46, e o nome em ~40. */
+    private static final int BLOCO_W = 6, BLOCO_H = 8, BLOCO_VAO = 2;
     /** Folga mínima entre o fim do rótulo e o começo dos controles. */
     private static final int LABEL_GAP = 4;
 
@@ -67,6 +79,15 @@ public class OptionRow {
     private Rectangle menos = new Rectangle();
     private Rectangle mais = new Rectangle();
     private Rectangle alvoToggle = new Rectangle();
+    private Rectangle trilha = new Rectangle();
+    /** O mouse segura a barra: o valor acompanha até soltar. */
+    private boolean arrastando;
+    /** A trilha como estava ao começar o arrasto: o arrasto mede contra ela. */
+    private Rectangle trilhaDoArrasto = new Rectangle();
+    /** Nos blocos de tamanho, o bloco sob o mouse enquanto segura; aplicado ao soltar. */
+    private int pendente;
+    /** O nome de cada valor dos blocos de tamanho. */
+    private IntFunction<String> nome;
 
     private Runnable acao;
     /** O realce da linha, em rampa: aceso pelo foco ou pelo mouse (ver Realce). */
@@ -120,6 +141,20 @@ public class OptionRow {
         return linha;
     }
 
+    /**
+     * Um tamanho entre poucos: um bloco por valor, de {@code menor} a {@code maior}
+     * (calculados na hora, pela tela), e o nome do valor escolhido à direita.
+     */
+    public static OptionRow tamanho(String label, IntSupplier get, IntConsumer set,
+                                    IntSupplier menor, IntSupplier maior, IntFunction<String> nome) {
+        OptionRow linha = new OptionRow(label, Kind.TAMANHO, get, set,
+                Integer.MIN_VALUE / 2, Integer.MAX_VALUE / 2, 1, null, "");
+        linha.piso = menor;
+        linha.teto = maior;
+        linha.nome = nome;
+        return linha;
+    }
+
     public boolean ehAcao() {
         return kind == Kind.ACTION;
     }
@@ -134,8 +169,8 @@ public class OptionRow {
         ajustar(1);
     }
 
-    /** Um teto que muda com a tela (o HUD que cabe na resolução atual), ou null. */
-    private IntSupplier teto;
+    /** Um teto e um piso que mudam com a tela (o HUD que cabe na resolução atual), ou null. */
+    private IntSupplier teto, piso;
 
     /**
      * Limita o máximo a um valor calculado na hora. Encadeável. Com ele o "+" para
@@ -146,8 +181,12 @@ public class OptionRow {
         return this;
     }
 
+    private int minimo() {
+        return piso == null ? min : Math.max(min, Math.min(max, piso.getAsInt()));
+    }
+
     private int maximo() {
-        return teto == null ? max : Math.max(min, Math.min(max, teto.getAsInt()));
+        return teto == null ? max : Math.max(minimo(), Math.min(max, teto.getAsInt()));
     }
 
     /** Texto de ajuda exibido ao passar o mouse pela linha. Encadeável. */
@@ -188,6 +227,13 @@ public class OptionRow {
         this.mais = new Rectangle(clusterX + PLUS_X * s, btnY, BTN_W * s, BTN_W * s);
         // Alvo generoso: clicar em qualquer ponto da coluna de controles alterna.
         this.alvoToggle = new Rectangle(clusterX, btnY, CLUSTER_W * s, BTN_W * s);
+        // A trilha da barra ocupa a altura toda da linha: fácil de pegar com o mouse.
+        this.trilha = new Rectangle(clusterX + 2 * s, y, TRILHA_W * s, ROW_H * s);
+    }
+
+    /** Barra arrastável: os valores numéricos (volume, zoom, tamanhos, margem). */
+    private boolean ehBarra() {
+        return kind == Kind.SLIDER || kind == Kind.STEPPER;
     }
 
     public Rectangle getBounds() {
@@ -197,6 +243,9 @@ public class OptionRow {
     public boolean estaSobreControles() {
         if (kind == Kind.ACTION) {
             return estaSobreLinha();
+        }
+        if (ehBarra() || kind == Kind.TAMANHO) {
+            return arrastando || trilha.contains(Mouse.getX(), Mouse.getY());
         }
         return menos.contains(Mouse.getX(), Mouse.getY())
                 || mais.contains(Mouse.getX(), Mouse.getY())
@@ -218,12 +267,80 @@ public class OptionRow {
             }
             return;
         }
+        if (ehBarra()) {
+            arrastar();
+            return;
+        }
+        if (kind == Kind.TAMANHO) {
+            escolherBloco();
+            return;
+        }
         if (Mouse.clickOn(Mouse_Button.LEFT, menos)) {
             ajustar(-1);
         } else if (Mouse.clickOn(Mouse_Button.LEFT, mais)) {
             ajustar(1);
         }
         repetirEnquantoSegura();
+    }
+
+    /**
+     * Clicar na trilha leva o valor até ali, e arrastar o acompanha.
+     *
+     * COMO NO FORZA HORIZON, e não mais de passo em passo nos botões − e +: num
+     * intervalo de 50 a 200 em passos de 5, eram trinta cliques para ir de uma
+     * ponta à outra. O arrasto continua até soltar, mesmo com o ponteiro fora da
+     * linha. O valor anda no passo da opção, nunca passa do teto dela (ver ate).
+     *
+     * MEDE CONTRA A TRILHA DO COMEÇO DO ARRASTO. Medir contra a trilha do quadro
+     * fazia a tela piscar: um valor que muda o tamanho dos menus muda a trilha, o
+     * mouse parado cai noutro valor, que muda a trilha de volta, a cada quadro.
+     */
+    private void arrastar() {
+        if (!arrastando && Mouse.clickOn(Mouse_Button.LEFT, trilha)) {
+            arrastando = true;
+            trilhaDoArrasto = new Rectangle(trilha);
+        }
+        if (!arrastando) {
+            return;
+        }
+        if (!Mouse.pressing(Mouse_Button.LEFT)) {
+            arrastando = false;
+            Sound.play(Sounds.Button);      // o "assentou" do valor, uma vez, ao soltar
+            return;
+        }
+        Rectangle t = trilhaDoArrasto;
+        double frac = Math.clamp((Mouse.getX() - t.x) / (double) Math.max(1, t.width), 0, 1);
+        double bruto = min + frac * (max - min);
+        int v = min + (int) Math.round((bruto - min) / step) * step;
+        v = Math.max(minimo(), Math.min(maximo(), v));
+        if (v != get.getAsInt()) {
+            set.accept(v);
+        }
+    }
+
+    /**
+     * Clicar num bloco de tamanho o escolhe; segurar e arrastar passa pelos
+     * blocos, e o tamanho só se aplica AO SOLTAR. Aplicar no meio do arrasto
+     * redimensionaria a própria linha debaixo do mouse (o mesmo pisca de arrastar).
+     */
+    private void escolherBloco() {
+        if (!arrastando && Mouse.clickOn(Mouse_Button.LEFT, trilha)) {
+            arrastando = true;
+            trilhaDoArrasto = new Rectangle(trilha);
+        }
+        if (!arrastando) {
+            return;
+        }
+        int passo = (BLOCO_W + BLOCO_VAO) * Configs.UiScale();
+        int indice = (Mouse.getX() - trilhaDoArrasto.x) / Math.max(1, passo);
+        pendente = Math.max(minimo(), Math.min(maximo(), minimo() + indice));
+        if (!Mouse.pressing(Mouse_Button.LEFT)) {
+            arrastando = false;
+            if (pendente != get.getAsInt()) {
+                set.accept(pendente);
+                Sound.play(Sounds.Button);
+            }
+        }
     }
 
     /** Segurar a seta continua ajustando, após uma pausa inicial. */
@@ -262,7 +379,7 @@ public class OptionRow {
             int n = max - min + 1;
             novo = min + ((atual - min + dir) % n + n) % n;   // circular
         } else {
-            novo = Math.max(min, Math.min(maximo(), atual + dir * step));
+            novo = Math.max(minimo(), Math.min(maximo(), atual + dir * step));
         }
         if (novo == atual) {
             return;      // já no limite: sem som, sem escrita
@@ -276,7 +393,7 @@ public class OptionRow {
             return false;
         }
         int atual = get.getAsInt();
-        return dir < 0 ? atual <= min : atual >= maximo();
+        return dir < 0 ? atual <= minimo() : atual >= maximo();
     }
 
     public void render(Graphics2D g2) {
@@ -314,6 +431,10 @@ public class OptionRow {
             desenharChevron(g, aceso, s);
         } else if (kind == Kind.TOGGLE) {
             desenharToggle(g, s);
+        } else if (ehBarra()) {
+            desenharBarra(g, s, fonte, baseTexto, aceso);
+        } else if (kind == Kind.TAMANHO) {
+            desenharBlocos(g, s, fonte, baseTexto, aceso);
         } else {
             desenharSeta(g, menos, "-", noLimite(-1), s);
             desenharSeta(g, mais, "+", noLimite(1), s);
@@ -350,6 +471,66 @@ public class OptionRow {
                     : get.getAsInt() + sufixo;
             desenharValor(g, fonte, texto, cx, cw, baseTexto);
         }
+    }
+
+    /**
+     * A barra dos valores contínuos (volume, zoom, margem), no idioma dos toggles:
+     * contorno de um pixel, miolo fundo e o trecho escolhido cheio, com o número
+     * alinhado à direita. A primeira versão era uma linha de um pixel com um
+     * quadrado solto por cima, e não conversava com o resto da tela. Com o foco,
+     * o preenchimento clareia, como o Realce faz no resto.
+     */
+    private void desenharBarra(Graphics2D g, int s, Font fonte, int baseTexto, boolean aceso) {
+        int x0 = trilha.x, w = trilha.width, h = BARRA_H * s;
+        int y = bounds.y + (bounds.height - h) / 2;
+        double faixa = Math.max(1, max - min);
+        int miolo = w - 2 * s;
+        int cheio = (int) Math.round(miolo * (get.getAsInt() - min) / faixa);
+        int xTeto = x0 + s + (int) Math.round(miolo * (maximo() - min) / faixa);
+
+        g.setColor(Palette.OUTLINE);
+        g.fillRect(x0, y, w, h);
+        g.setColor(Palette.DEEP);
+        g.fillRect(x0 + s, y + s, xTeto - x0 - s, h - 2 * s);   // além do teto (ver ate), fica o contorno
+        g.setColor(aceso || arrastando ? Palette.TEXT : Palette.ACCENT);
+        g.fillRect(x0 + s, y + s, cheio, h - 2 * s);
+
+        desenharValorADireita(g, s, fonte, baseTexto, get.getAsInt() + sufixo, x0 + w);
+    }
+
+    /**
+     * Os blocos de tamanho: um por tamanho que esta tela comporta, cheios até o
+     * escolhido, como barras de sinal. Não há bloco para o que não cabe, então não
+     * há o que explicar; o nome do tamanho fica à direita.
+     */
+    private void desenharBlocos(Graphics2D g, int s, Font fonte, int baseTexto, boolean aceso) {
+        int de = minimo(), ate = maximo();
+        int valor = arrastando ? pendente : get.getAsInt();
+        int bw = BLOCO_W * s, bh = BLOCO_H * s, passo = (BLOCO_W + BLOCO_VAO) * s;
+        int y = bounds.y + (bounds.height - bh) / 2;
+        int x = trilha.x;
+        for (int v = de; v <= ate; v++, x += passo) {
+            g.setColor(Palette.OUTLINE);
+            g.fillRect(x, y, bw, bh);
+            g.setColor(v <= valor ? (aceso || arrastando ? Palette.TEXT : Palette.ACCENT) : Palette.DEEP);
+            g.fillRect(x + s, y + s, bw - 2 * s, bh - 2 * s);
+        }
+        desenharValorADireita(g, s, fonte, baseTexto, nome.apply(valor), x - BLOCO_VAO * s);
+    }
+
+    /** O valor alinhado à direita da coluna, encolhendo para não encostar no controle. */
+    private void desenharValorADireita(Graphics2D g, int s, Font fonte, int baseTexto, String texto, int fimDoControle) {
+        int direita = bounds.x + bounds.width;
+        int largura = direita - (fimDoControle + 4 * s);
+        Font f = fonte;
+        float tam = f.getSize2D();
+        while (FontHandler.getWidth(texto, f) > largura && tam > 4f) {
+            tam -= 1f;
+            f = FontHandler.font(FontHandler.Game, tam);
+        }
+        g.setFont(f);
+        TextFx.draw(g, texto, direita - FontHandler.getWidth(texto, f), baseTexto, Palette.TEXT, s);
+        g.setFont(fonte);
     }
 
     private void desenharValor(Graphics2D g, Font fonte, String texto, int x, int largura, int baseTexto) {

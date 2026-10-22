@@ -23,10 +23,8 @@ import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Bonus;
 import com.retronova.menus.shared.Button;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -45,6 +43,23 @@ import java.util.Map;
  */
 public class GameOver extends TelaDeMenu {
 
+    // Geometria em pixels nativos; tudo é multiplicado pela escala da tela.
+    /** Largura e altura de cada painel. */
+    private static final int PAINEL_W = 150, PAINEL_H = 154;
+    /**
+     * As linhas da loja: onde começam, a altura e o passo entre elas. 18 de altura
+     * e 3 de vão, e não 17 e 3 com o painel de 140: o nome encostava no topo da
+     * linha, o efeito na base, e a dica do rodapé do painel colava na última. A
+     * dica vai em duas linhas: numa só, passava da largura do painel.
+     */
+    private static final int LOJA_TOPO = 33, LINHA_H = 18, LINHA_PASSO = 21;
+    /** Altura do cabeçalho de cada painel, a faixa como a aba ativa. */
+    private static final int CABECALHO = 13;
+    /** O fundo: preto, sem a ilustração do título, para os números serem o centro. */
+    private static final Color FUNDO = Color.BLACK;
+    /** Ticks que cada aviso de conquista fica parado antes de sair (4 s). */
+    private static final int AVISO_FICA = 240;
+
     private final List<Button> botoes = new ArrayList<>();
     private final List<Rectangle> linhasDaLoja = new ArrayList<>();
     private int foco = -1;
@@ -59,8 +74,9 @@ public class GameOver extends TelaDeMenu {
 
     public GameOver(int gato, int espaco) {
         // Vencer o chefe final muda o titulo, mesmo que o gato tenha caido depois.
+        // O título no branco de toda tela de menu: o vermelho e o ouro próprios
+        // eram as únicas cores quentes da tela, fora da Palette.
         super(Estatisticas.venceu() ? "Victory" : "Run Over");
-        corDoTitulo(Estatisticas.venceu() ? new Color(0xFFD23F) : new Color(0xE0475F));
         this.gato = gato;
         this.espaco = espaco;
         Sound.stopAll();
@@ -88,7 +104,7 @@ public class GameOver extends TelaDeMenu {
     }
 
     private int escala() {
-        int cabe = Math.max(1, areaDoConteudo().height / 172);
+        int cabe = Math.max(1, areaDoConteudo().height / (PAINEL_H + 32));   // painel, vão e botões
         return Math.max(1, Math.min(Configs.UiScale(), cabe));
     }
 
@@ -99,7 +115,7 @@ public class GameOver extends TelaDeMenu {
         int s = escala();
         int w = Engine.window.largura();
         Rectangle area = areaDoConteudo();
-        int pw = 150 * s, ph = 140 * s, vao = 10 * s;
+        int pw = PAINEL_W * s, ph = PAINEL_H * s, vao = 10 * s;
         int total = ph + 10 * s + Button.preferredHeight();
         int x0 = w / 2 - pw - vao / 2;
         int y0 = area.y + Math.max(0, (area.height - total) / 2);
@@ -108,8 +124,8 @@ public class GameOver extends TelaDeMenu {
         linhasDaLoja.clear();
         Meta.Permanente[] todos = Meta.Permanente.values();
         for (int i = 0; i < todos.length; i++) {
-            linhasDaLoja.add(new Rectangle(painelLoja.x + 6 * s, painelLoja.y + 34 * s + i * 20 * s,
-                    painelLoja.width - 12 * s, 17 * s));
+            linhasDaLoja.add(new Rectangle(painelLoja.x + 6 * s, painelLoja.y + (LOJA_TOPO + i * LINHA_PASSO) * s,
+                    painelLoja.width - 12 * s, LINHA_H * s));
         }
         int largura = Button.preferredWidth();
         int altura = Button.preferredHeight();
@@ -211,9 +227,10 @@ public class GameOver extends TelaDeMenu {
     /**
      * Os avisos de conquista desbloqueada, no canto superior direito.
      *
-     * Entram deslizando pela direita, um depois do outro, e ficam. Mostram só o
-     * nome: o que ela pede e o resto está na tela de conquistas, que o jogador
-     * abre pelo troféu do menu.
+     * Entram deslizando pela direita, um depois do outro, e SAEM depois de
+     * {@link #AVISO_FICA} ticks. Ficavam para sempre, e em 720p cobriam o ouro
+     * ganho e o cabeçalho da loja. Mostram só o nome: o que ela pede e o resto
+     * está na tela de conquistas, que o jogador abre pelo troféu do menu.
      */
     private void desenharConquistas(Graphics2D g, int s) {
         List<Conquistas.Conquista> novas = Estatisticas.conquistasDaCorrida();
@@ -248,47 +265,61 @@ public class GameOver extends TelaDeMenu {
         int w = Math.min(maxW, Math.max(96 * s, fixo + texto));
         for (int i = 0; i < novas.size(); i++) {
             // 0 a 1: cada aviso começa 14 ticks depois do anterior e leva 18 para entrar.
-            double t = Math.clamp((desdeOFim + Engine.alpha() - 10 - i * 14) / 18.0, 0, 1);
-            if (t <= 0) {
+            double agora = desdeOFim + Engine.alpha() - 10 - i * 14;
+            double t = Math.clamp(agora / 18.0, 0, 1);
+            double saida = Math.clamp((agora - AVISO_FICA) / 18.0, 0, 1);
+            if (t <= 0 || saida >= 1) {
                 continue;
             }
-            double suave = 1 - Math.pow(1 - t, 3);
+            double suave = (1 - Math.pow(1 - t, 3)) * (1 - saida * saida * saida);
             int x = (int) (Engine.window.largura() - margem - w + (1 - suave) * (w + margem));
             int y = margem + i * (h + vao);
 
-            g.setColor(new Color(0, 0, 0, 100));
-            g.fillRoundRect(x + 2 * s, y + 3 * s, w, h, 8 * s, 8 * s);
-            g.setColor(new Color(0x8A6A14));
-            g.fillRoundRect(x - s, y - s, w + 2 * s, h + 2 * s, 9 * s, 9 * s);
-            g.setPaint(new GradientPaint(0, y, new Color(0x46391E), 0, y + h, new Color(0x201A12)));
-            g.fillRoundRect(x, y, w, h, 8 * s, 8 * s);
+            // A caixa das dicas de Settings: contorno, corpo DEEP e fio MAIN no topo.
+            // Era dourada, arredondada e em gradiente, fora da Palette.
+            g.setColor(Palette.OUTLINE);
+            g.fillRect(x, y, w, h);
+            g.setColor(Palette.DEEP);
+            g.fillRect(x + s, y + s, w - 2 * s, h - 2 * s);
+            g.setColor(Palette.MAIN);
+            g.fillRect(x + s, y + s, w - 2 * s, s);
 
-            com.retronova.game.map.arena.Icones.desenhar(g, "TROFEU", new Color(0xFFD23F),
+            com.retronova.game.map.arena.Icones.desenhar(g, "TROFEU", Palette.ACCENT,
                     x + 4 * s, y + (h - lado) / 2, celula);
 
             int tx = x + 4 * s + lado + 4 * s;
             TextFx.draw(g, "Achievement unlocked", rotulo, tx, y + 8 * s, Palette.LIGHT, s);
-            TextFx.draw(g, novas.get(i).nome(), fonteNome, tx, y + 17 * s, new Color(0xFFD23F), s);
+            TextFx.draw(g, novas.get(i).nome(), fonteNome, tx, y + 17 * s, Palette.TEXT, s);
         }
     }
 
-    private void painel(Graphics2D g, Rectangle p, String titulo, Color cor, int s) {
-        g.setColor(new Color(0, 0, 0, 100));
-        g.fillRoundRect(p.x + 3 * s, p.y + 5 * s, p.width, p.height, 12 * s, 12 * s);
-        g.setColor(new Color(0x0E0A14));
-        g.fillRoundRect(p.x - 2 * s, p.y - 2 * s, p.width + 4 * s, p.height + 4 * s, 14 * s, 14 * s);
-        g.setPaint(new GradientPaint(0, p.y, new Color(0x2E2546), 0, p.y + p.height, new Color(0x15101F)));
-        g.fillRoundRect(p.x, p.y, p.width, p.height, 12 * s, 12 * s);
-        g.setColor(cor);
-        g.fillRoundRect(p.x, p.y, p.width, 14 * s, 12 * s, 12 * s);
-        g.fillRect(p.x, p.y + 7 * s, p.width, 7 * s);
-        Font f = FontHandler.font(FontHandler.Septem, 7f * s);
-        centro(g, titulo, f, p.x + p.width / 2, p.y + 10 * s, new Color(0x14081C));
+    /**
+     * O painel no padrão dos menus (ver TelaDeMenu.desenharPainel e Abas): contorno
+     * OUTLINE, corpo DEEP e o cabeçalho como a aba ativa, faixa MAIN com fio LIGHT.
+     *
+     * ERA UM SISTEMA À PARTE: cabeçalhos ciano e amarelo, corpo em gradiente roxo,
+     * cantos arredondados e sombra, nenhuma cor da Palette. Ao lado das Settings e
+     * da pausa, a tela parecia de outro jogo; e os cantos e o gradiente passavam
+     * pelo Marlin na CPU a cada quadro.
+     */
+    private void painel(Graphics2D g, Rectangle p, String titulo, int s) {
+        g.setColor(Palette.OUTLINE);
+        g.fillRect(p.x, p.y, p.width, p.height);
+        g.setColor(Palette.DEEP);
+        g.fillRect(p.x + s, p.y + s, p.width - 2 * s, p.height - 2 * s);
+        g.setColor(Palette.MAIN);
+        g.fillRect(p.x + s, p.y + s, p.width - 2 * s, CABECALHO * s);
+        g.setColor(Palette.LIGHT);
+        g.fillRect(p.x + s, p.y + s, p.width - 2 * s, s);
+        g.setColor(Palette.OUTLINE);
+        g.fillRect(p.x + s, p.y + (CABECALHO + 1) * s, p.width - 2 * s, s);
+        Font f = FontHandler.font(FontHandler.Game, 7f * s);
+        contornadoCentro(g, titulo, f, p.x + p.width / 2, p.y + 10 * s, Palette.TEXT, s);
     }
 
     private void desenharResumo(Graphics2D g, int s) {
         Rectangle p = painelResumo;
-        painel(g, p, "RUN SUMMARY", new Color(0x4FC3E8), s);
+        painel(g, p, "Run summary", s);
         Font f = FontHandler.font(FontHandler.Septem, 6f * s);
         Font valor = FontHandler.font(FontHandler.Game, 7f * s);
         int seg = Estatisticas.segundos();
@@ -303,14 +334,14 @@ public class GameOver extends TelaDeMenu {
         };
         int y = p.y + 26 * s;
         for (String[] l : linhas) {
-            esquerda(g, l[0], f, p.x + 8 * s, y, Palette.ACCENT);
+            contornado(g, l[0], f, p.x + 8 * s, y, Palette.ACCENT, s);
             int vw = FontHandler.getWidth(l[1], valor);
-            contornado(g, l[1], valor, p.x + p.width - 8 * s - vw, y, Color.WHITE, s);
+            contornado(g, l[1], valor, p.x + p.width - 8 * s - vw, y, Palette.TEXT, s);
             y += 10 * s;
         }
         String habilidade = Bonus.habilidade(gato);
         if (!habilidade.isEmpty()) {
-            centro(g, habilidade, f, p.x + p.width / 2, y, new Color(0xB57CF0));
+            contornadoCentro(g, habilidade, f, p.x + p.width / 2, y, Palette.ACCENT, s);
         }
         y += 8 * s;
         // Dano por arma, em barras proporcionais a maior.
@@ -322,26 +353,28 @@ public class GameOver extends TelaDeMenu {
         for (int i = 0; i < Math.min(4, ordenados.size()); i++) {
             var e = ordenados.get(i);
             int bw = (int) ((p.width - 16 * s) * (e.getValue() / maior));
-            g.setColor(new Color(0x3A2E55));
+            // A barra no padrão das Settings: contorno, miolo fundo e o trecho cheio,
+            // a maior arma mais clara que as outras.
+            g.setColor(Palette.OUTLINE);
             g.fillRect(p.x + 8 * s, y, p.width - 16 * s, 7 * s);
-            g.setColor(i == 0 ? new Color(0xFFD23F) : new Color(0x7FD8FF));
-            g.fillRect(p.x + 8 * s, y, bw, 7 * s);
+            g.setColor(i == 0 ? Palette.LIGHT : Palette.MAIN);
+            g.fillRect(p.x + 9 * s, y + s, Math.max(0, bw - 2 * s), 5 * s);
             String rot = e.getKey() + "  " + Math.round(e.getValue());
-            contornado(g, rot, pequena, p.x + 10 * s, y + 6 * s, Color.WHITE, s);
+            contornado(g, rot, pequena, p.x + 10 * s, y + 6 * s, Palette.TEXT, s);
             y += 9 * s;
         }
     }
 
     private void desenharLoja(Graphics2D g, int s) {
         Rectangle p = painelLoja;
-        painel(g, p, "UPGRADES", new Color(0xFFD23F), s);
+        painel(g, p, "Upgrades", s);
         Font f = FontHandler.font(FontHandler.Septem, 6f * s);
         Font grande = FontHandler.font(FontHandler.Game, 8f * s);
         String ouro = "Gold: " + Meta.ouro();
         String ganho = "+" + Estatisticas.ouroGanho() + " this run";
-        contornado(g, ouro, grande, p.x + 8 * s, p.y + 26 * s, new Color(0xFFD23F), s);
+        contornado(g, ouro, grande, p.x + 8 * s, p.y + 26 * s, Palette.TEXT, s);
         int gw = FontHandler.getWidth(ganho, f);
-        esquerda(g, ganho, f, p.x + p.width - 8 * s - gw, p.y + 26 * s, Palette.ACCENT);
+        contornado(g, ganho, f, p.x + p.width - 8 * s - gw, p.y + 26 * s, Palette.ACCENT, s);
 
         Meta.Permanente[] todos = Meta.Permanente.values();
         for (int i = 0; i < todos.length; i++) {
@@ -356,50 +389,56 @@ public class GameOver extends TelaDeMenu {
             if (sob) {
                 Realce.brilho(g, r, 1f, s);
             }
+            // A linha como um botão da casa: contorno, corpo MAIN (LIGHT com o mouse
+            // e ouro para comprar) e o fio claro no topo.
+            g.setColor(Palette.OUTLINE);
+            g.fillRect(r.x, r.y, r.width, r.height);
             g.setColor(sob && podeComprar ? Palette.LIGHT : Palette.MAIN);
-            g.fillRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
+            g.fillRect(r.x + s, r.y + s, r.width - 2 * s, r.height - 2 * s);
+            g.setColor(sob && podeComprar ? Palette.ACCENT : Palette.LIGHT);
+            g.fillRect(r.x + s, r.y + s, r.width - 2 * s, s);
             if (sob && Entrada.porFoco()) {
                 Realce.marcadorDeFoco(g, r, s);
             }
             if (brilhoDaCompra == i && desdeACompra < 20) {
-                g.setColor(new Color(255, 255, 255, (int) (200 * (1 - desdeACompra / 20.0))));
-                g.fillRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
+                Realce.clarear(g, r, 1f - desdeACompra / 20f);
             }
-            g.setColor(m.cor());
-            g.fillRect(r.x, r.y, 3 * s, r.height);
-            contornado(g, m.nome(), f, r.x + 6 * s, r.y + 7 * s, Color.WHITE, s);
-            esquerda(g, m.efeito(), FontHandler.font(FontHandler.Septem, 5f * s), r.x + 6 * s, r.y + 14 * s, Palette.ACCENT);
-            // Pips de nivel.
+            contornado(g, m.nome(), f, r.x + 5 * s, r.y + 8 * s, Palette.TEXT, s);
+            contornado(g, m.efeito(), FontHandler.font(FontHandler.Septem, 5f * s), r.x + 5 * s, r.y + 15 * s,
+                    Palette.ACCENT, s);
+            // Pips de nivel, na altura do nome; o preço, na do efeito.
             for (int k = 0; k < Meta.Permanente.NIVEL_MAXIMO; k++) {
-                g.setColor(k < nivel ? m.cor() : new Color(0x1A1428));
-                g.fillRect(r.x + r.width - 62 * s + k * 5 * s, r.y + 4 * s, 4 * s, 4 * s);
+                g.setColor(Palette.OUTLINE);
+                g.fillRect(r.x + r.width - 31 * s + k * 5 * s, r.y + 4 * s, 4 * s, 4 * s);
+                if (k < nivel) {
+                    g.setColor(Palette.TEXT);
+                    g.fillRect(r.x + r.width - 30 * s + k * 5 * s, r.y + 5 * s, 2 * s, 2 * s);
+                }
             }
+            // O preço: claro se dá para comprar, o vermelho de aviso se falta ouro,
+            // numa plaquinha OUTLINE: o WARN direto sobre o MAIN da linha não se lia.
             String preco = cheio ? "MAX" : Meta.preco(m) + "g";
             int pw = FontHandler.getWidth(preco, f);
-            contornado(g, preco, f, r.x + r.width - 6 * s - pw, r.y + 14 * s,
-                    cheio ? Palette.LIGHT : podeComprar ? new Color(0xFFD23F) : new Color(0x9A5050), s);
+            g.setColor(Palette.OUTLINE);
+            g.fillRect(r.x + r.width - 8 * s - pw, r.y + 9 * s, pw + 4 * s, 8 * s);
+            contornado(g, preco, f, r.x + r.width - 6 * s - pw, r.y + 15 * s,
+                    cheio ? Palette.ACCENT : podeComprar ? Palette.TEXT : Palette.WARN, s);
         }
-        centro(g, "Click or press Enter to buy. Upgrades apply to every new run.", FontHandler.font(FontHandler.Septem, 5f * s),
-                p.x + p.width / 2, p.y + p.height - 4 * s, Palette.LIGHT);
+        Font dica = FontHandler.font(FontHandler.Septem, 5f * s);
+        contornadoCentro(g, "Click or press Enter to buy.", dica, p.x + p.width / 2, p.y + p.height - 11 * s,
+                Palette.LIGHT, s);
+        contornadoCentro(g, "Upgrades apply to every new run.", dica, p.x + p.width / 2, p.y + p.height - 4 * s,
+                Palette.LIGHT, s);
+    }
+
+    /** Fundo preto: nem a ilustração do título, nem o jogo congelado. */
+    @Override
+    protected void desenharFundo(Graphics2D g) {
+        g.setColor(FUNDO);
+        g.fillRect(0, 0, Engine.window.largura(), Engine.window.altura());
     }
 
     // ------------------------------------------------------------- texto
-
-    private static void esquerda(Graphics2D g, String t, Font f, int x, int y, Color cor) {
-        // Texto escuro (rótulo sobre faixa colorida) fica sem contorno escuro.
-        if (cor.getRed() + cor.getGreen() + cor.getBlue() < 180) {
-            g.setFont(f);
-            g.setColor(cor);
-            g.drawString(t, x, y);
-            return;
-        }
-        int cabe = Math.max(1, (Engine.window.altura() - 20) / 210);
-        TextFx.draw(g, t, f, x, y, cor, Math.max(1, Math.min(Configs.UiScale(), cabe)));
-    }
-
-    private static void centro(Graphics2D g, String t, Font f, int cx, int y, Color cor) {
-        esquerda(g, t, f, cx - FontHandler.getWidth(t, f) / 2, y, cor);
-    }
 
     private static void contornado(Graphics2D g, String t, Font f, int x, int y, Color cor, int s) {
         TextFx.draw(g, t, f, x, y, cor, s);
