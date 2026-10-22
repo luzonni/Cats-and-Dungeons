@@ -75,8 +75,12 @@ registrados de propósito, para não se perderem de novo.
 * **Cenário derivado por gerador:** os tiles e props da dungeon saem de um pacote
   CC0 remapeado por código para a paleta de pedra fria do jogo, em vez de copiados
   como estão — a arte de fora entra já dentro da identidade visual daqui.
-* **Escala automática:** a interface acompanha o tamanho da janela em múltiplos
-  inteiros de uma resolução lógica de 320×180, do 720p ao 4K.
+* **Escala automática:** a interface acompanha a resolução escolhida em múltiplos
+  inteiros de uma resolução lógica de 320×180, do 720p ao 4K, e o HUD nunca
+  cresce além do que cabe na tela.
+* **Vídeo estável:** lógica em passo fixo de 60 Hz com desenho
+  interpolado, limitador preciso (timer de 1 ms no Windows), limite "igual ao
+  monitor" por padrão e tela cheia sem bordas, que não pisca no Alt+Tab.
 
 ## Stack Tecnológica
 
@@ -142,24 +146,23 @@ ou `main` é recusado pelo hook. O passo a passo está em
 |---|---|---|
 | `W` `A` `S` `D` ou setas | Analógico esquerdo · D-pad | Mover (em 360° pelo analógico) |
 | `Espaço` | `LT` / `RT` | Dash |
-| `E` | `Y` | Inventário |
+| `E` | `Y` | Status do gato (atributos, armas e buffs) |
 | `F` | `X` | Usar consumível |
 | `Q` | `View` | Largar item |
-| Rodinha · `1`–`9` | `LB` / `RB` | Trocar slot da hotbar · trocar aba no inventário e nas Opções |
+| Rodinha · `1`–`9` | `LB` / `RB` | Trocar slot da hotbar · trocar aba em Settings (`Q`/`E` no teclado) |
 | `Enter` | `A` | Confirmar |
 | `Esc` | `B` (nas telas) · `Start` | Voltar · pausar |
 | Clique no objeto | `B` (em jogo) | Pegar item, abrir caixa, falar com o vendedor, puxar alavanca, ler placa (o mais próximo) |
 | | Analógico direito | Espiar: a câmera se afasta até 1,5 tile e volta ao soltar |
 | `F11` | | Alternar tela cheia |
 | `Ctrl` + `=` / `-` | | Zoom da câmera |
-| `F3` | | Overlay de depuração |
+| `F3` | | Overlay de depuração, com gráfico de tempo de quadro |
 | `F4` `F5` `F6` | | Hitbox de entidades · grade de tiles · bounds de partículas |
 
 As armas atacam sozinhas, mirando o inimigo mais próximo: não há botão de ataque.
 
-No inventário, na loja e na máquina de chiclete, as setas ou o D-pad andam pelas
-casas e `Enter`/`A` faz o que o clique faria. No inventário, `Q`/`View` manda o
-item para o outro lado (como Shift + clique) e `F`/`X` consome. Na loja, o
+Na loja e na máquina de chiclete, as setas ou o D-pad andam pelas
+casas e `Enter`/`A` faz o que o clique faria. Na loja, o
 primeiro `A` seleciona e o segundo, na mesma casa, compra.
 
 O controle funciona no Windows, com qualquer controle XInput (Xbox 360, One,

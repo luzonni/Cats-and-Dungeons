@@ -238,3 +238,6 @@ Correções de regressões de vídeo. Ver [ARQUITETURA.md](../ARQUITETURA.md#la�
   na resolução atual, e o "+" de Settings para no teto.
 - **Portal anima no tick** (`2b4bdca`): girava mais rápido a 240 FPS.
 - **Gráfico de tempo de quadro no F3** (`663a0db`).
+- **VSync ignorado detectado em 20 quadros** (`b6b8ae9`), e não em um segundo:
+  ao abrir o jogo, no F11 e ao ligar o VSync, o primeiro segundo rodava solto a
+  400+ FPS. Em Settings, limites acima da taxa do monitor vêm marcados com "!".

@@ -303,7 +303,7 @@ Um componente só, `menus/Configuracoes.java`, com duas portas:
   de Status (tecla E), e não aqui.
 - **Abas de configuração:** as mesmas linhas nos dois acessos, com stepper
   `−/+`, slider, ciclo e toggle (`OptionRow`). Resolução e tela cheia esperam o
-  Apply, que recria a janela; o resto se aplica na hora.
+  Apply, que só redimensiona a janela (ver [Janela, resolução e DPI](#janela-resolução-e-dpi)); o resto se aplica na hora.
 - **Rodapé por aba:** na Run, `Enter Select`; nas de configuração,
   `Left/Right Adjust`. As duas mostram `Q/E Tabs` e o `Esc` (Back ou Resume).
 - **Por que assim:** o Forza Horizon e o RDR2 juntam partida e configurações em
@@ -589,7 +589,8 @@ Registrados para não se perderem. Revistos em 2026-10-21.
   flag, mas ela dormia num `wait` que ninguém mais acordava, e cada troca de mapa
   deixava uma presa para trás. Agora roda no `Game.tick`.
 - `resetWindow()` (F11, troca de resolução) recriava a janela na thread do
-  `Engine`, fora da EDT. Agora passa pela EDT com `invokeAndWait`.
+  `Engine`, fora da EDT. Passou pela EDT com `invokeAndWait` e, em 2026-10-22,
+  deixou de existir: `Window.aplicarVideo` muda a mesma janela, sem recriá-la.
 - O `Waves` abria uma thread por leva de inimigos no modo por ondas; o modo saiu.
 - O `Game.tick` contava um segundo a cada 61 ticks.
 - O save da corrida sem fim não guardava o relógio, e a retomada com o upgrade
