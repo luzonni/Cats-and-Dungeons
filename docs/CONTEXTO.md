@@ -51,7 +51,7 @@ um ano parado. Sem engine: tudo em Java puro.
 `Conquistas`): `-Dcd.bench=true` pula os menus e entra numa corrida no espaço de
 save 0, que não grava nada. Com ele: `-Dcd.gato=0|1|2` (Muffin, Azrael, Finn),
 `-Dcd.minuto=N`, `-Dcd.roleta`, `-Dcd.fim`, `-Dcd.nivel`, `-Dcd.rei=1..4`,
-`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`. `-Dcd.perf=true` liga o
+`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`, `-Dcd.buffs` (um nível de cada buff). `-Dcd.perf=true` liga o
 medidor de quadros. O `build.gradle.kts` só repassa `-Pvitrine` ao `run`; **como
 o time passa os `-Dcd.*` (IDE, `java -jar`?) está a confirmar**.
 

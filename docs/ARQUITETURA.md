@@ -482,6 +482,12 @@ cartas e upgrades aparece entre parênteses ("9 (+2)"). As linhas recebem foco
 pelas setas, pelo D-pad e pelo mouse, e uma faixa no pé do painel explica a linha
 focada. E, Esc e B fecham.
 
+**Cada coluna rola.** A coluna dos buffs passa do que cabe no meio da corrida (14
+linhas em 720p), e antes o resto virava um "+N more" que não se abria. Agora o
+foco das setas e do D-pad leva a rolagem junto, a roda do mouse rola a coluna sob
+o cursor, e os avisos "N more above / below" dizem o que está fora da vista. Para
+conferir com a coluna cheia: `-Dcd.bench=true -Dcd.buffs=true`.
+
 **O inventário está desativado, não removido.** A tela de inventário e a ficha
 antiga de sprite (`interfaces/shared/Status`) deixaram de ser abas da `Inter`
 (ver `Game`). Os dados do `Inventory` continuam em uso: a arma da mão, a hotbar

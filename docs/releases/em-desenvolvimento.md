@@ -302,3 +302,11 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
 - **Status fora da arena não derruba mais o jogo** (`ac7b298`). Abrir o Status (E)
   na sala do começo fechava o jogo: o bloco Run pedia a wave de uma arena que não
   existe. Agora a linha de abates só aparece dentro da arena.
+- **Seleção de gato mais leve** (`ffb9ca2`). A tela refazia a medida do texto e a
+  cópia do sprite a cada quadro. Agora guarda as duas, e o `FontHandler` guarda as
+  fontes derivadas para todas as telas. Em 1080p sem VSync, o 1% mais lento foi de
+  123–145 fps para 450–500 fps e o pior quadro de 12 ms para 4 ms.
+- **Status rola para mostrar todos os buffs** (`84c446e`). A coluna que não cabia
+  terminava em "+N more". Agora cada coluna rola pelas setas, pelo D-pad e pela
+  roda do mouse, com avisos do que há acima e abaixo. Para testar:
+  `-Dcd.buffs` (`7c97ff3`) dá um nível de cada buff na bancada.
