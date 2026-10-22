@@ -151,6 +151,22 @@ public enum Elemento {
      * do que o gato esteja empunhando — que e o mesmo raciocinio da cor e do tipo de
      * dano, que tambem moram neste enum.
      */
+    /**
+     * O som de ESCOLHER este elemento: o sino da escolha com o timbre do elemento
+     * por baixo (ver tools/GenSonsDaEscolha.java). Diferente do som do golpe, que
+     * toca o tempo todo na corrida; este toca uma vez, quando a corrida muda.
+     */
+    public com.retronova.engine.sound.Sounds somDaEscolha() {
+        return switch (this) {
+            case FOGO -> com.retronova.engine.sound.Sounds.EscolhaFogo;
+            case GELO -> com.retronova.engine.sound.Sounds.EscolhaGelo;
+            case AGUA -> com.retronova.engine.sound.Sounds.EscolhaAgua;
+            case TERRA -> com.retronova.engine.sound.Sounds.EscolhaTerra;
+            case AR -> com.retronova.engine.sound.Sounds.EscolhaAr;
+            default -> null;
+        };
+    }
+
     public com.retronova.engine.sound.Sounds som() {
         return switch (this) {
             case NENHUM -> null;

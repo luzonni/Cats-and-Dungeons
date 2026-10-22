@@ -58,6 +58,22 @@ public final class MaoDeCartas {
     public record Carta(String rotulo, Color cor, Icone icone, String nome, String efeito) {
     }
 
+    /**
+     * O que uma variante de destaque desenha em volta da carta, sem trocar a carta.
+     *
+     * É o que separa uma escolha rara (o elemento) de uma comum (o buff) sem criar
+     * um segundo componente de carta: a carta é a mesma, e o enfeite põe por trás
+     * dela a aura e as partículas e, por cima, a moldura especial. Os dois recebem a
+     * caixa da carta já com a entrada, o realce e o voo aplicados.
+     */
+    public interface Enfeite {
+        /** Por trás da carta: aura, partículas. {@code realce} vai de 0 a 1 com o foco. */
+        void atras(Graphics2D g, int indice, Rectangle carta, float realce, int s);
+
+        /** Por cima da carta: moldura de destaque. */
+        void frente(Graphics2D g, int indice, Rectangle carta, float realce, int s);
+    }
+
     // ----------------------------------------------------------- ajuste fino
 
     /** Ticks até as cartas aceitarem escolha (a entrada vira cada uma 5 ticks depois da anterior). */
@@ -80,9 +96,102 @@ public final class MaoDeCartas {
     private int escolhido = -1;
     private int fechando;
 
+    // O ritmo desta mão. Os padrões são os da carta de buff; a escolha de elemento
+    // troca todos (ver EscolhaDeElemento).
+    private int atrasoPorCarta = 5, duracaoDaVirada = 12, subida = 0;
+    private int entrada = ENTRADA, fechar = FECHAR;
+    private int vaoEntreCartas = VAO;
+    private Enfeite enfeite;
+    private java.util.function.IntConsumer somDoFoco = i -> Sound.play(Sounds.Hover);
+    private java.util.function.IntConsumer somDaEscolha = i -> Sound.play(Sounds.Conquista);
+    /** Para onde a escolhida voa ao fechar, ou null para ela ficar no lugar. */
+    private java.awt.Point destinoDoVoo;
+    /** A partir de que tick do fechamento a escolhida começa a voar. */
+    private int inicioDoVoo;
+
     public MaoDeCartas(List<Carta> cartas) {
         trocar(cartas);
         tempo = 0;
+    }
+
+    /**
+     * Uma entrada própria: cada carta espera {@code atrasoPorCarta} ticks depois
+     * da anterior, vira em {@code duracaoDaVirada} e sobe {@code subida} pixels
+     * nativos desde baixo. A mão aceita escolha quando a última terminou.
+     */
+    public MaoDeCartas comEntrada(int atrasoPorCarta, int duracaoDaVirada, int subida) {
+        this.atrasoPorCarta = atrasoPorCarta;
+        this.duracaoDaVirada = duracaoDaVirada;
+        this.subida = subida;
+        this.entrada = atrasoPorCarta * Math.max(0, cartas.size() - 1) + duracaoDaVirada + 2;
+        return this;
+    }
+
+    /** Ticks entre a escolha e o fim; com um destino, a escolhida voa até ele a partir de {@code inicioDoVoo}. */
+    public MaoDeCartas comFechamento(int ticks, java.awt.Point destino, int inicioDoVoo) {
+        this.fechar = ticks;
+        this.destinoDoVoo = destino;
+        this.inicioDoVoo = inicioDoVoo;
+        return this;
+    }
+
+    /** Vão entre as cartas, em pixels nativos: um enfeite largo pede mais. */
+    public MaoDeCartas comVao(int vao) {
+        this.vaoEntreCartas = vao;
+        return this;
+    }
+
+    public MaoDeCartas comEnfeite(Enfeite enfeite) {
+        this.enfeite = enfeite;
+        return this;
+    }
+
+    /** O que toca ao focar uma carta e ao escolher, por índice da carta. */
+    public MaoDeCartas comSons(java.util.function.IntConsumer aoFocar, java.util.function.IntConsumer aoEscolher) {
+        this.somDoFoco = aoFocar;
+        this.somDaEscolha = aoEscolher;
+        return this;
+    }
+
+    /**
+     * Termina a entrada agora, com as cartas no lugar, sem escolher nada. Para
+     * quem já viu a cerimônia e quer ir direto à escolha.
+     */
+    public void pularEntrada() {
+        tempo = Math.max(tempo, entrada);
+    }
+
+    /** As cartas ainda estão entrando. */
+    public boolean entrando() {
+        return escolhido < 0 && tempo < entrada;
+    }
+
+    /** O realce da carta, de 0 a 1, entre ticks. */
+    public float realce(int i) {
+        return i >= 0 && i < realces.size() ? realces.get(i).noQuadro() : 0f;
+    }
+
+    /** A carta em foco, ou -1. */
+    public int foco() {
+        return foco;
+    }
+
+    /** A carta escolhida, ou -1. */
+    public int escolhida() {
+        return escolhido;
+    }
+
+    /** Ticks desde a escolha, com a fração do quadro. */
+    public double fechamento() {
+        return fechando + Engine.alpha();
+    }
+
+    /** Onde o centro da carta está agora, com a subida da entrada e o voo. */
+    public java.awt.geom.Point2D.Double centroNaTela(int i) {
+        Rectangle r = caixas.get(i);
+        double[] voo = voo(i);
+        return new java.awt.geom.Point2D.Double(r.getCenterX() + voo[0],
+                r.getCenterY() + deslocamentoDaEntrada(i, quadro()) + voo[1]);
     }
 
     /** Uma mão nova (o reroll): as cartas viram de novo, a partir do meio da entrada. */
@@ -94,7 +203,7 @@ public final class MaoDeCartas {
             realces.add(new Realce.Estado());
         }
         caixas.clear();
-        tempo = ENTRADA / 2;
+        tempo = entrada / 2;
         foco = Math.min(foco, cartas.size() - 1);
     }
 
@@ -109,7 +218,7 @@ public final class MaoDeCartas {
 
     /** Centraliza a fileira na horizontal, com o topo das cartas em y. */
     public void posicionar(int y, int s) {
-        int cw = LARGURA * s, ch = ALTURA * s, vao = VAO * s;
+        int cw = LARGURA * s, ch = ALTURA * s, vao = vaoEntreCartas * s;
         int total = cartas.size() * cw + (cartas.size() - 1) * vao;
         int x = Engine.window.largura() / 2 - total / 2;
         caixas.clear();
@@ -128,12 +237,12 @@ public final class MaoDeCartas {
 
     /** Já entrou e ainda não escolheu: o que estiver em volta da mão também aceita entrada. */
     public boolean pronta() {
-        return escolhido < 0 && tempo >= ENTRADA;
+        return escolhido < 0 && tempo >= entrada;
     }
 
     /** A escolha terminou de animar: quem usa a mão pode fechar a tela. */
     public boolean fechou() {
-        return escolhido >= 0 && fechando >= FECHAR;
+        return escolhido >= 0 && fechando >= fechar;
     }
 
     /** O quanto a tela ainda está visível, de 1 a 0 na segunda metade do fechamento. */
@@ -141,7 +250,7 @@ public final class MaoDeCartas {
         if (escolhido < 0) {
             return 1f;
         }
-        return Math.clamp(1f - (fechando + Engine.alpha() - FECHAR * 0.5f) / (FECHAR * 0.5f), 0f, 1f);
+        return Math.clamp(1f - (fechando + Engine.alpha() - fechar * 0.5f) / (fechar * 0.5f), 0f, 1f);
     }
 
     /** Ticks desde que a mão abriu, com a fração do quadro, para animações de quem a usa. */
@@ -157,19 +266,19 @@ public final class MaoDeCartas {
     public int tick() {
         tempo++;
         for (int i = 0; i < realces.size(); i++) {
-            realces.get(i).tick(i == foco && escolhido < 0 && tempo >= ENTRADA);
+            realces.get(i).tick(i == foco && escolhido < 0 && tempo >= entrada);
         }
         if (escolhido >= 0) {
             fechando++;
             return -1;
         }
-        if (tempo < ENTRADA) {
+        if (tempo < entrada) {
             return -1;
         }
         for (int i = 0; i < caixas.size(); i++) {
             if (Entrada.porMouse() && caixas.get(i).contains(Mouse.getX(), Mouse.getY())) {
                 if (foco != i) {
-                    Sound.play(Sounds.Hover);
+                    somDoFoco.accept(i);
                 }
                 foco = i;
                 Engine.window.pointing();
@@ -185,10 +294,10 @@ public final class MaoDeCartas {
         }
         if (KeyBoard.KeyPressed("Right") || KeyBoard.KeyPressed("D")) {
             foco = foco < 0 ? 0 : (foco + 1) % cartas.size();
-            Sound.play(Sounds.Hover);
+            somDoFoco.accept(foco);
         } else if (KeyBoard.KeyPressed("Left") || KeyBoard.KeyPressed("A")) {
             foco = foco <= 0 ? cartas.size() - 1 : foco - 1;
-            Sound.play(Sounds.Hover);
+            somDoFoco.accept(foco);
         } else if (KeyBoard.KeyPressed("Enter") && foco >= 0) {
             return escolher(foco);
         }
@@ -196,7 +305,7 @@ public final class MaoDeCartas {
     }
 
     private int escolher(int i) {
-        Sound.play(Sounds.Conquista);
+        somDaEscolha.accept(i);
         escolhido = i;
         foco = i;
         return i;
@@ -219,18 +328,26 @@ public final class MaoDeCartas {
         Rectangle r = caixas.get(i);
         // Entrada: cada carta vira (escala horizontal de 0 a 1) um pouco depois da
         // anterior, com um passo além do fim e a volta (ease-out-back).
-        double t = Math.clamp((quadro - i * 5) / 12.0, 0, 1);
+        double t = progressoDaEntrada(i, quadro);
         double c1 = 1.5, c3 = c1 + 1;
         double vira = t <= 0 ? 0 : 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
         if (vira <= 0.02) {
             return;
         }
+        double[] voo = voo(i);
+        if (voo[2] <= 0.02) {
+            return;     // chegou: a carta virou o efeito no gato
+        }
         boolean sob = i == foco;
         boolean eleita = i == escolhido;
-        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida));
+        // A escolhida que voa fica inteira até chegar: some no gato, não no caminho.
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
+                eleita && destinoDoVoo != null ? 1f : saida));
         if (escolhido >= 0 && !eleita) {
             float apaga = (float) Math.min(1, (fechando + Engine.alpha()) / 6.0);
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida * (1 - apaga * 0.85f)));
+            // Com voo as outras somem de vez (a tela é da escolhida); sem, ficam apagadas.
+            float resto = destinoDoVoo != null ? 1f : 0.85f;
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida * (1 - apaga * resto)));
         }
         // O HOVER E O FOCO SÃO O PADRÃO DA TELA INICIAL (ver Realce): a carta cresce
         // a partir do centro, ganha um brilho suave por trás e clareia, em rampa.
@@ -239,13 +356,17 @@ public final class MaoDeCartas {
         float h = eleita ? 1f : realces.get(i).noQuadro();
         double realce = 1 + h * (2.0 * Realce.CRESCIMENTO) / LARGURA;
         double cresce = eleita ? 1 + 0.08 * Math.sin(Math.min(1, fechando / 8.0) * Math.PI) : realce;
+        cresce *= voo[2];
         AffineTransform antes = g.getTransform();
-        g.translate(r.getCenterX(), r.getCenterY());
+        g.translate(r.getCenterX() + voo[0], r.getCenterY() + deslocamentoDaEntrada(i, quadro) + voo[1]);
         g.scale(vira * cresce, cresce);
         g.translate(-r.getCenterX(), -r.getCenterY());
 
         int x = r.x, y = r.y, cw = r.width, ch = r.height;
         Color cor = c.cor();
+        if (enfeite != null) {
+            enfeite.atras(g, i, r, h, s);
+        }
         Realce.brilhoArredondado(g, new Rectangle(x - 2 * s, y - 2 * s, cw + 4 * s, ch + 4 * s), h, s, cor, 12 * s);
         g.setColor(new Color(0, 0, 0, 90));
         g.fillRoundRect(x + 2 * s, y + 4 * s, cw, ch, 10 * s, 10 * s);
@@ -298,6 +419,9 @@ public final class MaoDeCartas {
             g.setColor(new Color(255, 255, 255, (int) (Realce.CLAREAMENTO * h)));
             g.fillRoundRect(x, y, cw, ch, 10 * s, 10 * s);
         }
+        if (enfeite != null) {
+            enfeite.frente(g, i, r, h, s);
+        }
         if (eleita && fechando < 8) {
             g.setColor(new Color(255, 255, 255, (int) (200 * (1 - fechando / 8.0))));
             g.fillRoundRect(x, y, cw, ch, 10 * s, 10 * s);
@@ -309,6 +433,39 @@ public final class MaoDeCartas {
             int w = (int) (cw * realce), hh = (int) (ch * realce);
             Realce.marcadorDeFoco(g, new Rectangle(cx - w / 2, cy - hh / 2, w, hh), s);
         }
+    }
+
+    /** De 0 a 1: quanto da virada da carta já aconteceu. */
+    private double progressoDaEntrada(int i, double quadro) {
+        return Math.clamp((quadro - i * atrasoPorCarta) / (double) duracaoDaVirada, 0, 1);
+    }
+
+    /** Quanto a carta ainda está abaixo do lugar dela, em pixels, ao subir na entrada. */
+    private double deslocamentoDaEntrada(int i, double quadro) {
+        if (subida == 0) {
+            return 0;
+        }
+        double t = progressoDaEntrada(i, quadro);
+        double s = escala();
+        return (1 - (1 - Math.pow(1 - t, 3))) * subida * s;   // ease-out cúbico
+    }
+
+    /**
+     * O voo da escolhida até o destino: {dx, dy, escala}. As outras e a mão sem
+     * destino ficam {0, 0, 1}.
+     *
+     * O VOO ACELERA (ease-in) E ENCOLHE: a carta sai devagar do lugar, para o olho
+     * acompanhar, e chega rápida e pequena no gato — o elemento "entra" nele.
+     */
+    private double[] voo(int i) {
+        if (destinoDoVoo == null || i != escolhido || caixas.isEmpty()) {
+            return new double[]{0, 0, 1};
+        }
+        double t = Math.clamp((fechando + Engine.alpha() - inicioDoVoo) / Math.max(1.0, fechar - inicioDoVoo), 0, 1);
+        double e = t * t * t;
+        Rectangle r = caixas.get(i);
+        return new double[]{(destinoDoVoo.x - r.getCenterX()) * e, (destinoDoVoo.y - r.getCenterY()) * e,
+                1 - 0.9 * e};
     }
 
     // ----------------------------------------------------------- texto

@@ -38,7 +38,13 @@ public enum Musics {
      * especial e ela nao tocar — quando entra, o jogador ja sabe o que vem.
      */
     FightBoss("fight_boss"),
-    GameOver("game_over");
+    GameOver("game_over"),
+    /**
+     * A trilha da escolha de elemento: suspensa, nem briga nem calma, e só dela.
+     * Gerada por tools/GenSonsDaEscolha.java, em WAV (sem codificador Vorbis no
+     * gerador); entra e sai por desvanecimento, por cima da trilha da arena.
+     */
+    EscolhaDeElemento("escolha_elemento.wav");
 
     /** As trilhas de arena comum, na ordem do menu. O indice vai no config.json. */
     public static final Musics[] COMBATE = {Fight, FightSpooky, Fight8Bit, FightRpg};

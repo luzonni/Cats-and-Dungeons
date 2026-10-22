@@ -112,6 +112,8 @@ public class GenMixagem {
                 "crack", "portal", "earth", "cat", "cat_muffin", "cat_azrael",
                 "cat_finn");
         camada(-20, "damage_cat", "damage_muffin", "damage_azrael", "damage_finn",
+                "elemento_revelacao", "elemento_fogo", "elemento_gelo", "elemento_agua",
+                "elemento_terra", "elemento_ar",
                 "explosion", "achievement");
 
         for (String faixa : new String[] {"geral", "menu_principal", "dungeon_hall",

@@ -220,6 +220,28 @@ emenda, o que importa numa faixa de dois minutos que repete.
 Todas foram reencodadas em Vorbis a 128 kbps, 44,1 kHz, só para casar com o
 formato das outras.
 
+### Áudio próprio da escolha de elemento
+
+Os sons da escolha de elemento **não vêm de fora**: são sintetizados por
+`tools/GenSonsDaEscolha.java` (senoides e ruído), e são do projeto como o resto
+do código. Não há licença a conferir.
+
+| Arquivo | Uso |
+|---|---|
+| `audio/elemento_revelacao.wav` | Stinger da entrada da cerimônia |
+| `audio/escolha_elemento.wav` | Trilha enquanto se escolhe (loop de 16 s, WAV) |
+| `audio/elemento_fogo.wav`, `_gelo`, `_agua`, `_terra`, `_ar` | Confirmação de cada elemento |
+
+São **provisórios no timbre**: cumprem o papel e casam com o chiptune das trilhas,
+mas uma versão feita por quem faz som ficaria melhor. Para trocar, basta
+substituir os arquivos com os mesmos nomes, na mesma régua de loudness.
+
+O som do **foco** de cada carta é o `hit_*` do elemento, o mesmo do golpe. Ele é
+recortado (por `tools/GenSonsElementais.java`) dos WAV elementais herdados do
+projeto original (`fire`, `ice`, `water`, `wind`, `earth`, `thunder`), cuja
+origem e cujos direitos estão **a confirmar**, como as outras faixas herdadas
+(ver a pendência abaixo).
+
 ## Ferramentas de build
 
 | Ferramenta | Licença |
