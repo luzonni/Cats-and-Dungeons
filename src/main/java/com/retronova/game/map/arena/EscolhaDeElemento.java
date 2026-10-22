@@ -105,6 +105,13 @@ public class EscolhaDeElemento implements Activity {
     public static final int VIRADA = 16;
     /** Quanto cada carta sobe ao entrar, em pixels nativos (as de buff não sobem). */
     public static final int SUBIDA = 40;
+    /**
+     * As cartas abaixo do centro e o título acima delas, em pixels nativos: a
+     * folga entre o subtítulo e o topo das cartas é a do brilho e dos cantos da
+     * carta em foco. A escala da mão (MaoDeCartas.escala) garante 225 de altura,
+     * e 30 + 18 do título acima de 128 + 10 ainda cabe neles.
+     */
+    public static final int DESCIDA_DAS_CARTAS = 10, TITULO_ACIMA_DAS_CARTAS = 30;
     /** Opacidade do véu no centro da tela (0-255): mais escuro que o do level up. */
     public static final int VEU = 175;
     /** Opacidade da vinheta nas bordas, somada ao véu (0-255). */
@@ -230,7 +237,7 @@ public class EscolhaDeElemento implements Activity {
     private void posicionar() {
         int s = MaoDeCartas.escala();
         int ch = MaoDeCartas.ALTURA * s;
-        cartas.posicionar(Engine.window.altura() / 2 - ch / 2 + 6 * s, s);
+        cartas.posicionar(Engine.window.altura() / 2 - ch / 2 + DESCIDA_DAS_CARTAS * s, s);
     }
 
     // ------------------------------------------------------------------ tick
@@ -680,7 +687,7 @@ public class EscolhaDeElemento implements Activity {
         Font titulo = FontHandler.font(FontHandler.Game, 18f * s);
         String texto = "CHOOSE YOUR ELEMENT";
         int tw = FontHandler.getWidth(texto, titulo);
-        int ty = cartas.caixa(0).y - 22 * s;
+        int ty = cartas.caixa(0).y - TITULO_ACIMA_DAS_CARTAS * s;
         Graphics2D g2 = (Graphics2D) g.create();
         float base = g.getComposite() instanceof AlphaComposite a ? a.getAlpha() : 1f;
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) p * base));
@@ -697,9 +704,12 @@ public class EscolhaDeElemento implements Activity {
             g2.drawString(texto, w / 2 - tw / 2 + d * s / 2, ty + d * s / 2);
         }
         TextFx.draw(g2, texto, titulo, w / 2 - tw / 2, ty, Palette.TEXT, s);
-        Font sub = FontHandler.font(FontHandler.Septem, 6f * s);
+        // O SUBTÍTULO NA FONTE E NO TOM DOS TEXTOS DAS CARTAS, com folga até elas. Em
+        // Septem 6 e ACCENT, colado ao topo, o brilho e os cantos da carta em foco
+        // passavam por cima e ele não se lia.
+        Font sub = FontHandler.font(FontHandler.Game, 7f * s);
         String aviso = "It shapes your whole run";
-        TextFx.draw(g2, aviso, sub, w / 2 - FontHandler.getWidth(aviso, sub) / 2, ty + 12 * s, Palette.ACCENT, s);
+        TextFx.draw(g2, aviso, sub, w / 2 - FontHandler.getWidth(aviso, sub) / 2, ty + 13 * s, Palette.LIGHT, s);
         g2.dispose();
     }
 

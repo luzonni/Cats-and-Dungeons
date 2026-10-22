@@ -51,7 +51,7 @@ um ano parado. Sem engine: tudo em Java puro.
 `Conquistas`): `-Dcd.bench=true` pula os menus e entra numa corrida no espaço de
 save 0, que não grava nada. Com ele: `-Dcd.gato=0|1|2` (Muffin, Azrael, Finn),
 `-Dcd.minuto=N`, `-Dcd.bau` (abre um baú; `-Dcd.roleta` é apelido), `-Dcd.fim`, `-Dcd.nivel`, `-Dcd.rei=1..4`,
-`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`. `-Dcd.perf=true` liga o
+`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`, `-Dcd.buffs` (um nível de cada buff). `-Dcd.perf=true` liga o
 medidor de quadros. O `build.gradle.kts` só repassa `-Pvitrine` ao `run`; **como
 o time passa os `-Dcd.*` (IDE, `java -jar`?) está a confirmar**.
 
@@ -155,7 +155,8 @@ docs/                          esta pasta
 | Configurações | `engine/Configs.java` (`config.json`, gravação atômica) |
 | Laço do jogo, limitador de quadros, VSync | `engine/Engine.java` (`run`, `esperarAte`, `periodoDoQuadro`), `engine/RelogioDoSistema.java` |
 | Janela, resolução, tela cheia, escala da imagem | `engine/Window.java` (`aplicarVideo`, `resolucoesDoMonitor`), `Engine.desenharEscalado` |
-| Teto do HUD | `game/hud/LayoutDoHud.java` |
+| Escala da interface (HUD, menus, margem) | `engine/EscalaDaInterface.java`, preferências em `Configs` |
+| Layout do HUD por âncoras e teto | `game/hud/LayoutDoHud.java` (F7 desenha as caixas) |
 | Diagnóstico de vídeo | `engine/Video.java` (`-Dcd.video`), gráfico do F3 em `engine/Debugging.java` |
 
 ## 5. Convenções
@@ -171,7 +172,8 @@ docs/                          esta pasta
 - **Enums gravados por ordinal só crescem no fim**: `ItemIDs`, `EntityIDs`,
   `ArmaExtra`, `Passiva`, `Evolucao`. Inserir no meio quebra mapas e saves.
 - **Escala sempre inteira** para pixel art (`Configs.GameScale`, `UiScale`).
-  Resolução lógica de 320×180.
+  A interface escala a partir da resolução de referência 640×360
+  (`EscalaDaInterface`): `arredonda(fator × Interface% × camada%)`.
 - Assets de UI e boa parte dos sprites são **gerados** por `tools/Gen*.java` e
   versionados; a CI confere os de UI.
 - Commits em inglês no formato Conventional Commits: `tipo(escopo): resumo`,
@@ -282,12 +284,14 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Transição das telas de menu | `TelaDeMenu` (`TRANSICAO = 9` ticks, `SUBIDA = 6` px) |
 | Hover e foco: velocidade, crescimento, brilho, setas | `Realce` (`VELOCIDADE`, `CRESCIMENTO`, `CAMADAS`, `ALFA`, `CLAREAMENTO`, `SETA`, `AFASTAMENTO`, `RESPIRO`, `PERIODO_DO_RESPIRO`) |
 | Cartas: entrada, fechamento, tamanho, vão | `MaoDeCartas` (`ENTRADA = 26`, `FECHAR = 18`, `LARGURA`, `ALTURA`, `VAO`); o hover vem do `Realce` |
-| Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |
+| Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `DESCIDA_DAS_CARTAS = 10`, `TITULO_ACIMA_DAS_CARTAS = 30`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |
 | Abertura do baú | `AberturaDoBau` (`ENTRADA = 12`, `TREMOR = 18`, `TAMPA = 9`, `SUBIDA = 16`, `ATE_COLETAR = 8` ticks; `PREVIA_POR_ICONE = 9`, `PREVIA_VISIVEIS = 7`, `ZOOM_DO_BAU = 5`, `TREMOR_MAXIMO = 2`, `FAISCAS = 46`, `VIDA_DA_FAISCA = 34`, `CLARAO = 8`, `FORCA_DO_CLARAO = 110`, `VEU = 228`); níveis do áudio em `GenSonsDoBau` |
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
 | Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
+| Fim de corrida: painéis, loja e avisos | `GameOver` (`PAINEL_W = 150`, `PAINEL_H = 154`, `LOJA_TOPO = 33`, `LINHA_H = 18`, `LINHA_PASSO = 21`, `CABECALHO = 13`, `FUNDO` preto, `AVISO_FICA = 240` ticks) |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
-| Teto do HUD: medidas das peças e fração da altura | `LayoutDoHud` (`BLOCO_ESQUERDO = 136`, `RELOGIO = 80`, `VAO = 6`, `FAIXA_DE_CIMA = 46`, `FAIXA_DE_BAIXO = 38`, `FRACAO_DA_ALTURA = 0.5`) |
+| Escala da interface | `EscalaDaInterface` (`REF_LARGURA × REF_ALTURA = 640×360`, `MENUS_POR_REFERENCIA = 1.125`, `MENU_MINIMO_LARGURA × MENU_MINIMO_ALTURA = 384×224`, `TAMANHO_MINIMO = -2`, `TAMANHO_MAXIMO = 3`, `MARGEM_PADRAO = 7`, `MARGEM_MAXIMA = 16`, `ESCALA_LEGIVEL = 2`) |
+| Peças e teto do HUD | `LayoutDoHud` (`Peca`: âncora, deslocamento e tamanho de cada peça; `VAO = 4`, `FRACAO_DA_ALTURA = 0.5`) |
 | Laço: recuperação de ticks, superfície perdida | `Engine` (`MAX_CATCHUP = 5`, `QUADROS_ATE_RECRIAR = 60`) |
 | Resoluções oferecidas | `Window.COMUNS` (mais a do monitor) |
 

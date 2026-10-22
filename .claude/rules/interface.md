@@ -56,6 +56,8 @@ paths:
 ## HUD
 
 - HUD durante a corrida não cobre o centro da tela e não bloqueia a entrada.
-- A escala do HUD é `Configs.HudScale()`, já limitada ao que cabe
-  (`LayoutDoHud`). Peça nova no topo ou na base do HUD entra nas medidas de
-  `LayoutDoHud` (e no `LayoutDoHudTest`), senão volta a se sobrepor às outras.
+- Toda escala de interface sai de `EscalaDaInterface` (referência 640×360, padrão pela resolução e
+  passos inteiros): use `Configs.HudScale()`, `Configs.UiScale()` e `Configs.Margin()`,
+  nunca um número de pixels solto.
+- Peça do HUD tem âncora em `LayoutDoHud.Peca` e pega a posição de `LayoutDoHud.caixa`;
+  peça nova entra lá (o teto e o `LayoutDoHudTest` passam a cobri-la). F7 mostra as caixas.

@@ -31,8 +31,10 @@ public class WaveDisplay {
     }
 
     public void render(Graphics2D g) {
-        int x = this.position.x - clock.largura()/2;
-        int y = this.position.y;
+        // A posição vem da âncora da peça (ver LayoutDoHud).
+        java.awt.Rectangle relogio = LayoutDoHud.caixa(LayoutDoHud.Peca.RELOGIO);
+        int x = relogio.x;
+        int y = relogio.y;
         if(Game.getMap() instanceof Arena) {
             renderClock(x, y, g);
             renderTimer(x, y, g);

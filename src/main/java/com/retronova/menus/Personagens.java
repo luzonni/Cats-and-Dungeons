@@ -189,6 +189,34 @@ public class Personagens extends TelaDeMenu {
     private Rectangle arte = new Rectangle();
 
     /**
+     * A MEDIDA DO BLOCO, GUARDADA. Medir é derivar seis fontes, quebrar a história
+     * palavra por palavra e formatar os atributos dos três gatos, e o encaixe mede
+     * até seis vezes: feito a cada quadro, era a maior parte do custo desta tela e
+     * o lixo que puxava uma coleta a cada dois segundos. Só muda com o gato, a
+     * escala, a largura do bloco ou o espaço livre, que formam a chave.
+     */
+    private Medida medidaGuardada;
+    private long chaveDaMedida = Long.MIN_VALUE;
+
+    /**
+     * O sprite na grade nativa, por quadro da animação. Refeito a cada quadro, era
+     * uma imagem nova copiada pixel a pixel e, por ser nova, nunca chegava à placa
+     * de vídeo: subia de novo a cada desenho. Os quadros são poucos e fixos.
+     */
+    private final java.util.Map<BufferedImage, BufferedImage> nativos = new java.util.IdentityHashMap<>();
+
+    // Tons fixos do bloco e da fileira, criados uma vez e não a cada quadro.
+    private static final Color CHAPA = new Color(9, 13, 20, 170);
+    private static final Color APAGADO = new Color(9, 13, 20, 130), APAGADO_SOB_O_MOUSE = new Color(9, 13, 20, 55);
+    private static final Color FUNDO_DA_MINIATURA = new Color(9, 13, 20, 200);
+    private static final Color FIO_CLARO = new Color(255, 255, 255, 60);
+    private static final Color MOLDURA_FUNDO = new Color(0, 0, 0, 110), MOLDURA_FIO = new Color(255, 255, 255, 40);
+    private static final Color SOMBRA = new Color(0, 0, 0, 90);
+    private static final Color TRILHO_FUNDO = new Color(0, 0, 0, 120), TRILHO_FIO = new Color(255, 255, 255, 45);
+    private static final Color ROTULO = new Color(255, 255, 255, 160), PAPEL = new Color(255, 255, 255, 150);
+    private static final Color HABILIDADE = new Color(0xB57CF0);
+
+    /**
      * Em que espaco de save a corrida que esta sendo montada vai morar.
      *
      * Vem da tela de saves, e nao e escolhido aqui: escolher o gato e escolher onde
@@ -574,7 +602,7 @@ public class Personagens extends TelaDeMenu {
     private record Medida(Font nome, Font stat, Font papel, Font lore, Font arma, Font nota,
                           List<Atributo> atributos, List<String> lores, int lado, int folga,
                           int entreLinhas, int larguraRotulo, int larguraValor,
-                          int altura) { }
+                          boolean habilidadeEmBaixo, int altura) { }
 
     /**
      * Um atributo da ficha: o rótulo, o número e o quanto ele enche o trilho.
@@ -653,15 +681,21 @@ public class Personagens extends TelaDeMenu {
             }
         }
 
+        // A HABILIDADE DESCE PARA A LINHA DE BAIXO quando não cabe depois do papel:
+        // "SORCERER  +20% WEAPON AREA, ARCANE BURST SKILL" passava da chapa.
+        String habilidade = com.retronova.game.objects.entities.Bonus.habilidade(p.getName());
+        boolean emBaixo = !habilidade.isEmpty()
+                && FontHandler.getWidth(p.getPapel().toUpperCase() + "  " + habilidade.toUpperCase(), papel) > util;
+
         int altura = folga
                 + FontHandler.getHeight("Ay", nome)
                 + entre + atributos.size() * entre
-                + entre
+                + entre + (emBaixo ? entre : 0)
                 + entre + lores.size() * entre
                 + entre + Math.max(lado, FontHandler.getHeight("Ay", arma) + entre)
                 + folga;
         return new Medida(nome, stat, papel, lore, arma, nota, atributos, lores, lado, folga,
-                entre, larguraRotulo, larguraValor, altura);
+                entre, larguraRotulo, larguraValor, emBaixo, altura);
     }
 
     /**
@@ -692,18 +726,25 @@ public class Personagens extends TelaDeMenu {
                 Math.max(30 * s, rodape - topo - 8 * s));
 
         // Encolhe em passos até caber. Cada passo remede, porque mudar a fonte
-        // muda também onde o texto quebra — e portanto o número de linhas.
-        float fator = 1f;
-        Medida m = medir(p, fator);
-        for (int i = 0; i < 5 && m.altura() > disponivel; i++) {
-            fator = Math.max(0.45f, fator * Math.max(0.7f, disponivel / (float) m.altura()));
-            m = medir(p, fator);
+        // muda também onde o texto quebra — e portanto o número de linhas. Só
+        // quando a chave muda (ver medidaGuardada).
+        long chave = ((long) selecionado << 56) ^ ((long) s << 48) ^ ((long) bloco.width << 24) ^ disponivel;
+        if (medidaGuardada == null || chave != chaveDaMedida) {
+            float fator = 1f;
+            Medida m = medir(p, fator);
+            for (int i = 0; i < 5 && m.altura() > disponivel; i++) {
+                fator = Math.max(0.45f, fator * Math.max(0.7f, disponivel / (float) m.altura()));
+                m = medir(p, fator);
+            }
+            medidaGuardada = m;
+            chaveDaMedida = chave;
         }
+        Medida m = medidaGuardada;
 
         bloco.height = Math.min(m.altura(), disponivel);
         bloco.y = topo + Math.max(0, (disponivel - bloco.height) / 2);
 
-        g.setColor(new Color(9, 13, 20, 170));
+        g.setColor(CHAPA);
         g.fillRect(bloco.x, bloco.y, bloco.width, bloco.height);
         g.setColor(new Color(p.getCor()));
         g.fillRect(bloco.x, bloco.y, 2 * s, bloco.height);
@@ -731,12 +772,17 @@ public class Personagens extends TelaDeMenu {
             y += m.entreLinhas();
         }
 
-        texto(g, p.getPapel().toUpperCase(), m.papel(), x, y, new Color(255, 255, 255, 150));
+        texto(g, p.getPapel().toUpperCase(), m.papel(), x, y, PAPEL);
         // A habilidade propria do gato, logo depois do papel (ver Bonus).
         String habilidade = com.retronova.game.objects.entities.Bonus.habilidade(p.getName());
         if (!habilidade.isEmpty()) {
-            int depois = x + FontHandler.getWidth(p.getPapel().toUpperCase() + "  ", m.papel());
-            texto(g, habilidade.toUpperCase(), m.papel(), depois, y, new Color(0xB57CF0));
+            if (m.habilidadeEmBaixo()) {
+                y += m.entreLinhas();
+                texto(g, habilidade.toUpperCase(), m.papel(), x, y, HABILIDADE);
+            } else {
+                int depois = x + FontHandler.getWidth(p.getPapel().toUpperCase() + "  ", m.papel());
+                texto(g, habilidade.toUpperCase(), m.papel(), depois, y, HABILIDADE);
+            }
         }
 
         y += m.entreLinhas() * 2;
@@ -789,7 +835,7 @@ public class Personagens extends TelaDeMenu {
         if (sprite == null) {
             return;
         }
-        BufferedImage nativo = nativo(sprite);
+        BufferedImage nativo = nativos.computeIfAbsent(sprite, Personagens::nativo);
         int larguraNome = FontHandler.getWidth(p.getName().toUpperCase(), m.nome());
         int sobra = bloco.width - m.folga() * 2 - larguraNome - 10 * s;
         int zoom = Math.min(26 * s, sobra) / nativo.getHeight();
@@ -811,9 +857,9 @@ public class Personagens extends TelaDeMenu {
         this.caixaModelo = caixa;
 
         Graphics2D gs = (Graphics2D) g.create();
-        gs.setColor(new Color(0, 0, 0, 110));
+        gs.setColor(MOLDURA_FUNDO);
         gs.fillRect(caixa.x, caixa.y, caixa.width, caixa.height);
-        gs.setColor(new Color(255, 255, 255, 40));
+        gs.setColor(MOLDURA_FIO);
         gs.drawRect(caixa.x, caixa.y, caixa.width - 1, caixa.height - 1);
         // Cantos na cor do gato: fecham a moldura sem virar um quadro pesado.
         gs.setColor(new Color(p.getCor()));
@@ -826,7 +872,7 @@ public class Personagens extends TelaDeMenu {
         // Sombra no chão: sem ela o boneco flutua dentro da moldura.
         gs.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
-        gs.setColor(new Color(0, 0, 0, 90));
+        gs.setColor(SOMBRA);
         gs.fillOval(x + w / 6, y + h - zoom, w - w / 3, zoom * 2);
         gs.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
@@ -846,7 +892,7 @@ public class Personagens extends TelaDeMenu {
      */
     private void desenharAtributo(Graphics2D g, Atributo a, Medida m,
                                   int x, int y, int direita, int s) {
-        texto(g, a.rotulo(), m.stat(), x, y, new Color(255, 255, 255, 160));
+        texto(g, a.rotulo(), m.stat(), x, y, ROTULO);
 
         int xValor = direita - m.larguraValor();
         texto(g, a.valor(), m.stat(), xValor, y, Palette.TEXT);
@@ -860,9 +906,9 @@ public class Personagens extends TelaDeMenu {
         int yTrilho = y - altura - Math.max(1, altura / 3);
 
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setColor(new Color(0, 0, 0, 120));
+        g2.setColor(TRILHO_FUNDO);
         g2.fillRect(xTrilho, yTrilho, largura, altura);
-        g2.setColor(new Color(255, 255, 255, 45));
+        g2.setColor(TRILHO_FIO);
         g2.drawRect(xTrilho, yTrilho, largura - 1, altura - 1);
         int cheio = (int) Math.round(largura * Math.max(0, Math.min(1, a.fracao())));
         g2.setColor(new Color(players[selecionado].getCor()));
@@ -889,10 +935,10 @@ public class Personagens extends TelaDeMenu {
             } else if (sobre) {
                 Realce.brilho(g, r, 1f, s);
             }
-            g.setColor(escolhido ? new Color(players[i].getCor()) : new Color(9, 13, 20, 200));
+            g.setColor(escolhido ? new Color(players[i].getCor()) : FUNDO_DA_MINIATURA);
             g.fillRect(r.x, r.y, r.width, r.height);
             if (escolhido) {
-                g.setColor(new Color(255, 255, 255, 60));
+                g.setColor(FIO_CLARO);
                 g.fillRect(r.x, r.y, r.width, s);
             }
 
@@ -902,7 +948,7 @@ public class Personagens extends TelaDeMenu {
             }
             if (!escolhido) {
                 // Apagado; sob o mouse ele acende pela metade — o "clarear" do realce.
-                g.setColor(new Color(9, 13, 20, sobre ? 55 : 130));
+                g.setColor(sobre ? APAGADO_SOB_O_MOUSE : APAGADO);
                 g.fillRect(r.x, r.y, r.width, r.height);
             }
         }

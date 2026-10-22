@@ -132,6 +132,25 @@ public class Engine implements Runnable {
                     }
                 };
             }
+            // -Dcd.buffs=true da um nivel de cada passiva comum e uma de cada melhoria
+            // da roleta, para ver a tela de Status (E) com a coluna de buffs cheia.
+            if (Boolean.getBoolean("cd.buffs")) {
+                Runnable antes = com.retronova.game.Game.depoisDeUmSegundo;
+                com.retronova.game.Game.depoisDeUmSegundo = () -> {
+                    var gato = com.retronova.game.Game.getPlayer();
+                    for (var p : com.retronova.game.items.Passiva.values()) {
+                        if (!p.exclusiva()) {
+                            gato.getMelhorias().subirPassiva(gato, p);
+                        }
+                    }
+                    for (var m : com.retronova.game.items.Melhoria.values()) {
+                        gato.getMelhorias().aplicar(gato, m, com.retronova.game.items.Raridade.COMUM);
+                    }
+                    if (antes != null) {
+                        antes.run();
+                    }
+                };
+            }
             // -Dcd.habilidade=N da ao gato a habilidade exclusiva dele ja no nivel N
             // (1 a 3), para ver o efeito sem esperar a carta sair no level up.
             Integer habilidade = Integer.getInteger("cd.habilidade");

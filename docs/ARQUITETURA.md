@@ -158,22 +158,77 @@ Hz, janela de 2 s estável):
   taxa e cada criação de `BufferStrategy`. O F3 mostra o FPS com o alvo real e um
   gráfico dos últimos 240 quadros.
 
-### Layout do HUD
+### Escala da interface e layout do HUD
 
-O HUD é desenhado em posições fixas: vida à esquerda, relógio no centro, XP à
-direita, hotbar e Fúria embaixo. **A escala em vigor é a menor entre a escolhida e
-a maior que cabe** (`LayoutDoHud.escalaMaxima`):
+**Um sistema só** (`engine/EscalaDaInterface.java`), no mesmo modelo de
+coordenadas e DPI da correção de resolução. A interface acompanha o tamanho da
+imagem do jogo, em pixels da tela (`uiScale=1`). O DPI do sistema não entra.
 
-- **Largura:** o bloco da vida (136 px de arte), um vão (6) e metade do relógio
-  (80/2) cabem na metade da tela, descontada a margem.
-- **Altura:** a faixa de cima (46) e a de baixo (38) somam no máximo metade da
-  altura, e a outra metade é da arena.
+- **Resolução de referência: 640×360.** É nela que o HUD foi desenhado, em pixels
+  de arte. O fator da tela é `min(largura/640, altura/360)`, pelo lado mais
+  apertado, para nada sair da tela em outra proporção.
+- **Padrão pela resolução, e passos inteiros a partir dele:**
+  - HUD padrão = `arredonda(fator)`, no teto do layout (abaixo);
+  - menus padrão = `arredonda(fator × 1,125)`: 2 em 720p e 3 em 1080p, o tamanho
+    escolhido nos testes (com 1,5, a primeira versão, o padrão era grande demais).
+    O teto é a tela comportar 384×224 pixels de arte, o que o painel de Settings
+    ocupa com título, abas, Resume e rodapé;
+  - escala = padrão + passo, entre o mínimo legível e o teto (`EscalaDaInterface.Faixa`);
+  - margem = `arredonda(fator × margem de referência)`.
+- **Escala inteira.** Fator quebrado borra a pixel art (suavizada) ou deixa pixels
+  de larguras diferentes (vizinho mais próximo); é o modelo do Minecraft (GUI Scale
+  1 a 4 e Auto). As resoluções 16:9 comuns são múltiplas de 640×360 (720p = 2,
+  1080p = 3, 1440p = 4, 4K = 6), e entre elas o padrão ocupa **exatamente a mesma
+  fração** da tela. Fora delas (1366×768, 1600×900), o erro é o de arredondar
+  para o pixel inteiro.
+- **Tamanho mínimo legível:** a partir de 1280×720 nenhuma camada desce de 2, porque
+  as fontes de pixel art têm de 5 a 8 pixels e, em escala 1, ficam ilegíveis.
+- **Preferências (Settings → Interface):** Menu size e HUD size em passos
+  (Smaller, Small, Default, Large, Larger, Largest), um bloco por tamanho que a
+  tela atual comporta; Margin de 0 a 16 pixels de referência (padrão 7) e Reset
+  interface. Passo gravado que a tela não comporta (Largest de 4K aberto em 720p)
+  vale o maior que cabe, sem perder a escolha.
+- **Por que passos, e não por cento:** a primeira versão tinha Interface, Menu e
+  HUD size de 50% a 200%, multiplicados. Com escala inteira, em 1080p os menus têm
+  uns quatro tamanhos reais e a barra oferecia 31 posições: a maioria não mudava
+  nada, o "200%" aparecia cheio com a escala presa no teto, e acima de 100% não
+  fazia sentido com um padrão que já vem da resolução. Os valores antigos (por
+  cento, GUI size, HUD size e Margin em pixels) migram sozinhos.
 
-A conta usa o tamanho da imagem do jogo. Por isso se ajusta sozinha a cada
-resolução ou janela, e a escolha gravada volta a valer numa tela maior.
-`Configs.HudScale()` devolve a escala em vigor e `HudScaleEscolhida()` a gravada.
-O "+" de HUD size em Settings para no teto (`OptionRow.ate`). Em 1280×720, HUD 4
-vira 3, e em 1920×1080 cabe até 5.
+**Layout por âncoras** (`game/hud/LayoutDoHud.java`). Cada peça do HUD tem uma
+âncora, um deslocamento e um tamanho em pixels de arte:
+
+| Peça | Âncora | Deslocamento | Tamanho |
+|---|---|---|---|
+| VIDA (retrato, frasco, barra) | topo-esquerda | 0 | 136×32 |
+| RELOGIO | topo-centro | 0 | 80×24 |
+| XP | topo-direita | 0 | 17×17 |
+| CHEFE (nome e barra) | topo-centro | 36 | 180×16 |
+| FURIA (rótulo e barra) | base-centro | 29 | 72×14 |
+| HOTBAR (casas e orelhas) | base-centro | 0 | 80×22 |
+
+A posição na tela sai da âncora, da margem e da escala a cada leitura
+(`LayoutDoHud.caixa`). Quem desenha a peça pede a caixa e não faz conta própria.
+**A escala do HUD em vigor é a menor entre a pedida e a maior em que:**
+
+1. toda peça cabe dentro da margem;
+2. nenhuma peça encosta em outra (vão de 4 pixels de arte);
+3. as faixas de cima e de baixo somam no máximo metade da altura (a outra metade é
+   da arena).
+
+Tudo é recalculado a cada tick a partir da imagem do jogo. Por isso trocar
+resolução, janela ou monitor, ou mexer num slider, vale no quadro seguinte, sem
+recriar nada. **F7** desenha as caixas, as âncoras e a margem. `LayoutDoHudTest`
+cobre a matriz inteira: resoluções, passos e margens.
+
+**Para acrescentar uma peça ao HUD:**
+
+1. Acrescente um item em `LayoutDoHud.Peca` com âncora, deslocamento e tamanho em
+   pixels de arte.
+2. No desenho, pegue a posição de `LayoutDoHud.caixa(Peca.X)` e desenhe dentro
+   dela em pixels de arte × `Configs.HudScale()`.
+3. Rode `LayoutDoHudTest`. O teto e o teste passam a considerar a peça sozinhos.
+   Se ela cruzar outra, mude o deslocamento.
 
 ## Fluxo de uma partida
 
@@ -301,8 +356,16 @@ Um componente só, `menus/Configuracoes.java`, com duas portas:
   sair grava a corrida. Restart, Main Menu e Quit pedem confirmação no diálogo
   comum (`Confirm`). O foco abre em Continue. O detalhe da corrida fica na tela
   de Status (tecla E), e não aqui.
-- **Abas de configuração:** as mesmas linhas nos dois acessos, com stepper
-  `−/+`, slider, ciclo e toggle (`OptionRow`). Resolução e tela cheia esperam o
+- **Abas de configuração:** as mesmas linhas nos dois acessos (`OptionRow`).
+  Valor contínuo (volume, zoom, margem) é uma barra arrastável no idioma dos
+  toggles: contorno de um pixel, miolo fundo, trecho escolhido cheio e o número
+  à direita. Tamanho (Menu size, HUD size) é uma fila de blocos, um por tamanho
+  que a tela comporta, com o nome à direita (`OptionRow.tamanho`). Os dois
+  respondem ao clique, ao arrasto e a Left/Right (o teclado e o D-pad repetem ao
+  segurar). O arrasto mede contra a barra como estava ao começar, e o bloco de
+  tamanho se aplica ao soltar: aplicar no meio redimensionava a linha debaixo do
+  mouse, que escolhia outro valor, e a tela piscava. Escolha entre opções (ciclo
+  `−/+`) e sim/não (toggle) continuam com botões. Resolução e tela cheia esperam o
   Apply, que só redimensiona a janela (ver [Janela, resolução e DPI](#janela-resolução-e-dpi)); o resto se aplica na hora.
 - **Rodapé por aba:** na Run, `Enter Select`; nas de configuração,
   `Left/Right Adjust`. As duas mostram `Q/E Tabs` e o `Esc` (Back ou Resume).
@@ -477,6 +540,12 @@ Os valores são os **finais**, lidos dos mesmos getters que o gameplay usa
 cartas e upgrades aparece entre parênteses ("9 (+2)"). As linhas recebem foco
 pelas setas, pelo D-pad e pelo mouse, e uma faixa no pé do painel explica a linha
 focada. E, Esc e B fecham.
+
+**Cada coluna rola.** A coluna dos buffs passa do que cabe no meio da corrida (14
+linhas em 720p), e antes o resto virava um "+N more" que não se abria. Agora o
+foco das setas e do D-pad leva a rolagem junto, a roda do mouse rola a coluna sob
+o cursor, e os avisos "N more above / below" dizem o que está fora da vista. Para
+conferir com a coluna cheia: `-Dcd.bench=true -Dcd.buffs=true`.
 
 **O inventário está desativado, não removido.** A tela de inventário e a ficha
 antiga de sprite (`interfaces/shared/Status`) deixaram de ser abas da `Inter`

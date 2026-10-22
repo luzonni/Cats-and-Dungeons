@@ -164,7 +164,8 @@ public final class Furia {
         int s = Configs.HudScale();
         int largura = 70 * s, altura = 4 * s;
         int x = w / 2 - largura / 2;
-        int y = h - Configs.Margin() - 34 * s;
+        // A barra fica 9 pixels de arte abaixo do topo da peça: o rótulo vai em cima.
+        int y = com.retronova.game.hud.LayoutDoHud.caixa(com.retronova.game.hud.LayoutDoHud.Peca.FURIA).y + 9 * s;
         double quase = carga >= 0.85 ? 0.5 + 0.5 * Math.sin(com.retronova.game.Game.tempoVisual() * 12) : 0;
         g.setColor(new Color(10, 6, 16, 180));
         g.fillRect(x - s, y - s, largura + 2 * s, altura + 2 * s);
