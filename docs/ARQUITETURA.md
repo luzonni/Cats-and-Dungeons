@@ -53,7 +53,7 @@ atual e à divisão clara entre motor e jogo.
 | `game.objects` | Entidades, tiles, partículas, física e o golpe com aviso (`Investida`) |
 | `game.objects.entities` | Gato, inimigos, mobília, projéteis e as mecânicas de corrida: `Bonus`, `Arsenal`, `ArmasDeArea`, `Furia`, `Habilidades` |
 | `game.items` | Armas da mão, consumíveis, `Elemento`, `Classe`, raridades, `Melhoria`, `Passiva`, `ArmaExtra`, `Evolucao` |
-| `game.hud` / `game.interfaces` | HUD (relógio, barra de chefe, flash de dano) e telas in-game (inventário, lojas) |
+| `game.hud` / `game.interfaces` | HUD (relógio, barra de chefe, flash de dano) e telas in-game (lojas; o inventário está desativado) |
 | `com.retronova.menus` | Menu, saves, seleção de personagem, opções, pausa, fim de corrida, vitória, conquistas |
 
 ## Laço principal
@@ -135,6 +135,193 @@ do zumbi. Está no histórico do git, antes da branch `docs/estado-atual`.
   do mundo; iluminação e vinheta podem ser desligadas nas opções.
 - Inimigos e gato ganham movimento no desenho (quique, achata-estica, virada)
   sem quadro novo de arte: `Game.animarBicho` e `Game.animarGato`.
+
+## Interface
+
+Tudo o que é compartilhado entre telas fica em `menus/shared/`. Uma tela nova
+monta a partir daqui e não redesenha título, rodapé, hover ou carta.
+
+### Sistema de menus (`TelaDeMenu`)
+
+Toda tela de menu estende `TelaDeMenu`: Menu, Saves, Personagens,
+Configuracoes (Settings e pausa), TelaDeConquistas, GameOver e Vitoria. A
+moldura é sempre a mesma:
+
+```
+┌────────────────────────────────────────────┐
+│                  Título                    │  baseDoTitulo(), fonte Game 14·s
+│                                            │
+│            área do conteúdo                │  areaDoConteudo()
+│                                            │
+│   [Enter] Select   [Q/E] Tabs   [Esc] Back │  Rodape: dicas do modo de entrada
+└────────────────────────────────────────────┘
+```
+
+- **Fundo pelo contexto.** Fora da corrida, a ilustração viva da tela inicial
+  (`Cenario`) com o véu `Palette.VEIL`; a tela inicial dispensa o véu
+  (`veuSobreAIlustracao()`). Dentro da corrida, o jogo congelado com o véu.
+- **Pilha e voltar.** `TelaDeMenu.abrir(tela)` empilha: fora da corrida com
+  `Engine.heapActivity`; dentro dela como sobreposição (`Engine.pause`), guardando
+  a tela de baixo. `voltar()` desempilha pelo mesmo caminho, e Esc e B chamam
+  `voltar()` em toda tela. `voltarAoMenuPrincipal()` desempilha até a tela
+  inicial: "Main Menu" sempre volta ao título, e não a Saves.
+- **Um painel de Settings só, que também é a pausa.** Ver
+  [Settings e pausa](#settings-e-pausa-configuracoes) logo abaixo.
+- **Com um menu aberto sobre a corrida, o HUD some** (`Game.render`): fica o
+  mundo congelado sob o véu, sem o relógio e a hotbar disputando com o painel.
+- **Transição única.** Toda tela entra em `TRANSICAO = 9` ticks (0,15 s):
+  opacidade de 0 a 1 e o conteúdo subindo `SUBIDA = 6` pixels, com ease-out.
+  O valor segue a Nielsen Norman (0,1 s é instantâneo, 0,4 s já é espera).
+- **A pausa congela de verdade.** O `Engine` não roda o tick de quem está por
+  baixo. As animações do corpo, o tremor da câmera, a aura das elites e o pulso
+  da Fúria passaram a usar `Game.tempoVisual()`, que só anda com o jogo rodando.
+  A música é abafada a 35% (`Sound.ABAFADO_NA_PAUSA`) e volta ao sair.
+- **Mouse, teclado e controle.** O foco anda por setas e D-pad; Enter e A
+  confirmam; Esc e B voltam. Um mouse parado não rouba o foco do teclado
+  (`Entrada.porMouse()`).
+
+Para criar uma tela: estender `TelaDeMenu`, passar o título ao `super`,
+posicionar os elementos em `posicionar()` a partir de `areaDoConteudo()`, tratar
+a entrada em `atualizar()`, desenhar em `desenharConteudo()` e devolver as dicas
+em `dicas()` (`Rodape.SELECIONAR`, `VOLTAR`, `ABAS`, `AJUSTAR` ou uma
+`Rodape.Dica` própria). Abrir com `TelaDeMenu.abrir(new MinhaTela())`.
+
+### Settings e pausa (`Configuracoes`)
+
+Um componente só, `menus/Configuracoes.java`, com duas portas:
+
+| Aberto por | Título | Abas | Botão fora do painel | Esc / B |
+|---|---|---|---|---|
+| Tela inicial (`new Configuracoes()`) | Settings | Video, Audio, Interface | Back | volta ao título |
+| Esc na corrida (`Configuracoes.pausa()`) | Paused | **Run**, Video, Audio, Interface | Resume | retoma o jogo |
+
+- **Aba Run:** Continue, Restart, Main Menu e Quit como linhas de ação
+  (`OptionRow.acao`), um resumo curto (tempo, nível, elemento) e o aviso de que
+  sair grava a corrida. Restart, Main Menu e Quit pedem confirmação no diálogo
+  comum (`Confirm`). O foco abre em Continue. O detalhe da corrida fica na tela
+  de Status (tecla E), e não aqui.
+- **Abas de configuração:** as mesmas linhas nos dois acessos, com stepper
+  `−/+`, slider, ciclo e toggle (`OptionRow`). Resolução e tela cheia esperam o
+  Apply, que recria a janela; o resto se aplica na hora.
+- **Rodapé por aba:** na Run, `Enter Select`; nas de configuração,
+  `Left/Right Adjust`. As duas mostram `Q/E Tabs` e o `Esc` (Back ou Resume).
+- **Por que assim:** o Forza Horizon e o RDR2 juntam partida e configurações em
+  abas de um mesmo menu, trocadas por LB/RB; o Hades e o Dead Cells abrem a pausa
+  num painel por cima da cena; o Minecraft usa uma tela de opções só, que sabe de
+  onde foi aberta. A Run vem primeiro e com foco em Continue porque retomar é o
+  que se faz mais vezes numa pausa (Game Accessibility Guidelines: pausar a
+  qualquer momento e voltar sem passos extras).
+- **Q/E para as abas, e o conflito com o E do Status:** ficaram. Q/E é o par de
+  abas mais comum em jogos de PC e espelha LB/RB no controle, que é o que o
+  `Gamepad` já traduz. O conflito não acontece: com a pausa aberta o `Game` não
+  recebe ticks, então o E só troca de aba; e o tick que abre a pausa termina ali,
+  para um E apertado junto com o Esc não abrir o Status por baixo.
+
+Para reaproveitar: uma tela nova de configurações é uma lista de `OptionRow`
+dentro de uma aba de `Configuracoes.montarLinhas`; uma ação nova da corrida é
+mais uma `OptionRow.acao` em `linhasDaCorrida`.
+
+### Hover e foco (`Realce`)
+
+O padrão é o dos botões da tela inicial: o elemento **cresce a partir do
+centro, ganha um brilho suave por trás e clareia**. Nenhum hover usa contorno.
+
+- `Realce.Estado`: a rampa de 0 a 1, com `tick(aceso)` e `noQuadro()`.
+- `crescer`, `brilho`, `clarear` e `realcar` (crescer mais brilho) desenham o
+  hover.
+- `marcadorDeFoco` desenha o foco do teclado e do controle: o mesmo realce mais
+  duas setas que respiram dos lados. A Xbox Accessibility Guideline 113 pede foco
+  sempre visível e avisa que só um brilho sutil não basta.
+- `folgaEntreVizinhos(s)` é o vão mínimo entre dois botões lado a lado, para as
+  setas de um não encostarem no outro.
+
+Usam o `Realce`: `Button`, as casas do inventário e da loja (`Slot`), o botão de
+comprar, as abas do inventário, as linhas de opção, os espaços de save, os gatos
+da seleção, o troféu, a loja do fim de corrida e os botões Reroll e Skip.
+
+### Cartas (`MaoDeCartas`)
+
+Uma mão de cartas para escolher uma. O padrão é a carta de buff do subir de
+nível: 88×128 pixels nativos, faixa colorida com o rótulo, medalhão claro com o
+ícone, nome em fonte Game, efeito na cor da carta e a tecla de atalho no pé.
+O componente traz o comportamento junto: entrada virando uma carta por vez,
+carta sob o mouse ou o foco com o realce comum (cresce, brilho suave na cor dela,
+clareia; setas no foco do teclado), teclas 1 a 3, setas e
+Enter, clarão na escolhida e fechamento.
+
+**Cores:** a moldura, o corpo, o texto da faixa, o medalhão e a caixa da tecla vêm
+da `Palette` (`DARKEST`, `DEEP`, `ACCENT`). Só a cor de cada carta é própria,
+porque diz o que ela é: raridade, passiva, arma ou elemento. A tela de Level Up
+usa o véu `Palette.VEIL` e o título em `Palette.TEXT` com halo `Palette.ACCENT`.
+Antes título e halo eram um dourado alaranjado solto no código.
+
+Cada carta só varia no conteúdo:
+`new MaoDeCartas.Carta(rotulo, cor, icone, nome, efeito)`. O `icone` é quem
+desenha o medalhão: `SubirDeNivel` usa `Icones.desenhar`, e
+`EscolhaDeElemento` usa `Relevo.desenhar` com o selo do elemento. O efeito
+aceita várias linhas separadas por `\n`.
+
+Uso: criar com a lista de cartas; a cada tick chamar `posicionar(y, s)` e
+`tick()`, que devolve o índice escolhido naquele tick (ou -1); fechar a tela
+quando `fechou()` for verdadeiro. `pronta()` diz se a mão já aceita entrada, para
+os controles em volta dela (Reroll, Skip).
+
+### Status do gato (`TelaDeStatus`) e o inventário desativado
+
+O **E** (Y no controle) abre `menus/TelaDeStatus.java`, uma `TelaDeMenu` que
+**pausa a corrida**, como as telas de pausa do Vampire Survivors e do Brotato.
+Ler uma ficha com a horda crescendo seria punir quem quer entender a build. Três
+colunas:
+
+| Coluna | Conteúdo |
+|---|---|
+| Cat | vida, dano, golpes por segundo, velocidade, alcance, redução de dano, sorte, crítico, área, regeneração, ganho de XP, alcance do ímã |
+| Weapons + Run | arma da mão, elemento com dano e cadência, armas extras com nível ou evolução; nível e XP, abates, ouro, trocas e pulos de carta |
+| Buffs | passivas com nível e efeito acumulado, cartas de atributo e melhorias da roleta com quantidade e total |
+
+Os valores são os **finais**, lidos dos mesmos getters que o gameplay usa
+(`Entity.getDamage`, `Bonus.critico`, `Melhorias.somaDosPontos`...). O bônus de
+cartas e upgrades aparece entre parênteses ("9 (+2)"). As linhas recebem foco
+pelas setas, pelo D-pad e pelo mouse, e uma faixa no pé do painel explica a linha
+focada. E, Esc e B fecham.
+
+**O inventário está desativado, não removido.** A tela de inventário e a ficha
+antiga de sprite (`interfaces/shared/Status`) deixaram de ser abas da `Inter`
+(ver `Game`). Os dados do `Inventory` continuam em uso: a arma da mão, a hotbar
+e a loja do vendedor. Para religar a tela, basta registrar "inventory" de novo na
+`Inter`.
+
+### Portal de nascimento (`Chegada.Tom`)
+
+O portal é o mesmo desenho (`portalCistern.png`) para todos, tingido em tempo de
+carga a partir de uma rampa de três cores pela luminosidade de cada pixel:
+
+- **`Tom.PERIGO` (inimigos):** o carmim das bandeiras da arte, a única família
+  quente da ilustração e a cor de aviso da interface (`Palette.WARN`), levado ao
+  claro para ler sobre a pedra e o mato. Por baixo, um brilho pulsante na mesma
+  cor. O verde de antes era a única cor da cena que não vinha da arte.
+- **`Tom.CHEGADA` (gato e vendedor):** a luz da lua da paleta
+  (`DEEP → LIGHT → TEXT`), sem brilho: chegada sem ameaça.
+
+A rampa de cada tom, `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO` e `TAMANHO`
+ficam em `Chegada`.
+
+### Transmutação da arma (`Transmutacao`)
+
+Ao escolher o elemento, a arma da mão vira a variante elemental em **18 ticks
+(0,3 s)**, sem bloquear nada:
+
+1. **Estourar (6 ticks):** a arma pula um pouco da mão e branqueia. No pico ela
+   troca, escondida no branco; nesse quadro tocam o som do elemento, um anel abre
+   na cor do elemento (`OndaDeChoque`) e o nome da arma nova sobe sobre o gato
+   nessa cor (`Word`).
+2. **Assentar (12 ticks):** a arma nova volta para a mão, maior do que é, e
+   encolhe até o tamanho dela com um passo além, perdendo o branco.
+
+A arma anima a partir da pose da mão (`Item.renderNaMao`; o `Bow` o sobrescreve
+para manter a mira), então o primeiro e o último quadro são a arma em mãos, sem
+salto. O gato anda, ataca e usa habilidades o tempo todo. Antes eram 136 ticks
+(2,3 s) com a arma parada acima da cabeça.
 
 ## Persistência
 

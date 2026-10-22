@@ -1,6 +1,5 @@
 package com.retronova.menus;
 
-import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
@@ -13,6 +12,8 @@ import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
 import com.retronova.game.Meta;
 import com.retronova.menus.shared.Button;
+import com.retronova.menus.shared.Rodape;
+import com.retronova.menus.shared.TelaDeMenu;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -25,27 +26,29 @@ import java.util.List;
 /**
  * A tela por cima do jogo quando o Rato Rei cai.
  *
- * Ela PAUSA a corrida (como a roleta e as cartas) para o jogador respirar e ver
- * o que ganhou, e pergunta o que fazer: seguir na corrida sem fim, para quem
- * quer ver até onde o gato aguenta, ou encerrar agora na tela de resumo, com o
- * bônus já pago. O bônus é depositado ao vencer, e não ao escolher "terminar":
- * fechar o jogo nesta tela não perde nada.
+ * Ela PAUSA a corrida para o jogador respirar e ver o que ganhou, e pergunta o
+ * que fazer: seguir na corrida sem fim, para quem quer ver até onde o gato
+ * aguenta, ou encerrar agora na tela de resumo, com o bônus já pago. O bônus é
+ * depositado ao vencer, e não ao escolher "terminar": fechar o jogo nesta tela não
+ * perde nada.
+ *
+ * Mesma moldura das outras telas de menu (ver TelaDeMenu). Esc e B valem "seguir":
+ * voltar, aqui, é voltar para a partida.
  */
-public class Vitoria implements Activity {
-
-    private static final int ENTRADA = 40;
+public class Vitoria extends TelaDeMenu {
 
     private static final Color OURO = new Color(0xFFD23F);
 
     private final List<Button> botoes = new ArrayList<>();
     private int foco = -1;
-    private int entrando;
+    private Rectangle painel = new Rectangle();
 
     public Vitoria() {
+        super("Victory!");
+        corDoTitulo(OURO);
         Sound.play(Sounds.Conquista);
         botoes.add(new Button(0, 0, 0, 0, "Finish Run", b -> terminar()).primary());
-        botoes.add(new Button(0, 0, 0, 0, "Keep Playing", b -> Engine.pause(null)));
-        posicionar();
+        botoes.add(new Button(0, 0, 0, 0, "Keep Playing", b -> voltar()));
     }
 
     private void terminar() {
@@ -53,35 +56,40 @@ public class Vitoria implements Activity {
         Game.getGame().encerrarCorrida();
     }
 
-    private int escala() {
-        int cabe = Math.max(1, (Engine.window.getHeight() - 20) / 150);
-        return Math.max(1, Math.min(Configs.UiScale(), cabe));
+    /** Comemoração: a música segue cheia. */
+    @Override
+    protected boolean abafaAMusica() {
+        return false;
     }
 
-    private Rectangle painel() {
-        int s = escala();
-        int w = 170 * s, h = 84 * s;
-        return new Rectangle(Engine.window.getWidth() / 2 - w / 2,
-                Engine.window.getHeight() / 2 - h / 2 - 12 * s, w, h);
-    }
-
-    private void posicionar() {
-        Rectangle p = painel();
-        int s = escala();
+    @Override
+    protected void posicionar() {
+        int s = Configs.UiScale();
+        Rectangle area = areaDoConteudo();
         int largura = Button.preferredWidth();
         int altura = Button.preferredHeight();
-        int y = p.y + p.height + 8 * s;
-        int x = Engine.window.getWidth() / 2 - largura - 4 * s;
+        int pw = 170 * s, ph = 58 * s;
+        int total = ph + 8 * s + altura;
+        int y = area.y + Math.max(0, (area.height - total) / 2);
+        painel = new Rectangle(Engine.window.getWidth() / 2 - pw / 2, y, pw, ph);
+        int by = y + ph + 8 * s;
+        int vao = com.retronova.menus.shared.Realce.folgaEntreVizinhos(s);
+        int x = Engine.window.getWidth() / 2 - largura - vao / 2;
         for (int i = 0; i < botoes.size(); i++) {
-            botoes.get(i).setBounds(new Rectangle(x + i * (largura + 8 * s), y, largura, altura));
+            botoes.get(i).setBounds(new Rectangle(x + i * (largura + vao), by, largura, altura));
         }
     }
 
     @Override
-    public void tick() {
-        entrando++;
-        posicionar();
-        navegarPeloTeclado();
+    protected void atualizar() {
+        if (KeyBoard.KeyPressed("Right") || KeyBoard.KeyPressed("Down")) {
+            foco = (foco + 1) % botoes.size();
+        } else if (KeyBoard.KeyPressed("Left") || KeyBoard.KeyPressed("Up")) {
+            foco = (foco <= 0 ? botoes.size() : foco) - 1;
+        } else if (KeyBoard.KeyPressed("Enter") && foco >= 0) {
+            botoes.get(foco).activate();
+            return;
+        }
         for (int i = 0; i < botoes.size(); i++) {
             Button botao = botoes.get(i);
             botao.tick();
@@ -92,25 +100,15 @@ public class Vitoria implements Activity {
         }
     }
 
-    private void navegarPeloTeclado() {
-        if (KeyBoard.KeyPressed("Right") || KeyBoard.KeyPressed("Down")) {
-            foco = (foco + 1) % botoes.size();
-        } else if (KeyBoard.KeyPressed("Left") || KeyBoard.KeyPressed("Up")) {
-            foco = (foco <= 0 ? botoes.size() : foco) - 1;
-        } else if (KeyBoard.KeyPressed("Enter") && foco >= 0) {
-            botoes.get(foco).activate();
-        }
+    @Override
+    protected List<Rodape.Dica> dicas() {
+        return List.of(Rodape.SELECIONAR, new Rodape.Dica("Esc", "B", "Keep playing"));
     }
 
     @Override
-    public void render(Graphics2D g) {
-        float entrada = Math.min(1f, (entrando + Engine.alpha()) / ENTRADA);
-        int s = escala();
-        g.setColor(new Color(Palette.VEIL.getRed(), Palette.VEIL.getGreen(), Palette.VEIL.getBlue(),
-                (int) (Palette.VEIL.getAlpha() * entrada)));
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
-
-        Rectangle p = painel();
+    protected void desenharConteudo(Graphics2D g) {
+        int s = Configs.UiScale();
+        Rectangle p = painel;
         g.setColor(new Color(0, 0, 0, 100));
         g.fillRoundRect(p.x + 3 * s, p.y + 5 * s, p.width, p.height, 12 * s, 12 * s);
         g.setColor(new Color(0x0E0A14));
@@ -121,29 +119,21 @@ public class Vitoria implements Activity {
         g.fillRoundRect(p.x, p.y, p.width, 4 * s, 12 * s, 12 * s);
 
         int cx = p.x + p.width / 2;
-        Font titulo = FontHandler.font(FontHandler.Game, 18f * s);
-        TextFx.draw(g, "VICTORY!", titulo, cx - FontHandler.getWidth("VICTORY!", titulo) / 2,
-                p.y + 28 * s, OURO, s);
-
         Font texto = FontHandler.font(FontHandler.Septem, 7f * s);
         String frase = "The Rat King has fallen";
-        TextFx.draw(g, frase, texto, cx - FontHandler.getWidth(frase, texto) / 2, p.y + 42 * s,
+        TextFx.draw(g, frase, texto, cx - FontHandler.getWidth(frase, texto) / 2, p.y + 16 * s,
                 Palette.TEXT, s);
 
         Font valor = FontHandler.font(FontHandler.Game, 10f * s);
         String bonus = "+" + Meta.BONUS_DE_VITORIA + " gold";
-        TextFx.draw(g, bonus, valor, cx - FontHandler.getWidth(bonus, valor) / 2, p.y + 60 * s, OURO, s);
+        TextFx.draw(g, bonus, valor, cx - FontHandler.getWidth(bonus, valor) / 2, p.y + 34 * s, OURO, s);
 
         Font miuda = FontHandler.font(FontHandler.Septem, 6f * s);
         String dica = Estatisticas.venceu() ? "Already paid - closing the game keeps it" : "";
-        TextFx.draw(g, dica, miuda, cx - FontHandler.getWidth(dica, miuda) / 2, p.y + 74 * s, Palette.LIGHT, s);
+        TextFx.draw(g, dica, miuda, cx - FontHandler.getWidth(dica, miuda) / 2, p.y + 48 * s, Palette.LIGHT, s);
 
         for (Button botao : botoes) {
             botao.render(g);
         }
-    }
-
-    @Override
-    public void dispose() {
     }
 }

@@ -12,6 +12,15 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
+/**
+ * A ficha antiga do gato, de sprite fixo, que era uma aba da Inter ao lado do
+ * inventário.
+ *
+ * FORA DE USO, NÃO REMOVIDA: o E abre a {@link com.retronova.menus.TelaDeStatus},
+ * que mostra os atributos finais, as armas e os buffs. Esta mostrava seis números
+ * (e repetia o dano no campo de resistência). Ver Game, onde as abas deixaram de
+ * ser registradas.
+ */
 public class Status implements Activity {
 
     private final Player player;

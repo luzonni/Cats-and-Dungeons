@@ -1,6 +1,5 @@
 package com.retronova.menus;
 
-import com.retronova.engine.Activity;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
@@ -14,13 +13,14 @@ import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Corrida;
 import com.retronova.game.Game;
 import com.retronova.menus.shared.Button;
-import com.retronova.menus.shared.Cenario;
-import com.retronova.menus.shared.Confirm;
+import com.retronova.menus.shared.Rodape;
+import com.retronova.menus.shared.TelaDeMenu;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.util.List;
 
 /**
  * Os três espaços de corrida.
@@ -33,8 +33,8 @@ import java.awt.Rectangle;
  * qual é qual sem entrar. O que o jogador precisa aqui não é escolher uma AÇÃO, é
  * escolher uma CORRIDA; e corrida se escolhe vendo.
  *
- * Por isso cada espaço se descreve por inteiro — gato, dificuldade, sala e tempo
- * jogado — e o clique faz a coisa óbvia para aquele espaço: ocupado retoma, vazio
+ * Por isso cada espaço se descreve por inteiro — gato, nível e minuto da corrida —
+ * e o clique faz a coisa óbvia para aquele espaço: ocupado retoma, vazio
  * começa. É o mesmo desenho que console usa desde sempre, e ninguém precisa
  * aprender.
  *
@@ -42,15 +42,16 @@ import java.awt.Rectangle;
  * pergunta antes. Apagar é a única ação aqui que destrói alguma coisa, e a única
  * que não pode acontecer por engano de mira.
  */
-public class Saves implements Activity {
+public class Saves extends TelaDeMenu {
 
-    private final Cenario cenario;
-    private final Confirm confirmacao = new Confirm();
     private final Button voltar;
 
     /** As caixas de cada espaço, e o alvo de apagar dentro delas. */
     private final Rectangle[] caixas = new Rectangle[Corrida.ESPACOS];
     private final Rectangle[] lixeiras = new Rectangle[Corrida.ESPACOS];
+    private final com.retronova.menus.shared.Realce.Estado[] realces = {
+            new com.retronova.menus.shared.Realce.Estado(), new com.retronova.menus.shared.Realce.Estado(),
+            new com.retronova.menus.shared.Realce.Estado()};
 
     /** O que cada espaço guarda agora, ou null. Relido de tempos em tempos. */
     private final Corrida[] corridas = new Corrida[Corrida.ESPACOS];
@@ -71,8 +72,8 @@ public class Saves implements Activity {
     private int desdeALeitura = ENTRE_LEITURAS;
 
     public Saves() {
-        this.cenario = new Cenario("icons.Gato");
-        this.voltar = new Button(0, 0, 0, 0, "Back", b -> Engine.backActivity());
+        super("Your Runs");
+        this.voltar = new Button(0, 0, 0, 0, "Back", b -> voltar());
         for (int i = 0; i < Corrida.ESPACOS; i++) {
             caixas[i] = new Rectangle();
             lixeiras[i] = new Rectangle();
@@ -117,32 +118,26 @@ public class Saves implements Activity {
     }
 
     /** Altura do titulo e folga entre blocos, em pixels nativos. */
-    private static final int TITULO = 12;
     private static final int FOLGA = 5;
 
     /**
-     * Monta a coluna inteira a partir de UMA conta de altura.
-     *
-     * O TITULO ENTRA NA CONTA, e nao ficava. Antes ele era desenhado dez pixels
-     * acima da primeira caixa, e o bloco era centralizado sem contar com ele — numa
-     * janela de mil e oitenta, com escala seis, a primeira caixa comecava a cento e
-     * trinta pixels do topo e o titulo, que tem catorze de altura vezes a escala,
-     * saia pela borda de cima. Somando tudo antes de centralizar, o conjunto cabe
-     * por construcao e nao por sorte de resolucao.
+     * Monta a coluna inteira a partir de UMA conta de altura, centralizada na area
+     * de conteudo (entre o titulo, que agora e o da moldura comum, e o rodape).
+     * Somando tudo antes de centralizar, o conjunto cabe por construcao e nao por
+     * sorte de resolucao.
      */
-    private void posicionar() {
+    @Override
+    protected void posicionar() {
         int s = Configs.UiScale();
         int largura = larguraDaCaixa(s);
         int altura = alturaDaCaixa(s);
         int alturaDoVoltar = Button.preferredHeight();
+        Rectangle area = areaDoConteudo();
 
-        int total = TITULO * s + 8 * s
-                + Corrida.ESPACOS * altura + (Corrida.ESPACOS - 1) * FOLGA * s
+        int total = Corrida.ESPACOS * altura + (Corrida.ESPACOS - 1) * FOLGA * s
                 + 8 * s + alturaDoVoltar;
         int x = Engine.window.getWidth() / 2 - largura / 2;
-        this.topo = Engine.window.getHeight() / 2 - total / 2;
-
-        int y = topo + (TITULO + 8) * s;
+        int y = area.y + Math.max(0, (area.height - total) / 2);
         for (int i = 0; i < Corrida.ESPACOS; i++) {
             caixas[i].setBounds(x, y + i * (altura + FOLGA * s), largura, altura);
             int lado = LIXEIRA * s;
@@ -157,27 +152,26 @@ public class Saves implements Activity {
                 yVoltar, Button.preferredWidth(), alturaDoVoltar));
     }
 
-    /** Topo do bloco inteiro; o titulo se apoia nele. */
-    private int topo;
-
     // ------------------------------------------------------------------ tick
 
+    /** Voltou para esta tela (de uma corrida, da selecao de gato): rele na hora. */
     @Override
-    public void tick() {
-        posicionar();
-        cenario.tick();
+    protected void aoEntrar() {
+        reler();
+        desdeALeitura = 0;
+    }
+
+    @Override
+    protected void atualizar() {
         if (++desdeALeitura >= ENTRE_LEITURAS) {
             desdeALeitura = 0;
             reler();
         }
-        if (confirmacao.tick()) {
-            return;
-        }
-        if (KeyBoard.KeyPressed("Escape")) {
-            Engine.backActivity();
-            return;
-        }
         navegarPeloTeclado();
+        for (int i = 0; i < Corrida.ESPACOS; i++) {
+            realces[i].tick(foco == i
+                    || (com.retronova.engine.inputs.Entrada.porMouse() && Mouse.on(caixas[i])));
+        }
         voltar.tick();
         if (voltar.isHovered()) {
             foco = -1;
@@ -185,7 +179,7 @@ public class Saves implements Activity {
         voltar.setFocused(foco == Corrida.ESPACOS);
 
         for (int i = 0; i < Corrida.ESPACOS; i++) {
-            if (Mouse.on(caixas[i])) {
+            if (com.retronova.engine.inputs.Entrada.porMouse() && Mouse.on(caixas[i])) {
                 foco = i;
                 focoNoApagar = false;
                 Engine.window.pointing();
@@ -252,7 +246,7 @@ public class Saves implements Activity {
         Corrida corrida = corridas[espaco - 1];
         if (corrida == null) {
             Sound.play(Sounds.Button);
-            Engine.heapActivity(new Personagens(espaco));
+            abrir(new Personagens(espaco));
             return;
         }
         // O CLIQUE E IRREVERSIVEL, ainda que nao pareca: retomar consome o save, e a
@@ -288,31 +282,21 @@ public class Saves implements Activity {
             reler();
         });
     }
-
     // ---------------------------------------------------------------- render
 
     @Override
-    public void render(Graphics2D g) {
-        cenario.render(g);
-        g.setColor(Palette.VEIL);
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
+    protected List<Rodape.Dica> dicas() {
+        return List.of(Rodape.SELECIONAR, new Rodape.Dica("F", "X", "Delete"), Rodape.VOLTAR);
+    }
 
+    @Override
+    protected void desenharConteudo(Graphics2D g) {
         int s = Configs.UiScale();
-        desenharTitulo(g, s);
         for (int i = 0; i < Corrida.ESPACOS; i++) {
             desenharEspaco(g, i, s);
         }
         voltar.render(g);
-        confirmacao.render(g);
     }
-
-    private void desenharTitulo(Graphics2D g, int s) {
-        Font fonte = FontHandler.font(FontHandler.Game, TITULO * s);
-        String titulo = "Your Runs";
-        int x = Engine.window.getWidth() / 2 - FontHandler.getWidth(titulo, fonte) / 2;
-        escrever(g, titulo, x, topo + TITULO * s, Palette.TEXT, s, fonte);
-    }
-
     /**
      * Uma linha da lista: numero, nome, ficha e o alvo de apagar.
      *
@@ -329,10 +313,20 @@ public class Saves implements Activity {
      * nao couber e cortado com reticencias, que e uma perda legivel.
      */
     private void desenharEspaco(Graphics2D g, int i, int s) {
-        Rectangle caixa = caixas[i];
-        boolean ativo = foco == i || Mouse.on(caixa);
+        boolean ativo = foco == i
+                || (com.retronova.engine.inputs.Entrada.porMouse() && Mouse.on(caixas[i]));
+        // O REALCE DOS BOTOES (ver Realce): a caixa e uma moldura de botao, entao
+        // cresce, brilha e clareia como eles. No foco das setas, as setas laterais.
+        float intensidade = realces[i].noQuadro();
+        Rectangle caixa = com.retronova.menus.shared.Realce.crescer(caixas[i], intensidade, s);
+        Rectangle corpoDaCaixa = new Rectangle(caixa.x, caixa.y + (ORELHAS - 1) * s,
+                caixa.width, caixa.height - (ORELHAS - 1) * s);
+        com.retronova.menus.shared.Realce.brilho(g, corpoDaCaixa, intensidade, s);
         Button.frame(ativo).draw(g, ativo ? 1 : 0,
                 caixa.x, caixa.y, caixa.width, caixa.height, s);
+        if (foco == i && !focoNoApagar && com.retronova.engine.inputs.Entrada.porFoco()) {
+            com.retronova.menus.shared.Realce.marcadorDeFoco(g, corpoDaCaixa, s);
+        }
 
         int corpoY = caixa.y + ORELHAS * s;
         int corpoH = caixa.height - ORELHAS * s;

@@ -78,7 +78,7 @@ public class Camera {
         // Tremor: deslocamento que oscila rapido e encolhe sozinho. Ruido de senos
         // em vez de aleatorio puro, para nao "teleportar" a tela a cada quadro.
         if (cam.tremor > 0.05) {
-            double t = System.nanoTime() / 1e9;
+            double t = com.retronova.game.Game.tempoVisual();
             cx += Math.sin(t * 71) * cam.tremor;
             cy += Math.cos(t * 59) * cam.tremor;
         }

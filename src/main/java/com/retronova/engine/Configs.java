@@ -198,6 +198,9 @@ public class Configs {
     @SuppressWarnings("unchecked")
     public static synchronized void update() {
         invalidarCache();
+        if (Foto.ligado()) {
+            return;     // o roteiro de fotos mexe nas opcoes; o config.json de quem joga fica intacto
+        }
         if (VALUES == null) {
             return;
         }

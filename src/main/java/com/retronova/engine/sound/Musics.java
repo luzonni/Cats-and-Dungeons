@@ -19,7 +19,7 @@ public enum Musics {
     // e agitada, leitura de espaco e nao de masmorra. Ver docs/TERCEIROS.md.
     Room("dungeon_hall"),
     /**
-     * As trilhas de arena. A escolha e do jogador, em Options > Audio.
+     * As trilhas de arena. A escolha e do jogador, em Settings > Audio.
      *
      * A original e animada demais para o que o jogo virou: casa com o gato, nao
      * com a masmorra. Em vez de troca-la e decidir pelos outros, ela ficou como

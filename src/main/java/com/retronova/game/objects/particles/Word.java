@@ -11,11 +11,18 @@ public class Word extends Particle {
     private final String value;
     private final Font font;
     private final Rectangle boundsFont;
+    private final Color cor;
     private int count;
 
     public Word(String value, double x, double y, double seconds) {
+        this(value, x, y, seconds, Color.white);
+    }
+
+    /** Com cor: o nome da arma nova na cor do elemento, por exemplo (ver Transmutacao). */
+    public Word(String value, double x, double y, double seconds, Color cor) {
         super(x, y, seconds);
         this.value = value;
+        this.cor = cor;
         this.font = FontHandler.font(FontHandler.Septem, Configs.GameScale() * 8);
         int wF = FontHandler.getWidth(value, font);
         int hF = FontHandler.getHeight(value, font);
@@ -45,7 +52,7 @@ public class Word extends Particle {
         g.setFont(font);
         g.setColor(Color.black);
         g.drawString(value, x + Configs.GameScale(), y + Configs.GameScale());
-        g.setColor(Color.white);
+        g.setColor(cor);
         g.drawString(value, x, y);
     }
 }

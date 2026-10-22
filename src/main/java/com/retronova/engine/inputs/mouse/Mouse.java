@@ -207,6 +207,32 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
         Entrada.mouse();
     }
 
+    /**
+     * Mouse simulado, para o modo de foto (ver engine.Foto): leva o ponteiro a
+     * (x, y) do canvas, como um mouseMoved faria. Nunca toca no mouse do sistema.
+     */
+    public static void simularPosicao(int x, int y) {
+        xMouse = x;
+        yMouse = y;
+        Entrada.mouse();
+    }
+
+    /** Clique esquerdo simulado na posicao atual: aperta agora, solta com {@link #simularSoltar}. */
+    public static synchronized void simularClique() {
+        clickLeft = true;
+        clickLeftOn = true;
+        pressingLeft = true;
+        xClicked = xMouse;
+        yClicked = yMouse;
+        Entrada.mouse();
+    }
+
+    public static synchronized void simularSoltar() {
+        clickLeft = false;
+        clickLeftOn = false;
+        pressingLeft = false;
+    }
+
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         //Set's

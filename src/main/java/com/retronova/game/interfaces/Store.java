@@ -17,6 +17,7 @@ import com.retronova.game.Game;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.game.objects.entities.Player;
+import com.retronova.menus.shared.Realce;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -199,9 +200,12 @@ public class Store implements Activity {
         }
         if(rec == null)
             return;
-        g.setColor(Color.white);
-        g.setStroke(new BasicStroke(Configs.HudScale()));
-        g.drawRect(rec.x, rec.y, rec.width, rec.height);
+        // A casa SELECIONADA (a que o "Buy" vai comprar) acende como o foco, e não
+        // mais com a moldura branca: é o mesmo realce do resto do jogo, só que fixo
+        // enquanto ela estiver escolhida. Ver Realce.
+        if (!(Entrada.porFoco() && slots[foco].getBounds().equals(rec))) {
+            slots[indexSelected].renderFoco(g);
+        }
     }
 
     private void renderPriceSelected(Graphics2D g) {
@@ -223,11 +227,16 @@ public class Store implements Activity {
         // que o segundo toque e uma compra, e nao outra selecao.
         boolean compraPeloFoco = Entrada.porFoco() && foco == indexSelected
                 && podeComprar(Game.getPlayer());
-        if(!Mouse.on(buttonBuy) && !compraPeloFoco)
+        if(!(Entrada.porMouse() && Mouse.on(buttonBuy)) && !compraPeloFoco)
             return;
-        g.setColor(Color.white);
-        g.setStroke(new BasicStroke(Configs.HudScale()));
-        g.drawRect(buttonBuy.x, buttonBuy.y, buttonBuy.width, buttonBuy.height);
+        // O botão faz parte da arte da loja: o realce vai em volta e por cima dele,
+        // no mesmo estilo dos botões dos menus, sem a moldura branca de antes.
+        int s = Configs.HudScale();
+        Realce.brilho(g, buttonBuy, 1f, s);
+        Realce.clarear(g, buttonBuy, 1f);
+        if (compraPeloFoco) {
+            Realce.marcadorDeFoco(g, buttonBuy, s);
+        }
     }
 
     private void renderInfo(Graphics2D g) {

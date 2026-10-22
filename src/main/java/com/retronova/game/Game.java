@@ -8,7 +8,6 @@ import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.interfaces.Inter;
-import com.retronova.game.interfaces.shared.Status;
 import com.retronova.game.map.*;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.arena.Waves;
@@ -24,7 +23,7 @@ import com.retronova.game.objects.tiles.Tile;
 import com.retronova.engine.inputs.gamepad.Gamepad;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.menus.GameOver;
-import com.retronova.menus.Pause;
+import com.retronova.menus.Configuracoes;
 
 import java.awt.*;
 import java.util.List;
@@ -97,8 +96,11 @@ public class Game implements Activity {
         this.indexPlayer = corrida.gato();
         this.inter = new Inter();
         Player player = Player.newPlayer(this.indexPlayer);
-        this.inter.put("inventory", player.getInventory(), false);
-        this.inter.put("status", new Status(player), false);
+        // INVENTARIO DESATIVADO, NAO REMOVIDO. Ele e o antigo Status de sprite
+        // deixaram de ser abas da Inter: o E abre a TelaDeStatus, e a Inter so
+        // mostra o que for posto nela na hora (a loja do vendedor, a maquina de
+        // chiclete). Player.getInventory() continua vivo — a arma da mao, a hotbar
+        // e a loja dependem dele. Para religar: voltar a por "inventory" aqui.
         this.player = player;
         this.seconds = corrida.segundos();
         // OS BONUS DE INICIO ANTES DO SAVE. O upgrade permanente de vida enche a
@@ -143,8 +145,11 @@ public class Game implements Activity {
         this.indexPlayer = indexPlayer;
         this.inter = new Inter();
         Player player = Player.newPlayer(indexPlayer);
-        this.inter.put("inventory", player.getInventory(), false);
-        this.inter.put("status", new Status(player), false);
+        // INVENTARIO DESATIVADO, NAO REMOVIDO. Ele e o antigo Status de sprite
+        // deixaram de ser abas da Inter: o E abre a TelaDeStatus, e a Inter so
+        // mostra o que for posto nela na hora (a loja do vendedor, a maquina de
+        // chiclete). Player.getInventory() continua vivo — a arma da mao, a hotbar
+        // e a loja dependem dele. Para religar: voltar a por "inventory" aqui.
         this.player = player;
         this.changeMap(map);
         this.hud = new HUD(player);
@@ -191,7 +196,7 @@ public class Game implements Activity {
      */
     public void vencer() {
         if (Estatisticas.registrarVitoria(player.getName())) {
-            Engine.pause(new com.retronova.menus.Vitoria());
+            com.retronova.menus.shared.TelaDeMenu.abrir(new com.retronova.menus.Vitoria());
         }
     }
 
@@ -285,6 +290,10 @@ public class Game implements Activity {
         // ser Esc sozinho.
         Gamepad.emJogo();
         GameMap.limparInteracao();
+        // O jogo esta rodando: nenhum menu aberto por cima, a musica volta ao normal.
+        // E a rede de seguranca de todo caminho que sai da pausa sem passar pelo
+        // "voltar" dela (reiniciar, escolher carta, a vitoria).
+        com.retronova.engine.sound.Sound.abafarParaPausa(false);
         if (regravarSave) {
             regravarSave = false;
             if (map instanceof Arena arena) {
@@ -302,6 +311,7 @@ public class Game implements Activity {
         }
         guardarPosicoes();
         quadroDoGato++;
+        ticksVisuais++;
         if (depoisDeUmSegundo != null && quadroDoGato > 90 && !Engine.pausado()) {
             Runnable r = depoisDeUmSegundo;
             depoisDeUmSegundo = null;
@@ -310,10 +320,19 @@ public class Game implements Activity {
         }
         hud.tick();
         if(KeyBoard.KeyPressed("ESCAPE")) {
-            Engine.pause(new Pause());
+            com.retronova.menus.shared.TelaDeMenu.abrir(Configuracoes.pausa());
+            // Mais nada neste tick: um E apertado junto com o Esc abriria o Status
+            // por baixo da pausa. Com a pausa aberta o jogo nem recebe ticks, e o
+            // Q/E de lá só troca de aba.
+            return;
         }
+        // O E ABRE O STATUS DO GATO, e não mais o inventário: o jogo não tem
+        // inventário como mecânica, e o que se quer consultar no meio da corrida
+        // são os atributos e a build (ver TelaDeStatus). O inventário NÃO foi
+        // removido — só perdeu a porta de entrada (ver o construtor).
         if(KeyBoard.KeyPressed("E")) {
-            inter.open();
+            com.retronova.menus.shared.TelaDeMenu.abrir(new com.retronova.menus.TelaDeStatus());
+            return;
         }
         if(KeyBoard.KeyPressed("Interact")) {
             map.interagir(player, GameObject.SIZE() * 3);
@@ -408,9 +427,15 @@ public class Game implements Activity {
         g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
         renderWorld(g);
         long t0 = System.nanoTime();
-        hud.render(g);
-        if (map instanceof com.retronova.game.map.arena.Arena) {
-            com.retronova.game.objects.entities.Furia.renderBarra(g, Engine.window.getWidth(), Engine.window.getHeight());
+        // COM UM MENU ABERTO POR CIMA, SÓ O MUNDO. O HUD atrás do véu disputava
+        // com o menu: o título "Paused" caía em cima do relógio e a hotbar aparecia
+        // por baixo do botão Resume. O Hades faz o mesmo ao pausar — fica a cena,
+        // sai a interface de combate.
+        if (!(Engine.sobreposta() instanceof com.retronova.menus.shared.TelaDeMenu)) {
+            hud.render(g);
+            if (map instanceof com.retronova.game.map.arena.Arena) {
+                com.retronova.game.objects.entities.Furia.renderBarra(g, Engine.window.getWidth(), Engine.window.getHeight());
+            }
         }
         com.retronova.engine.Desempenho.secao("hud", System.nanoTime() - t0);
         apagarNaMorte(g);
@@ -546,10 +571,14 @@ public class Game implements Activity {
             // classes de inimigo.
             if (entity instanceof com.retronova.game.objects.entities.Nascente nascente
                     && nascente.nascendo()) {
+                // A cor diz quem vem: perigo para os bichos, a luz da lua para
+                // quem não ameaça (o vendedor). Ver Chegada.Tom.
                 com.retronova.game.map.arena.Chegada.desenhar(g, portalDosBichos(),
                         (int) entity.getX() + entity.getWidth() / 2,
                         (int) entity.getY() + entity.getHeight() / 2,
-                        nascente.aberturaDoPortal());
+                        nascente.aberturaDoPortal(),
+                        entity instanceof Enemy ? com.retronova.game.map.arena.Chegada.Tom.PERIGO
+                                : com.retronova.game.map.arena.Chegada.Tom.CHEGADA);
             }
             if (entity instanceof com.retronova.game.objects.entities.Nascente chegando
                     && !chegando.corpoVisivel()) {
@@ -630,7 +659,7 @@ public class Game implements Activity {
      */
     private static void animarBicho(Graphics2D g, Enemy bicho) {
         int s = com.retronova.engine.Configs.GameScale();
-        double t = System.nanoTime() / 1e9;
+        double t = tempoVisual();
         double fase = (System.identityHashCode(bicho) % 1000) / 1000.0 * Math.PI * 2;
         // Quanto ele esta andando, de 0 a 1.
         double andando = Engine.pausado() ? 0 : Math.min(1, bicho.passoNoTick() / (0.6 * s));
@@ -656,6 +685,22 @@ public class Game implements Activity {
         g.translate(-pesX, -pesY);
     }
 
+    /** Ticks da partida que de fato rodaram: nao anda com a pausa aberta. */
+    private static long ticksVisuais;
+
+    /**
+     * O relogio das animacoes de corpo, em segundos, e que PARA NA PAUSA.
+     *
+     * A respiracao dos bichos e do gato, o tremor da camera, a aura das elites e o
+     * pulso da Furia contavam pelo relogio do sistema — e por isso seguiam vivos
+     * atras do menu de pausa, com o jogo supostamente congelado. Contando pelos
+     * ticks da partida, tudo para junto com a logica; com a interpolacao do
+     * quadro, continua liso a qualquer taxa de quadros.
+     */
+    public static double tempoVisual() {
+        return (ticksVisuais + alphaDoMundo()) / 60.0;
+    }
+
     /** Gancho do modo de bancada (Engine, -Dcd.bench): roda uma vez, no tick 90. */
     public static Runnable depoisDeUmSegundo;
 
@@ -676,7 +721,7 @@ public class Game implements Activity {
      */
     private void animarGato(Graphics2D g, Player gato) {
         int s = com.retronova.engine.Configs.GameScale();
-        double t = System.nanoTime() / 1e9;
+        double t = tempoVisual();
         boolean parado = Engine.pausado();
         double dx = -gato.deslocamentoNoQuadro(0f)[0];
         double andando = parado ? 0 : Math.min(1, gato.passoNoTick() / (0.8 * s));

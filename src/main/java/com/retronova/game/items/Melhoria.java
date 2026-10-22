@@ -157,6 +157,16 @@ public enum Melhoria {
         };
     }
 
+    /** O total de várias cópias, no mesmo formato da carta, para a tela de Status. */
+    public String total(double soma) {
+        return switch (formato) {
+            case INTEIRO -> String.format("+%d %s", Math.round(Math.abs(soma)), assunto.toLowerCase());
+            case DECIMAL -> String.format(java.util.Locale.ROOT, "+%.2f %s", Math.abs(soma), assunto.toLowerCase());
+            case PORCENTO -> String.format("+%d%% %s", Math.round(Math.abs(soma) * 100), assunto.toLowerCase());
+            case CADENCIA -> String.format("%d frames faster attacks", Math.max(1, Math.round(Math.abs(soma))));
+        };
+    }
+
     /** O assunto em uma palavra, para a linha de classificação da carta. */
     public String assunto() {
         return this.assunto;

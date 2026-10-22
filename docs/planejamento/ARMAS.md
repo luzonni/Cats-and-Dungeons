@@ -21,7 +21,9 @@ usa armas da própria família (`Classe`, derivada do nome do ID):
 
 O **elemento** é da corrida, e não da arma: escolhido aos 45 s
 (`EscolhaDeElemento`), ele transmuta a arma da mão na variante elemental, que é um
-desenho próprio e não um recolorido. Espada, machado, arco e varinha têm
+desenho próprio e não um recolorido. A transmutação (`Transmutacao`) dura 0,3 s e
+não interrompe nada: a arma estoura em branco, vira a nova, e o nome dela sobe
+sobre o gato na cor do elemento. Espada, machado, arco e varinha têm
 variantes de fogo, gelo, água, terra, ar e lendária. Cada elemento muda dano e
 cadência (`Elemento.java`): terra bate 45% mais e é 40% mais lenta; ar bate 22%
 menos e é 25% mais rápida.

@@ -247,7 +247,7 @@ public final class Conquistas {
 
     // ------------------------------------------------------------ o estado e o disco
 
-    private static final Path ARQUIVO = Paths.get("saves", "conquistas.json");
+    private static final Path ARQUIVO = Paths.get(com.retronova.engine.Foto.pastaDeSaves(), "conquistas.json");
     private static Progresso atual = new Progresso();
     private static boolean carregado;
     /** Desbloqueadas nesta sessão e ainda não vistas na tela de conquistas. */

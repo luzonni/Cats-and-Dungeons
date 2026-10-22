@@ -106,6 +106,23 @@ public class KeyBoard implements KeyListener {
         }
     }
 
+    /**
+     * Tecla simulada, para o modo de foto (ver engine.Foto): aperta ou solta como
+     * o teclado faria, e conta como uso do teclado para o foco.
+     */
+    public static void simular(String key, boolean ativo) {
+        for(int i = 0; i < Keys.length; i++) {
+            if(Keys[i].getName().equalsIgnoreCase(key)) {
+                Keys[i].setActive(ativo);
+                if (ativo) {
+                    Entrada.tecla();
+                }
+                return;
+            }
+        }
+        throw new IllegalArgumentException("Tecla desconhecida: " + key);
+    }
+
     public static char getKeyChar() {
         if(PressedChar) {
             for(int i = 0; i < Caracteres.length; i++) {

@@ -85,6 +85,11 @@ public class Inter implements Activity {
     }
 
     private void refreshPositions() {
+        // Sem inventário e status fixos (desativados, ver Game), a Inter fica vazia
+        // quando a loja fecha: não há aba para posicionar.
+        if (this.tabs == null || this.tabs.length == 0) {
+            return;
+        }
         String[] keys = keys();
         Rectangle rec = this.tabs[0];
         int width = rec.width * keys.length;
@@ -150,27 +155,44 @@ public class Inter implements Activity {
         renderTabs(g);
     }
 
+    /**
+     * As abas no mesmo desenho das abas das Opções (ver menus.shared.Abas): a
+     * ativa é preenchida e tem o friso claro em cima; a de baixo do mouse ganha o
+     * realce comum (ver Realce). Antes a ativa era marcada por uma borda grossa,
+     * que era o mesmo contorno que o jogo usava para hover em outros lugares.
+     */
     private void renderTabs(Graphics2D g) {
-        Font font = FontHandler.font(FontHandler.Game,Configs.HudScale()*6);
+        int s = Configs.HudScale();
+        Font font = FontHandler.font(FontHandler.Game, s * 6);
         g.setFont(font);
-        g.setStroke(new BasicStroke(Configs.HudScale()*2));
         for(int i = 0; i < tabs.length; i++) {
             Rectangle rec = tabs[i];
             String name = keys()[i];
-            Color border = index.equals(name) ? Palette.ACCENT : Palette.OUTLINE;
-            g.setColor(border);
-            g.drawRect(rec.x, rec.y, rec.width, rec.height);
-            g.setColor(Palette.DEEP);
+            boolean ativa = index.equals(name);
+            boolean sob = !ativa && com.retronova.engine.inputs.Entrada.porMouse() && Mouse.on(rec);
+            if (sob) {
+                com.retronova.menus.shared.Realce.brilho(g, rec, 1f, s);
+            }
+            g.setColor(Palette.OUTLINE);
             g.fillRect(rec.x, rec.y, rec.width, rec.height);
+            g.setColor(ativa ? Palette.MAIN : Palette.DEEP);
+            g.fillRect(rec.x + s, rec.y + s, rec.width - 2 * s, rec.height - 2 * s);
+            if (ativa) {
+                g.setColor(Palette.LIGHT);
+                g.fillRect(rec.x + s, rec.y + s, rec.width - 2 * s, s);
+            }
+            if (sob) {
+                com.retronova.menus.shared.Realce.clarear(g, rec, 1f);
+            }
             int wf = FontHandler.getWidth(name, font);
             int hf = FontHandler.getHeight(name, font);
             g.setColor(Palette.OUTLINE);
-            g.drawString(name, rec.x + rec.width/2 - wf/2 + Configs.HudScale(), rec.y + rec.height/2 + hf/2 + Configs.HudScale());
-            Color c = index.equals(name) ? Palette.TEXT : Palette.LIGHT;
-            g.setColor(c);
+            g.drawString(name, rec.x + rec.width/2 - wf/2 + s, rec.y + rec.height/2 + hf/2 + s);
+            g.setColor(ativa ? Palette.TEXT : Palette.LIGHT);
             g.drawString(name, rec.x + rec.width/2 - wf/2, rec.y + rec.height/2 + hf/2);
         }
     }
+
 
     @Override
     public void dispose() {

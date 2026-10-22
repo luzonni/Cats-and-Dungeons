@@ -13,7 +13,7 @@ import java.awt.image.BufferedImage;
  * As telas de interface escalavam o PNG uma vez, no construtor, e guardavam a
  * imagem pronta. As posições dentro delas, ao contrário, liam
  * {@code Configs.HudScale()} a cada quadro. Enquanto ninguém mexia na opção, as
- * duas coisas concordavam. Ao mudar o "HUD size" em Options, a moldura continuava
+ * duas coisas concordavam. Ao mudar o "HUD size" em Settings, a moldura continuava
  * no tamanho antigo e os slots iam para onde a escala nova mandava — o inventário
  * e o status apareciam inteiros fora do lugar.
  *

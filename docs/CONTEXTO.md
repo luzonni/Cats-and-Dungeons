@@ -55,6 +55,15 @@ save 0, que não grava nada. Com ele: `-Dcd.gato=0|1|2` (Muffin, Azrael, Finn),
 medidor de quadros. O `build.gradle.kts` só repassa `-Pvitrine` ao `run`; **como
 o time passa os `-Dcd.*` (IDE, `java -jar`?) está a confirmar**.
 
+**Modo foto** (`engine/Foto.java`), para conferir telas sem jogar até elas:
+`-Dcd.foto=<pasta>` roda um roteiro e grava cada tela em PNG. O tamanho vem de
+`-Dcd.foto.tamanho=1280x720`, e o roteiro de
+`-Dcd.foto.roteiro="espera:60;tecla:Down;tecla:Enter;mouse:x,y;clique;foto:nome"`.
+A entrada é injetada no estado do jogo, nunca no sistema, e a janela abre fora
+da tela, sem foco e sem ícone na barra de tarefas. Saves, meta e conquistas vão
+para `build/foto/saves`, o `config.json` nunca é gravado e o áudio fica mudo.
+Combina com o modo bancada (`-Dcd.bench=true -Dcd.nivel=true`, por exemplo).
+
 Arquivos gerados em tempo de execução, todos no `.gitignore`: `config.json`,
 `saves/corrida-{1,2,3}.json`, `saves/meta.json`, `saves/conquistas.json`.
 
@@ -75,7 +84,7 @@ src/main/java/com/retronova/
 │   ├── Conquistas.java        10 conquistas
 │   ├── Estatisticas.java      números da corrida para a tela final
 │   ├── hud/                   HUD, hotbar, relógio, barra de chefe, flash de dano
-│   ├── interfaces/            inventário, loja, máquina de chiclete, Grade (foco)
+│   ├── interfaces/            loja, máquina de chiclete, Grade (foco); inventário desativado
 │   ├── items/                 armas da mão, consumíveis, Elemento, Classe,
 │   │                          Melhoria/Melhorias, Passiva, ArmaExtra, Evolucao
 │   ├── map/                   GameMap, Camera, Atmosfera (luz e sombra)
@@ -84,8 +93,10 @@ src/main/java/com/retronova/
 │   └── objects/               entidades, tiles, partículas, física
 │       └── entities/          Player, Bonus, Arsenal, ArmasDeArea, Furia,
 │                              Habilidades, enemies/, furniture/, utilities/, NPCs/
-└── menus/                     Menu, Saves, Personagens, Options, Pause,
-                               GameOver, Vitoria, TelaDeConquistas
+└── menus/                     Menu, Saves, Personagens, Configuracoes (Settings e pausa),
+    │                          GameOver, Vitoria, TelaDeConquistas
+    └── shared/                TelaDeMenu, Rodape, Abas, Realce, MaoDeCartas,
+                               Button, OptionRow, Confirm
 src/main/resources/com/retronova/resources/
 ├── maps/                      PNG (cor = tile) + JSON (entidades); waves/*.json
 ├── players/                   Muffin.json, Azrael.json, Finn.json
@@ -100,6 +111,12 @@ docs/                          esta pasta
 |---|---|
 | Laço de jogo (60 Hz fixo, render separado) | `engine/Engine.java` |
 | Fluxo de telas | `Engine.heapActivity` / `backActivity` / `pause` (pilha de `Activity`) |
+| Base de toda tela de menu (título, rodapé, transição, voltar) | `menus/shared/TelaDeMenu.java`, `Rodape.java`, `Abas.java` |
+| Settings e pausa (um componente só) | `menus/Configuracoes.java` + `menus/shared/OptionRow.java` |
+| Hover e foco de todo elemento da interface | `menus/shared/Realce.java` |
+| Cartas de escolha (nível e elemento) | `menus/shared/MaoDeCartas.java` |
+| Transmutação da arma ao escolher o elemento | `game/objects/entities/Transmutacao.java` |
+| Modo foto (capturas de tela por roteiro) | `engine/Foto.java` |
 | Partida | `game/Game.java` |
 | Corrida sem fim, horda, chefes | `game/map/arena/Waves.java` |
 | Campo gerado (160×160 tiles) | `game/map/arena/Gerador.java` |
@@ -115,6 +132,8 @@ docs/                          esta pasta
 | Chefes | `enemies/Chefe.java`, `RatoRei.java`, `CatToyBoss.java`, `KingCursedCatBoss.java` |
 | Golpe com aviso | `game/objects/Investida.java` |
 | Subir de nível (3 cartas) | `game/map/arena/SubirDeNivel.java` |
+| Status do gato (tecla E) | `menus/TelaDeStatus.java` |
+| Portal de nascimento (cor e brilho) | `game/map/arena/Chegada.java` (`Tom`) |
 | Baú → caça-níquel | `utilities/Bau.java` → `game/map/arena/Roleta.java` |
 | Escolha de elemento (aos 45 s) | `game/map/arena/EscolhaDeElemento.java` |
 | Save | `game/Corrida.java`, `menus/Saves.java` |
@@ -158,7 +177,7 @@ docs/                          esta pasta
 
 | Funcionalidade | Estado | Nota |
 |---|---|---|
-| Menu, opções (vídeo, áudio, interface), pausa | ✅ | |
+| Menu, Settings (vídeo, áudio, interface), pausa | ✅ | todas sobre `TelaDeMenu`; a pausa é o painel de Settings com a aba Run (`Configuracoes`) |
 | Seleção de personagem (3 gatos) | ✅ | |
 | Três espaços de save, retomar e apagar | ✅ | |
 | Antecâmara com vendedor, placas e portão | ✅ | o portão leva à corrida |
@@ -180,6 +199,8 @@ docs/                          esta pasta
 | Música que acompanha a corrida | ✅ | |
 | Save no meio da corrida | ✅ | relógio, chefes vivos e números da corrida vão junto; ver ARQUITETURA |
 | Dinheiro | ⏸️ | **em espera, por decisão**: o gato começa com 100, nada rende moeda, só a antecâmara vende. `Seller`, `Store`, `Coin` e `GumMachine` ficam no código sem uso até o dinheiro ganhar papel |
+| Inventário | ⏸️ | **desativado, não removido**: o E abre a tela de Status (`TelaDeStatus`). Os dados do `Inventory` seguem em uso (arma da mão, hotbar, loja) |
+| Tela de Status (tecla E) | ✅ | atributos finais com bônus, armas, buffs; pausa a corrida |
 | Plano de cartas com encaixes e status (HABILIDADES.md) | 🧪 | nenhuma fase implementada |
 
 Removidos em 2026-10-21 por serem inalcançáveis: o modo por ondas e salas
@@ -203,6 +224,12 @@ usava, e só fora da corrida sem fim). Estão no histórico do git.
 - **Áudio em régua de loudness** (`tools/GenMixagem.java`) e curva logarítmica
   nos volumes. Ver [ARQUITETURA.md](ARQUITETURA.md#áudio).
 - **Controle traduzido em teclas virtuais**: nenhuma tela conhece o controle.
+- **Uma gramática de interface** (2026-10-21): toda tela de menu estende
+  `TelaDeMenu`, todo hover e foco passa por `Realce` (crescer, brilhar, clarear,
+  nunca contorno) e toda escolha por cartas usa `MaoDeCartas`. Ver
+  [ARQUITETURA.md](ARQUITETURA.md#interface).
+- **Recompensa sem parar o jogo**: a transmutação da arma dura 0,3 s e não
+  bloqueia movimento nem ataque; a escolha já foi a pausa.
 
 ## 8. Onde estão os números de balanceamento
 
@@ -227,6 +254,18 @@ usava, e só fora da corrida sem fim). Estão no histórico do git.
 | Raridades e desgaste das melhorias | `Raridade.java`, `Melhoria.desgaste` |
 | Ouro e preços da meta | `Meta.java` |
 | Metas das conquistas | `Conquistas.java` |
+
+Ajuste fino da interface (cada classe lista os números no topo, numa seção
+"ajuste fino"):
+
+| O quê | Onde |
+|---|---|
+| Transição das telas de menu | `TelaDeMenu` (`TRANSICAO = 9` ticks, `SUBIDA = 6` px) |
+| Hover e foco: velocidade, crescimento, brilho, setas | `Realce` (`VELOCIDADE`, `CRESCIMENTO`, `CAMADAS`, `ALFA`, `CLAREAMENTO`, `SETA`, `AFASTAMENTO`, `RESPIRO`, `PERIODO_DO_RESPIRO`) |
+| Cartas: entrada, fechamento, tamanho, vão | `MaoDeCartas` (`ENTRADA = 26`, `FECHAR = 18`, `LARGURA`, `ALTURA`, `VAO`); o hover vem do `Realce` |
+| Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
+| Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
+| Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
 
 ## 9. Próximos passos conhecidos
 

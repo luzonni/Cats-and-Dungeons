@@ -7,7 +7,9 @@ import com.retronova.engine.graphics.Palette;
 import com.retronova.game.items.Consumable;
 import com.retronova.game.items.Item;
 import com.retronova.engine.graphics.UiSprite;
+import com.retronova.engine.inputs.Entrada;
 import com.retronova.engine.inputs.mouse.Mouse;
+import com.retronova.menus.shared.Realce;
 
 import java.awt.*;
 
@@ -76,24 +78,37 @@ public class Slot {
         return this.item == null;
     }
 
+    /**
+     * A casa, com o realce de passagem do mouse no estilo único do jogo (ver
+     * Realce): cresce um pouco, brilha por trás e clareia. Antes o item ENCOLHIA
+     * dois pixels sob o mouse, o oposto de todo o resto da interface.
+     */
     public void render(Graphics2D g) {
-        g.drawImage(sprite.imagem(), bounds.x, bounds.y, null);
-        renderItem(g);
+        boolean sob = Entrada.porMouse() && Mouse.on(getBounds());
+        int s = Configs.HudScale();
+        Rectangle r = bounds;
+        if (sob) {
+            r = Realce.crescer(bounds, 1f, s);
+            Realce.brilho(g, r, 1f, s);
+        }
+        g.drawImage(sprite.imagem(), r.x, r.y, r.width, r.height, null);
+        if (sob) {
+            Realce.clarear(g, r, 1f);
+        }
+        renderItem(g, r);
     }
 
     public void renderItem(Graphics2D g) {
+        renderItem(g, bounds);
+    }
+
+    private void renderItem(Graphics2D g, Rectangle area) {
         if(isEmpty())
             return;
-        int overAnimPref;
-        if(Mouse.on(getBounds())) {
-            overAnimPref = 2;
-        }else {
-            overAnimPref = 0;
-        }
-        int x = bounds.x + overAnimPref;
-        int y = bounds.y + overAnimPref;
-        int width = bounds.width - overAnimPref*2;
-        int height = bounds.height - overAnimPref*2;
+        int x = area.x;
+        int y = area.y;
+        int width = area.width;
+        int height = area.height;
         // O FUNDO DIZ A RARIDADE, e o selo saiu daqui.
         //
         // O carimbo no canto funcionava, mas competia com a arte: num quadrado de
@@ -140,11 +155,25 @@ public class Slot {
         }
     }
 
-    /** Moldura de foco: a casa que o Enter/A vai usar. */
+    /**
+     * O foco das setas e do controle: o mesmo realce do mouse (ver Realce), e não
+     * mais uma moldura. Desenhado depois das casas, então o brilho é recortado
+     * para FORA da casa — por cima dela ele tingiria o item.
+     *
+     * Sem as setas do marcador de foco: numa grade as casas encostam umas nas
+     * outras, e as setas cairiam em cima das vizinhas. O que torna o foco
+     * inconfundível aqui é o clareamento mais forte, junto com o brilho.
+     */
     public void renderFoco(Graphics2D g) {
         int s = Configs.HudScale();
-        g.setColor(Palette.ACCENT);
-        g.setStroke(new BasicStroke(s));
-        g.drawRect(bounds.x - s, bounds.y - s, bounds.width + s, bounds.height + s);
+        Rectangle r = Realce.crescer(bounds, 1f, s);
+        Graphics2D g2 = (Graphics2D) g.create();
+        java.awt.geom.Area fora = new java.awt.geom.Area(new Rectangle(r.x - 8 * s, r.y - 8 * s,
+                r.width + 16 * s, r.height + 16 * s));
+        fora.subtract(new java.awt.geom.Area(bounds));
+        g2.clip(fora);
+        Realce.brilho(g2, r, 1f, s);
+        g2.dispose();
+        Realce.clarear(g, bounds, 1.5f);
     }
 }

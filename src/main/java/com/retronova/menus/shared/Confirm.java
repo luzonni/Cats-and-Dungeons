@@ -122,7 +122,8 @@ public class Confirm {
 
         Rectangle painel = painel();
         int y = painel.y + painel.height - alturaBotao - 6 * s;
-        int folga = 6 * s;
+        // Folga para as setas do foco caberem entre os dois sem encostar no vizinho.
+        int folga = Realce.folgaEntreVizinhos(s);
         int centro = painel.x + painel.width / 2;
 
         sim.setBounds(new Rectangle(centro - larguraBotao - folga / 2, y, larguraBotao, alturaBotao));

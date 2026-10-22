@@ -8,6 +8,7 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Player;
 import studio.retrozoni.sheeter.SpriteSheet;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -126,19 +127,139 @@ public class Chegada {
                 (int) jogador.getY() + jogador.getHeight() / 2, escala);
     }
 
+    // ------------------------------------------------------------ cor do portal
+
     /**
-     * Desenha um portal centrado num ponto. Compartilhado com o nascimento dos
-     * inimigos: o gato e os bichos chegam da mesma maneira, então chegam com o
-     * mesmo desenho — duas animações diferentes para o mesmo acontecimento fariam o
-     * jogador procurar uma diferença que não existe.
+     * De quem é o portal: o MESMO DESENHO, em duas cores.
+     *
+     * O desenho continua um só — o gato e os bichos chegam do mesmo jeito, e duas
+     * animações para o mesmo acontecimento fariam o jogador procurar uma diferença
+     * que não existe. A COR, porém, passou a dizer quem vem: o portal dos bichos é
+     * um aviso de perigo, e o do gato (e do vendedor) não é.
      */
+    public enum Tom {
+        /**
+         * O carmim das bandeiras da arte (ver Palette.WARN), levado ao claro.
+         *
+         * POR QUE VERMELHO E NÃO O VERDE DE ANTES. A ambientação nova é fria —
+         * ardósia, azul-lua e roxo-noite, medidos da ilustração do título em
+         * Palette —, e o verde ácido do portal era a única cor da cena que não
+         * vinha dela. A arte tem UMA família quente, o vermelho das bandeiras, e
+         * a interface já a reserva para aviso (Palette.WARN): é a cor que, numa
+         * cena toda fria, lê como exceção. É também a convenção do gênero para
+         * "inimigo vai surgir aqui" — o Brotato marca o chão com cruzes vermelhas
+         * antes de cada bicho nascer —, e o jogador chega sabendo ler.
+         *
+         * POR QUE TÃO CLARO. O WARN da interface é escuro (é texto sobre painel);
+         * sobre o chão de pedra cinza e as manchas de mato do campo ele sumiria. A
+         * rampa vai do vinho ao rosa-claro, e o miolo claro mais o brilho que
+         * pulsa por baixo dão contraste de VALOR, além de matiz, sobre qualquer
+         * chão — o que importa no meio da horda, onde se olha de relance.
+         */
+        PERIGO(new Color(0x3A1424), new Color(0xB8344F), new Color(0xFF9AA8), true),
+        /** A luz da lua da arte (Palette.DEEP → LIGHT → TEXT): chegada sem ameaça. */
+        CHEGADA(com.retronova.engine.graphics.Palette.DEEP, com.retronova.engine.graphics.Palette.LIGHT,
+                com.retronova.engine.graphics.Palette.TEXT, false);
+
+        /** As três paradas da rampa: sombra, meio e luz do portal. Ajuste fino aqui. */
+        final Color escura, media, clara;
+        /** Brilho pulsante por baixo, para o aviso furar o chão. */
+        final boolean brilha;
+        private final java.util.Map<BufferedImage, BufferedImage> tingidos = new java.util.IdentityHashMap<>();
+
+        Tom(Color escura, Color media, Color clara, boolean brilha) {
+            this.escura = escura;
+            this.media = media;
+            this.clara = clara;
+            this.brilha = brilha;
+        }
+
+        /**
+         * O quadro do portal nesta cor, pintado uma vez e guardado.
+         *
+         * A arte é verde; aqui cada pixel vira a cor da rampa pela LUMINOSIDADE
+         * dele, e o alfa fica. Assim o desenho, o sombreado e a animação continuam
+         * os da arte, e trocar a cor é trocar três números.
+         */
+        BufferedImage tingir(BufferedImage arte) {
+            return tingidos.computeIfAbsent(arte, a -> {
+                BufferedImage saida = new BufferedImage(a.getWidth(), a.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                for (int y = 0; y < a.getHeight(); y++) {
+                    for (int x = 0; x < a.getWidth(); x++) {
+                        int argb = a.getRGB(x, y);
+                        int alfa = argb >>> 24;
+                        if (alfa == 0) {
+                            continue;
+                        }
+                        int r = (argb >> 16) & 0xFF, gr = (argb >> 8) & 0xFF, b = argb & 0xFF;
+                        double l = (0.299 * r + 0.587 * gr + 0.114 * b) / 255.0;
+                        Color c = l < 0.5 ? misturar(escura, media, l * 2) : misturar(media, clara, (l - 0.5) * 2);
+                        saida.setRGB(x, y, (alfa << 24) | (c.getRGB() & 0xFFFFFF));
+                    }
+                }
+                return saida;
+            });
+        }
+
+        private static Color misturar(Color a, Color b, double t) {
+            t = Math.max(0, Math.min(1, t));
+            return new Color((int) (a.getRed() + (b.getRed() - a.getRed()) * t),
+                    (int) (a.getGreen() + (b.getGreen() - a.getGreen()) * t),
+                    (int) (a.getBlue() + (b.getBlue() - a.getBlue()) * t));
+        }
+    }
+
+    /** Tamanho do portal em tiles, no tamanho cheio. */
+    public static final double TAMANHO = 1.4;
+    /** Opacidade máxima do brilho por baixo do portal de perigo (0-255). */
+    public static final int ALFA_DO_BRILHO = 70;
+    /** Quanto o brilho passa da borda do portal, em fração do lado. */
+    public static final double ALCANCE_DO_BRILHO = 0.35;
+    /** Segundos de um pulso do brilho: rápido o bastante para ler como "agora". */
+    public static final double PULSO = 0.5;
+
+    /** O portal da chegada do gato. */
     public static void desenhar(Graphics2D g, BufferedImage arte,
                                 int centroX, int centroY, float escala) {
+        desenhar(g, arte, centroX, centroY, escala, Tom.CHEGADA);
+    }
+
+    /**
+     * Desenha um portal centrado num ponto, na cor de quem chega. Compartilhado
+     * com o nascimento dos inimigos (ver Tom).
+     */
+    public static void desenhar(Graphics2D g, BufferedImage arte,
+                                int centroX, int centroY, float escala, Tom tom) {
         if (arte == null || escala <= 0.01f) {
             return;
         }
-        int lado = (int) (GameObject.SIZE() * 1.4 * escala);
-        BufferedImage esmaecido = Alpha.getImage(arte, Math.min(1f, escala + 0.2f));
+        int lado = (int) (GameObject.SIZE() * TAMANHO * escala);
+        if (tom.brilha) {
+            desenharBrilho(g, centroX, centroY, lado, escala, tom);
+        }
+        BufferedImage esmaecido = Alpha.getImage(tom.tingir(arte), Math.min(1f, escala + 0.2f));
         g.drawImage(esmaecido, centroX - lado / 2, centroY - lado / 2, lado, lado, null);
+    }
+
+    /**
+     * Um halo achatado no chão, pulsando: elipses concêntricas de opacidade
+     * decrescente, na cor do meio da rampa. É ele que segura a leitura sobre o
+     * mato e sobre a pedra clara, onde o desenho sozinho perderia contraste.
+     */
+    private static void desenharBrilho(Graphics2D g, int cx, int cy, int lado, float escala, Tom tom) {
+        double pulso = 0.6 + 0.4 * Math.sin(Game.tempoVisual() * 2 * Math.PI / PULSO);
+        int camadas = 4;
+        int alcance = (int) (lado * ALCANCE_DO_BRILHO);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        Color c = tom.media;
+        for (int k = camadas; k >= 1; k--) {
+            int m = alcance * k / camadas;
+            int alfa = (int) (ALFA_DO_BRILHO * pulso * escala * (1f - (k - 1) / (float) camadas));
+            g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), Math.max(0, Math.min(255, alfa))));
+            int w = lado + 2 * m, h = (int) ((lado + 2 * m) * 0.7);
+            g2.fillOval(cx - w / 2, cy - h / 2 + lado / 8, w, h);
+        }
+        g2.dispose();
     }
 }

@@ -1,6 +1,8 @@
 package com.retronova.menus;
 
-import com.retronova.engine.Activity;
+import com.retronova.menus.shared.Realce;
+import com.retronova.menus.shared.Rodape;
+import com.retronova.menus.shared.TelaDeMenu;
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
@@ -41,51 +43,66 @@ import java.util.Map;
  * loja de upgrades permanentes com o ouro ganho (ver Meta). E o momento em que
  * a derrota vira "so mais uma".
  */
-public class GameOver implements Activity {
-
-    private static final int ENTRADA = 30;
+public class GameOver extends TelaDeMenu {
 
     private final List<Button> botoes = new ArrayList<>();
     private final List<Rectangle> linhasDaLoja = new ArrayList<>();
     private int foco = -1;
     /** Linha da loja em foco pelas setas e pelo controle, ou -1 com o foco nos botões. */
     private int focoLoja = -1;
-    private int entrando;
     private int brilhoDaCompra = -1, desdeACompra;
-    /** Ticks desde que a tela terminou de entrar; anima os avisos de conquista. */
+    /** Ticks desde que a tela abriu; anima os avisos de conquista. */
     private int desdeOFim;
 
     private final int gato;
     private final int espaco;
 
     public GameOver(int gato, int espaco) {
+        // Vencer o chefe final muda o titulo, mesmo que o gato tenha caido depois.
+        super(Estatisticas.venceu() ? "Victory" : "Run Over");
+        corDoTitulo(Estatisticas.venceu() ? new Color(0xFFD23F) : new Color(0xE0475F));
         this.gato = gato;
         this.espaco = espaco;
         Sound.stopAll();
         Sound.play(Musics.GameOver, true);
         botoes.add(new Button(0, 0, 0, 0, "Try Again", b -> reiniciar()).primary());
-        botoes.add(new Button(0, 0, 0, 0, "Main Menu", b -> Engine.heapActivity(new Menu())));
-        posicionar();
+        botoes.add(new Button(0, 0, 0, 0, "Main Menu", b -> voltarAoMenuPrincipal()));
     }
 
+    /**
+     * Uma corrida nova com o mesmo gato, no mesmo espaço.
+     *
+     * TIRA ESTA TELA DA PILHA ANTES. Empilhando o jogo por cima dela, cada nova
+     * tentativa deixava um GameOver para trás, e a pilha crescia a cada derrota.
+     */
     private void reiniciar() {
         Sound.stopAll();
+        Engine.backActivity();
         Engine.heapActivity(new Game(gato, new Room("beginning"), espaco), () -> { });
     }
 
+    /** Esc e B levam ao menu principal, como o botão. */
+    @Override
+    protected void voltar() {
+        voltarAoMenuPrincipal();
+    }
+
     private int escala() {
-        int cabe = Math.max(1, (Engine.window.getHeight() - 20) / 210);
+        int cabe = Math.max(1, areaDoConteudo().height / 172);
         return Math.max(1, Math.min(Configs.UiScale(), cabe));
     }
 
     private Rectangle painelResumo, painelLoja;
 
-    private void posicionar() {
+    @Override
+    protected void posicionar() {
         int s = escala();
-        int w = Engine.window.getWidth(), h = Engine.window.getHeight();
+        int w = Engine.window.getWidth();
+        Rectangle area = areaDoConteudo();
         int pw = 150 * s, ph = 140 * s, vao = 10 * s;
+        int total = ph + 10 * s + Button.preferredHeight();
         int x0 = w / 2 - pw - vao / 2;
-        int y0 = h / 2 - ph / 2 - 8 * s;
+        int y0 = area.y + Math.max(0, (area.height - total) / 2);
         painelResumo = new Rectangle(x0, y0, pw, ph);
         painelLoja = new Rectangle(w / 2 + vao / 2, y0, pw, ph);
         linhasDaLoja.clear();
@@ -97,25 +114,17 @@ public class GameOver implements Activity {
         int largura = Button.preferredWidth();
         int altura = Button.preferredHeight();
         int by = y0 + ph + 10 * s;
-        int bx = w / 2 - largura - 4 * s;
+        int vaoBotoes = Realce.folgaEntreVizinhos(Configs.UiScale());
+        int bx = w / 2 - largura - vaoBotoes / 2;
         for (int i = 0; i < botoes.size(); i++) {
-            botoes.get(i).setBounds(new Rectangle(bx + i * (largura + 8 * s), by, largura, altura));
+            botoes.get(i).setBounds(new Rectangle(bx + i * (largura + vaoBotoes), by, largura, altura));
         }
     }
 
     @Override
-    public void tick() {
-        posicionar();
-        if (entrando < ENTRADA) {
-            entrando++;
-            return;
-        }
+    protected void atualizar() {
         desdeACompra++;
         desdeOFim++;
-        if (KeyBoard.KeyPressed("Escape")) {
-            Engine.heapActivity(new Menu());
-            return;
-        }
         // Loja: clicar numa linha compra o proximo nivel, se houver ouro.
         Meta.Permanente[] todos = Meta.Permanente.values();
         for (int i = 0; i < linhasDaLoja.size(); i++) {
@@ -151,6 +160,7 @@ public class GameOver implements Activity {
                 comprar(focoLoja);
             } else if (foco >= 0) {
                 botoes.get(foco).activate();
+                return;
             }
         }
         for (int i = 0; i < botoes.size(); i++) {
@@ -177,33 +187,25 @@ public class GameOver implements Activity {
     // ------------------------------------------------------------- desenho
 
     @Override
-    public void render(Graphics2D g) {
-        float entrada = Math.min(1f, (entrando + Engine.alpha()) / ENTRADA);
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+    protected List<Rodape.Dica> dicas() {
+        return List.of(new Rodape.Dica("Enter", "A", "Select / Buy"),
+                new Rodape.Dica("Esc", "B", "Main menu"));
+    }
+
+    @Override
+    protected void desenharConteudo(Graphics2D g) {
         int s = escala();
-
-        g.setColor(Palette.DARKEST);
-        g.fillRect(0, 0, w, h);
-        g.setColor(new Color(Palette.VEIL.getRed(), Palette.VEIL.getGreen(),
-                Palette.VEIL.getBlue(), (int) (Palette.VEIL.getAlpha() * entrada)));
-        g.fillRect(0, 0, w, h);
-        if (entrada < 1f) {
-            return;
-        }
-
-        Font titulo = FontHandler.font(FontHandler.Game, 18f * s);
-        // Vencer o chefe final muda o titulo, mesmo que o gato tenha caido depois.
-        boolean venceu = Estatisticas.venceu();
-        contornadoCentro(g, venceu ? "VICTORY" : "RUN OVER", titulo, w / 2, painelResumo.y - 10 * s,
-                venceu ? new Color(0xFFD23F) : new Color(0xE0475F), s);
-
         desenharResumo(g, s);
         desenharLoja(g, s);
-        desenharConquistas(g, s);
         for (Button botao : botoes) {
             botao.render(g);
         }
+    }
+
+    /** Os avisos entram pela direita, por cima de tudo, fora da transição da tela. */
+    @Override
+    protected void desenharPorCima(Graphics2D g) {
+        desenharConquistas(g, escala());
     }
 
     /**
@@ -218,8 +220,32 @@ public class GameOver implements Activity {
         if (novas.isEmpty()) {
             return;
         }
-        int w = 96 * s, h = 22 * s, vao = 4 * s;
+        int h = 22 * s, vao = 4 * s;
         int margem = Configs.Margin();
+        int celula = Math.max(1, (int) Math.round(1.6 * s));
+        int lado = com.retronova.game.map.arena.Icones.lado(celula);
+        Font rotulo = FontHandler.font(FontHandler.Septem, 5f * s);
+        // A LARGURA VEM DO MAIOR NOME, e não de um valor fixo: com 96 pixels, nomes
+        // como "Treasure Hunter" passavam da borda do aviso. Todos os avisos ficam
+        // com a mesma largura, para a pilha não ficar serrilhada; se nem a janela
+        // inteira couber, a fonte do nome desce um ponto por vez.
+        int maxW = Engine.window.getWidth() - 2 * margem;
+        int fixo = 4 * s + lado + 4 * s + 6 * s;
+        float tamNome = 7f;
+        Font fonteNome = FontHandler.font(FontHandler.Game, tamNome * s);
+        int texto;
+        while (true) {
+            texto = FontHandler.getWidth("Achievement unlocked", rotulo);
+            for (Conquistas.Conquista c : novas) {
+                texto = Math.max(texto, FontHandler.getWidth(c.nome(), fonteNome));
+            }
+            if (fixo + texto <= maxW || tamNome <= 4f) {
+                break;
+            }
+            tamNome -= 1f;
+            fonteNome = FontHandler.font(FontHandler.Game, tamNome * s);
+        }
+        int w = Math.min(maxW, Math.max(96 * s, fixo + texto));
         for (int i = 0; i < novas.size(); i++) {
             // 0 a 1: cada aviso começa 14 ticks depois do anterior e leva 18 para entrar.
             double t = Math.clamp((desdeOFim + Engine.alpha() - 10 - i * 14) / 18.0, 0, 1);
@@ -237,16 +263,12 @@ public class GameOver implements Activity {
             g.setPaint(new GradientPaint(0, y, new Color(0x46391E), 0, y + h, new Color(0x201A12)));
             g.fillRoundRect(x, y, w, h, 8 * s, 8 * s);
 
-            int celula = Math.max(1, (int) Math.round(1.6 * s));
-            int lado = com.retronova.game.map.arena.Icones.lado(celula);
             com.retronova.game.map.arena.Icones.desenhar(g, "TROFEU", new Color(0xFFD23F),
                     x + 4 * s, y + (h - lado) / 2, celula);
 
             int tx = x + 4 * s + lado + 4 * s;
-            TextFx.draw(g, "Achievement unlocked", FontHandler.font(FontHandler.Septem, 5f * s),
-                    tx, y + 8 * s, Palette.LIGHT, s);
-            TextFx.draw(g, novas.get(i).nome(), FontHandler.font(FontHandler.Game, 7f * s),
-                    tx, y + 17 * s, new Color(0xFFD23F), s);
+            TextFx.draw(g, "Achievement unlocked", rotulo, tx, y + 8 * s, Palette.LIGHT, s);
+            TextFx.draw(g, novas.get(i).nome(), fonteNome, tx, y + 17 * s, new Color(0xFFD23F), s);
         }
     }
 
@@ -329,14 +351,15 @@ public class GameOver implements Activity {
             boolean cheio = nivel >= Meta.Permanente.NIVEL_MAXIMO;
             boolean podeComprar = !cheio && Meta.ouro() >= Meta.preco(m);
             boolean sob = Entrada.porFoco() ? focoLoja == i : r.contains(Mouse.getX(), Mouse.getY());
+            // O realce comum (ver Realce) marca a linha sob o mouse ou o foco, MESMO
+            // SEM OURO: a cor clara diz "da para comprar", o realce diz "e aqui".
+            if (sob) {
+                Realce.brilho(g, r, 1f, s);
+            }
             g.setColor(sob && podeComprar ? Palette.LIGHT : Palette.MAIN);
             g.fillRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
-            // Contorno do foco, mesmo sem ouro: o realce claro so diz "da para
-            // comprar", e sem o contorno uma linha cara nao mostraria onde o foco esta.
             if (sob && Entrada.porFoco()) {
-                g.setColor(Palette.ACCENT);
-                g.setStroke(new BasicStroke(s));
-                g.drawRoundRect(r.x, r.y, r.width, r.height, 6 * s, 6 * s);
+                Realce.marcadorDeFoco(g, r, s);
             }
             if (brilhoDaCompra == i && desdeACompra < 20) {
                 g.setColor(new Color(255, 255, 255, (int) (200 * (1 - desdeACompra / 20.0))));

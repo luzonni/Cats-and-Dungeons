@@ -60,6 +60,9 @@ public class Engine implements Runnable {
         Configs.load();
         FontHandler.addFont("game", "septem");
         Sound.load();
+        if (Foto.ligado()) {
+            Sound.silenciar();      // fotografar nao toca nada nas caixas de quem esta na maquina
+        }
         //O Sheeter monta "<path>/<módulo>/<nome>.png" por conta própria. Passar
         //resPath com a barra final gera "//" no meio do caminho: num classpath
         //explodido a URL é normalizada e funciona, mas dentro de um .jar os nomes
@@ -208,6 +211,16 @@ public class Engine implements Runnable {
         return Engine.stackActivities.getLast();
     }
 
+    /** A tela por cima da activity (pausa, opções da pausa, cartas), ou null. */
+    public static Activity sobreposta() {
+        return Engine.OverView;
+    }
+
+    /** Quantas telas há na pilha. */
+    public static int telasNaPilha() {
+        return Engine.stackActivities.size();
+    }
+
     public static void CLOSE() {
         Engine.getACTIVITY().dispose();
         Engine.isRunning = false;
@@ -320,6 +333,28 @@ public class Engine implements Runnable {
             Engine.BUFFER = null;
             return null;
         }
+        prepararQuadro(graphics);
+        return graphics;
+    }
+
+    /** A tela corrente e a que estiver por cima dela. */
+    private static void desenharTelas(Graphics2D g) {
+        if (!stackActivities.isEmpty()) {
+            getACTIVITY().render(g);
+        }
+        if (OverView != null) {
+            OverView.render(g);
+        }
+    }
+
+    /** O quadro inteiro num Graphics qualquer, para o modo de foto. Ver Foto. */
+    static void desenharTudo(Graphics2D g) {
+        prepararQuadro(g);
+        desenharTelas(g);
+    }
+
+    /** Fundo preto e as dicas de desenho das opcoes. Vale para a tela e para a foto. */
+    private static void prepararQuadro(Graphics2D graphics) {
         graphics.setColor(Color.black);
         graphics.fillRect(0, 0, window.getWidth(), window.getHeight());
         if(Configs.isNeatGraphics()) {
@@ -356,7 +391,6 @@ public class Engine implements Runnable {
             graphics.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
             graphics.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
         }
-        return graphics;
     }
 
     private synchronized void start() {
@@ -374,6 +408,7 @@ public class Engine implements Runnable {
         // Antes da janela e da Activity: o aperto do controle chega às teclas
         // virtuais no mesmo tick em que a tela vai lê-las.
         Gamepad.tick();
+        Foto.tick();
         window.tick();
         Debugging.tick();
         Debugging.setInfo("Ticks", Engine.HERTZ + " / " + (int) Engine.HZ);
@@ -482,12 +517,7 @@ public class Engine implements Runnable {
                     long inicioRender = System.nanoTime();
                     Graphics2D g = getGraphics();
                     if (g != null) {
-                        if (!stackActivities.isEmpty()) {
-                            getACTIVITY().render(g);
-                        }
-                        if (OverView != null) {
-                            OverView.render(g);
-                        }
+                        desenharTelas(g);
                         render(g);
                         frames++;
                         desenhou = true;
