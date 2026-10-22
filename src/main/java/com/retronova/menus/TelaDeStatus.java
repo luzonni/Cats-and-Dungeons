@@ -18,6 +18,7 @@ import com.retronova.game.items.Item;
 import com.retronova.game.items.Melhoria;
 import com.retronova.game.items.Melhorias;
 import com.retronova.game.items.Passiva;
+import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.arena.SubirDeNivel;
 import com.retronova.game.objects.entities.Bonus;
 import com.retronova.game.objects.entities.Modifiers;
@@ -150,7 +151,9 @@ public class TelaDeStatus extends TelaDeMenu {
         List<Linha> l = new ArrayList<>();
         l.add(new Linha("Level", gato.getLevel() + "  (" + (int) gato.getXp() + "/" + (int) gato.getXpLength() + " XP)",
                 Palette.TEXT, null, "XP to the next level."));
-        if (Game.getWave() != null) {
+        // SÓ NA ARENA: fora dela getWave lança NotInMap, e não devolve null. Abrir o
+        // Status (E) na sala do começo derrubava o jogo.
+        if (Game.getMap() instanceof Arena) {
             l.add(new Linha("Kills", String.valueOf(Game.getWave().abates()), Palette.TEXT, null,
                     "Enemies defeated this run."));
         }
