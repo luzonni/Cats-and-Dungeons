@@ -42,7 +42,7 @@ public class Menu extends TelaDeMenu {
     // ----------------------------------------------------------- ajuste fino
 
     /** Ticks entre um elemento e o próximo na entrada em sequência, e quanto cada um leva para surgir. */
-    public static final int ATRASO_ENTRE_ELEMENTOS = 7, SURGIR_DO_ELEMENTO = 14;
+    public static final int ATRASO_ENTRE_ELEMENTOS = 10, SURGIR_DO_ELEMENTO = 18;
     /** Quanto cada elemento sobe ao surgir, em pixels nativos. */
     public static final int SUBIDA_DO_ELEMENTO = 6;
 

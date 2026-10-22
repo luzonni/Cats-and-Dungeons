@@ -42,7 +42,7 @@ import java.awt.image.BufferedImage;
  * some sem que nada pule de lugar. Não há corte entre a abertura e o menu.
  *
  * AS FASES, em ticks de 60 Hz desenhados com Engine.alpha (iguais a 60 e a 240+
- * FPS); as durações estão no topo e somam 4,4 s na versão completa:
+ * FPS); as durações estão no topo e somam 7,4 s na versão completa:
  *
  *   PRETO    a janela abre preta (Window) e o ar da masmorra entra.
  *   CRÉDITO  "a game by" e o nome da equipe sobem do escuro e somem.
@@ -53,7 +53,7 @@ import java.awt.image.BufferedImage;
  * Depois, o Menu assume e faz os botões surgirem um a um (Menu.entrarEmSequencia).
  *
  * VERSÃO CURTA A PARTIR DA SEGUNDA ABERTURA (Configs.IntroVista): sem crédito,
- * logo e cena mais rápidas, 1,6 s. Quem abre o jogo muitas vezes não quer ver o
+ * logo e cena mais rápidas, 2,7 s. Quem abre o jogo muitas vezes não quer ver o
  * crédito toda vez — há quem faça mod só para pular os logos de abertura —, e a
  * logo virando a tela inicial continua sendo a chegada do jogo.
  *
@@ -80,12 +80,17 @@ public class Abertura implements Activity {
     // ----------------------------------------------------------- ajuste fino
 
     /** Ticks de cada fase na versão completa (60 por segundo). */
-    public static final int PRETO = 18, CREDITO_ENTRA = 24, CREDITO_FICA = 42, CREDITO_SAI = 24,
-            LOGO_ENTRA = 54, LOGO_FICA = 36, CENA = 66;
-    /** Ticks de cada fase na versão curta, das aberturas seguintes. */
-    public static final int PRETO_CURTA = 10, LOGO_ENTRA_CURTA = 30, LOGO_FICA_CURTA = 12, CENA_CURTA = 42;
+    /**
+     * Ticks de cada fase na versão completa (60 por segundo). Somam 7,4 s: a
+     * primeira versão, com 4,4 s, passava rápido demais para ler o crédito e ver a
+     * luz atravessar a logo.
+     */
+    public static final int PRETO = 30, CREDITO_ENTRA = 42, CREDITO_FICA = 84, CREDITO_SAI = 36,
+            LOGO_ENTRA = 84, LOGO_FICA = 72, CENA = 96;
+    /** Ticks de cada fase na versão curta, das aberturas seguintes (2,7 s). */
+    public static final int PRETO_CURTA = 12, LOGO_ENTRA_CURTA = 54, LOGO_FICA_CURTA = 36, CENA_CURTA = 60;
     /** Ticks da música da tela inicial subindo, contados do começo da cena. */
-    public static final int MUSICA_SOBE = 120;
+    public static final int MUSICA_SOBE = 150;
     /**
      * O tom da logo antes de a luz passar, de 0 a 1 do branco: ela surge acinzentada
      * e a passagem da luz a deixa branca, o tom do letreiro pintado. Mudança suave de
