@@ -101,9 +101,23 @@ public class KeyBoard implements KeyListener {
     public static void pad(String key, boolean ativo) {
         for(int i = 0; i < Keys.length; i++) {
             if(Keys[i].getName().equalsIgnoreCase(key)) {
+                if (ativo && !Keys[i].pad) {
+                    apertos++;
+                }
                 Keys[i].pad = ativo;
             }
         }
+    }
+
+    /**
+     * Quantas teclas foram apertadas desde que o jogo abriu, de qualquer origem:
+     * teclado, controle ou o modo de foto. Para "qualquer tecla" (a abertura):
+     * compara-se com o valor de antes, sem consumir a tecla de ninguém.
+     */
+    private static volatile long apertos;
+
+    public static long apertos() {
+        return apertos;
     }
 
     /**
@@ -116,6 +130,7 @@ public class KeyBoard implements KeyListener {
                 Keys[i].setActive(ativo);
                 if (ativo) {
                     Entrada.tecla();
+                    apertos++;
                 }
                 return;
             }
@@ -154,6 +169,7 @@ public class KeyBoard implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         Entrada.tecla();
+        apertos++;
         // == System ==
         for(int i = 0; i < Keys.length; i++) {
             if(Keys[i].getKey() == e.getKeyCode()) {

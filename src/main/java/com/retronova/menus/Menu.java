@@ -39,11 +39,47 @@ public class Menu extends TelaDeMenu {
     /** Índice do botão sob foco de teclado; -1 quando o mouse está no comando. */
     private int foco = -1;
 
+    // ----------------------------------------------------------- ajuste fino
+
+    /** Ticks entre um elemento e o próximo na entrada em sequência, e quanto cada um leva para surgir. */
+    public static final int ATRASO_ENTRE_ELEMENTOS = 7, SURGIR_DO_ELEMENTO = 14;
+    /** Quanto cada elemento sobe ao surgir, em pixels nativos. */
+    public static final int SUBIDA_DO_ELEMENTO = 6;
+
+    /**
+     * Ticks desde que a entrada em sequência começou, ou -1 sem ela. Com ela, os
+     * botões, o troféu e a versão surgem um depois do outro (ver Abertura): a tela
+     * inicial chega como continuação da abertura, e não toda de uma vez.
+     */
+    private int desdeAEntrada = -1;
+
     public Menu() {
+        this(true);
+    }
+
+    /** @param tocarMusica false quando a abertura vai trazer a música por desvanecimento */
+    public Menu(boolean tocarMusica) {
         super(null);
         this.botoes = new ArrayList<>();
         criarBotoes();
-        tocarMusica();
+        if (tocarMusica) {
+            tocarMusica();
+        }
+    }
+
+    /** Faz os elementos surgirem um a um a partir de agora. */
+    public void entrarEmSequencia() {
+        desdeAEntrada = 0;
+    }
+
+    /** De 0 a 1: quanto o elemento de ordem i já surgiu. */
+    private float surgimento(int i) {
+        if (desdeAEntrada < 0) {
+            return 1f;
+        }
+        float t = (desdeAEntrada + Engine.alpha() - i * ATRASO_ENTRE_ELEMENTOS) / SURGIR_DO_ELEMENTO;
+        float f = Math.max(0f, Math.min(1f, t));
+        return 1f - (1f - f) * (1f - f) * (1f - f);   // ease-out cúbico
     }
 
     /** A trilha da tela inicial, do começo. Chamada ao abrir e ao voltar da partida. */
@@ -115,6 +151,12 @@ public class Menu extends TelaDeMenu {
 
     @Override
     protected void atualizar() {
+        if (desdeAEntrada >= 0) {
+            desdeAEntrada++;
+            if (desdeAEntrada > botoes.size() * ATRASO_ENTRE_ELEMENTOS + SURGIR_DO_ELEMENTO + 2) {
+                desdeAEntrada = -1;     // todos chegaram: a tela segue sem custo extra
+            }
+        }
         navegarPeloTeclado();
 
         for (int i = 0; i < botoes.size(); i++) {
@@ -148,13 +190,32 @@ public class Menu extends TelaDeMenu {
 
     @Override
     protected void desenharConteudo(Graphics2D g) {
+        int i = 0;
         for (Button botao : botoes) {
             if (botao != trofeu) {
-                botao.render(g);    // o troféu tem desenho próprio, logo abaixo
+                // o troféu tem desenho próprio, logo abaixo
+                emSequencia(g, i++, gg -> botao.render(gg));
             }
         }
-        desenharTrofeu(g);
-        desenharVersao(g);
+        emSequencia(g, i++, this::desenharTrofeu);
+        emSequencia(g, i, this::desenharVersao);
+    }
+
+    /** Desenha o elemento de ordem i já no ponto da entrada em sequência: subindo e aparecendo. */
+    private void emSequencia(Graphics2D g, int i, java.util.function.Consumer<Graphics2D> desenho) {
+        float f = surgimento(i);
+        if (f >= 1f) {
+            desenho.accept(g);
+            return;
+        }
+        if (f <= 0f) {
+            return;
+        }
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setComposite(java.awt.AlphaComposite.getInstance(java.awt.AlphaComposite.SRC_OVER, f));
+        g2.translate(0, Math.round((1 - f) * SUBIDA_DO_ELEMENTO * Configs.UiScale()));
+        desenho.accept(g2);
+        g2.dispose();
     }
 
     /**
