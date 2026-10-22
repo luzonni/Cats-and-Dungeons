@@ -567,6 +567,7 @@ public class Engine implements Runnable {
         // Antes da janela e da Activity: o aperto do controle chega às teclas
         // virtuais no mesmo tick em que a tela vai lê-las.
         Gamepad.tick();
+        Sound.tick();      // desvanecimentos de música (ver Sound.desvanecer)
         Foto.tick();
         window.tick();
         Debugging.tick();

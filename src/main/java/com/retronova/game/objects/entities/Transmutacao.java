@@ -86,10 +86,11 @@ public final class Transmutacao {
         this.doElemento = doElemento;
         this.cor = cor;
         this.nome = nome;
-        // O ARPEJO DE CONQUISTA, e nao o estalo generico de portal. O portal diz
-        // "alguma coisa apareceu"; este diz "voce ganhou alguma coisa", que e o que
-        // de fato esta acontecendo. Ver GenSonsDeCena.
-        Sound.play(Sounds.Conquista);
+        // SEM SOM DE RECOMPENSA AQUI. Tocava o arpejo de conquista; agora quem
+        // diz "você ganhou" é a confirmação do elemento, na escolha (ver
+        // EscolhaDeElemento), meio segundo antes. Dois sons de recompensa seguidos
+        // brigam pela mesma atenção. O que fica é o som do elemento no quadro da
+        // troca (ver tick), o primeiro golpe com o timbre novo.
     }
 
     public boolean acabou() {

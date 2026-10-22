@@ -88,7 +88,10 @@ public class Sound {
 		musics = new HashMap<>();
 		Musics[] names = Musics.values();
 		for(Musics name : names) {
-			Music music = TinySound.loadMusic(Engine.resPath + "audio/" + name.resource() + ".ogg", true);
+			// Ogg por padrão; um nome com extensão (a trilha gerada da escolha de
+			// elemento é WAV) é usado como está.
+			String arquivo = name.resource().contains(".") ? name.resource() : name.resource() + ".ogg";
+			Music music = TinySound.loadMusic(Engine.resPath + "audio/" + arquivo, true);
 			musics.put(name.resource(), music);
 		}
 	}
@@ -191,6 +194,20 @@ public class Sound {
 	 * jogou com a musica em vinte por cento continua ouvindo vinte por cento.
 	 */
 	public static void volume(Musics music, double fracao) {
+		// UM DESVANECIMENTO EM CURSO MANDA. Quem pede um volume no meio dele (a
+		// trilha da arena, que se ajusta sozinha) muda o destino, e não o volume
+		// de agora: sem isso a faixa pularia no meio da rampa.
+		synchronized (Sound.class) {
+			double[] d = desvanecendo.get(music);
+			if (d != null) {
+				d[1] = Math.max(0d, Math.min(1d, fracao));
+				return;
+			}
+		}
+		aplicarVolume(music, fracao);
+	}
+
+	private static void aplicarVolume(Musics music, double fracao) {
 		if(musics == null) {
 			return;
 		}
@@ -199,6 +216,55 @@ public class Sound {
 			double f = Math.max(0d, Math.min(1d, fracao));
 			fracoes.put(music, f);
 			m.setVolume(f * ganhoDeMusica());
+		}
+	}
+
+	/** O volume atual da faixa, como fração da preferência do jogador. */
+	public static synchronized double fracao(Musics music) {
+		return fracoes.getOrDefault(music, 1d);
+	}
+
+	/**
+	 * Desvanecimentos em curso, por faixa: {de, para, tick atual, ticks, parar no fim}.
+	 *
+	 * POR TICK DO ENGINE, E NÃO DE QUEM PEDIU. A troca de trilha da escolha de
+	 * elemento começa numa tela que fecha antes de a música terminar de voltar; se
+	 * a rampa morasse na tela, ela morreria com ela. Aqui ela anda até o fim,
+	 * pausada ou não a partida (Engine.tick chama {@link #tick()}).
+	 */
+	private static final Map<Musics, double[]> desvanecendo = new java.util.EnumMap<>(Musics.class);
+
+	/**
+	 * Leva a faixa até {@code alvo} (fração da preferência do jogador) em
+	 * {@code ticks}, numa rampa que soa linear (ver o meio do caminho em tick()).
+	 * Com {@code parar}, a faixa para ao chegar — só faz sentido com alvo 0.
+	 */
+	public static synchronized void desvanecer(Musics music, double alvo, int ticks, boolean parar) {
+		desvanecendo.put(music, new double[]{fracao(music), Math.max(0d, Math.min(1d, alvo)), 0,
+				Math.max(1, ticks), parar ? 1 : 0});
+	}
+
+	/** Anda todos os desvanecimentos um tick. Chamado pelo Engine. */
+	public static synchronized void tick() {
+		if (desvanecendo.isEmpty()) {
+			return;
+		}
+		java.util.Iterator<Map.Entry<Musics, double[]>> it = desvanecendo.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<Musics, double[]> e = it.next();
+			double[] d = e.getValue();
+			d[2]++;
+			double t = Math.min(1, d[2] / d[3]);
+			// Seno no tempo: a rampa sai e chega devagar, sem o "degrau" que o
+			// ouvido nota no começo e no fim de uma reta.
+			double suave = 0.5 - 0.5 * Math.cos(Math.PI * t);
+			aplicarVolume(e.getKey(), d[0] + (d[1] - d[0]) * suave);
+			if (t >= 1) {
+				if (d[4] == 1) {
+					stop(e.getKey());
+				}
+				it.remove();
+			}
 		}
 	}
 
@@ -387,6 +453,9 @@ public class Sound {
 	public static void stopAll() {
 		stopAllSounds();
 		stopAllMusics();
+		synchronized (Sound.class) {
+			desvanecendo.clear();   // rampa de uma cena que acabou não sobe a próxima
+		}
 		// Quem para tudo esta trocando de cena (menu, fim de corrida): a proxima
 		// musica nasce sem o abafamento de uma pausa que ja nao existe.
 		fatorDaPausa = 1d;

@@ -117,7 +117,16 @@ public enum Sounds {
 	/** O ronco do gato dormindo. Derivado do proprio miado. Ver GenSonsDeCena. */
 	Ronco("purr"),
 
-	Woosh("woosh");
+	Woosh("woosh"),
+
+	// A escolha de elemento (ver EscolhaDeElemento e tools/GenSonsDaEscolha.java):
+	// o stinger da entrada e a confirmação de cada elemento.
+	RevelacaoDoElemento("elemento_revelacao"),
+	EscolhaFogo("elemento_fogo"),
+	EscolhaGelo("elemento_gelo"),
+	EscolhaAgua("elemento_agua"),
+	EscolhaTerra("elemento_terra"),
+	EscolhaAr("elemento_ar");
 
 	
 	private final String ResourceName;

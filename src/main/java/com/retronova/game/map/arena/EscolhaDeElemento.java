@@ -9,6 +9,9 @@ import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
+import com.retronova.engine.sound.Musics;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.items.Elemento;
 import com.retronova.game.map.Camera;
@@ -116,6 +119,8 @@ public class EscolhaDeElemento implements Activity {
     public static final int AURA_PARADA = 30, AURA_NO_FOCO = 70;
     /** Ticks entre duas passagens do brilho diagonal pela carta. */
     public static final int PERIODO_DO_BRILHO = 150;
+    /** Ticks da trilha da arena descendo, da trilha da escolha subindo e da volta. */
+    public static final int SAIDA_DA_ARENA = 40, ENTRADA_DA_TRILHA = 70, VOLTA_DA_ARENA = 60;
 
     private final List<Elemento> oferta = new ArrayList<>();
     private final MaoDeCartas cartas;
@@ -145,7 +150,10 @@ public class EscolhaDeElemento implements Activity {
                 .comEnfeite(new Destaque())
                 // O SOM DO ELEMENTO NO FOCO, e não o clique genérico: o jogador ouve
                 // o fogo antes de escolher o fogo. É o mesmo som do golpe na corrida.
-                .comSons(i -> tocar(oferta.get(i).som()), i -> tocar(oferta.get(i).som()));
+                .comSons(i -> tocar(oferta.get(i).som()), i -> {
+                    tocar(oferta.get(i).somDaEscolha());
+                    devolverTrilha();
+                });
         acumulado = new double[oferta.size()];
         posicionar();
     }
@@ -153,6 +161,42 @@ public class EscolhaDeElemento implements Activity {
     private static void tocar(com.retronova.engine.sound.Sounds som) {
         if (som != null) {
             com.retronova.engine.sound.Sound.play(som);
+        }
+    }
+
+    // ----------------------------------------------------------------- áudio
+
+    /** As faixas que tocavam antes da escolha e o volume de cada uma, para devolver. */
+    private final Map<Musics, Double> trilhaDeAntes = new java.util.EnumMap<>(Musics.class);
+
+    /**
+     * Entra a trilha da escolha, sai a da arena, e o stinger marca a virada.
+     *
+     * CRUZAMENTO, E NÃO CORTE. A faixa da arena DESCE até o silêncio sem parar —
+     * continua tocando muda, e volta do ponto em que estava, não do começo —
+     * enquanto a da escolha sobe. O corte diria "mudou de tela"; o cruzamento diz
+     * "o momento mudou", que é o que se quer. O stinger por cima é o acento que o
+     * cruzamento sozinho não dá. Volumes respeitam as opções: Sound aplica a
+     * preferência de música e de efeitos.
+     */
+    private void trocarTrilha() {
+        Sound.play(Sounds.RevelacaoDoElemento);
+        for (Musics m : Musics.values()) {
+            if (m != Musics.EscolhaDeElemento && Sound.playing(m)) {
+                trilhaDeAntes.put(m, Sound.fracao(m));
+                Sound.desvanecer(m, 0, SAIDA_DA_ARENA, false);
+            }
+        }
+        Sound.play(Musics.EscolhaDeElemento, true);
+        Sound.volume(Musics.EscolhaDeElemento, 0);
+        Sound.desvanecer(Musics.EscolhaDeElemento, 1, ENTRADA_DA_TRILHA, false);
+    }
+
+    /** Na escolha: a trilha da escolha some e a da arena volta ao volume que tinha. */
+    private void devolverTrilha() {
+        Sound.desvanecer(Musics.EscolhaDeElemento, 0, VOLTA_DA_ARENA, true);
+        for (Map.Entry<Musics, Double> e : trilhaDeAntes.entrySet()) {
+            Sound.desvanecer(e.getKey(), e.getValue(), VOLTA_DA_ARENA, false);
         }
     }
 
@@ -187,6 +231,9 @@ public class EscolhaDeElemento implements Activity {
     @Override
     public void tick() {
         t++;
+        if (t == 1) {
+            trocarTrilha();
+        }
         posicionar();
         if (emCerimonia() && pediuParaPular()) {
             pularCerimonia();
