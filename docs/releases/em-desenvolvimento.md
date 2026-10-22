@@ -329,3 +329,7 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#baú-a-abertura-aberturadobau-e-a-recompe
   coletar: 1,28 s (0,65 s pulando), contra 3,28 s (1,18 s) da roleta.
 - **Roleta desligada** (`c9dec42`). O baú do chão abre a tela nova; a `Roleta` ficou
   no código, sem porta de entrada, e `-Dcd.roleta` abre o baú.
+- **Sons de chegada e da prévia** (`c34ef71`, `693e3e7`). O baú soa ao aparecer na
+  tela, e cada ícone da prévia dá um tic no grau dele (comum grave e seco,
+  lendário agudo e brilhante), com a moldura na cor do grau. As melhorias da
+  prévia vêm com o grau sorteado pelas chances reais.

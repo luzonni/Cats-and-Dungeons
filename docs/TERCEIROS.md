@@ -226,7 +226,7 @@ formato das outras.
   quadros `chest_full_open_anim` do 16x16 DungeonTileset II (0x72, CC0 1.0),
   remapeados cor a cor para a paleta do baú do jogo por `tools/GenBau.java`. Os
   originais estão em `tools/assets/fonte/dtii`.
-- **Sons** (`bau_tremor`, `bau_abre`, `bau_premio_comum/raro/epico/lendario`):
+- **Sons** (`bau_aparece`, `bau_tremor`, `bau_abre`, `bau_premio_<grau>`, `bau_previa_<grau>`):
   sintetizados por `tools/GenSonsDoBau.java`, sem arquivo de fora e sem licença a
   conferir. São provisórios no timbre: uma versão definitiva feita por quem faz
   som entra trocando os arquivos.

@@ -484,8 +484,8 @@ trocá-la de novo não mexe no que o jogador recebe (`RecompensaDoBau` tem teste
 
 | Fase | Ticks | O que acontece |
 |---|---|---|
-| Entrada | `ENTRADA = 12` | o véu sobe e o baú cai no meio |
-| Espera | até o clique | o baú respira; embaixo, a prévia do que pode sair passa ícone a ícone |
+| Entrada | `ENTRADA = 12` | o véu sobe, o baú cai no meio e toca o som de chegada |
+| Espera | até o clique | o baú respira; embaixo, a prévia do que pode sair passa ícone a ícone, cada um com a moldura e o tic do seu grau |
 | Tremor | `TREMOR = 18` | o baú chacoalha e acende na cor do grau do prêmio |
 | Tampa | `TAMPA = 9` | três quadros da tampa, clarão curto e faíscas |
 | Subida | `SUBIDA = 16` | o cartão do prêmio sobe de dentro e assenta |
@@ -514,8 +514,12 @@ fingir sorte. Referências:
 **Arte e som:**
 - `bau_abrindo.png` sai de `tools/GenBau.java`: os quadros CC0 do 0x72, remapeados
   para a paleta do baú do chão;
-- os sons `bau_*.wav` saem de `tools/GenSonsDoBau.java`: tremor e tampa, mais uma
-  revelação por grau (comum, raro, épico, lendário), em escada como o brilho;
+- os sons `bau_*.wav` saem de `tools/GenSonsDoBau.java`: chegada, tremor e tampa,
+  mais uma revelação e um tic de prévia por grau (comum, raro, épico, lendário), em
+  escada como o brilho;
+- na prévia, cada melhoria ganha um grau sorteado com as chances de verdade
+  (`Raridade.sortear`), então a fileira mostra o quanto cada grau é comum. É só
+  amostra: o prêmio já foi decidido ao abrir;
 - arma nova soa épica, nível de arma soa raro e evolução soa lendária
   (`Premio.grau`).
 
