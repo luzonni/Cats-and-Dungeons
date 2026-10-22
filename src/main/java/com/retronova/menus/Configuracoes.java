@@ -242,7 +242,9 @@ public class Configuracoes extends TelaDeMenu {
                 v -> Configs.setUiScale(ESCALAS_UI[v]), ROTULOS_ESCALA)
                 .desc("Size of menus, buttons and text: 1 small, 2 normal, 3 large. Auto = 2."));
         ui.add(OptionRow.stepper("HUD size", Configs::HudScale, Configs::setHudScale, 2, 6, 1)
-                .desc("Scale of the in-game interface: life bar, hotbar, inventory and shop."));
+                .ate(Configs::HudScaleMaxima)
+                .desc("Scale of the in-game interface: life bar, clock, hotbar. Capped at what fits "
+                        + "this resolution, so nothing overlaps."));
         ui.add(OptionRow.toggle("Show hitboxes",
                 () -> Configs.Hitboxes() ? 1 : 0, v -> Debugging.mostrarHitBox(v != 0))
                 .desc("Draws the collision box over entities. Same as pressing F4 in game."));

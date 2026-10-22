@@ -424,8 +424,27 @@ public class Configs {
         VALUES.put("ZOOM", zoom);
     }
 
+    /**
+     * A escala do HUD EM VIGOR: a escolhida, limitada à maior que cabe na imagem do
+     * jogo (ver LayoutDoHud). Sem o limite, HUD grande em resolução pequena punha
+     * o relógio em cima da barra de vida.
+     */
     public static int HudScale() {
+        return Math.min(HudScaleEscolhida(), HudScaleMaxima());
+    }
+
+    /** A escala do HUD gravada nas opções, sem o limite da tela. */
+    public static int HudScaleEscolhida() {
         return inteiro("HUDSCALE");
+    }
+
+    /** A maior escala do HUD que cabe na imagem do jogo agora. */
+    public static int HudScaleMaxima() {
+        if (Engine.window == null) {
+            return Integer.MAX_VALUE;
+        }
+        return com.retronova.game.hud.LayoutDoHud.escalaMaxima(
+                Engine.window.largura(), Engine.window.altura(), Margin());
     }
 
     public static void setHudScale(int HUDSCALE) {

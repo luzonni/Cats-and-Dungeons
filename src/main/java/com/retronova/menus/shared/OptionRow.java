@@ -134,6 +134,22 @@ public class OptionRow {
         ajustar(1);
     }
 
+    /** Um teto que muda com a tela (o HUD que cabe na resolução atual), ou null. */
+    private IntSupplier teto;
+
+    /**
+     * Limita o máximo a um valor calculado na hora. Encadeável. Com ele o "+" para
+     * no que cabe, em vez de aceitar um valor que não teria efeito.
+     */
+    public OptionRow ate(IntSupplier teto) {
+        this.teto = teto;
+        return this;
+    }
+
+    private int maximo() {
+        return teto == null ? max : Math.max(min, Math.min(max, teto.getAsInt()));
+    }
+
     /** Texto de ajuda exibido ao passar o mouse pela linha. Encadeável. */
     public OptionRow desc(String descricao) {
         this.descricao = descricao;
@@ -246,7 +262,7 @@ public class OptionRow {
             int n = max - min + 1;
             novo = min + ((atual - min + dir) % n + n) % n;   // circular
         } else {
-            novo = Math.max(min, Math.min(max, atual + dir * step));
+            novo = Math.max(min, Math.min(maximo(), atual + dir * step));
         }
         if (novo == atual) {
             return;      // já no limite: sem som, sem escrita
@@ -260,7 +276,7 @@ public class OptionRow {
             return false;
         }
         int atual = get.getAsInt();
-        return dir < 0 ? atual <= min : atual >= max;
+        return dir < 0 ? atual <= min : atual >= maximo();
     }
 
     public void render(Graphics2D g2) {
