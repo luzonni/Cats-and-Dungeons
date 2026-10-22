@@ -215,3 +215,26 @@ Esta seção também não é reconstrução. Ver
   qualquer chão; o gato e o vendedor chegam por um portal na luz da lua.
 - **Level Up na paleta do projeto.** Título, halo, véu, moldura das cartas e
   faixa da build vêm da `Palette`, no lugar do dourado alaranjado solto.
+
+## Vídeo e HUD (2026-10-22, branch `fix/video-e-hud`)
+
+Correções de regressões de vídeo. Ver [ARQUITETURA.md](../ARQUITETURA.md#laço-principal).
+
+- **FPS estável sem VSync** (`d9a163b`). No Windows o `Thread.sleep(1)` dormia
+  até 19 ms com o timer padrão, e o limitador perdia o horário do quadro. O jogo
+  pede um timer de 1 ms (`timeBeginPeriod`), a espera mede o próprio sono e gira no
+  trecho final, e quadro e tick seguem prazos absolutos. Novo limite "Monitor"
+  (padrão) e "Unlimited". Sem VSync a 240: de 148–224 FPS com desvio de até 4,7 ms
+  para 240 FPS com desvio de 0,4 ms.
+- **Sem piscar no Alt+Tab nem ao trocar o vídeo** (`bc3eb29`). A perda de
+  superfície não recria mais o `BufferStrategy`, e a janela não é mais destruída a
+  cada resolução ou F11. Tela cheia é janela sem bordas no monitor da janela, em
+  todo sistema.
+- **A resolução escolhida vale** (`d9089d9`). Ela é o tamanho da imagem do jogo,
+  escalada para a tela com tarjas quando não coincide com o canvas: em tela cheia,
+  e em janela que não cabe. A lista mostra só o que o monitor comporta, mais a
+  resolução dele.
+- **HUD sem sobreposição** (`8c561a7`). A escala do HUD fica limitada ao que cabe
+  na resolução atual, e o "+" de Settings para no teto.
+- **Portal anima no tick** (`2b4bdca`): girava mais rápido a 240 FPS.
+- **Gráfico de tempo de quadro no F3** (`663a0db`).
