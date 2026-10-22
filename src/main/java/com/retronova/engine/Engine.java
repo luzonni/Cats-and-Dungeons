@@ -19,7 +19,6 @@ public class Engine implements Runnable {
     public static String GameTag = "Cats & Dungeons";
     public static String VERSION = "ALPHA 0.1.3";
 
-
     private static Thread thread;
     private static boolean isRunning;
     public static final double HZ = 60;
@@ -326,31 +325,77 @@ public class Engine implements Runnable {
         }
     }
 
-    private Graphics2D getGraphics() {
-        if(Engine.BUFFER == null) {
+    /**
+     * Desenha e mostra um quadro. Devolve se um quadro chegou à tela.
+     *
+     * A PERDA DE CONTEÚDO É TRATADA COMO O JAVADOC DE BufferStrategy MANDA:
+     * redesenha enquanto {@code contentsRestored()}, mostra de novo enquanto
+     * {@code contentsLost()} — com a MESMA estratégia. Antes, todo contentsLost()
+     * jogava o BufferStrategy fora e criava outro no quadro seguinte; e o
+     * contentsLost() acontece justamente no Alt+Tab, ao minimizar e quando outra
+     * janela cobre esta. Recriar a cadeia de buffers nesses momentos era a piscada.
+     * Só uma IllegalStateException (componente sem tela: janela fechada ou ainda
+     * não exibida) descarta a estratégia — aí ela não tem mesmo como continuar.
+     */
+    private static int quadrosPerdidos, estrategiasCriadas;
+    /** Quadros seguidos com a superfície perdida antes de recriar a estratégia (~1 s). */
+    private static final int QUADROS_ATE_RECRIAR = 60;
+
+    private static boolean desenharQuadro() {
+        if (Engine.BUFFER == null) {
             try {
                 Engine.vsync = Configs.VSync() && criarComVSync();
                 if (!Engine.vsync) {
                     window.createBufferStrategy(3);
                 }
                 Engine.BUFFER = window.getBufferStrategy();
+                if (Video.LIGADO) {
+                    // Cada criação é uma piscada em potencial: contar mostra se a
+                    // estratégia está sendo jogada fora sem necessidade.
+                    System.out.println("[video] BufferStrategy criado (" + (++estrategiasCriadas) + "a vez)");
+                }
             } catch (IllegalStateException aindaNaoExibivel) {
                 //A janela ainda não está pronta; tenta de novo no próximo quadro.
                 Engine.BUFFER = null;
             }
-            return null;
+            return false;
         }
-        Graphics2D graphics;
+        BufferStrategy buffer = Engine.BUFFER;
         try {
-            graphics = (Graphics2D) BUFFER.getDrawGraphics();
-        } catch (IllegalStateException superficiePerdida) {
-            //Buffer inválido (monitor dormiu, driver resetou, janela recriada).
-            //Descarta para reconstruir na volta seguinte em vez de desenhar no vazio.
-            Engine.BUFFER = null;
-            return null;
+            // Poucas voltas: com a janela minimizada a superfície pode seguir
+            // perdida indefinidamente, e o laço do jogo não pode ficar preso aqui.
+            for (int tentativa = 0; tentativa < 3; tentativa++) {
+                do {
+                    Graphics2D g = (Graphics2D) buffer.getDrawGraphics();
+                    try {
+                        prepararQuadro(g);
+                        desenharTelas(g);
+                        if (Debugging.running) {
+                            Debugging.render(g);
+                        }
+                    } finally {
+                        g.dispose();
+                    }
+                } while (buffer.contentsRestored());
+                buffer.show();
+                if (!buffer.contentsLost()) {
+                    quadrosPerdidos = 0;
+                    return true;
+                }
+            }
+            // ÚLTIMO RECURSO, e não reflexo. Com o monitor dormindo ou o driver
+            // reiniciado, a superfície pode nunca voltar sozinha — era a janela
+            // branca do jogo deixado ocioso. Só depois de um segundo inteiro perdida
+            // a estratégia é recriada; um Alt+Tab se resolve bem antes disso.
+            if (++quadrosPerdidos > QUADROS_ATE_RECRIAR) {
+                quadrosPerdidos = 0;
+                invalidateBuffer();
+            }
+            return false;
+        } catch (IllegalStateException semSuperficie) {
+            invalidateBuffer();
+            return false;
         }
-        prepararQuadro(graphics);
-        return graphics;
     }
 
     /** A tela corrente e a que estiver por cima dela. */
@@ -440,30 +485,6 @@ public class Engine implements Runnable {
         Debugging.setInfo("Controle", Gamepad.conectado() ? "conectado" : "nenhum");
     }
 
-    private void render(Graphics2D graphics) {
-        //A versao NAO e carimbada aqui. Ela nao muda durante a partida, entao
-        //ficava ocupando a tela o jogo inteiro sem informar nada; o lugar dela e
-        //a tela inicial, como faz a maioria dos jogos, e o overlay de depuracao
-        //(F3) para quem precisa dela com o jogo rodando.
-        if(Debugging.running)
-            Debugging.render(graphics);
-        graphics.dispose();
-
-        //A API de BufferStrategy exige verificar a perda de conteúdo: com o
-        //pipeline OpenGL ligado, o back buffer é invalidado quando o monitor
-        //dorme, a sessão é bloqueada ou o driver reinicia. Sem esta checagem o
-        //jogo seguia "desenhando" numa superfície morta e a janela ficava
-        //branca — foi o que aconteceu com o jogo deixado ocioso.
-        try {
-            BUFFER.show();
-            if (BUFFER.contentsLost()) {
-                invalidateBuffer();
-            }
-        } catch (IllegalStateException superficiePerdida) {
-            invalidateBuffer();
-        }
-    }
-
     @Override
     public void run() {
         // O relógio de 1 ms do Windows antes de qualquer espera: ver RelogioDoSistema.
@@ -499,7 +520,7 @@ public class Engine implements Runnable {
                     // jogo.
                     if (KeyBoard.KeyPressed("F11") && window != null) {
                         Configs.setFullscreen(!Configs.Fullscreen());
-                        window.resetWindow();
+                        window.aplicarVideo();
                     }
                     this.tick();
                     if (ACTIVITY_RUNNING && !stackActivities.isEmpty()) {
@@ -530,10 +551,7 @@ public class Engine implements Runnable {
                 if (!noRelogio || agora >= proximoQuadro) {
                     alpha = (float) Math.max(0, Math.min(1, 1 - (proximoTick - agora) / (double) nsTick));
                     long inicioRender = System.nanoTime();
-                    Graphics2D g = getGraphics();
-                    if (g != null) {
-                        desenharTelas(g);
-                        render(g);
+                    if (desenharQuadro()) {
                         frames++;
                         Desempenho.quadro(System.nanoTime() - inicioRender);
                     }

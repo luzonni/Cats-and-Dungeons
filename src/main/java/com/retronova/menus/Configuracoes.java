@@ -179,7 +179,7 @@ public class Configuracoes extends TelaDeMenu {
 
         List<OptionRow> video = new ArrayList<>();
         video.add(OptionRow.cycle("Resolution", () -> pendResolucao, v -> pendResolucao = v, resolucoes)
-                .desc("Size of the game window. Takes effect only after Apply, which recreates the window."));
+                .desc("Size of the game image. Takes effect after Apply."));
         video.add(OptionRow.toggle("Fullscreen", () -> pendTelaCheia, v -> pendTelaCheia = v)
                 .desc("Fills the whole screen with a borderless window. Needs Apply. F11 also toggles it."));
         video.add(OptionRow.cycle("Frame rate", Configuracoes::indiceFps,
@@ -283,7 +283,7 @@ public class Configuracoes extends TelaDeMenu {
         }
         Configs.setIndexResolution(pendResolucao);
         Configs.setFullscreen(pendTelaCheia != 0);
-        Engine.window.resetWindow();
+        Engine.window.aplicarVideo();
     }
 
     /**
@@ -566,7 +566,7 @@ public class Configuracoes extends TelaDeMenu {
     private void desenharAvisoPendente(Graphics2D g) {
         int s = Configs.UiScale();
         Font fonte = FontHandler.font(FontHandler.Game, 5f * s);
-        String aviso = "Apply restarts the window";
+        String aviso = "Apply resizes the window";
         int x = aplicar.getBounds().x;          // alinhado à esquerda, sob o botão
         int y = aplicar.getBounds().y - 2 * s;
         g.setFont(fonte);

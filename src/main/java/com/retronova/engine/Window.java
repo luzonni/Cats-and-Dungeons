@@ -47,49 +47,36 @@ public class Window extends Canvas {
         addKeyListener(k);
     }
 
-    public void initFrame(){
+    /**
+     * Cria a janela UMA VEZ. Resolução e tela cheia mudam depois por
+     * {@link #aplicarVideo()}, na mesma janela.
+     */
+    private void initFrame() {
         this.frame = new JFrame(this.name);
         frame.add(this);
-        frame.setUndecorated(Configs.Fullscreen() && !Foto.ligado());
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        if(Configs.Fullscreen() && !Foto.ligado()) {
-            String os = System.getProperty("os.name").toLowerCase();
-            if (os.contains("windows 11")) {
-                setPreferredSize(toolkit.getScreenSize());
-                frame.setMinimumSize(toolkit.getScreenSize());
-            } else if(os.contains("nix") || os.contains("nux") || os.contains("aix")) {
-                GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-                if (gd.isFullScreenSupported()) {
-                    gd.setFullScreenWindow(frame);
-                    frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                }
-            }
-        }else {
-            setPreferredSize(new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
-            //Sem mínimo: definir o mínimo do frame com a medida do canvas impedia
-            //qualquer correção posterior e ainda misturava as duas medidas.
-            frame.setMinimumSize(null);
-        }
-
         try {
             setCursor(DEFAULT_CURSOR);
             frame.setIconImages(iconesDaJanela());
-        }catch(Exception ignore) { }
+        } catch (Exception ignore) { }
         createOpenGl();
-        if (Foto.ligado()) {
+        if (Foto.ligado() && !Foto.janelaReal()) {
             prepararParaFoto();
             return;
         }
-        frame.pack();
-        if (!Configs.Fullscreen()) {
-            caberNaAreaUtil();
+        if (Foto.janelaReal()) {
+            // Teste na tela de verdade, mas sem roubar o teclado de quem usa a máquina.
+            frame.setFocusableWindowState(false);
+            frame.setAutoRequestFocus(false);
         }
-        frame.setLocationRelativeTo(null);
+        boolean telaCheia = Configs.Fullscreen();
+        frame.setUndecorated(telaCheia);
+        dimensionar(telaCheia, true);
         frame.setVisible(true);
         refreshSize();      // o cache precisa valer já no primeiro quadro
         showAccelerators();
+        Video.registrar("abertura", this);
     }
 
     /**
@@ -100,12 +87,8 @@ public class Window extends Canvas {
      */
     private void prepararParaFoto() {
         Dimension pedido = Foto.tamanho();
-        if (pedido != null) {
-            setPreferredSize(pedido);
-        }
-        if (frame.isUndecorated()) {
-            frame.setUndecorated(false);
-        }
+        setPreferredSize(pedido != null ? pedido
+                : new Dimension(Engine.getResolution()[0], Engine.getResolution()[1]));
         frame.setType(java.awt.Window.Type.UTILITY);
         frame.setFocusableWindowState(false);
         frame.setAutoRequestFocus(false);
@@ -116,26 +99,101 @@ public class Window extends Canvas {
     }
 
     /**
-     * Encolhe o canvas até o frame inteiro caber na área útil do monitor.
+     * Aplica resolução e tela cheia de uma vez, na janela que já existe.
      *
-     * {@code getMaximumWindowBounds()} já desconta a barra de tarefas, e a
-     * decoração do frame (título e bordas) só é conhecida depois do {@code pack()}.
-     * Sem esse passo, pedir 2560x1440 numa tela de 2560x1440 gerava uma janela
-     * mais alta que a área disponível, que ia parar atrás da barra de tarefas —
-     * e só maximizar e restaurar consertava.
+     * NADA DE RECRIAR A JANELA. A versão anterior destruía o JFrame e criava
+     * outro a cada resolução nova e a cada F11: a tela apagava, o sistema
+     * redesenhava a área de trabalho por baixo e a janela nova surgia — a
+     * piscada. Agora:
+     *
+     *   - resolução nova, mesmo modo: a janela só muda de tamanho;
+     *   - tela cheia ligada ou desligada: a borda é a única coisa que o Swing não
+     *     deixa trocar com a janela na tela ({@code setUndecorated} exige a janela
+     *     não exibível), então ela é escondida, trocada e mostrada de novo — o
+     *     mesmo JFrame, numa passada só, já no tamanho final.
+     *
+     * NA EDT, e a thread do jogo espera: o Swing só aceita mexer em janela pela
+     * thread dele, e o quadro seguinte precisa sair já na janela nova. A thread do
+     * jogo não pode segurar lock nenhum da janela nessa espera.
      */
-    private void caberNaAreaUtil() {
-        Rectangle util = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+    public void aplicarVideo() {
+        if (Foto.ligado() && !Foto.janelaReal()) {
+            return;     // o modo de foto tem tamanho próprio e nunca vai para a tela
+        }
+        if (SwingUtilities.isEventDispatchThread()) {
+            aplicarVideoNaEdt();
+            return;
+        }
+        try {
+            SwingUtilities.invokeAndWait(this::aplicarVideoNaEdt);
+        } catch (InterruptedException interrompida) {
+            Thread.currentThread().interrupt();
+        } catch (java.lang.reflect.InvocationTargetException falha) {
+            throw new IllegalStateException("Falha ao aplicar o vídeo", falha.getCause());
+        }
+    }
+
+    private void aplicarVideoNaEdt() {
+        boolean telaCheia = Configs.Fullscreen();
+        if (frame.isUndecorated() != telaCheia) {
+            // O BufferStrategy pertence ao canvas exibível; esconder a janela o mata.
+            Engine.invalidateBuffer();
+            frame.dispose();
+            frame.setUndecorated(telaCheia);
+            dimensionar(telaCheia, true);
+            frame.setVisible(true);
+            requestFocus();
+        } else {
+            dimensionar(telaCheia, false);
+        }
+        refreshSize();
+        Video.registrar("aplicar", this);
+    }
+
+    /**
+     * O tamanho da janela para o modo atual.
+     *
+     * TELA CHEIA SEM BORDAS, do tamanho do monitor EM QUE A JANELA ESTÁ — e não do
+     * monitor principal, nem pela troca do modo de vídeo. Antes havia três
+     * caminhos: no Windows 11, o tamanho da tela; no Linux, a tela cheia
+     * exclusiva; e no Windows 10 nenhum dos dois, com a janela sem tamanho
+     * nenhum. A tela cheia exclusiva troca o modo do monitor, que apaga a tela a
+     * cada troca e a cada Alt+Tab (tutorial "Full-Screen Exclusive Mode" da
+     * Oracle); a janela sem bordas não troca nada.
+     *
+     * EM JANELA, a resolução pedida, encolhida para caber na área útil do mesmo
+     * monitor (sem a barra de tarefas). {@code getMaximumWindowBounds()} só vê o
+     * monitor principal, e por isso a área sai de {@code getScreenInsets} do
+     * monitor da janela.
+     */
+    private void dimensionar(boolean telaCheia, boolean centralizar) {
+        GraphicsConfiguration gc = frame.getGraphicsConfiguration();
+        Rectangle monitor = gc.getBounds();
+        if (telaCheia) {
+            setPreferredSize(monitor.getSize());
+            frame.setBounds(monitor);
+            frame.validate();
+            return;
+        }
+        Insets barras = toolkit.getScreenInsets(gc);
+        Rectangle util = new Rectangle(monitor.x + barras.left, monitor.y + barras.top,
+                monitor.width - barras.left - barras.right, monitor.height - barras.top - barras.bottom);
+        int[] res = Engine.getResolution();
+        setPreferredSize(new Dimension(res[0], res[1]));
+        frame.pack();
         Insets bordas = frame.getInsets();
         int maxLargura = util.width - bordas.left - bordas.right;
         int maxAltura = util.height - bordas.top - bordas.bottom;
-
-        Dimension pedido = getPreferredSize();
-        int largura = Math.min(pedido.width, Math.max(1, maxLargura));
-        int altura = Math.min(pedido.height, Math.max(1, maxAltura));
-        if (largura != pedido.width || altura != pedido.height) {
-            setPreferredSize(new Dimension(largura, altura));
+        if (res[0] > maxLargura || res[1] > maxAltura) {
+            setPreferredSize(new Dimension(Math.min(res[0], Math.max(1, maxLargura)),
+                    Math.min(res[1], Math.max(1, maxAltura))));
             frame.pack();
+        }
+        // Centraliza na abertura e sempre que a janela nova não couber onde está.
+        Rectangle atual = frame.getBounds();
+        if (centralizar || !util.contains(atual)) {
+            frame.setLocation(util.x + Math.max(0, (util.width - atual.width) / 2),
+                    util.y + Math.max(0, (util.height - atual.height) / 2));
         }
     }
 
@@ -234,46 +292,6 @@ public class Window extends Canvas {
         }
     }
 
-    private void closeFrame() {
-        frame.setVisible(false);
-        frame.dispose();
-        frame = null;
-    }
-
-    /**
-     * Recria a janela (F11, resolução nova).
-     *
-     * NA EDT. Quem pede é a thread do jogo, no meio do tick, e o Swing só aceita
-     * criar e destruir janela pela thread dele: fora dela, o JFrame novo nascia
-     * disputando o estado do AWT com os eventos que a EDT ainda processava do
-     * antigo. A thread do jogo ESPERA a troca terminar (invokeAndWait), para o
-     * quadro seguinte já sair no canvas novo — e não pode estar segurando lock
-     * nenhum da janela nessa espera, que é o que a EDT precisa para trabalhar.
-     */
-    public void resetWindow() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            recriar();
-            return;
-        }
-        try {
-            SwingUtilities.invokeAndWait(this::recriar);
-        } catch (InterruptedException interrompida) {
-            Thread.currentThread().interrupt();
-        } catch (java.lang.reflect.InvocationTargetException falha) {
-            throw new IllegalStateException("Falha ao recriar a janela", falha.getCause());
-        }
-    }
-
-    private void recriar() {
-        //O BufferStrategy pertence a este canvas dentro do frame antigo e não
-        //sobrevive ao dispose. Sem invalidá-lo, o jogo passa a desenhar num
-        //buffer morto e a janela nova fica em branco.
-        Engine.invalidateBuffer();
-        closeFrame();
-        initFrame();
-        requestFocus();
-    }
-
     /**
      * Cursores nativos já criados, um por imagem, e o que está na janela agora.
      *
@@ -354,6 +372,26 @@ public class Window extends Canvas {
         if (cachedHeight == 0) {
             refreshSize();
         }
+        return cachedHeight;
+    }
+
+    /** Largura da imagem do jogo, em pixels. */
+    public int largura() {
+        return getWidth();
+    }
+
+    /** Altura da imagem do jogo, em pixels. */
+    public int altura() {
+        return getHeight();
+    }
+
+    /** Largura real do canvas na tela, em pixels. */
+    int getCanvasLargura() {
+        return cachedWidth;
+    }
+
+    /** Altura real do canvas na tela, em pixels. */
+    int getCanvasAltura() {
         return cachedHeight;
     }
 

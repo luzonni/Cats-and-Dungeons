@@ -60,6 +60,16 @@ public final class Foto {
         return ligado() ? "build/foto/saves" : "saves";
     }
 
+    /**
+     * Com -Dcd.foto.real=true, a janela vai para a tela de verdade (sem pegar o
+     * foco), no tamanho das opções: é o modo para testar resolução, tela cheia e
+     * perda de superfície, que a janela escondida do modo de foto nunca exercita.
+     * Saves e config continuam isolados.
+     */
+    public static boolean janelaReal() {
+        return ligado() && Boolean.getBoolean("cd.foto.real");
+    }
+
     /** O tamanho pedido para o canvas, ou null para usar o das opcoes. */
     public static Dimension tamanho() {
         String t = System.getProperty("cd.foto.tamanho");
@@ -124,6 +134,13 @@ public final class Foto {
                 soltarMouse = true;
             }
             case "foto" -> salvar(arg);
+            // video:<indice da resolução>:<janela|cheia> — aplica como o Apply das opções.
+            case "video" -> {
+                String[] v = arg.split(":");
+                Configs.setIndexResolution(Integer.parseInt(v[0].trim()));
+                Configs.setFullscreen(v.length > 1 && v[1].trim().equals("cheia"));
+                Engine.window.aplicarVideo();
+            }
             default -> throw new IllegalArgumentException("Passo desconhecido no roteiro: " + passo);
         }
     }
