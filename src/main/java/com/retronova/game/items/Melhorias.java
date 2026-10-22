@@ -167,6 +167,16 @@ public class Melhorias {
         return pontos.getOrDefault(atributo, 0);
     }
 
+    /** Quanto as cartas de atributo deste tipo somaram ao gato, de verdade (ver somas). */
+    public double somaDosPontos(Modifiers atributo) {
+        return somasDePontos.getOrDefault(atributo, 0d);
+    }
+
+    /** Quanto esta melhoria somou ao todo, já com raridade e desgaste de cada cópia. */
+    public double soma(Melhoria melhoria) {
+        return somas.getOrDefault(melhoria, 0d);
+    }
+
     // ------------------------------------------------------- armas extras
 
     /** Armas extras e o nivel de cada uma. Gravadas com BASE_ARMAS + ordinal. */

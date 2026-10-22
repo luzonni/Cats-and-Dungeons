@@ -85,6 +85,11 @@ public class Inter implements Activity {
     }
 
     private void refreshPositions() {
+        // Sem inventário e status fixos (desativados, ver Game), a Inter fica vazia
+        // quando a loja fecha: não há aba para posicionar.
+        if (this.tabs == null || this.tabs.length == 0) {
+            return;
+        }
         String[] keys = keys();
         Rectangle rec = this.tabs[0];
         int width = rec.width * keys.length;

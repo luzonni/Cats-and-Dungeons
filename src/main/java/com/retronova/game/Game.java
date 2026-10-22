@@ -8,7 +8,6 @@ import com.retronova.engine.exceptions.NotInActivity;
 import com.retronova.engine.exceptions.NotInMap;
 import com.retronova.game.hud.HUD;
 import com.retronova.game.interfaces.Inter;
-import com.retronova.game.interfaces.shared.Status;
 import com.retronova.game.map.*;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.arena.Waves;
@@ -97,8 +96,11 @@ public class Game implements Activity {
         this.indexPlayer = corrida.gato();
         this.inter = new Inter();
         Player player = Player.newPlayer(this.indexPlayer);
-        this.inter.put("inventory", player.getInventory(), false);
-        this.inter.put("status", new Status(player), false);
+        // INVENTARIO DESATIVADO, NAO REMOVIDO. Ele e o antigo Status de sprite
+        // deixaram de ser abas da Inter: o E abre a TelaDeStatus, e a Inter so
+        // mostra o que for posto nela na hora (a loja do vendedor, a maquina de
+        // chiclete). Player.getInventory() continua vivo — a arma da mao, a hotbar
+        // e a loja dependem dele. Para religar: voltar a por "inventory" aqui.
         this.player = player;
         this.seconds = corrida.segundos();
         // OS BONUS DE INICIO ANTES DO SAVE. O upgrade permanente de vida enche a
@@ -143,8 +145,11 @@ public class Game implements Activity {
         this.indexPlayer = indexPlayer;
         this.inter = new Inter();
         Player player = Player.newPlayer(indexPlayer);
-        this.inter.put("inventory", player.getInventory(), false);
-        this.inter.put("status", new Status(player), false);
+        // INVENTARIO DESATIVADO, NAO REMOVIDO. Ele e o antigo Status de sprite
+        // deixaram de ser abas da Inter: o E abre a TelaDeStatus, e a Inter so
+        // mostra o que for posto nela na hora (a loja do vendedor, a maquina de
+        // chiclete). Player.getInventory() continua vivo — a arma da mao, a hotbar
+        // e a loja dependem dele. Para religar: voltar a por "inventory" aqui.
         this.player = player;
         this.changeMap(map);
         this.hud = new HUD(player);
@@ -321,8 +326,13 @@ public class Game implements Activity {
             // Q/E de lá só troca de aba.
             return;
         }
+        // O E ABRE O STATUS DO GATO, e não mais o inventário: o jogo não tem
+        // inventário como mecânica, e o que se quer consultar no meio da corrida
+        // são os atributos e a build (ver TelaDeStatus). O inventário NÃO foi
+        // removido — só perdeu a porta de entrada (ver o construtor).
         if(KeyBoard.KeyPressed("E")) {
-            inter.open();
+            com.retronova.menus.shared.TelaDeMenu.abrir(new com.retronova.menus.TelaDeStatus());
+            return;
         }
         if(KeyBoard.KeyPressed("Interact")) {
             map.interagir(player, GameObject.SIZE() * 3);

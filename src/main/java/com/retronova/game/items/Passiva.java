@@ -137,6 +137,22 @@ public enum Passiva {
         return String.format(formato, porNivel);
     }
 
+    /**
+     * O efeito ACUMULADO com {@code nivel} niveis, como a tela de Status mostra:
+     * "+18% critical chance" com tres niveis de 6%. As habilidades dos gatos, que
+     * tem texto por nivel, mostram o texto do nivel atual.
+     */
+    public String efeitoTotal(int nivel) {
+        if (textos != null) {
+            return efeitoNoNivel(nivel);
+        }
+        int total = porNivel * Math.max(0, nivel);
+        if (this == REGENERACAO) {
+            return String.format(formato, total / 10, total % 10);
+        }
+        return String.format(formato, total);
+    }
+
     /** Valor de um nivel, como fracao (0.4 = 40%), ou HP/s para a regeneracao. */
     public double valorPorNivel() {
         return this == REGENERACAO ? porNivel / 10.0 : porNivel / 100.0;

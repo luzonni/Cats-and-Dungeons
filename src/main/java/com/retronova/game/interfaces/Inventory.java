@@ -16,6 +16,15 @@ import com.retronova.engine.inputs.mouse.Mouse_Button;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+/**
+ * O inventário do gato: a mão, a hotbar e a mochila.
+ *
+ * A TELA ESTÁ DESATIVADA, NÃO REMOVIDA. O jogo não tem inventário como mecânica —
+ * o gato começa com a arma dele e cresce por cartas —, então o E passou a abrir a
+ * TelaDeStatus e esta tela deixou de ser uma aba da Inter (ver Game). Os DADOS
+ * continuam em uso: a arma da mão, a hotbar do HUD e a loja do vendedor leem e
+ * escrevem aqui.
+ */
 public class Inventory implements Activity {
 
     private final Slot insurer;
