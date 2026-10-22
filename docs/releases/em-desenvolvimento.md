@@ -286,3 +286,7 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
   dos valores contínuos ganha contorno e preenchimento, como os toggles; e os
   menus passam a exigir 384×224 pixels de arte, para o Resume nunca encostar no
   rodapé.
+- **Subtítulo da escolha de elemento legível** (`878ebbd`). O "It shapes your
+  whole run" ficava entre o título e as cartas, e o brilho e os cantos da carta
+  em foco passavam por cima dele. As cartas descem um pouco, o título sobe, e o
+  subtítulo passa para a fonte dos textos das cartas, num tom mais claro.
