@@ -45,6 +45,21 @@ import java.util.Map;
  */
 public class GameOver extends TelaDeMenu {
 
+    // Geometria em pixels nativos; tudo é multiplicado pela escala da tela.
+    /** Largura e altura de cada painel. */
+    private static final int PAINEL_W = 150, PAINEL_H = 154;
+    /**
+     * As linhas da loja: onde começam, a altura e o passo entre elas. 18 de altura
+     * e 3 de vão, e não 17 e 3 com o painel de 140: o nome encostava no topo da
+     * linha, o efeito na base, e a dica do rodapé do painel colava na última. A
+     * dica vai em duas linhas: numa só, passava da largura do painel.
+     */
+    private static final int LOJA_TOPO = 33, LINHA_H = 18, LINHA_PASSO = 21;
+    /** O fundo: preto, sem a ilustração do título, para os números serem o centro. */
+    private static final Color FUNDO = Color.BLACK;
+    /** Ticks que cada aviso de conquista fica parado antes de sair (4 s). */
+    private static final int AVISO_FICA = 240;
+
     private final List<Button> botoes = new ArrayList<>();
     private final List<Rectangle> linhasDaLoja = new ArrayList<>();
     private int foco = -1;
@@ -88,7 +103,7 @@ public class GameOver extends TelaDeMenu {
     }
 
     private int escala() {
-        int cabe = Math.max(1, areaDoConteudo().height / 172);
+        int cabe = Math.max(1, areaDoConteudo().height / (PAINEL_H + 32));   // painel, vão e botões
         return Math.max(1, Math.min(Configs.UiScale(), cabe));
     }
 
@@ -99,7 +114,7 @@ public class GameOver extends TelaDeMenu {
         int s = escala();
         int w = Engine.window.largura();
         Rectangle area = areaDoConteudo();
-        int pw = 150 * s, ph = 140 * s, vao = 10 * s;
+        int pw = PAINEL_W * s, ph = PAINEL_H * s, vao = 10 * s;
         int total = ph + 10 * s + Button.preferredHeight();
         int x0 = w / 2 - pw - vao / 2;
         int y0 = area.y + Math.max(0, (area.height - total) / 2);
@@ -108,8 +123,8 @@ public class GameOver extends TelaDeMenu {
         linhasDaLoja.clear();
         Meta.Permanente[] todos = Meta.Permanente.values();
         for (int i = 0; i < todos.length; i++) {
-            linhasDaLoja.add(new Rectangle(painelLoja.x + 6 * s, painelLoja.y + 34 * s + i * 20 * s,
-                    painelLoja.width - 12 * s, 17 * s));
+            linhasDaLoja.add(new Rectangle(painelLoja.x + 6 * s, painelLoja.y + (LOJA_TOPO + i * LINHA_PASSO) * s,
+                    painelLoja.width - 12 * s, LINHA_H * s));
         }
         int largura = Button.preferredWidth();
         int altura = Button.preferredHeight();
@@ -211,9 +226,10 @@ public class GameOver extends TelaDeMenu {
     /**
      * Os avisos de conquista desbloqueada, no canto superior direito.
      *
-     * Entram deslizando pela direita, um depois do outro, e ficam. Mostram só o
-     * nome: o que ela pede e o resto está na tela de conquistas, que o jogador
-     * abre pelo troféu do menu.
+     * Entram deslizando pela direita, um depois do outro, e SAEM depois de
+     * {@link #AVISO_FICA} ticks. Ficavam para sempre, e em 720p cobriam o ouro
+     * ganho e o cabeçalho da loja. Mostram só o nome: o que ela pede e o resto
+     * está na tela de conquistas, que o jogador abre pelo troféu do menu.
      */
     private void desenharConquistas(Graphics2D g, int s) {
         List<Conquistas.Conquista> novas = Estatisticas.conquistasDaCorrida();
@@ -248,11 +264,13 @@ public class GameOver extends TelaDeMenu {
         int w = Math.min(maxW, Math.max(96 * s, fixo + texto));
         for (int i = 0; i < novas.size(); i++) {
             // 0 a 1: cada aviso começa 14 ticks depois do anterior e leva 18 para entrar.
-            double t = Math.clamp((desdeOFim + Engine.alpha() - 10 - i * 14) / 18.0, 0, 1);
-            if (t <= 0) {
+            double agora = desdeOFim + Engine.alpha() - 10 - i * 14;
+            double t = Math.clamp(agora / 18.0, 0, 1);
+            double saida = Math.clamp((agora - AVISO_FICA) / 18.0, 0, 1);
+            if (t <= 0 || saida >= 1) {
                 continue;
             }
-            double suave = 1 - Math.pow(1 - t, 3);
+            double suave = (1 - Math.pow(1 - t, 3)) * (1 - saida * saida * saida);
             int x = (int) (Engine.window.largura() - margem - w + (1 - suave) * (w + margem));
             int y = margem + i * (h + vao);
 
@@ -367,20 +385,28 @@ public class GameOver extends TelaDeMenu {
             }
             g.setColor(m.cor());
             g.fillRect(r.x, r.y, 3 * s, r.height);
-            contornado(g, m.nome(), f, r.x + 6 * s, r.y + 7 * s, Color.WHITE, s);
-            esquerda(g, m.efeito(), FontHandler.font(FontHandler.Septem, 5f * s), r.x + 6 * s, r.y + 14 * s, Palette.ACCENT);
-            // Pips de nivel.
+            contornado(g, m.nome(), f, r.x + 6 * s, r.y + 8 * s, Color.WHITE, s);
+            esquerda(g, m.efeito(), FontHandler.font(FontHandler.Septem, 5f * s), r.x + 6 * s, r.y + 15 * s, Palette.ACCENT);
+            // Pips de nivel, na altura do nome; o preço, na do efeito.
             for (int k = 0; k < Meta.Permanente.NIVEL_MAXIMO; k++) {
                 g.setColor(k < nivel ? m.cor() : new Color(0x1A1428));
-                g.fillRect(r.x + r.width - 62 * s + k * 5 * s, r.y + 4 * s, 4 * s, 4 * s);
+                g.fillRect(r.x + r.width - 31 * s + k * 5 * s, r.y + 4 * s, 4 * s, 4 * s);
             }
             String preco = cheio ? "MAX" : Meta.preco(m) + "g";
             int pw = FontHandler.getWidth(preco, f);
-            contornado(g, preco, f, r.x + r.width - 6 * s - pw, r.y + 14 * s,
+            contornado(g, preco, f, r.x + r.width - 6 * s - pw, r.y + 15 * s,
                     cheio ? Palette.LIGHT : podeComprar ? new Color(0xFFD23F) : new Color(0x9A5050), s);
         }
-        centro(g, "Click or press Enter to buy. Upgrades apply to every new run.", FontHandler.font(FontHandler.Septem, 5f * s),
-                p.x + p.width / 2, p.y + p.height - 4 * s, Palette.LIGHT);
+        Font dica = FontHandler.font(FontHandler.Septem, 5f * s);
+        centro(g, "Click or press Enter to buy.", dica, p.x + p.width / 2, p.y + p.height - 11 * s, Palette.LIGHT);
+        centro(g, "Upgrades apply to every new run.", dica, p.x + p.width / 2, p.y + p.height - 4 * s, Palette.LIGHT);
+    }
+
+    /** Fundo preto: nem a ilustração do título, nem o jogo congelado. */
+    @Override
+    protected void desenharFundo(Graphics2D g) {
+        g.setColor(FUNDO);
+        g.fillRect(0, 0, Engine.window.largura(), Engine.window.altura());
     }
 
     // ------------------------------------------------------------- texto
