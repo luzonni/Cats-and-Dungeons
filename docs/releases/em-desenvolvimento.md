@@ -258,3 +258,18 @@ era apresentada como um level up. Agora ela tem uma cerimônia própria. Ver
   projeto (`tools/GenSonsDaEscolha.java`), provisórios no timbre.
 - **Confirmação** (`5071c2d`): clarão na cor do elemento, explosão de partículas e
   a carta voando até o gato, onde a arma se transmuta; volta ao jogo em 0,6 s.
+
+## Escala da interface proporcional à resolução (2026-10-22, branch `feat/escala-da-hud`)
+
+Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
+
+- **Um sistema de escala** (`ce50477`). HUD size era um multiplicador cru de
+  pixels, GUI size subtraía passos e Margin era em pixels absolutos: o mesmo valor
+  ocupava o dobro da tela em 1280 do que em 2560. Agora tudo sai de uma referência
+  de 640×360, em por cento (50% a 200%), multiplicado e arredondado uma vez. 100%
+  ocupa a mesma fração em 720p, 1080p, 1440p e 4K. Novos: Interface size, Menu
+  size, HUD size, Margin em pixels de referência e Reset interface; os valores
+  antigos migram sozinhos.
+- **HUD por âncoras** (`3e54d24`). Cada peça tem âncora, deslocamento e tamanho
+  num lugar só (`LayoutDoHud`), e o teto da escala é o maior em que nada sai da
+  tela nem se cruza. F7 desenha as caixas. Teste cobre a matriz de resoluções.

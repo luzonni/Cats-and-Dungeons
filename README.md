@@ -75,8 +75,9 @@ registrados de propósito, para não se perderem de novo.
 * **Cenário derivado por gerador:** os tiles e props da dungeon saem de um pacote
   CC0 remapeado por código para a paleta de pedra fria do jogo, em vez de copiados
   como estão — a arte de fora entra já dentro da identidade visual daqui.
-* **Escala automática:** a interface acompanha a resolução escolhida em múltiplos
-  inteiros de uma resolução lógica de 320×180, do 720p ao 4K, e o HUD nunca
+* **Escala automática:** a interface acompanha a resolução escolhida a partir de
+  uma referência de 640×360, em escala inteira e na mesma proporção do 720p ao 4K;
+  o jogador ajusta interface, menus e HUD em por cento, e o HUD nunca
   cresce além do que cabe na tela.
 * **Vídeo estável:** lógica em passo fixo de 60 Hz com desenho
   interpolado, limitador preciso (timer de 1 ms no Windows), limite "igual ao

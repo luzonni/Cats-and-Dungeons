@@ -155,7 +155,8 @@ docs/                          esta pasta
 | Configurações | `engine/Configs.java` (`config.json`, gravação atômica) |
 | Laço do jogo, limitador de quadros, VSync | `engine/Engine.java` (`run`, `esperarAte`, `periodoDoQuadro`), `engine/RelogioDoSistema.java` |
 | Janela, resolução, tela cheia, escala da imagem | `engine/Window.java` (`aplicarVideo`, `resolucoesDoMonitor`), `Engine.desenharEscalado` |
-| Teto do HUD | `game/hud/LayoutDoHud.java` |
+| Escala da interface (HUD, menus, margem) | `engine/EscalaDaInterface.java`, preferências em `Configs` |
+| Layout do HUD por âncoras e teto | `game/hud/LayoutDoHud.java` (F7 desenha as caixas) |
 | Diagnóstico de vídeo | `engine/Video.java` (`-Dcd.video`), gráfico do F3 em `engine/Debugging.java` |
 
 ## 5. Convenções
@@ -171,7 +172,8 @@ docs/                          esta pasta
 - **Enums gravados por ordinal só crescem no fim**: `ItemIDs`, `EntityIDs`,
   `ArmaExtra`, `Passiva`, `Evolucao`. Inserir no meio quebra mapas e saves.
 - **Escala sempre inteira** para pixel art (`Configs.GameScale`, `UiScale`).
-  Resolução lógica de 320×180.
+  A interface escala a partir da resolução de referência 640×360
+  (`EscalaDaInterface`): `arredonda(fator × Interface% × camada%)`.
 - Assets de UI e boa parte dos sprites são **gerados** por `tools/Gen*.java` e
   versionados; a CI confere os de UI.
 - Commits em inglês no formato Conventional Commits: `tipo(escopo): resumo`,
@@ -286,7 +288,8 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
 | Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
-| Teto do HUD: medidas das peças e fração da altura | `LayoutDoHud` (`BLOCO_ESQUERDO = 136`, `RELOGIO = 80`, `VAO = 6`, `FAIXA_DE_CIMA = 46`, `FAIXA_DE_BAIXO = 38`, `FRACAO_DA_ALTURA = 0.5`) |
+| Escala da interface | `EscalaDaInterface` (`REF_LARGURA × REF_ALTURA = 640×360`, `MENUS_POR_REFERENCIA = 1.5`, `PCT_MINIMO = 50`, `PCT_MAXIMO = 200`, `PASSO = 25`, `MARGEM_PADRAO = 7`, `MARGEM_MAXIMA = 16`, `ESCALA_LEGIVEL = 2`) |
+| Peças e teto do HUD | `LayoutDoHud` (`Peca`: âncora, deslocamento e tamanho de cada peça; `VAO = 4`, `FRACAO_DA_ALTURA = 0.5`) |
 | Laço: recuperação de ticks, superfície perdida | `Engine` (`MAX_CATCHUP = 5`, `QUADROS_ATE_RECRIAR = 60`) |
 | Resoluções oferecidas | `Window.COMUNS` (mais a do monitor) |
 

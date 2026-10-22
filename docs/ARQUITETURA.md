@@ -158,22 +158,67 @@ Hz, janela de 2 s estável):
   taxa e cada criação de `BufferStrategy`. O F3 mostra o FPS com o alvo real e um
   gráfico dos últimos 240 quadros.
 
-### Layout do HUD
+### Escala da interface e layout do HUD
 
-O HUD é desenhado em posições fixas: vida à esquerda, relógio no centro, XP à
-direita, hotbar e Fúria embaixo. **A escala em vigor é a menor entre a escolhida e
-a maior que cabe** (`LayoutDoHud.escalaMaxima`):
+**Um sistema só** (`engine/EscalaDaInterface.java`), no mesmo modelo de
+coordenadas e DPI da correção de resolução. A interface acompanha o tamanho da
+imagem do jogo, em pixels da tela (`uiScale=1`). O DPI do sistema não entra.
 
-- **Largura:** o bloco da vida (136 px de arte), um vão (6) e metade do relógio
-  (80/2) cabem na metade da tela, descontada a margem.
-- **Altura:** a faixa de cima (46) e a de baixo (38) somam no máximo metade da
-  altura, e a outra metade é da arena.
+- **Resolução de referência: 640×360.** É nela que o HUD foi desenhado, em pixels
+  de arte. O fator da tela é `min(largura/640, altura/360)`, pelo lado mais
+  apertado, para nada sair da tela em outra proporção.
+- **Fórmulas, sempre multiplicativas e a partir dos valores de referência:**
+  - HUD = `arredonda(fator × Interface% × HUD%)`, no teto do layout (abaixo);
+  - menus = `arredonda(fator × 1,5 × Interface% × Menus%)`, no teto de 320×180
+    pixels de arte por tela (os menus são compostos em 384×216);
+  - margem = `arredonda(fator × margem de referência)`.
+- **Escala inteira, arredondada uma vez, no fim.** Fator quebrado borra a pixel
+  art (suavizada) ou deixa pixels de larguras diferentes (vizinho mais próximo).
+  As resoluções 16:9 comuns são múltiplas de 640×360 (720p = 2, 1080p = 3, 1440p =
+  4, 4K = 6), e entre elas 100% ocupa **exatamente a mesma fração** da tela. Fora
+  delas (1366×768, 1600×900), o erro é o de arredondar para o pixel inteiro.
+- **Tamanho mínimo legível:** a partir de 1280×720 nenhuma camada desce de 2, porque
+  as fontes de pixel art têm de 5 a 8 pixels e, em escala 1, ficam ilegíveis.
+- **Preferências (Settings → Interface):** Interface size, Menu size e HUD size
+  de 50% a 200% em passos de 25% (padrão 100%), Margin de 0 a 16 pixels de
+  referência (padrão 7) e Reset interface. O máximo de cada slider é o que cabe na
+  tela atual (`OptionRow.ate`). Os valores antigos (GUI size 1/2/3, HUD size em
+  pixels, Margin em pixels) migram sozinhos.
 
-A conta usa o tamanho da imagem do jogo. Por isso se ajusta sozinha a cada
-resolução ou janela, e a escolha gravada volta a valer numa tela maior.
-`Configs.HudScale()` devolve a escala em vigor e `HudScaleEscolhida()` a gravada.
-O "+" de HUD size em Settings para no teto (`OptionRow.ate`). Em 1280×720, HUD 4
-vira 3, e em 1920×1080 cabe até 5.
+**Layout por âncoras** (`game/hud/LayoutDoHud.java`). Cada peça do HUD tem uma
+âncora, um deslocamento e um tamanho em pixels de arte:
+
+| Peça | Âncora | Deslocamento | Tamanho |
+|---|---|---|---|
+| VIDA (retrato, frasco, barra) | topo-esquerda | 0 | 136×32 |
+| RELOGIO | topo-centro | 0 | 80×24 |
+| XP | topo-direita | 0 | 17×17 |
+| CHEFE (nome e barra) | topo-centro | 36 | 180×16 |
+| FURIA (rótulo e barra) | base-centro | 29 | 72×14 |
+| HOTBAR (casas e orelhas) | base-centro | 0 | 80×22 |
+
+A posição na tela sai da âncora, da margem e da escala a cada leitura
+(`LayoutDoHud.caixa`). Quem desenha a peça pede a caixa e não faz conta própria.
+**A escala do HUD em vigor é a menor entre a pedida e a maior em que:**
+
+1. toda peça cabe dentro da margem;
+2. nenhuma peça encosta em outra (vão de 4 pixels de arte);
+3. as faixas de cima e de baixo somam no máximo metade da altura (a outra metade é
+   da arena).
+
+Tudo é recalculado a cada tick a partir da imagem do jogo. Por isso trocar
+resolução, janela ou monitor, ou mexer num slider, vale no quadro seguinte, sem
+recriar nada. **F7** desenha as caixas, as âncoras e a margem. `LayoutDoHudTest`
+cobre a matriz inteira: resoluções, por cento e margens.
+
+**Para acrescentar uma peça ao HUD:**
+
+1. Acrescente um item em `LayoutDoHud.Peca` com âncora, deslocamento e tamanho em
+   pixels de arte.
+2. No desenho, pegue a posição de `LayoutDoHud.caixa(Peca.X)` e desenhe dentro
+   dela em pixels de arte × `Configs.HudScale()`.
+3. Rode `LayoutDoHudTest`. O teto e o teste passam a considerar a peça sozinhos.
+   Se ela cruzar outra, mude o deslocamento.
 
 ## Fluxo de uma partida
 
