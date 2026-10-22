@@ -273,3 +273,8 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
 - **HUD por âncoras** (`3e54d24`). Cada peça tem âncora, deslocamento e tamanho
   num lugar só (`LayoutDoHud`), e o teto da escala é o maior em que nada sai da
   tela nem se cruza. F7 desenha as caixas. Teste cobre a matriz de resoluções.
+- **Barras arrastáveis e menu menor** (`3c84675`). Os valores numéricos de
+  Settings viram uma barra no estilo do Forza Horizon, que se arrasta com o mouse
+  e anda com as setas; os de sim/não e de lista continuam com botões. Os tamanhos
+  andam de 5 em 5% (eram 25%) e o zoom da câmera também. O Menu size 100% passa a
+  ser o antigo 75% (2 em 720p, 3 em 1080p), que é o tamanho escolhido nos testes.

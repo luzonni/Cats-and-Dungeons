@@ -169,8 +169,10 @@ imagem do jogo, em pixels da tela (`uiScale=1`). O DPI do sistema não entra.
   apertado, para nada sair da tela em outra proporção.
 - **Fórmulas, sempre multiplicativas e a partir dos valores de referência:**
   - HUD = `arredonda(fator × Interface% × HUD%)`, no teto do layout (abaixo);
-  - menus = `arredonda(fator × 1,5 × Interface% × Menus%)`, no teto de 320×180
-    pixels de arte por tela (os menus são compostos em 384×216);
+  - menus = `arredonda(fator × 1,125 × Interface% × Menus%)`, no teto de 320×180
+    pixels de arte por tela (os menus são compostos em 384×216). O 1,125 faz o
+    100% valer 2 em 720p e 3 em 1080p: com 1,5 (a primeira versão) o padrão
+    ficava grande demais, e o tamanho escolhido nos testes foi o antigo 75%;
   - margem = `arredonda(fator × margem de referência)`.
 - **Escala inteira, arredondada uma vez, no fim.** Fator quebrado borra a pixel
   art (suavizada) ou deixa pixels de larguras diferentes (vizinho mais próximo).
@@ -180,10 +182,12 @@ imagem do jogo, em pixels da tela (`uiScale=1`). O DPI do sistema não entra.
 - **Tamanho mínimo legível:** a partir de 1280×720 nenhuma camada desce de 2, porque
   as fontes de pixel art têm de 5 a 8 pixels e, em escala 1, ficam ilegíveis.
 - **Preferências (Settings → Interface):** Interface size, Menu size e HUD size
-  de 50% a 200% em passos de 25% (padrão 100%), Margin de 0 a 16 pixels de
+  de 50% a 200% em passos de 5% (padrão 100%), Margin de 0 a 16 pixels de
   referência (padrão 7) e Reset interface. O máximo de cada slider é o que cabe na
   tela atual (`OptionRow.ate`). Os valores antigos (GUI size 1/2/3, HUD size em
-  pixels, Margin em pixels) migram sozinhos.
+  pixels, Margin em pixels) migram sozinhos. Como a escala é inteira, nem todo
+  passo de 5% muda o tamanho visível: o desenho troca quando o produto cruza a
+  metade entre dois inteiros.
 
 **Layout por âncoras** (`game/hud/LayoutDoHud.java`). Cada peça do HUD tem uma
 âncora, um deslocamento e um tamanho em pixels de arte:
@@ -346,8 +350,13 @@ Um componente só, `menus/Configuracoes.java`, com duas portas:
   sair grava a corrida. Restart, Main Menu e Quit pedem confirmação no diálogo
   comum (`Confirm`). O foco abre em Continue. O detalhe da corrida fica na tela
   de Status (tecla E), e não aqui.
-- **Abas de configuração:** as mesmas linhas nos dois acessos, com stepper
-  `−/+`, slider, ciclo e toggle (`OptionRow`). Resolução e tela cheia esperam o
+- **Abas de configuração:** as mesmas linhas nos dois acessos (`OptionRow`).
+  Valor numérico (slider e stepper) é uma barra arrastável no estilo do Forza
+  Horizon: trilha fina, trecho escolhido aceso, marcador quadrado e o número à
+  direita; arrasta com o mouse ou anda com Left/Right (o teclado e o D-pad
+  repetem ao segurar). O trecho além do que cabe na tela fica pontilhado, com um
+  traço no teto. Escolha entre opções (ciclo `−/+`) e sim/não (toggle) continuam
+  com botões. Resolução e tela cheia esperam o
   Apply, que só redimensiona a janela (ver [Janela, resolução e DPI](#janela-resolução-e-dpi)); o resto se aplica na hora.
 - **Rodapé por aba:** na Run, `Enter Select`; nas de configuração,
   `Left/Right Adjust`. As duas mostram `Q/E Tabs` e o `Esc` (Back ou Resume).
