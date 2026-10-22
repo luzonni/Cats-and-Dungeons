@@ -1,8 +1,6 @@
 package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.engine.Engine;
-import com.retronova.engine.sound.Sound;
-import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.map.arena.AberturaDoBau;
 import com.retronova.game.objects.GameObject;
@@ -38,7 +36,8 @@ public class Bau extends Utility {
         // Meio segundo de carencia: se ele cair em cima do gato, nao abre no mesmo
         // quadro em que apareceu, antes de o jogador ver que ele existe.
         if (idade > 30 && player != null && player.colliding(this)) {
-            Sound.play(Sounds.Coin);
+            // Sem som aqui: a tela do baú toca o dela ao aparecer (BauAparece), e a
+            // moeda por cima virava dois sons no mesmo instante.
             disappear();
             Engine.pause(new AberturaDoBau());
         }

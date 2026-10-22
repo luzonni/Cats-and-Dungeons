@@ -121,7 +121,18 @@ public class AberturaDoBau implements Activity {
         // O PRÊMIO É DECIDIDO AQUI, ao abrir, antes de qualquer animação — a mesma
         // regra da roleta, que agora mora em RecompensaDoBau.
         this.premio = RecompensaDoBau.abrir(Game.getPlayer());
-        this.previa = RecompensaDoBau.possiveis(Game.getPlayer().getMelhorias());
+        // A PRÉVIA COM GRAU: cada melhoria do pool ganha um grau sorteado com as
+        // chances de verdade (Raridade.sortear), então a fileira mostra o quanto
+        // cada grau é comum — e o tic de cada ícone soa no grau dele.
+        double promocao = RecompensaDoBau.promocao(Game.getPlayer());
+        this.previa = new ArrayList<>();
+        for (Premio p : RecompensaDoBau.possiveis(Game.getPlayer().getMelhorias())) {
+            previa.add(p.carta() == null ? p : new Premio(new com.retronova.game.items.Melhorias.Carta(
+                    p.carta().melhoria(), com.retronova.game.items.Raridade.sortear(promocao),
+                    p.carta().jaTinha()), null, 0));
+        }
+        java.util.Collections.shuffle(previa, Engine.RAND);
+        Sound.play(Sounds.BauAparece);
         if (quadros == null) {
             quadros = new SpriteHandler("sprites/objects/furniture", "bau_abrindo", 1).getSHEET();
         }
@@ -156,6 +167,15 @@ public class AberturaDoBau implements Activity {
                 }
             }
             case ESPERA -> {
+                // O tic da prévia, a cada ícone que acende, no grau dele.
+                if (!previa.isEmpty() && idade % PREVIA_POR_ICONE == 0) {
+                    Sound.play(switch (previa.get(iconeAceso()).grau()) {
+                        case COMUM -> Sounds.BauPreviaComum;
+                        case RARO -> Sounds.BauPreviaRaro;
+                        case EPICO -> Sounds.BauPreviaEpico;
+                        case LENDARIO -> Sounds.BauPreviaLendario;
+                    });
+                }
                 if (confirmar) {
                     Sound.play(Sounds.BauTremor);
                     mudar(Fase.TREMOR);
@@ -192,6 +212,11 @@ public class AberturaDoBau implements Activity {
                 }
             }
         }
+    }
+
+    /** O ícone da prévia aceso agora: anda um a cada PREVIA_POR_ICONE ticks. */
+    private int iconeAceso() {
+        return (idade / PREVIA_POR_ICONE) % previa.size();
     }
 
     private void mudar(Fase nova) {
@@ -400,7 +425,7 @@ public class AberturaDoBau implements Activity {
         int total = n * lado + (n - 1) * vao;
         int x0 = (int) bau.getCenterX() - total / 2;
         int y = bau.y + bau.height + 10 * s;
-        int aceso = (idade / PREVIA_POR_ICONE) % previa.size();
+        int aceso = iconeAceso();
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, entrada));
         Font rotulo = FontHandler.font(FontHandler.Game, 5f * s);
@@ -413,7 +438,8 @@ public class AberturaDoBau implements Activity {
             Premio p = previa.get(indice);
             int x = x0 + i * (lado + vao);
             boolean destaque = indice == aceso;
-            g2.setColor(Palette.OUTLINE);
+            // A moldura do aceso na cor do grau dele; os outros, no contorno da casa.
+            g2.setColor(destaque ? p.grau().cor() : Palette.OUTLINE);
             g2.fillRect(x - s, y + s, lado + 2 * s, lado + 2 * s);
             g2.setColor(destaque ? Palette.MAIN : Palette.DEEP);
             g2.fillRect(x, y + 2 * s, lado, lado);
