@@ -81,9 +81,9 @@ interpolado**. Tick e quadro são **prazos absolutos** no relógio
 
 | VSync | Limite (Settings → Frame rate) | O que acontece |
 |---|---|---|
-| Ligado | ignorado | O buffer pede vsync (`ExtendedBufferCapabilities`, só no OpenGL). Se o driver honra, o `show()` espera o monitor. Se ignora (comum em janela, detectado quando o FPS passa de 1,4× a taxa), o relógio assume na taxa do monitor. |
+| Ligado | ignorado | O buffer pede vsync (`ExtendedBufferCapabilities`, só no OpenGL). Se o driver honra, o `show()` espera o monitor. Se ignora (comum em janela, e nesta máquina também em tela cheia), isso é detectado nos 20 primeiros quadros de cada buffer (`Engine.sondarVsync`: quadros abaixo de 70% do período do monitor) e o relógio assume na taxa do monitor; antes a detecção levava um segundo, que rodava solto a 400+ FPS logo ao abrir. |
 | Desligado | **Monitor** (padrão) | Relógio na taxa do monitor em que a janela está. |
-| Desligado | 30 a 240 | Relógio no valor escolhido. Acima da taxa do monitor, só acrescenta rasgo. |
+| Desligado | 30 a 240 | Relógio no valor escolhido. Acima da taxa do monitor (marcado com "!" em Settings), só acrescenta rasgo. |
 | Desligado | Unlimited | Desenha sem esperar. |
 
 - **A taxa do monitor** é relida a cada segundo (`Engine.conferirMonitor`), então

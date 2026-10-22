@@ -177,8 +177,12 @@ public class Configuracoes extends TelaDeMenu {
         String[] fps = new String[FPS_VALORES.length];
         for (int i = 0; i < fps.length; i++) {
             int v = FPS_VALORES[i];
+            // ACIMA DO MONITOR, AVISADO. Sem VSync, 240 quadros num monitor de 180 Hz
+            // saem desencontrados da tela (rasgo e trepidação) por mais preciso que
+            // seja o limitador; o rótulo diz isso antes de o jogador descobrir.
             fps[i] = v == Configs.LIMITE_MONITOR ? "Monitor (" + Engine.taxaDoMonitor() + ")"
-                    : v == Configs.SEM_LIMITE ? "Unlimited" : String.valueOf(v);
+                    : v == Configs.SEM_LIMITE ? "Unlimited"
+                    : v > Engine.taxaDoMonitor() ? v + " !" : String.valueOf(v);
         }
 
         List<OptionRow> video = new ArrayList<>();
@@ -189,8 +193,9 @@ public class Configuracoes extends TelaDeMenu {
                 .desc("Fills the whole screen with a borderless window. Needs Apply. F11 also toggles it."));
         video.add(OptionRow.cycle("Frame rate", Configuracoes::indiceFps,
                 v -> Configs.setMaxFrames(FPS_VALORES[v]), fps)
-                .desc("Frame limit when VSync is off. Monitor matches your screen and is the smoothest; "
-                        + "a limit above it only adds tearing. The game plays the same at any frame rate."));
+                .desc("Frame limit when VSync is off. Monitor matches your screen and is the smoothest; ! marks "
+                        + "limits above your monitor, which only add tearing. "
+                        + "The game plays the same at any frame rate."));
         video.add(OptionRow.toggle("Smooth graphics",
                 () -> Configs.isNeatGraphics() ? 1 : 0, v -> Configs.setNeatGraphics(v != 0))
                 .desc("Antialiasing and smooth filtering. Softens the pixel art; off keeps the sharp look."));

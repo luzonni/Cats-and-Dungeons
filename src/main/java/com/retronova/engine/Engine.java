@@ -432,6 +432,7 @@ public class Engine implements Runnable {
         if (Engine.BUFFER == null) {
             try {
                 Engine.vsync = Configs.VSync() && criarComVSync();
+                sondagemDoVsync = 0;
                 if (!Engine.vsync) {
                     window.createBufferStrategy(3);
                 }
@@ -650,6 +651,7 @@ public class Engine implements Runnable {
                     long inicioRender = System.nanoTime();
                     if (desenharQuadro()) {
                         frames++;
+                        sondarVsync();
                         Desempenho.quadro(System.nanoTime() - inicioRender);
                     }
                     desenhou = true;
@@ -742,6 +744,44 @@ public class Engine implements Runnable {
      * {@link Configs#LIMITE_MONITOR} é a taxa do monitor, {@link Configs#SEM_LIMITE}
      * é nenhum.
      */
+    /**
+     * O VSYNC PEDIDO ESTÁ VALENDO? Responde em 20 quadros, não em um segundo.
+     *
+     * Muitos drivers aceitam o pedido de vsync e o ignoram (em janela, e em
+     * algumas máquinas também na janela sem bordas): o show() volta na hora. A
+     * detecção antiga só olhava o FPS ao fim de cada segundo — e o primeiro segundo
+     * de cada buffer novo (abrir o jogo, F11, ligar o VSync) rodava solto, a 400+
+     * quadros, e o seguinte tropeçava na troca para o relógio. Era o "bugado ao
+     * abrir". Agora, se os 20 primeiros quadros saem em menos de 70% do período do
+     * monitor cada um, o show() não está esperando nada: o relógio assume já.
+     * A checagem por segundo continua, para o driver que passa a ignorar depois.
+     */
+    private static final int QUADROS_DA_SONDAGEM = 20;
+    private static int sondagemDoVsync = -1;
+    private static long inicioDaSondagem;
+
+    private static void sondarVsync() {
+        if (!vsync || sondagemDoVsync < 0) {
+            return;
+        }
+        long agora = System.nanoTime();
+        if (sondagemDoVsync == 0) {
+            inicioDaSondagem = agora;       // o primeiro quadro só marca o início
+        } else if (sondagemDoVsync == QUADROS_DA_SONDAGEM) {
+            double media = (agora - inicioDaSondagem) / (double) QUADROS_DA_SONDAGEM;
+            double periodo = Engine.T / taxaDoMonitor();
+            if (media < periodo * 0.7) {
+                vsync = false;
+                System.out.printf(java.util.Locale.ROOT,
+                        "VSync: ignored by the driver (%.2f ms per frame), pacing to %d Hz instead%n",
+                        media / 1e6, taxaDoMonitor());
+            }
+            sondagemDoVsync = -1;
+            return;
+        }
+        sondagemDoVsync++;
+    }
+
     /** O período alvo do quadro, em ns (0 sem limite), para a linha do gráfico do F3. */
     static long periodoAlvoNs() {
         return periodoDoQuadro();
