@@ -290,3 +290,8 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
   whole run" ficava entre o título e as cartas, e o brilho e os cantos da carta
   em foco passavam por cima dele. As cartas descem um pouco, o título sobe, e o
   subtítulo passa para a fonte dos textos das cartas, num tom mais claro.
+- **Fim de corrida mais limpo** (`2825c39`). A tela de fim de corrida passa a ter
+  fundo preto, sem a ilustração do título por trás. As linhas da loja ganham
+  altura, os níveis se alinham ao preço, a dica vai em duas linhas (numa só
+  vazava do painel), e os avisos de conquista saem depois de 4 s em vez de
+  cobrir o ouro e a loja em 720p.
