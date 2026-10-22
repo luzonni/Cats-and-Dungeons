@@ -58,7 +58,8 @@ import java.util.List;
  */
 public class Configuracoes extends TelaDeMenu {
 
-    private static final int[] FPS_VALORES = {30, 60, 120, 144, 165, 240};
+    /** Limites de quadros, na ordem do ciclo: o do monitor primeiro, sem limite por último. */
+    private static final int[] FPS_VALORES = {Configs.LIMITE_MONITOR, 30, 60, 120, 144, 165, 240, Configs.SEM_LIMITE};
     /** Tamanhos de GUI, como no Minecraft. 0 = automático. Ver Configs.UiScale(). */
     private static final int[] ESCALAS_UI = {0, 1, 2, 3};
     private static final String[] ROTULOS_ESCALA = {"Auto", "1", "2", "3"};
@@ -171,7 +172,9 @@ public class Configuracoes extends TelaDeMenu {
         }
         String[] fps = new String[FPS_VALORES.length];
         for (int i = 0; i < fps.length; i++) {
-            fps[i] = String.valueOf(FPS_VALORES[i]);
+            int v = FPS_VALORES[i];
+            fps[i] = v == Configs.LIMITE_MONITOR ? "Monitor (" + Engine.taxaDoMonitor() + ")"
+                    : v == Configs.SEM_LIMITE ? "Unlimited" : String.valueOf(v);
         }
 
         List<OptionRow> video = new ArrayList<>();
@@ -181,7 +184,8 @@ public class Configuracoes extends TelaDeMenu {
                 .desc("Fills the whole screen with a borderless window. Needs Apply. F11 also toggles it."));
         video.add(OptionRow.cycle("Frame rate", Configuracoes::indiceFps,
                 v -> Configs.setMaxFrames(FPS_VALORES[v]), fps)
-                .desc("Maximum frames drawn per second. Higher values look smoother but cost more CPU."));
+                .desc("Frame limit when VSync is off. Monitor matches your screen and is the smoothest; "
+                        + "a limit above it only adds tearing. The game plays the same at any frame rate."));
         video.add(OptionRow.toggle("Smooth graphics",
                 () -> Configs.isNeatGraphics() ? 1 : 0, v -> Configs.setNeatGraphics(v != 0))
                 .desc("Antialiasing and smooth filtering. Softens the pixel art; off keeps the sharp look."));
@@ -192,7 +196,8 @@ public class Configuracoes extends TelaDeMenu {
                 .desc("Darkens the corners of the screen during gameplay, to focus the eye on the center."));
         video.add(OptionRow.toggle("VSync",
                 () -> Configs.VSync() ? 1 : 0, v -> Configs.setVSync(v != 0))
-                .desc("Shows each frame exactly when the monitor refreshes. Smoothest motion; overrides the frame rate limit."));
+                .desc("Syncs every frame to the monitor refresh. Smoothest motion, no tearing; "
+                        + "the frame rate limit is ignored while it is on."));
         video.add(OptionRow.toggle("Lighting",
                 () -> Configs.Lighting() ? 1 : 0, v -> Configs.setLighting(v != 0))
                 .desc("Soft shadows under everything and dynamic light from the cat, torches and chests."));
@@ -264,7 +269,7 @@ public class Configuracoes extends TelaDeMenu {
                 return i;
             }
         }
-        return 1;
+        return 0;   // valor desconhecido cai no do monitor
     }
 
     private boolean temPendencia() {

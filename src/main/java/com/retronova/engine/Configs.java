@@ -59,7 +59,10 @@ public class Configs {
         // Marca de qual mundo o arquivo veio. Ver migrarAudio.
         DEFAULTS.put("AUDIOVERSION", 2);
         DEFAULTS.put("hitboxes", false);
-        DEFAULTS.put("MaxFrames", 60);
+        // PADRÃO: A TAXA DO MONITOR. Um jogador novo nunca começa com o jogo
+        // inconstante: sem VSync, o limite cai no ritmo exato do monitor, e não num
+        // número fixo que pode estar acima do que a tela mostra (ver Engine).
+        DEFAULTS.put("MaxFrames", LIMITE_MONITOR);
         DEFAULTS.put("indexResolution", 0);
         DEFAULTS.put("BATTLEMUSIC", 0);    // indice em Musics.COMBATE
         DEFAULTS.put("rumble", true);      // vibração do controle, ver Gamepad.vibrar
@@ -107,6 +110,24 @@ public class Configs {
         }
         if (objeto.get("AUDIOVERSION") == null) {
             migrarAudio();
+        }
+        invalidarCache();
+    }
+
+    /**
+     * SÓ PARA MEDIR: -Dcd.video.vsync=true|false e -Dcd.video.fps=N trocam o VSync
+     * e o limite de quadros EM MEMÓRIA, sem gravar o config.json. Servem para
+     * comparar ritmos de quadro (com -Dcd.perf) sem mexer na configuração de quem
+     * joga.
+     */
+    static void sobreporParaDiagnostico() {
+        String vsync = System.getProperty("cd.video.vsync");
+        if (vsync != null) {
+            VALUES.put("vsync", Boolean.parseBoolean(vsync));
+        }
+        Integer fps = Integer.getInteger("cd.video.fps");
+        if (fps != null) {
+            VALUES.put("MaxFrames", fps);
         }
         invalidarCache();
     }
@@ -458,6 +479,16 @@ public class Configs {
         update();
     }
 
+    /** Limite de quadros "igual ao monitor": a taxa detectada (ver Engine.taxaDoMonitor). */
+    public static final int LIMITE_MONITOR = 0;
+    /** Sem limite de quadros: desenha o mais rápido que der. */
+    public static final int SEM_LIMITE = -1;
+
+    /**
+     * O limite de quadros sem VSync: um número de quadros por segundo,
+     * {@link #LIMITE_MONITOR} ou {@link #SEM_LIMITE}. Com VSync ligado ele não vale:
+     * quem dita o ritmo é o monitor.
+     */
     public static int MaxFrames() {
         return inteiro("MaxFrames");
     }
