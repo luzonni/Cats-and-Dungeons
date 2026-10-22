@@ -295,3 +295,7 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
   altura, os níveis se alinham ao preço, a dica vai em duas linhas (numa só
   vazava do painel), e os avisos de conquista saem depois de 4 s em vez de
   cobrir o ouro e a loja em 720p.
+- **Fim de corrida na identidade visual** (`1aa2b63`). Painéis, loja, avisos de
+  conquista e título passam para as cores da Palette e para o painel padrão dos
+  menus (contorno, corpo fundo e cabeçalho como a aba ativa). Eram cabeçalhos
+  ciano e amarelo, corpo em gradiente roxo e cantos arredondados.
