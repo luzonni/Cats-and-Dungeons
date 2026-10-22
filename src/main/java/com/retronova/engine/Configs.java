@@ -487,7 +487,7 @@ public class Configs {
     /**
      * Arquivo de antes da escala em por cento: traduz as preferências antigas.
      *
-     *   - GUI size 1/2/3 (0 = automático = 2) vira Menus 75/100/125%;
+     *   - GUI size "3" vira Menus 150%; os outros, 100% (o tamanho padrão novo);
      *   - HUD size, o multiplicador cru, vira por cento do padrão de 1080p (3);
      *   - Margin em pixels vira pixels de referência (um terço, o fator de 1080p).
      */
@@ -495,7 +495,7 @@ public class Configs {
         Object gui = antigo.get("UISCALE");
         if (gui instanceof Number n) {
             int t = n.intValue();
-            VALUES.put("MENUS_PCT", t == 1 ? 75 : t == 3 ? 125 : 100);
+            VALUES.put("MENUS_PCT", t == 3 ? 150 : 100);
         }
         Object hud = antigo.get("HUDSCALE");
         if (hud instanceof Number n) {

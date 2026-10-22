@@ -76,10 +76,10 @@ class LayoutDoHudTest {
     }
 
     @Test
-    void osMenusPadraoContinuamComoAntes() {
-        // A migração não muda o que o jogador via: 3 em 720p, 5 em 1080p.
-        assertEquals(3, EscalaDaInterface.menus(1280, 720, 100, 100));
-        assertEquals(5, EscalaDaInterface.menus(1920, 1080, 100, 100));
+    void osMenusPadraoSaoOTamanhoEscolhido() {
+        // O 100% é o antigo "75%", que o jogador escolheu: 2 em 720p, 3 em 1080p.
+        assertEquals(2, EscalaDaInterface.menus(1280, 720, 100, 100));
+        assertEquals(3, EscalaDaInterface.menus(1920, 1080, 100, 100));
     }
 
     @Test
@@ -104,6 +104,6 @@ class LayoutDoHudTest {
     void valorGravadoForaDaFaixaVoltaParaElaNoPasso() {
         assertEquals(50, EscalaDaInterface.pctValido(10));
         assertEquals(200, EscalaDaInterface.pctValido(900));
-        assertEquals(125, EscalaDaInterface.pctValido(133));
+        assertEquals(135, EscalaDaInterface.pctValido(133));
     }
 }

@@ -197,7 +197,7 @@ public class Configuracoes extends TelaDeMenu {
         video.add(OptionRow.toggle("Smooth graphics",
                 () -> Configs.isNeatGraphics() ? 1 : 0, v -> Configs.setNeatGraphics(v != 0))
                 .desc("Antialiasing and smooth filtering. Softens the pixel art; off keeps the sharp look."));
-        video.add(OptionRow.stepper("Camera zoom", Configs::Zoom, Configs::setZoom, 50, 160, 10, "%")
+        video.add(OptionRow.stepper("Camera zoom", Configs::Zoom, Configs::setZoom, 50, 160, 5, "%")
                 .desc("How close the camera is to the cat. Lower shows more of the arena; higher is more immersive."));
         video.add(OptionRow.toggle("Vignette",
                 () -> Configs.Vignette() ? 1 : 0, v -> Configs.setVignette(v != 0))

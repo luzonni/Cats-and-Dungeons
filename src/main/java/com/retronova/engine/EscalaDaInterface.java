@@ -30,7 +30,7 @@ package com.retronova.engine;
  * referência, nunca do valor já escalado (que acumularia arredondamento):
  *
  *     HUD    = arredonda(fator × Interface% × HUD%)
- *     menus  = arredonda(fator × 1,5 × Interface% × Menus%)
+ *     menus  = arredonda(fator × 1,125 × Interface% × Menus%)
  *     margem = arredonda(fator × margem de referência)
  *
  * ESCALA INTEIRA, ARREDONDADA UMA VEZ, NO FIM. Pixel art ampliada por fator
@@ -46,10 +46,10 @@ package com.retronova.engine;
  * Main fixa sun.java2d.uiScale=1 (JEP 263), a resolução é em pixels da tela, e a
  * interface acompanha a resolução — numa tela de DPI alto, a mesma fração.
  *
- * Os menus usam 1,5 unidade por unidade do HUD porque foram compostos para uma
- * tela de 384x216 (= 640x360 / 1,5 — mais densos que o HUD, que fica nas bordas
- * de uma cena que precisa de espaço). Com isso o padrão dos menus continua o de
- * antes (3 em 720p, 5 em 1080p).
+ * Os menus usam 1,125 unidade por unidade do HUD: o tamanho que o jogador
+ * escolheu como o certo (o "75%" da primeira versão, que usava 1,5) virou o 100%.
+ * Com 1,5 os menus ficavam grandes demais no padrão (5 em 1080p); com 1,125 são 2
+ * em 720p e 3 em 1080p.
  */
 public final class EscalaDaInterface {
 
@@ -60,12 +60,12 @@ public final class EscalaDaInterface {
 
     /** A resolução de referência do HUD, em pixels de arte. */
     public static final int REF_LARGURA = 640, REF_ALTURA = 360;
-    /** Unidades dos menus por unidade do HUD (os menus são compostos em 384x216). */
-    public static final double MENUS_POR_REFERENCIA = 1.5;
+    /** Unidades dos menus por unidade do HUD (os menus são compostos em 568x320). */
+    public static final double MENUS_POR_REFERENCIA = 1.125;
     /** A menor tela que um menu precisa, em pixels de arte: nenhum menu passa dela. */
     public static final int MENU_MINIMO_LARGURA = 320, MENU_MINIMO_ALTURA = 180;
     /** Faixa e passo das preferências de tamanho, em por cento. */
-    public static final int PCT_MINIMO = 50, PCT_MAXIMO = 200, PASSO = 25, PCT_PADRAO = 100;
+    public static final int PCT_MINIMO = 50, PCT_MAXIMO = 200, PASSO = 5, PCT_PADRAO = 100;
     /** Margem das bordas em pixels de referência: padrão e máximo. */
     public static final int MARGEM_PADRAO = 7, MARGEM_MAXIMA = 16;
     /**

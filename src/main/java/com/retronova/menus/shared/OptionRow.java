@@ -50,6 +50,11 @@ public class OptionRow {
     private static final int BTN_W = 12;
     private static final int CONTENT_X = 14, CONTENT_W = 64;
     private static final int PLUS_X = 80;
+    /**
+     * Largura da trilha da barra arrastável; o número fica à direita dela. 58 e não
+     * mais: o marcador aceso passa 4 da ponta, e "100%" precisa de ~24 sem encostar.
+     */
+    private static final int TRILHA_W = 58;
     /** Folga mínima entre o fim do rótulo e o começo dos controles. */
     private static final int LABEL_GAP = 4;
 
@@ -67,6 +72,9 @@ public class OptionRow {
     private Rectangle menos = new Rectangle();
     private Rectangle mais = new Rectangle();
     private Rectangle alvoToggle = new Rectangle();
+    private Rectangle trilha = new Rectangle();
+    /** O mouse segura a barra: o valor acompanha até soltar. */
+    private boolean arrastando;
 
     private Runnable acao;
     /** O realce da linha, em rampa: aceso pelo foco ou pelo mouse (ver Realce). */
@@ -188,6 +196,13 @@ public class OptionRow {
         this.mais = new Rectangle(clusterX + PLUS_X * s, btnY, BTN_W * s, BTN_W * s);
         // Alvo generoso: clicar em qualquer ponto da coluna de controles alterna.
         this.alvoToggle = new Rectangle(clusterX, btnY, CLUSTER_W * s, BTN_W * s);
+        // A trilha da barra ocupa a altura toda da linha: fácil de pegar com o mouse.
+        this.trilha = new Rectangle(clusterX + 2 * s, y, TRILHA_W * s, ROW_H * s);
+    }
+
+    /** Barra arrastável: os valores numéricos (volume, zoom, tamanhos, margem). */
+    private boolean ehBarra() {
+        return kind == Kind.SLIDER || kind == Kind.STEPPER;
     }
 
     public Rectangle getBounds() {
@@ -197,6 +212,9 @@ public class OptionRow {
     public boolean estaSobreControles() {
         if (kind == Kind.ACTION) {
             return estaSobreLinha();
+        }
+        if (ehBarra()) {
+            return arrastando || trilha.contains(Mouse.getX(), Mouse.getY());
         }
         return menos.contains(Mouse.getX(), Mouse.getY())
                 || mais.contains(Mouse.getX(), Mouse.getY())
@@ -218,12 +236,45 @@ public class OptionRow {
             }
             return;
         }
+        if (ehBarra()) {
+            arrastar();
+            return;
+        }
         if (Mouse.clickOn(Mouse_Button.LEFT, menos)) {
             ajustar(-1);
         } else if (Mouse.clickOn(Mouse_Button.LEFT, mais)) {
             ajustar(1);
         }
         repetirEnquantoSegura();
+    }
+
+    /**
+     * Clicar na trilha leva o valor até ali, e arrastar o acompanha.
+     *
+     * COMO NO FORZA HORIZON, e não mais de passo em passo nos botões − e +: num
+     * intervalo de 50 a 200 em passos de 5, eram trinta cliques para ir de uma
+     * ponta à outra. O arrasto continua até soltar, mesmo com o ponteiro fora da
+     * linha. O valor anda no passo da opção, nunca passa do teto dela (ver ate).
+     */
+    private void arrastar() {
+        if (!arrastando && Mouse.clickOn(Mouse_Button.LEFT, trilha)) {
+            arrastando = true;
+        }
+        if (!arrastando) {
+            return;
+        }
+        if (!Mouse.pressing(Mouse_Button.LEFT)) {
+            arrastando = false;
+            Sound.play(Sounds.Button);      // o "assentou" do valor, uma vez, ao soltar
+            return;
+        }
+        double frac = Math.clamp((Mouse.getX() - trilha.x) / (double) Math.max(1, trilha.width), 0, 1);
+        double bruto = min + frac * (max - min);
+        int v = min + (int) Math.round((bruto - min) / step) * step;
+        v = Math.max(min, Math.min(maximo(), v));
+        if (v != get.getAsInt()) {
+            set.accept(v);
+        }
     }
 
     /** Segurar a seta continua ajustando, após uma pausa inicial. */
@@ -314,6 +365,8 @@ public class OptionRow {
             desenharChevron(g, aceso, s);
         } else if (kind == Kind.TOGGLE) {
             desenharToggle(g, s);
+        } else if (ehBarra()) {
+            desenharBarra(g, s, fonte, baseTexto, aceso);
         } else {
             desenharSeta(g, menos, "-", noLimite(-1), s);
             desenharSeta(g, mais, "+", noLimite(1), s);
@@ -350,6 +403,59 @@ public class OptionRow {
                     : get.getAsInt() + sufixo;
             desenharValor(g, fonte, texto, cx, cw, baseTexto);
         }
+    }
+
+    /**
+     * A barra no estilo do Forza Horizon: trilha fina, o trecho escolhido aceso, um
+     * marcador e o número alinhado à direita. Sem caixa nem botões — limpa, e o
+     * tamanho dela já diz onde o valor está na faixa.
+     *
+     * O TETO APARECE: quando a tela não comporta o máximo da opção (ver ate), o
+     * trecho além dele fica apagado, com um traço onde ele termina, para o
+     * jogador entender por que o marcador para ali.
+     */
+    private void desenharBarra(Graphics2D g, int s, Font fonte, int baseTexto, boolean aceso) {
+        int cy = bounds.y + bounds.height / 2;
+        int x0 = trilha.x, w = trilha.width;
+        int espessura = Math.max(1, s);
+        double faixa = Math.max(1, max - min);
+        int teto = maximo();
+        int xTeto = x0 + (int) Math.round(w * (teto - min) / faixa);
+        int xValor = x0 + (int) Math.round(w * (get.getAsInt() - min) / faixa);
+
+        g.setColor(Palette.OUTLINE);                                   // trilha até o teto
+        g.fillRect(x0, cy - espessura / 2, xTeto - x0, espessura);
+        if (xTeto < x0 + w) {                                          // além do teto, apagada
+            g.setColor(Palette.DEEP);
+            for (int x = xTeto; x < x0 + w; x += 3 * s) {
+                g.fillRect(x, cy - espessura / 2, s, espessura);
+            }
+            g.setColor(Palette.LIGHT);
+            g.fillRect(xTeto - espessura / 2, cy - 3 * s, espessura, 6 * s);
+        }
+        g.setColor(aceso || arrastando ? Palette.TEXT : Palette.ACCENT);  // trecho escolhido
+        g.fillRect(x0, cy - espessura / 2, Math.max(0, xValor - x0), espessura);
+
+        // O marcador: um ponto quadrado de pixel art, maior com o foco ou no arrasto.
+        int lado = (aceso || arrastando ? 7 : 5) * s;
+        g.setColor(Palette.OUTLINE);
+        g.fillRect(xValor - lado / 2 - s, cy - lado / 2 - s, lado + 2 * s, lado + 2 * s);
+        g.setColor(aceso || arrastando ? Palette.TEXT : Palette.ACCENT);
+        g.fillRect(xValor - lado / 2, cy - lado / 2, lado, lado);
+
+        // O número, à direita da trilha, alinhado à direita da coluna.
+        String texto = get.getAsInt() + sufixo;
+        int direita = bounds.x + bounds.width;
+        int largura = direita - (x0 + w + 4 * s);
+        Font f = fonte;
+        float tam = f.getSize2D();
+        while (FontHandler.getWidth(texto, f) > largura && tam > 4f) {
+            tam -= 1f;
+            f = FontHandler.font(FontHandler.Game, tam);
+        }
+        g.setFont(f);
+        TextFx.draw(g, texto, direita - FontHandler.getWidth(texto, f), baseTexto, Palette.TEXT, s);
+        g.setFont(fonte);
     }
 
     private void desenharValor(Graphics2D g, Font fonte, String texto, int x, int largura, int baseTexto) {
