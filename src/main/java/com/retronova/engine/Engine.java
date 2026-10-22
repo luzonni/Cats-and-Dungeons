@@ -467,6 +467,7 @@ public class Engine implements Runnable {
                 buffer.show();
                 if (!buffer.contentsLost()) {
                     quadrosPerdidos = 0;
+                    Debugging.quadroMostrado();
                     return true;
                 }
             }
@@ -741,6 +742,11 @@ public class Engine implements Runnable {
      * {@link Configs#LIMITE_MONITOR} é a taxa do monitor, {@link Configs#SEM_LIMITE}
      * é nenhum.
      */
+    /** O período alvo do quadro, em ns (0 sem limite), para a linha do gráfico do F3. */
+    static long periodoAlvoNs() {
+        return periodoDoQuadro();
+    }
+
     private static long periodoDoQuadro() {
         int alvo;
         if (Configs.VSync()) {
