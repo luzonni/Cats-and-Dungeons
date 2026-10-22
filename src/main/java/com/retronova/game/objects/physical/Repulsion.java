@@ -4,7 +4,9 @@ import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.entities.Entity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Afasta corpos solidos que se sobrepoem, na proporcao do peso de cada um.
@@ -24,14 +26,47 @@ public class Repulsion {
         this.map = map;
     }
 
+    /**
+     * Quem esta em cada celula, pelo indice na lista de entidades.
+     *
+     * A busca de vizinhos era contra a lista INTEIRA, para cada corpo solido: com
+     * 170 bichos, uns 29 mil testes de distancia por tick, crescendo com o
+     * quadrado da horda — e a horda e justamente o que cresce. Com a grade, cada
+     * corpo so olha as nove celulas em volta da sua.
+     *
+     * A celula tem o lado do MAIOR corpo solido do tick: dois corpos so se tocam
+     * se os centros estao a menos de (l1 + l2) / 2, que nunca passa desse lado, e
+     * entao o vizinho de verdade sempre esta numa das nove.
+     */
+    private final Map<Long, List<Integer>> grade = new HashMap<>();
+    private final List<Integer> candidatos = new ArrayList<>();
+    private final List<Entity> nears = new ArrayList<>();
+
     public void tick() {
         List<Entity> entities = map.getEntities();
-        List<Entity> nears = new ArrayList<>();
+        double celula = 0;
+        for (int i = 0; i < entities.size(); i++) {
+            Entity e = entities.get(i);
+            if (e.isSolid()) {
+                celula = Math.max(celula, e.getWidth());
+            }
+        }
+        if (celula <= 0) {
+            return;
+        }
+        grade.clear();
+        for (int i = 0; i < entities.size(); i++) {
+            Entity e = entities.get(i);
+            if (e.isSolid()) {
+                grade.computeIfAbsent(chave(celulaDe(centroX(e), celula), celulaDe(centroY(e), celula)),
+                        k -> new ArrayList<>(4)).add(i);
+            }
+        }
         for(int i = 0; i < entities.size(); i++) {
             Entity e1 = entities.get(i);
             if(e1.isSolid()) {
                 nears.clear();
-                getNears(e1, entities, nears);
+                getNears(e1, entities, celula);
                 for (int j = 0; j < nears.size(); j++) {
                     repulsion(e1, nears.get(j));
                 }
@@ -39,15 +74,51 @@ public class Repulsion {
         }
     }
 
-    private void getNears(Entity entity, List<Entity> list, List<Entity> nears) {
-        for(int i = 0; i < list.size(); i++) {
-            Entity e = list.get(i);
+    /**
+     * Os vizinhos que se sobrepoem a {@code entity}, NA ORDEM DA LISTA — a mesma
+     * ordem de antes da grade, para os empurroes saírem na mesma sequencia.
+     *
+     * A grade e montada no comeco do tick, e os empurroes mexem nas posicoes na
+     * hora; um par que um empurrao anterior acabou de aproximar pode ficar para o
+     * tick seguinte, dezesseis milesimos depois. A distancia em si e medida agora,
+     * na posicao atual, como sempre foi.
+     */
+    private void getNears(Entity entity, List<Entity> list, double celula) {
+        candidatos.clear();
+        int gx = celulaDe(centroX(entity), celula), gy = celulaDe(centroY(entity), celula);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                List<Integer> naCelula = grade.get(chave(gx + dx, gy + dy));
+                if (naCelula != null) {
+                    candidatos.addAll(naCelula);
+                }
+            }
+        }
+        candidatos.sort(null);
+        for (int k = 0; k < candidatos.size(); k++) {
+            Entity e = list.get(candidatos.get(k));
             double total_radius = (e.getWidth() + entity.getWidth()) / 2d;
             double distance = e.getDistance(entity);
             if(total_radius > distance && e != entity && e.isSolid()) {
                 nears.add(e);
             }
         }
+    }
+
+    private static double centroX(Entity e) {
+        return e.getX() + e.getWidth() / 2d;
+    }
+
+    private static double centroY(Entity e) {
+        return e.getY() + e.getHeight() / 2d;
+    }
+
+    static int celulaDe(double coordenada, double celula) {
+        return (int) Math.floor(coordenada / celula);
+    }
+
+    static long chave(int gx, int gy) {
+        return ((long) gx << 32) ^ (gy & 0xFFFFFFFFL);
     }
 
     void repulsion(Entity e1, Entity e2) {

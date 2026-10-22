@@ -274,19 +274,40 @@ public class Window extends Canvas {
         requestFocus();
     }
 
+    /**
+     * Cursores nativos já criados, um por imagem, e o que está na janela agora.
+     *
+     * O tick escolhe o cursor 60 vezes por segundo, e cada escolha fazia
+     * {@code createCustomCursor} — o Windows monta um cursor NATIVO novo a partir
+     * da imagem — e depois trocava o da janela, passando pelo lock da AWT, na
+     * thread do jogo, mesmo quando nada tinha mudado. No Flight Recorder era o
+     * maior custo nativo da thread do jogo. Agora cada cursor nasce uma vez e a
+     * janela só é tocada quando o cursor desejado MUDA (ou quando ela é recriada,
+     * como no F11, e o frame novo ainda não tem cursor nenhum).
+     */
+    private final java.util.Map<BufferedImage, Cursor> cursores = new java.util.IdentityHashMap<>();
+    private Cursor cursorAtual;
+    private JFrame frameDoCursor;
+
+    private void usarCursor(BufferedImage imagem, Point ponta) {
+        Cursor c = cursores.computeIfAbsent(imagem, i -> toolkit.createCustomCursor(i, ponta, "cursor"));
+        if (c != cursorAtual || frame != frameDoCursor) {
+            frame.setCursor(c);
+            cursorAtual = c;
+            frameDoCursor = frame;
+        }
+    }
+
     public synchronized void setCursor(BufferedImage cursor) {
-        Cursor c = toolkit.createCustomCursor(cursor, new Point(0,0), "cursor");
-        frame.setCursor(c);
+        usarCursor(cursor, new Point(0, 0));
     }
 
     public synchronized void setCursor(BufferedImage cursor, Point pointClick) {
-        Cursor c = toolkit.createCustomCursor(cursor, pointClick, "cursor");
-        frame.setCursor(c);
+        usarCursor(cursor, pointClick);
     }
 
     public synchronized void resetCursor() {
-        Cursor c = toolkit.createCustomCursor(DEFAULT_CURSOR, new Point(0,0), "cursor");
-        frame.setCursor(c);
+        usarCursor(DEFAULT_CURSOR, new Point(0, 0));
     }
 
     //Getter's and Setter's

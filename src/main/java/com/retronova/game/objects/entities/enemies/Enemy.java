@@ -525,8 +525,10 @@ public abstract class Enemy extends Entity implements Nascente {
         int r = Math.max(getWidth(), getHeight());
         int cx = (int) getX() + getWidth() / 2;
         int cy = (int) getY() + getHeight() / 2;
-        g.setColor(new Color(255, 200, 60, Math.max(0, Math.min(255, alfa))));
-        g.fillOval(cx - r, cy - r, r * 2, r * 2);
+        // Imagem pronta, e nao fillOval: ver Brilho. O oval suavizado era
+        // rasterizado na CPU para cada elite, todo quadro.
+        com.retronova.engine.graphics.Brilho.disco(g, cx, cy, r,
+                new Color(255, 200, 60, Math.max(0, Math.min(255, alfa))));
     }
 
     protected void setXpWeight(double weight) {

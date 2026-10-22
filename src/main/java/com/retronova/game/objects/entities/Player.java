@@ -513,6 +513,10 @@ public class Player extends Entity {
      */
     private static final int ENTRE_GEMIDOS = 12;
 
+    /** Ver strike: so na bancada. Nunca vale numa partida de verdade. */
+    private static final boolean IMORTAL =
+            Boolean.getBoolean("cd.bench") && Boolean.getBoolean("cd.imortal");
+
     /** Quadros de invulnerabilidade depois de levar um golpe. */
     private static final int INVULNERAVEL = 24;
 
@@ -843,6 +847,11 @@ public class Player extends Entity {
 
     @Override
     public void strike(AttackTypes type, double damage) {
+        // Bancada de desempenho: -Dcd.imortal=true junto de -Dcd.bench. So vale no
+        // modo de teste, para a medicao da horda cheia nao acabar no game over.
+        if (IMORTAL) {
+            return;
+        }
         // QUEM JA ESTA CAINDO NAO LEVA MAIS DANO.
         //
         // Sem isto o gato continuava piscando de dor e gemendo durante a propria

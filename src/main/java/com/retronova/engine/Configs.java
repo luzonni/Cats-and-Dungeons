@@ -108,6 +108,28 @@ public class Configs {
         if (objeto.get("AUDIOVERSION") == null) {
             migrarAudio();
         }
+        invalidarCache();
+    }
+
+    // ------------------------------------------------- leituras de todo quadro
+
+    /**
+     * A escala do jogo e o VSync, guardados fora do mapa.
+     *
+     * Os dois sao lidos o tempo todo: a escala por cada bicho desenhado, varias
+     * vezes (tamanho do tile, posicao interpolada, animacao), e o VSync a cada
+     * volta do laco principal, inclusive na espera entre quadros. Cada leitura do
+     * mapa era um hash de texto mais uma busca — somadas, ~6% do tempo da thread
+     * do jogo com a horda cheia, medido. Guardados num campo, viram uma leitura de
+     * memoria. O cache e jogado fora sempre que o mapa muda (update, load e os
+     * setters), entao nunca devolve um valor velho.
+     */
+    private static volatile int escalaEmCache = -1;
+    private static volatile int vsyncEmCache = -1;
+
+    private static void invalidarCache() {
+        escalaEmCache = -1;
+        vsyncEmCache = -1;
     }
 
     /**
@@ -175,6 +197,7 @@ public class Configs {
      */
     @SuppressWarnings("unchecked")
     public static synchronized void update() {
+        invalidarCache();
         if (Foto.ligado()) {
             return;     // o roteiro de fotos mexe nas opcoes; o config.json de quem joga fica intacto
         }
@@ -240,11 +263,17 @@ public class Configs {
 
     /** Quadro sincronizado com o monitor. Ver Engine.criarComVSync. */
     public static boolean VSync() {
-        Object v = VALUES.get("vsync");
-        return v == null || (boolean) v;
+        int c = vsyncEmCache;
+        if (c < 0) {
+            Object v = VALUES.get("vsync");
+            c = (v == null || (boolean) v) ? 1 : 0;
+            vsyncEmCache = c;
+        }
+        return c == 1;
     }
 
     public static void setVSync(boolean vsync) {
+        invalidarCache();
         VALUES.put("vsync", vsync);
         update();
         Engine.invalidateBuffer();   // o buffer e recriado no proximo quadro
@@ -260,10 +289,16 @@ public class Configs {
     }
 
     public static int GameScale() {
-        return inteiro("SCALE");
+        int c = escalaEmCache;
+        if (c < 0) {
+            c = inteiro("SCALE");
+            escalaEmCache = c;
+        }
+        return c;
     }
 
     public static void setGameScale(int scale) {
+        invalidarCache();
         VALUES.put("SCALE", scale);
         update();
     }
