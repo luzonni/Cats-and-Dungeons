@@ -124,7 +124,7 @@ public final class Atmosfera {
         java.awt.Rectangle visivel;
         try {
             visivel = g.getTransform().createInverse().createTransformedShape(new java.awt.Rectangle(
-                    0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
+                    0, 0, Engine.window.largura(), Engine.window.altura())).getBounds();
             visivel.grow(GameObject.SIZE(), GameObject.SIZE());
         } catch (java.awt.geom.NoninvertibleTransformException semZoom) {
             visivel = null;
@@ -163,8 +163,8 @@ public final class Atmosfera {
         if (!ligada()) {
             return;
         }
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+        int w = Engine.window.largura();
+        int h = Engine.window.altura();
         int lw = Math.max(1, w / REDUCAO);
         int lh = Math.max(1, h / REDUCAO);
         java.awt.GraphicsConfiguration gc = Engine.window.getGraphicsConfiguration();

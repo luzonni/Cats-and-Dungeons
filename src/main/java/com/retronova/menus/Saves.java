@@ -110,7 +110,7 @@ public class Saves extends TelaDeMenu {
     private static int larguraDaCaixa(int s) {
         // Nunca mais larga que a janela: numa tela estreita a moldura sairia pelos
         // dois lados, e o corte por reticencias so protege o texto, nao a caixa.
-        return Math.min(LARGURA * s, Engine.window.getWidth() - 16 * s);
+        return Math.min(LARGURA * s, Engine.window.largura() - 16 * s);
     }
 
     private static int alturaDaCaixa(int s) {
@@ -136,7 +136,7 @@ public class Saves extends TelaDeMenu {
 
         int total = Corrida.ESPACOS * altura + (Corrida.ESPACOS - 1) * FOLGA * s
                 + 8 * s + alturaDoVoltar;
-        int x = Engine.window.getWidth() / 2 - largura / 2;
+        int x = Engine.window.largura() / 2 - largura / 2;
         int y = area.y + Math.max(0, (area.height - total) / 2);
         for (int i = 0; i < Corrida.ESPACOS; i++) {
             caixas[i].setBounds(x, y + i * (altura + FOLGA * s), largura, altura);
@@ -148,7 +148,7 @@ public class Saves extends TelaDeMenu {
         }
         int yVoltar = y + Corrida.ESPACOS * (altura + FOLGA * s) + 3 * s;
         voltar.setBounds(new Rectangle(
-                Engine.window.getWidth() / 2 - Button.preferredWidth() / 2,
+                Engine.window.largura() / 2 - Button.preferredWidth() / 2,
                 yVoltar, Button.preferredWidth(), alturaDoVoltar));
     }
 

@@ -103,7 +103,7 @@ public final class MaoDeCartas {
      * vem embaixo dela não couberem na altura da janela.
      */
     public static int escala() {
-        int cabe = Math.max(1, (Engine.window.getHeight() - 20) / 225);
+        int cabe = Math.max(1, (Engine.window.altura() - 20) / 225);
         return Math.max(1, Math.min(Configs.UiScale(), cabe));
     }
 
@@ -111,7 +111,7 @@ public final class MaoDeCartas {
     public void posicionar(int y, int s) {
         int cw = LARGURA * s, ch = ALTURA * s, vao = VAO * s;
         int total = cartas.size() * cw + (cartas.size() - 1) * vao;
-        int x = Engine.window.getWidth() / 2 - total / 2;
+        int x = Engine.window.largura() / 2 - total / 2;
         caixas.clear();
         for (int i = 0; i < cartas.size(); i++) {
             caixas.add(new Rectangle(x + i * (cw + vao), y, cw, ch));

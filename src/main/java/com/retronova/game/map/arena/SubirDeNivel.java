@@ -224,19 +224,19 @@ public class SubirDeNivel implements Activity {
     private void posicionar() {
         int s = MaoDeCartas.escala();
         int ch = MaoDeCartas.ALTURA * s;
-        int y = Engine.window.getHeight() / 2 - ch / 2 - 6 * s;
+        int y = Engine.window.altura() / 2 - ch / 2 - 6 * s;
         cartas.posicionar(y, s);
         int by = y + ch + 10 * s, bw = 70 * s, bh = 14 * s;
-        botaoTrocar = new Rectangle(Engine.window.getWidth() / 2 - bw - 5 * s, by, bw, bh);
-        botaoPular = new Rectangle(Engine.window.getWidth() / 2 + 5 * s, by, bw, bh);
+        botaoTrocar = new Rectangle(Engine.window.largura() / 2 - bw - 5 * s, by, bw, bh);
+        botaoPular = new Rectangle(Engine.window.largura() / 2 + 5 * s, by, bw, bh);
     }
 
     // ------------------------------------------------------------- desenho
 
     @Override
     public void render(Graphics2D g) {
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+        int w = Engine.window.largura();
+        int h = Engine.window.altura();
         int s = MaoDeCartas.escala();
         posicionar();
         double quadro = cartas.quadro();

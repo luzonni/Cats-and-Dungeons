@@ -105,7 +105,76 @@ public class Debugging {
             int y = position.y + (int)(FontHandler.getHeight(text, font)*1.5)*i;
             renderInfo(text, x, y, g);
         }
+        int yGrafico = position.y + (int) (FontHandler.getHeight("Ay", font) * 1.5) * keys.length + 4;
+        renderGrafico(g, position.x, yGrafico, Engine.periodoAlvoNs());
         g.dispose();
+    }
+
+    // ------------------------------------------------- gráfico de tempo de quadro
+
+    /** Intervalos entre os últimos quadros mostrados, em ns, num anel. */
+    private static final long[] INTERVALOS = new long[240];
+    private static int posicao;
+    private static long ultimoQuadro;
+
+    /** Chamado a cada quadro que chega à tela. Barato: um nanoTime e uma escrita. */
+    static void quadroMostrado() {
+        long agora = System.nanoTime();
+        if (ultimoQuadro != 0) {
+            INTERVALOS[posicao] = agora - ultimoQuadro;
+            posicao = (posicao + 1) % INTERVALOS.length;
+        }
+        ultimoQuadro = agora;
+    }
+
+    /**
+     * O gráfico do F3: uma barra por quadro, a altura é o intervalo até o anterior.
+     *
+     * A linha clara é o período alvo (o do monitor ou do limite); barras acima dela
+     * são quadros atrasados. Uma fileira lisa é ritmo bom, mesmo se o contador de
+     * FPS for igual ao de uma fileira serrilhada — que é o que se sente como
+     * engasgo. Ao lado, média, desvio e o pior 1%.
+     */
+    private static void renderGrafico(Graphics2D g, int x, int y, long periodoAlvoNs) {
+        int s = Math.max(1, Configs.UiScale());
+        int n = INTERVALOS.length;
+        int altura = 40 * s;
+        double msPorPixel = 33.4 / altura;      // o topo do gráfico é 33 ms (30 FPS)
+        g.setColor(background);
+        g.fillRect(x, y, n * s + 2 * s, altura + 2 * s);
+        long[] copia = new long[n];
+        int usados = 0;
+        double soma = 0;
+        for (int i = 0; i < n; i++) {
+            long v = INTERVALOS[(posicao + i) % n];
+            if (v <= 0) {
+                continue;
+            }
+            copia[usados++] = v;
+            soma += v;
+            int h = (int) Math.min(altura, (v / 1e6) / msPorPixel);
+            g.setColor(periodoAlvoNs > 0 && v > periodoAlvoNs * 1.5 ? Color.ORANGE : Color.GREEN);
+            g.fillRect(x + s + i * s, y + s + altura - h, s, h);
+        }
+        if (periodoAlvoNs > 0) {
+            int ya = y + s + altura - (int) Math.min(altura, (periodoAlvoNs / 1e6) / msPorPixel);
+            g.setColor(Color.WHITE);
+            g.fillRect(x, ya, n * s + 2 * s, Math.max(1, s / 2));
+        }
+        if (usados == 0) {
+            return;
+        }
+        double media = soma / usados / 1e6;
+        double var = 0;
+        for (int i = 0; i < usados; i++) {
+            double d = copia[i] / 1e6 - media;
+            var += d * d;
+        }
+        java.util.Arrays.sort(copia, 0, usados);
+        double p99 = copia[Math.min(usados - 1, (int) (usados * 0.99))] / 1e6;
+        String texto = String.format(java.util.Locale.ROOT, "quadro %.2fms  desvio %.2fms  pior 1%% %.2fms",
+                media, Math.sqrt(var / usados), p99);
+        renderInfo(texto, x, y + altura + 4 * s, g);
     }
 
     private static void renderInfo(String text, int x, int y, Graphics2D g) {

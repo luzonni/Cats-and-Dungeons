@@ -271,9 +271,9 @@ public class TelaDeStatus extends TelaDeMenu {
     protected void posicionar() {
         int s = Configs.UiScale();
         Rectangle area = areaDoConteudo();
-        int largura = Math.min(Engine.window.getWidth() - 16 * s, 340 * s);
+        int largura = Math.min(Engine.window.largura() - 16 * s, 340 * s);
         int altura = area.height;
-        painel = new Rectangle(Engine.window.getWidth() / 2 - largura / 2, area.y, largura, altura);
+        painel = new Rectangle(Engine.window.largura() / 2 - largura / 2, area.y, largura, altura);
 
         int pad = 10 * s, vao = 10 * s;
         int colW = (largura - 2 * pad - 2 * vao) / 3;

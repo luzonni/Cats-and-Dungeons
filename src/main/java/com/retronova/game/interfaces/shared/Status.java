@@ -68,8 +68,8 @@ public class Status implements Activity {
     }
 
     private void refreshPositions() {
-        int x = Engine.window.getWidth()/2 - status.largura()/2;
-        int y = Engine.window.getHeight()/2 - status.altura()/2;
+        int x = Engine.window.largura()/2 - status.largura()/2;
+        int y = Engine.window.altura()/2 - status.altura()/2;
         int s = Configs.HudScale();
         setLocation("main", x, y);
         setLocation("player", x + RETRATO.x*s, y + RETRATO.y*s);

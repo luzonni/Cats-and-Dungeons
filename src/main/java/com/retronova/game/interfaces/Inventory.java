@@ -79,8 +79,8 @@ public class Inventory implements Activity {
      */
     public void refreshPositions() {
         int s = Configs.HudScale();
-        int X = Engine.window.getWidth() / 2 - inventory.largura() / 2;
-        int Y = Engine.window.getHeight() / 2 - inventory.altura() / 2;
+        int X = Engine.window.largura() / 2 - inventory.largura() / 2;
+        int Y = Engine.window.altura() / 2 - inventory.altura() / 2;
 
         boolean primeiraVez = this.inventoryPosition == null;
         boolean mudouPosicao = primeiraVez

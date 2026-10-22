@@ -203,7 +203,7 @@ menu, não no lugar dela: o nível baixo é o que a mantém como ambiente e não
 segunda faixa disputando com a primeira. Como o nível está gravado no arquivo, ela
 continua obedecendo ao controle de música das opções.
 
-**As trilhas de arena são quatro, e a escolha é do jogador** — Options > Audio >
+**As trilhas de arena são quatro, e a escolha é do jogador** — Settings > Audio >
 Battle music. A original (`fight.ogg`) é animada e não combina com a masmorra,
 mas tirá-la seria decidir por quem gosta dela; ela ficou como uma das opções.
 *Spooky Dungeon* é chiptune escura, *8 Bit Battle Loop* e *RPG Battle Theme* são

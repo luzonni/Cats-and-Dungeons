@@ -71,8 +71,8 @@ class Hotbar {
             recriar();
         }
         int hotbarWidth = this.sprites[0].getWidth() * 5;
-        int x = Engine.window.getWidth()/2 - hotbarWidth/2;
-        int y = Engine.window.getHeight() - this.sprites[0].getHeight() - Configs.Margin();
+        int x = Engine.window.largura()/2 - hotbarWidth/2;
+        int y = Engine.window.altura() - this.sprites[0].getHeight() - Configs.Margin();
         if(this.bounds == null) {
             this.bounds = new Rectangle[5];
             for(int i = 0; i < 5; i++) {

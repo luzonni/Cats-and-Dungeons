@@ -63,6 +63,16 @@ A entrada é injetada no estado do jogo, nunca no sistema, e a janela abre fora
 da tela, sem foco e sem ícone na barra de tarefas. Saves, meta e conquistas vão
 para `build/foto/saves`, o `config.json` nunca é gravado e o áudio fica mudo.
 Combina com o modo bancada (`-Dcd.bench=true -Dcd.nivel=true`, por exemplo).
+O roteiro também aceita `video:1280x720:cheia` (aplica resolução e modo como o
+Apply de Settings) e `tela:nome` (grava o quadro como chega ao canvas, escalado e
+com tarjas). Com `-Dcd.foto.real=true` a janela vai para a tela de verdade, sem
+pegar o foco, para testar resolução e tela cheia.
+
+**Diagnóstico de vídeo:** `-Dcd.video=true` registra tamanhos, monitor, DPI e taxa
+a cada mudança de vídeo. `-Dcd.video.vsync=true|false` e `-Dcd.video.fps=N` trocam
+VSync e limite só em memória, sem gravar o `config.json` (0 é o limite do
+monitor, -1 é sem limite). Junto com `-Dcd.perf=true`, servem para comparar o
+ritmo dos quadros. O F3 mostra o FPS com o alvo e um gráfico de tempo de quadro.
 
 Arquivos gerados em tempo de execução, todos no `.gitignore`: `config.json`,
 `saves/corrida-{1,2,3}.json`, `saves/meta.json`, `saves/conquistas.json`.
@@ -143,6 +153,10 @@ docs/                          esta pasta
 | Controle | `engine/inputs/gamepad/`, `engine/inputs/Entrada.java`, `game/interfaces/Grade.java` |
 | Luz, sombra, vinheta | `game/map/Atmosfera.java` |
 | Configurações | `engine/Configs.java` (`config.json`, gravação atômica) |
+| Laço do jogo, limitador de quadros, VSync | `engine/Engine.java` (`run`, `esperarAte`, `periodoDoQuadro`), `engine/RelogioDoSistema.java` |
+| Janela, resolução, tela cheia, escala da imagem | `engine/Window.java` (`aplicarVideo`, `resolucoesDoMonitor`), `Engine.desenharEscalado` |
+| Teto do HUD | `game/hud/LayoutDoHud.java` |
+| Diagnóstico de vídeo | `engine/Video.java` (`-Dcd.video`), gráfico do F3 em `engine/Debugging.java` |
 
 ## 5. Convenções
 
@@ -178,6 +192,7 @@ docs/                          esta pasta
 | Funcionalidade | Estado | Nota |
 |---|---|---|
 | Menu, Settings (vídeo, áudio, interface), pausa | ✅ | todas sobre `TelaDeMenu`; a pausa é o painel de Settings com a aba Run (`Configuracoes`) |
+| Vídeo: resolução, tela cheia sem bordas, VSync e limite de quadros | ✅ | resolução aplicada em janela e em tela cheia, sem piscar; limite "Monitor" por padrão; HUD limitado ao que cabe. Testado num monitor 1920x1080 a 180 Hz; outros monitores, DPI e sistemas **a confirmar** (ver ARQUITETURA) |
 | Seleção de personagem (3 gatos) | ✅ | |
 | Três espaços de save, retomar e apagar | ✅ | |
 | Antecâmara com vendedor, placas e portão | ✅ | o portão leva à corrida |
@@ -224,6 +239,10 @@ usava, e só fora da corrida sem fim). Estão no histórico do git.
 - **Áudio em régua de loudness** (`tools/GenMixagem.java`) e curva logarítmica
   nos volumes. Ver [ARQUITETURA.md](ARQUITETURA.md#áudio).
 - **Controle traduzido em teclas virtuais**: nenhuma tela conhece o controle.
+- **Vídeo** (2026-10-22): resolução é o tamanho da imagem do jogo, em pixels da
+  tela (`uiScale=1`); tela cheia é janela sem bordas, nunca exclusiva; a lógica
+  roda em passo fixo e só o desenho acompanha o FPS; padrão VSync ligado e limite
+  igual ao monitor. Ver [ARQUITETURA.md](ARQUITETURA.md#laço-principal).
 - **Uma gramática de interface** (2026-10-21): toda tela de menu estende
   `TelaDeMenu`, todo hover e foco passa por `Realce` (crescer, brilhar, clarear,
   nunca contorno) e toda escolha por cartas usa `MaoDeCartas`. Ver
@@ -266,6 +285,9 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
 | Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
+| Teto do HUD: medidas das peças e fração da altura | `LayoutDoHud` (`BLOCO_ESQUERDO = 136`, `RELOGIO = 80`, `VAO = 6`, `FAIXA_DE_CIMA = 46`, `FAIXA_DE_BAIXO = 38`, `FRACAO_DA_ALTURA = 0.5`) |
+| Laço: recuperação de ticks, superfície perdida | `Engine` (`MAX_CATCHUP = 5`, `QUADROS_ATE_RECRIAR = 60`) |
+| Resoluções oferecidas | `Window.COMUNS` (mais a do monitor) |
 
 ## 9. Próximos passos conhecidos
 

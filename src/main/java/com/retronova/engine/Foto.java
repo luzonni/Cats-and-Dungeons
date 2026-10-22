@@ -60,6 +60,16 @@ public final class Foto {
         return ligado() ? "build/foto/saves" : "saves";
     }
 
+    /**
+     * Com -Dcd.foto.real=true, a janela vai para a tela de verdade (sem pegar o
+     * foco), no tamanho das opções: é o modo para testar resolução, tela cheia e
+     * perda de superfície, que a janela escondida do modo de foto nunca exercita.
+     * Saves e config continuam isolados.
+     */
+    public static boolean janelaReal() {
+        return ligado() && Boolean.getBoolean("cd.foto.real");
+    }
+
     /** O tamanho pedido para o canvas, ou null para usar o das opcoes. */
     public static Dimension tamanho() {
         String t = System.getProperty("cd.foto.tamanho");
@@ -116,14 +126,23 @@ public final class Foto {
             }
             case "mouse" -> {
                 String[] xy = arg.split(",");
-                Mouse.simularPosicao(coordenada(xy[0], Engine.window.getWidth()),
-                        coordenada(xy[1], Engine.window.getHeight()));
+                Mouse.simularPosicao(coordenada(xy[0], Engine.window.largura()),
+                        coordenada(xy[1], Engine.window.altura()));
             }
             case "clique" -> {
                 Mouse.simularClique();
                 soltarMouse = true;
             }
             case "foto" -> salvar(arg);
+            case "tela" -> salvar(arg, true);
+            // video:<L>x<A>:<janela|cheia> — grava e aplica como o Apply das opções.
+            case "video" -> {
+                String[] v = arg.split(":");
+                String[] r = v[0].trim().toLowerCase(Locale.ROOT).split("x");
+                Configs.setResolucao(Integer.parseInt(r[0]), Integer.parseInt(r[1]));
+                Configs.setFullscreen(v.length > 1 && v[1].trim().equals("cheia"));
+                Engine.window.aplicarVideo();
+            }
             default -> throw new IllegalArgumentException("Passo desconhecido no roteiro: " + passo);
         }
     }
@@ -134,11 +153,25 @@ public final class Foto {
     }
 
     private static void salvar(String nome) {
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+        salvar(nome, false);
+    }
+
+    /**
+     * Grava o quadro. Com {@code naTela}, o quadro como chega ao canvas — escalado
+     * e com as tarjas, quando a imagem do jogo não tem o tamanho dele —, e não só
+     * a imagem do jogo: é o que mostra a tela cheia em resolução menor sem
+     * capturar a tela do sistema.
+     */
+    private static void salvar(String nome, boolean naTela) {
+        int w = naTela ? Engine.window.getCanvasLargura() : Engine.window.largura();
+        int h = naTela ? Engine.window.getCanvasAltura() : Engine.window.altura();
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();
-        Engine.desenharTudo(g);
+        if (naTela) {
+            Engine.desenharNaTela(g);
+        } else {
+            Engine.desenharTudo(g);
+        }
         g.dispose();
         File destino = new File(PASTA, nome + ".png");
         try {

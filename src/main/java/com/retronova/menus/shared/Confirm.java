@@ -154,8 +154,8 @@ public class Confirm {
         int altura = 30 * s + Button.preferredHeight()
                 + detalhes.length * ALTURA_DO_DETALHE * s;
         return new Rectangle(
-                Engine.window.getWidth() / 2 - largura / 2,
-                Engine.window.getHeight() / 2 - altura / 2,
+                Engine.window.largura() / 2 - largura / 2,
+                Engine.window.altura() / 2 - altura / 2,
                 largura, altura);
     }
 
@@ -168,7 +168,7 @@ public class Confirm {
 
         // Escurece o que está atrás para deixar claro que só o diálogo responde.
         g.setColor(Palette.VEIL);
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
+        g.fillRect(0, 0, Engine.window.largura(), Engine.window.altura());
 
         Rectangle p = painel();
         g.setColor(Palette.OUTLINE);

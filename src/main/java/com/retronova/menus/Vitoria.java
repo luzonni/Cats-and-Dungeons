@@ -71,10 +71,10 @@ public class Vitoria extends TelaDeMenu {
         int pw = 170 * s, ph = 58 * s;
         int total = ph + 8 * s + altura;
         int y = area.y + Math.max(0, (area.height - total) / 2);
-        painel = new Rectangle(Engine.window.getWidth() / 2 - pw / 2, y, pw, ph);
+        painel = new Rectangle(Engine.window.largura() / 2 - pw / 2, y, pw, ph);
         int by = y + ph + 8 * s;
         int vao = com.retronova.menus.shared.Realce.folgaEntreVizinhos(s);
-        int x = Engine.window.getWidth() / 2 - largura - vao / 2;
+        int x = Engine.window.largura() / 2 - largura - vao / 2;
         for (int i = 0; i < botoes.size(); i++) {
             botoes.get(i).setBounds(new Rectangle(x + i * (largura + vao), by, largura, altura));
         }

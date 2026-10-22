@@ -55,9 +55,9 @@ final class BarraDeChefe {
             return;
         }
         int s = Configs.HudScale();
-        int w = Math.min(Engine.window.getWidth() - 40 * s, 180 * s);
+        int w = Math.min(Engine.window.largura() - 40 * s, 180 * s);
         int h = 6 * s;
-        int x = Engine.window.getWidth() / 2 - w / 2;
+        int x = Engine.window.largura() / 2 - w / 2;
         int y = Configs.Margin() + 36 * s;
 
         Font fonte = FontHandler.font(FontHandler.Game, 7f * s);

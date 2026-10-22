@@ -58,21 +58,122 @@ atual e à divisão clara entre motor e jogo.
 
 ## Laço principal
 
-`Engine.run()` mantém dois relógios independentes:
+`Engine.run()` segue o "Fix Your Timestep!" (Glenn Fiedler) e o "Game Loop" do
+*Game Programming Patterns* (Robert Nystrom): **lógica em passo fixo, desenho
+interpolado**. Tick e quadro são **prazos absolutos** no relógio
+(`System.nanoTime()`), e cada um avança um período exato a partir do anterior.
 
-- **Tick** a 60 Hz fixos, com recuperação de atraso limitada a 5 ticks por volta.
-  A simulação tem prioridade sobre o desenho.
-- **Render** ao limite configurado em Opções, descartando quadros perdidos em
-  vez de tentar recuperá-los.
+- **Tick** a 60 Hz fixos. Movimento, física, colisão, timers, nascimento,
+  recargas e animações de sprite rodam só aqui. Se o desenho atrasar, até 5 ticks
+  rodam em sequência para recuperar, e além disso a dívida é perdoada. Por isso o
+  jogo se comporta igual a 60 ou a 240+ FPS: o que muda é quantas vezes o mesmo
+  estado é desenhado.
+- **Quadro** no ritmo escolhido (ver abaixo). Um quadro atrasado mais de um
+  período recomeça a contagem dali, em vez de mandar quadros em rajada.
+- O desenho **interpola** entre o tick anterior e o atual (`Engine.alpha()`), e
+  as animações de corpo usam `Game.tempoVisual()`. Com uma tela por cima (pausa,
+  cartas, roleta), a interpolação é desligada, senão o mundo parado tremeria.
+- **Regra para código novo:** nada que conta tempo ou avança animação pode morar
+  em `render`. O portal dos bichos avançava o quadro dentro do desenho e girava
+  mais rápido a 240 FPS (corrigido em `2b4bdca`).
 
-Tick e render compartilham a mesma thread. Quando o desenho atrasa, o jogo perde
-quadros, não velocidade.
+### Ritmo dos quadros: VSync e limite
 
-O render **interpola** entre o tick anterior e o atual (`Engine.alpha()`): cada
-entidade guarda a posição antes do tick e é desenhada no meio do caminho. É o
-que deixa 144 Hz ou mais lisos com a simulação presa a 60. Com uma tela por cima
-(pausa, cartas, roleta) a interpolação é desligada, senão o mundo parado
-tremeria.
+| VSync | Limite (Settings → Frame rate) | O que acontece |
+|---|---|---|
+| Ligado | ignorado | O buffer pede vsync (`ExtendedBufferCapabilities`, só no OpenGL). Se o driver honra, o `show()` espera o monitor. Se ignora (comum em janela, e nesta máquina também em tela cheia), isso é detectado nos 20 primeiros quadros de cada buffer (`Engine.sondarVsync`: quadros abaixo de 70% do período do monitor) e o relógio assume na taxa do monitor; antes a detecção levava um segundo, que rodava solto a 400+ FPS logo ao abrir. |
+| Desligado | **Monitor** (padrão) | Relógio na taxa do monitor em que a janela está. |
+| Desligado | 30 a 240 | Relógio no valor escolhido. Acima da taxa do monitor (marcado com "!" em Settings), só acrescenta rasgo. |
+| Desligado | Unlimited | Desenha sem esperar. |
+
+- **A taxa do monitor** é relida a cada segundo (`Engine.conferirMonitor`), então
+  vale a do monitor para onde a janela foi arrastada. Quando `DisplayMode` devolve
+  taxa desconhecida, o jogo usa 60 Hz.
+- **A espera não confia no `Thread.sleep`.** No Windows, ele dura o que o timer do
+  sistema deixar: medido nesta máquina, `sleep(1)` dormiu 8,9 ms em média e 19 ms
+  no pior caso com o timer padrão de 15,6 ms. Desde o Windows 10 2004 a resolução
+  é por processo, e o Java não a pede. Duas defesas:
+  - `RelogioDoSistema` chama `timeBeginPeriod(1)` (winmm, via JNA) na abertura e
+    `timeEndPeriod(1)` no fim, como fazem a SDL e a Unity;
+  - `Engine.esperarAte` mede cada sono e só dorme quando sobra tempo para o pior
+    sono recente, girando (`Thread.onSpinWait`) no trecho final.
+
+  Era a causa do FPS inconstante sem VSync, introduzida em `508384d` ao trocar a
+  espera para "dormir longe do quadro", que supunha um `sleep(1)` de 1 a 2 ms.
+- **Padrão da primeira execução:** VSync ligado e limite "Monitor". Um jogador
+  novo nunca começa com o ritmo acima do que a tela mostra.
+- **GC e flags da JVM:** medido com a horda do minuto 8, o GC gasta de 0 a 4 ms
+  a cada 2 s, sem coincidir com os quadros ruins. Nenhuma flag de JVM foi
+  acrescentada; o jar duplo-clicado também não teria como recebê-las.
+
+Medição (`-Dcd.perf=true`, horda do minuto 8, piloto automático, monitor de 180
+Hz, janela de 2 s estável):
+
+| Cenário | Antes | Depois |
+|---|---|---|
+| VSync ligado (relógio a 180) | 174–180 FPS, desvio 0,8–1,7 ms | 180 FPS, desvio 0,45–0,7 ms |
+| Sem VSync, limite 240 | 148–224 FPS, desvio até 4,7 ms, 1% low 32 FPS | 240 FPS, desvio 0,4 ms, 1% low 170–179 FPS |
+| Sem VSync, limite Monitor | — | 180 FPS, desvio 0,36 ms |
+| Sem VSync, limite 60 | — | 60 FPS, desvio 0,5–1,1 ms |
+
+### Janela, resolução e DPI
+
+- **Resolução é o tamanho da imagem do jogo**, em pixels da tela. Todo o jogo se
+  posiciona por `window.largura()` e `window.altura()`, que são a resolução, e não
+  o tamanho do canvas.
+- **Quando o canvas tem exatamente a resolução**, o desenho vai direto. Quando
+  não tem (tela cheia em resolução menor que o monitor, janela que não cabe,
+  janela redimensionada), a imagem é desenhada numa `VolatileImage` e escalada
+  na placa de vídeo, centrada, com tarjas pretas. Ampliação por fator inteiro usa
+  vizinho mais próximo. Fator quebrado amplia primeiro pelo maior inteiro, sem
+  suavizar, e suaviza só o resto ("sharp bilinear"). O mouse é convertido do
+  canvas para a imagem (`Window.paraJogoX/Y`).
+- **Lista de resoluções:** as comuns que cabem no monitor da janela, mais a dele
+  (`Window.resolucoesDoMonitor`); o asterisco marca a do monitor. Gravada como
+  largura e altura (`resW`, `resH`). O índice antigo é migrado. Se a gravada não
+  cabe no monitor atual, vale a do monitor, sem apagar a escolha. 0×0 (padrão) é
+  "a do monitor".
+- **Tela cheia é uma janela sem bordas** do tamanho do monitor em que a janela
+  está, em todos os sistemas. A tela cheia exclusiva (`setDisplayMode`) não é
+  usada: ela troca o modo do monitor, o que apaga a tela a cada troca e a cada
+  Alt+Tab (tutorial "Full-Screen Exclusive Mode" da Oracle). Resolução diferente
+  da do monitor é feita pela escala acima.
+- **Em janela**, a janela tem a resolução pedida. Se não cabe na área útil do
+  monitor (sem a barra de tarefas), ela encolhe na proporção da imagem.
+- **Aplicar vídeo não recria a janela** (`Window.aplicarVideo`): mudar a
+  resolução só redimensiona. Ligar ou desligar a tela cheia esconde e mostra o
+  mesmo `JFrame` uma vez, porque `setUndecorated` exige a janela fora da tela.
+  Resolução e tela cheia são gravadas juntas no Apply e aplicadas numa passada.
+- **Perda de superfície** segue o Javadoc de `BufferStrategy`: redesenha
+  enquanto `contentsRestored()` e mostra de novo enquanto `contentsLost()`, com a
+  mesma estratégia. Ela só é recriada depois de um segundo inteiro perdida
+  (monitor dormindo). Antes, todo `contentsLost()`, como o de um Alt+Tab,
+  recriava a estratégia, e isso era a piscada.
+- **DPI:** `Main` fixa `sun.java2d.uiScale=1` em todo sistema (JEP 263). Sem isso,
+  a 125% o Java2D esticaria uma janela "1280" para 1600 pixels e reamostraria a
+  pixel art. O macOS ignora a opção e desenha sempre na escala da tela. Quem
+  quiser outra escala passa `-Dsun.java2d.uiScale` na linha de comando.
+- **Diagnóstico:** `-Dcd.video=true` imprime, a cada mudança de vídeo, a
+  resolução pedida, a imagem, o canvas, a janela, o monitor, a escala de DPI, a
+  taxa e cada criação de `BufferStrategy`. O F3 mostra o FPS com o alvo real e um
+  gráfico dos últimos 240 quadros.
+
+### Layout do HUD
+
+O HUD é desenhado em posições fixas: vida à esquerda, relógio no centro, XP à
+direita, hotbar e Fúria embaixo. **A escala em vigor é a menor entre a escolhida e
+a maior que cabe** (`LayoutDoHud.escalaMaxima`):
+
+- **Largura:** o bloco da vida (136 px de arte), um vão (6) e metade do relógio
+  (80/2) cabem na metade da tela, descontada a margem.
+- **Altura:** a faixa de cima (46) e a de baixo (38) somam no máximo metade da
+  altura, e a outra metade é da arena.
+
+A conta usa o tamanho da imagem do jogo. Por isso se ajusta sozinha a cada
+resolução ou janela, e a escolha gravada volta a valer numa tela maior.
+`Configs.HudScale()` devolve a escala em vigor e `HudScaleEscolhida()` a gravada.
+O "+" de HUD size em Settings para no teto (`OptionRow.ate`). Em 1280×720, HUD 4
+vira 3, e em 1920×1080 cabe até 5.
 
 ## Fluxo de uma partida
 
@@ -202,7 +303,7 @@ Um componente só, `menus/Configuracoes.java`, com duas portas:
   de Status (tecla E), e não aqui.
 - **Abas de configuração:** as mesmas linhas nos dois acessos, com stepper
   `−/+`, slider, ciclo e toggle (`OptionRow`). Resolução e tela cheia esperam o
-  Apply, que recria a janela; o resto se aplica na hora.
+  Apply, que só redimensiona a janela (ver [Janela, resolução e DPI](#janela-resolução-e-dpi)); o resto se aplica na hora.
 - **Rodapé por aba:** na Run, `Enter Select`; nas de configuração,
   `Left/Right Adjust`. As duas mostram `Q/E Tabs` e o `Esc` (Back ou Resume).
 - **Por que assim:** o Forza Horizon e o RDR2 juntam partida e configurações em
@@ -488,7 +589,8 @@ Registrados para não se perderem. Revistos em 2026-10-21.
   flag, mas ela dormia num `wait` que ninguém mais acordava, e cada troca de mapa
   deixava uma presa para trás. Agora roda no `Game.tick`.
 - `resetWindow()` (F11, troca de resolução) recriava a janela na thread do
-  `Engine`, fora da EDT. Agora passa pela EDT com `invokeAndWait`.
+  `Engine`, fora da EDT. Passou pela EDT com `invokeAndWait` e, em 2026-10-22,
+  deixou de existir: `Window.aplicarVideo` muda a mesma janela, sem recriá-la.
 - O `Waves` abria uma thread por leva de inimigos no modo por ondas; o modo saiu.
 - O `Game.tick` contava um segundo a cada 61 ticks.
 - O save da corrida sem fim não guardava o relógio, e a retomada com o upgrade

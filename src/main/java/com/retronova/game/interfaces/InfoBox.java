@@ -142,8 +142,8 @@ public class InfoBox {
         // recua o quanto for preciso para caber.
         int x = ancoraX + 16;
         int y = ancoraY + 16;
-        int larguraDaJanela = com.retronova.engine.Engine.window.getWidth();
-        int alturaDaJanela = com.retronova.engine.Engine.window.getHeight();
+        int larguraDaJanela = com.retronova.engine.Engine.window.largura();
+        int alturaDaJanela = com.retronova.engine.Engine.window.altura();
         x = Math.max(esc, Math.min(x, larguraDaJanela - this.bounds.width - esc));
         y = Math.max(esc, Math.min(y, alturaDaJanela - this.bounds.height - esc));
         Color daRaridade = item == null ? Palette.TEXT : item.raridade().cor();

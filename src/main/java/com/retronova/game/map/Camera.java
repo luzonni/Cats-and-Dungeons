@@ -67,8 +67,8 @@ public class Camera {
     public static AffineTransform getAt() {
         Camera cam = Game.getCam();
         AffineTransform at = new AffineTransform();
-        int screenWidth = Engine.window.getWidth();
-        int screenHeight = Engine.window.getHeight();
+        int screenWidth = Engine.window.largura();
+        int screenHeight = Engine.window.altura();
         // Posicao e zoom INTERPOLADOS e sem arredondar. A camera arredondava para
         // pixel inteiro e so mudava a cada tick: mesmo com o mundo fluido, a tela
         // inteira andava aos degraus de 60 Hz.
@@ -218,8 +218,8 @@ public class Camera {
      * o enquadramento normal do jogo nao muda.
      */
     private void follow() {
-        int width = Engine.window.getWidth();
-        int height = Engine.window.getHeight();
+        int width = Engine.window.largura();
+        int height = Engine.window.altura();
         double z = Math.max(0.01f, currentZoom);
         double visX = width / z;
         double visY = height / z;

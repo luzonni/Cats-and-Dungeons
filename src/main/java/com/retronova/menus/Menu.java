@@ -99,17 +99,17 @@ public class Menu extends TelaDeMenu {
         int altura = Button.preferredHeight();
         int espaco = altura + 6 * Configs.UiScale();
 
-        int x = Engine.window.getWidth() / 2 - largura / 2;
+        int x = Engine.window.largura() / 2 - largura / 2;
         // Sem o troféu: ele não faz parte da coluna.
         int naColuna = botoes.size() - 1;
-        int y = Engine.window.getHeight() / 2 - (naColuna * espaco) / 2;
+        int y = Engine.window.altura() / 2 - (naColuna * espaco) / 2;
 
         for (int i = 0; i < naColuna; i++) {
             botoes.get(i).setBounds(new Rectangle(x, y + i * espaco, largura, altura));
         }
         // No canto superior direito, pequeno e quadrado, com a margem da interface.
         int lado = 13 * Configs.UiScale();
-        trofeu.setBounds(new Rectangle(Engine.window.getWidth() - Configs.Margin() - lado,
+        trofeu.setBounds(new Rectangle(Engine.window.largura() - Configs.Margin() - lado,
                 Configs.Margin(), lado, lado));
     }
 
@@ -223,7 +223,7 @@ public class Menu extends TelaDeMenu {
         Font fonte = FontHandler.font(FontHandler.Septem, 5f * s);
         String texto = Engine.VERSION;
         int x = Configs.Margin();
-        int y = Engine.window.getHeight() - Configs.Margin();
+        int y = Engine.window.altura() - Configs.Margin();
         g.setFont(fonte);
         g.setColor(new Color(0, 0, 0, 120));
         g.drawString(texto, x + s, y + s);

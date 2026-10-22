@@ -198,7 +198,7 @@ public abstract class Enemy extends Entity implements Nascente {
      * com o que ele ve, e o que ele ve e o recorte da camera.
      */
     private double panorama() {
-        double meia = Math.max(1, Engine.window.getWidth() / 2d);
+        double meia = Math.max(1, Engine.window.largura() / 2d);
         double naTela = (getX() - Game.getCam().getX()) - meia;
         // NUNCA TOTALMENTE DE UM LADO SO.
         //

@@ -27,7 +27,7 @@ public class WaveDisplay {
     }
 
     public void tick() {
-        this.position.setLocation(Engine.window.getWidth()/2, Configs.Margin());
+        this.position.setLocation(Engine.window.largura()/2, Configs.Margin());
     }
 
     public void render(Graphics2D g) {

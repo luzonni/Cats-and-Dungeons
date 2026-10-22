@@ -58,7 +58,8 @@ import java.util.List;
  */
 public class Configuracoes extends TelaDeMenu {
 
-    private static final int[] FPS_VALORES = {30, 60, 120, 144, 165, 240};
+    /** Limites de quadros, na ordem do ciclo: o do monitor primeiro, sem limite por último. */
+    private static final int[] FPS_VALORES = {Configs.LIMITE_MONITOR, 30, 60, 120, 144, 165, 240, Configs.SEM_LIMITE};
     /** Tamanhos de GUI, como no Minecraft. 0 = automático. Ver Configs.UiScale(). */
     private static final int[] ESCALAS_UI = {0, 1, 2, 3};
     private static final String[] ROTULOS_ESCALA = {"Auto", "1", "2", "3"};
@@ -81,7 +82,9 @@ public class Configuracoes extends TelaDeMenu {
     private Rectangle painel = new Rectangle();
 
     // Mudanças que só podem ser aplicadas recriando a janela.
-    private int pendResolucao = Configs.getIndexResolution();
+    /** As resoluções deste monitor (ver Window.resolucoesDoMonitor) e a escolhida, por índice nela. */
+    private final List<java.awt.Dimension> resolucoes = Engine.window.resolucoesDoMonitor();
+    private int pendResolucao = indiceDaResolucaoAtual();
     private int pendTelaCheia = Configs.Fullscreen() ? 1 : 0;
 
     private final Button aplicar;
@@ -165,23 +168,34 @@ public class Configuracoes extends TelaDeMenu {
     private Musics previa;
 
     private void montarLinhas() {
-        String[] resolucoes = new String[Engine.resolutions.length];
-        for (int i = 0; i < resolucoes.length; i++) {
-            resolucoes[i] = Engine.resolutions[i][0] + " x " + Engine.resolutions[i][1];
+        java.awt.Dimension monitor = Engine.window.tamanhoDoMonitor();
+        String[] rotulosDeResolucao = new String[resolucoes.size()];
+        for (int i = 0; i < rotulosDeResolucao.length; i++) {
+            java.awt.Dimension r = resolucoes.get(i);
+            rotulosDeResolucao[i] = r.width + " x " + r.height + (r.equals(monitor) ? " *" : "");
         }
         String[] fps = new String[FPS_VALORES.length];
         for (int i = 0; i < fps.length; i++) {
-            fps[i] = String.valueOf(FPS_VALORES[i]);
+            int v = FPS_VALORES[i];
+            // ACIMA DO MONITOR, AVISADO. Sem VSync, 240 quadros num monitor de 180 Hz
+            // saem desencontrados da tela (rasgo e trepidação) por mais preciso que
+            // seja o limitador; o rótulo diz isso antes de o jogador descobrir.
+            fps[i] = v == Configs.LIMITE_MONITOR ? "Monitor (" + Engine.taxaDoMonitor() + ")"
+                    : v == Configs.SEM_LIMITE ? "Unlimited"
+                    : v > Engine.taxaDoMonitor() ? v + " !" : String.valueOf(v);
         }
 
         List<OptionRow> video = new ArrayList<>();
-        video.add(OptionRow.cycle("Resolution", () -> pendResolucao, v -> pendResolucao = v, resolucoes)
-                .desc("Size of the game window. Takes effect only after Apply, which recreates the window."));
+        video.add(OptionRow.cycle("Resolution", () -> pendResolucao, v -> pendResolucao = v, rotulosDeResolucao)
+                .desc("Size of the game image, in screen pixels. * marks your monitor, the sharpest in fullscreen. "
+                        + "Takes effect after Apply."));
         video.add(OptionRow.toggle("Fullscreen", () -> pendTelaCheia, v -> pendTelaCheia = v)
                 .desc("Fills the whole screen with a borderless window. Needs Apply. F11 also toggles it."));
         video.add(OptionRow.cycle("Frame rate", Configuracoes::indiceFps,
                 v -> Configs.setMaxFrames(FPS_VALORES[v]), fps)
-                .desc("Maximum frames drawn per second. Higher values look smoother but cost more CPU."));
+                .desc("Frame limit when VSync is off. Monitor matches your screen and is the smoothest; ! marks "
+                        + "limits above your monitor, which only add tearing. "
+                        + "The game plays the same at any frame rate."));
         video.add(OptionRow.toggle("Smooth graphics",
                 () -> Configs.isNeatGraphics() ? 1 : 0, v -> Configs.setNeatGraphics(v != 0))
                 .desc("Antialiasing and smooth filtering. Softens the pixel art; off keeps the sharp look."));
@@ -192,7 +206,8 @@ public class Configuracoes extends TelaDeMenu {
                 .desc("Darkens the corners of the screen during gameplay, to focus the eye on the center."));
         video.add(OptionRow.toggle("VSync",
                 () -> Configs.VSync() ? 1 : 0, v -> Configs.setVSync(v != 0))
-                .desc("Shows each frame exactly when the monitor refreshes. Smoothest motion; overrides the frame rate limit."));
+                .desc("Syncs every frame to the monitor refresh. Smoothest motion, no tearing; "
+                        + "the frame rate limit is ignored while it is on."));
         video.add(OptionRow.toggle("Lighting",
                 () -> Configs.Lighting() ? 1 : 0, v -> Configs.setLighting(v != 0))
                 .desc("Soft shadows under everything and dynamic light from the cat, torches and chests."));
@@ -232,7 +247,9 @@ public class Configuracoes extends TelaDeMenu {
                 v -> Configs.setUiScale(ESCALAS_UI[v]), ROTULOS_ESCALA)
                 .desc("Size of menus, buttons and text: 1 small, 2 normal, 3 large. Auto = 2."));
         ui.add(OptionRow.stepper("HUD size", Configs::HudScale, Configs::setHudScale, 2, 6, 1)
-                .desc("Scale of the in-game interface: life bar, hotbar, inventory and shop."));
+                .ate(Configs::HudScaleMaxima)
+                .desc("Scale of the in-game interface: life bar, clock, hotbar. Capped at what fits "
+                        + "this resolution, so nothing overlaps."));
         ui.add(OptionRow.toggle("Show hitboxes",
                 () -> Configs.Hitboxes() ? 1 : 0, v -> Debugging.mostrarHitBox(v != 0))
                 .desc("Draws the collision box over entities. Same as pressing F4 in game."));
@@ -264,21 +281,30 @@ public class Configuracoes extends TelaDeMenu {
                 return i;
             }
         }
-        return 1;
+        return 0;   // valor desconhecido cai no do monitor
+    }
+
+    /** A resolução em vigor na lista deste monitor; a do monitor se ela não estiver lá. */
+    private int indiceDaResolucaoAtual() {
+        int[] atual = Engine.window.resolucao();
+        int i = resolucoes.indexOf(new java.awt.Dimension(atual[0], atual[1]));
+        return i >= 0 ? i : resolucoes.size() - 1;
     }
 
     private boolean temPendencia() {
-        return pendResolucao != Configs.getIndexResolution()
+        return pendResolucao != indiceDaResolucaoAtual()
                 || (pendTelaCheia != 0) != Configs.Fullscreen();
     }
 
+    /** Resolução e tela cheia gravadas juntas e aplicadas numa passada só (ver Window.aplicarVideo). */
     private void aplicarPendentes() {
         if (!temPendencia()) {
             return;
         }
-        Configs.setIndexResolution(pendResolucao);
+        java.awt.Dimension r = resolucoes.get(pendResolucao);
+        Configs.setResolucao(r.width, r.height);
         Configs.setFullscreen(pendTelaCheia != 0);
-        Engine.window.resetWindow();
+        Engine.window.aplicarVideo();
     }
 
     /**
@@ -326,8 +352,8 @@ public class Configuracoes extends TelaDeMenu {
     protected void posicionar() {
         int s = Configs.UiScale();
         Rectangle area = areaDoConteudo();
-        int larguraPainel = Math.min(Engine.window.getWidth() - 16 * s, 240 * s);
-        int x = Engine.window.getWidth() / 2 - larguraPainel / 2;
+        int larguraPainel = Math.min(Engine.window.largura() - 16 * s, 240 * s);
+        int x = Engine.window.largura() / 2 - larguraPainel / 2;
 
         int alturaAbas = Abas.altura();
         // RESPIRO. Antes era tudo de 2 a 6 pixels: as linhas encostavam umas nas
@@ -561,7 +587,7 @@ public class Configuracoes extends TelaDeMenu {
     private void desenharAvisoPendente(Graphics2D g) {
         int s = Configs.UiScale();
         Font fonte = FontHandler.font(FontHandler.Game, 5f * s);
-        String aviso = "Apply restarts the window";
+        String aviso = "Apply resizes the window";
         int x = aplicar.getBounds().x;          // alinhado à esquerda, sob o botão
         int y = aplicar.getBounds().y - 2 * s;
         g.setFont(fonte);
@@ -613,7 +639,7 @@ public class Configuracoes extends TelaDeMenu {
             // desce para baixo da linha — e aí cobre a de baixo, o mal menor.
             Rectangle r = alvo.getBounds();
             y = r.y;
-            if (painel.x + painel.width + 4 * s + caixaW <= Engine.window.getWidth() - 2 * s) {
+            if (painel.x + painel.width + 4 * s + caixaW <= Engine.window.largura() - 2 * s) {
                 x = painel.x + painel.width + 4 * s;
             } else if (painel.x - 4 * s - caixaW >= 2 * s) {
                 x = painel.x - 4 * s - caixaW;
@@ -622,8 +648,8 @@ public class Configuracoes extends TelaDeMenu {
                 y = r.y + r.height + 2 * s;
             }
         }
-        x = Math.min(x, Engine.window.getWidth() - caixaW - 2 * s);
-        y = Math.min(y, Engine.window.getHeight() - caixaH - 2 * s);
+        x = Math.min(x, Engine.window.largura() - caixaW - 2 * s);
+        y = Math.min(y, Engine.window.altura() - caixaH - 2 * s);
         x = Math.max(2 * s, x);
         y = Math.max(2 * s, y);
 

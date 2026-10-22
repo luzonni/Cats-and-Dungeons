@@ -16,6 +16,7 @@ Revisado em **2026-10-21** contra o código (commit `8a9cbb8` e a limpeza que ve
 - [x] Pipeline OpenGL ligado de verdade (antes desenhava em software)
 - [x] Interpolação de mundo, câmera e menus entre ticks; 165 e 240 FPS
 - [x] Ritmo de quadros uniforme e opção de VSync
+- [x] Limitador preciso no Windows (timer de 1 ms), limite "igual ao monitor", resolução como imagem escalada, tela cheia sem bordas sem piscar, teto do HUD
 - [x] Medidor de quadros (`-Dcd.perf`) e modo bancada (`-Dcd.bench`)
 - [x] Modo foto (`-Dcd.foto`): capturas de tela por roteiro, isoladas dos saves
 - [x] Sistema único de menus (`TelaDeMenu`): mesma moldura, pilha, voltar e

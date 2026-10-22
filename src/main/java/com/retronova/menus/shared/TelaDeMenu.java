@@ -257,8 +257,8 @@ public abstract class TelaDeMenu implements Activity {
         // A FOLGA ANTES DO RODAPÉ é parte da área reservada: sem ela, o que senta na
         // base da área (os botões e as miniaturas da seleção de gato) encostava nas
         // dicas, e em telas mais baixas passava por cima delas.
-        int base = Engine.window.getHeight() - Configs.Margin() - Rodape.ALTURA * s - FOLGA_DO_RODAPE * s;
-        return new Rectangle(0, topo, Engine.window.getWidth(), Math.max(0, base - topo));
+        int base = Engine.window.altura() - Configs.Margin() - Rodape.ALTURA * s - FOLGA_DO_RODAPE * s;
+        return new Rectangle(0, topo, Engine.window.largura(), Math.max(0, base - topo));
     }
 
     /** Vão entre a área do conteúdo e o rodapé, em pixels nativos. */
@@ -282,7 +282,7 @@ public abstract class TelaDeMenu implements Activity {
     protected static void desenharTitulo(Graphics2D g, String texto, Color cor) {
         int s = Configs.UiScale();
         Font fonte = FontHandler.font(FontHandler.Game, 14f * s);
-        int x = Engine.window.getWidth() / 2 - FontHandler.getWidth(texto, fonte) / 2;
+        int x = Engine.window.largura() / 2 - FontHandler.getWidth(texto, fonte) / 2;
         TextFx.draw(g, texto, fonte, x, baseDoTitulo(), cor, s);
     }
 
@@ -312,7 +312,7 @@ public abstract class TelaDeMenu implements Activity {
      * acende o personagem na própria ilustração) sobrescreve.
      */
     protected void desenharFundo(Graphics2D g) {
-        int w = Engine.window.getWidth(), h = Engine.window.getHeight();
+        int w = Engine.window.largura(), h = Engine.window.altura();
         if (sobreOJogo()) {
             // O véu só entra animado na primeira camada; entre a pausa e as opções
             // ele já está lá, e piscar a cada troca leria como corte.

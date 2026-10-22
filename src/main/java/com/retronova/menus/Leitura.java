@@ -90,13 +90,13 @@ public class Leitura implements Activity {
         List<String> linhas = quebrar(texto, fonte, largura - folga * 2);
         int altura = folga * 2 + alturaLinha * linhas.size();
         Rectangle p = new Rectangle(
-                Engine.window.getWidth() / 2 - largura / 2,
-                Engine.window.getHeight() / 2 - altura / 2,
+                Engine.window.largura() / 2 - largura / 2,
+                Engine.window.altura() / 2 - altura / 2,
                 largura, altura);
 
         Graphics2D g = (Graphics2D) g2.create();
         g.setColor(VEU);
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
+        g.fillRect(0, 0, Engine.window.largura(), Engine.window.altura());
 
         // Tábua: contorno, corpo, e o mesmo par de faces do cenário — o topo
         // pega luz, a base fica na sombra.

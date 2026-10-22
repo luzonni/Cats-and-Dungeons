@@ -14,38 +14,48 @@ paths:
 
 ## Sistema único de menus
 
-- Tela inicial, pausa e opções usam os mesmos componentes de `menus/shared/`
-  (`Button`, `Confirm`, `OptionRow`, `Cenario`). Tela nova de menu monta com eles;
-  não crie botão, diálogo ou linha de opção próprios.
-- A tela de Opções é uma só: `new Options()` a partir do menu e
-  `Options.sobreposta(...)` a partir da pausa. Mudança em Opções vale para os dois
-  acessos; não crie uma segunda tela de opções.
+- Toda tela de menu estende `TelaDeMenu` (`menus/shared/`): título, área de
+  conteúdo, rodapé de dicas (`Rodape`), entrada de 0,15 s e Esc/B para voltar.
+  Abra com `TelaDeMenu.abrir(...)`. Componentes: `Button`, `Confirm`, `OptionRow`,
+  `Abas`, `Cenario`. Não crie botão, diálogo ou linha de opção próprios.
+- Settings é um painel só: `menus/Configuracoes.java`. `new Configuracoes()` pela
+  tela inicial e `Configuracoes.pausa()` dentro da corrida, que acrescenta a aba
+  Run. Mudança em Settings vale para os dois acessos; não crie uma segunda tela.
 - Diálogo de confirmação é sempre `Confirm`.
 
 ## Hover e foco
 
-- O hover padrão é o do `Button` da tela inicial: realce suavizado entre ticks,
-  crescimento de no máximo uma unidade de escala, troca de estado do 9-slice e o
-  som `Sounds.Hover` ao entrar. Elemento clicável novo reproduz esse comportamento.
+- Todo hover e foco passa por `Realce` (`menus/shared/Realce.java`): cresce a
+  partir do centro, brilho suave por trás e clareia, em rampa (`Realce.Estado`), e
+  o som `Sounds.Hover` ao entrar. Elemento clicável novo usa o `Realce`.
 - Nunca use contorno grosso para indicar hover ou foco.
-- Foco de teclado e de controle usa o mesmo estado visual do hover (`setFocused`),
-  e toda tela navegável aceita setas/D-pad e `Enter`, além do mouse.
+- Foco de teclado e de controle é o mesmo realce mais as setas de
+  `Realce.marcadorDeFoco`; toda tela navegável aceita setas/D-pad e `Enter`, além do
+  mouse. Elementos focáveis lado a lado ficam a `Realce.folgaEntreVizinhos`.
 - Mouse por cima pede o cursor de mão com `Engine.window.pointing()`.
 
 ## Cards
 
-- Diretriz: buffs (cartas de nível) e elementos usam um único componente de card,
-  no padrão dos cards de buff de `SubirDeNivel`. A unificação está **a confirmar**
-  (em andamento na issue #28): ao mexer em `EscolhaDeElemento` ou em qualquer card
-  novo, aproxime do padrão dos cards de buff em vez de criar um terceiro estilo.
+- Toda escolha por cartas usa `MaoDeCartas` (`menus/shared/`), o padrão das cartas
+  de buff: cada carta só varia no conteúdo (`MaoDeCartas.Carta`). Não crie outro
+  estilo de carta.
 
 ## Desenho
 
 - Cores de `Palette`; texto por `TextFx.draw`; molduras por `NineSlice` / `Button.frame`.
 - Escala da interface por `Configs.UiScale()`, sempre inteira. Telas que podem não
   caber calculam uma escala menor que caiba (veja `escala()` em `GameOver` e `Vitoria`).
+- Posição e tamanho saem de `Engine.window.largura()` / `altura()`: o tamanho da
+  imagem do jogo, que é a resolução escolhida. Não use o tamanho do canvas.
 - Ícones pequenos: pixel art ampliada por fator inteiro, sem suavização
   (`Relevo`, `Icones`).
 - Botões e ícone de UI saem de `tools/GenUiAssets.java`: mude o gerador e rode
   `./gradlew genUiAssets`; a CI recusa PNG fora de sincronia.
+- Nada que conte tempo ou avance animação mora em `render`: só no `tick`.
+
+## HUD
+
 - HUD durante a corrida não cobre o centro da tela e não bloqueia a entrada.
+- A escala do HUD é `Configs.HudScale()`, já limitada ao que cabe
+  (`LayoutDoHud`). Peça nova no topo ou na base do HUD entra nas medidas de
+  `LayoutDoHud` (e no `LayoutDoHudTest`), senão volta a se sobrepor às outras.
