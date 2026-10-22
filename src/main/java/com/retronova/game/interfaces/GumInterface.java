@@ -44,8 +44,8 @@ public class GumInterface implements Activity {
         this.gumInterface = SpriteHandler.getSprite("ui","bum_ui", s);
         SpriteHandler sheet = new SpriteHandler("ui", "button_bum", s);
         this.buttonSprite = new BufferedImage[]{sheet.getSpriteWithIndex(0, 0), sheet.getSpriteWithIndex(1, 0)};
-        int x = Engine.window.getWidth()/2 - this.gumInterface.getWidth()/2;
-        int y = Engine.window.getHeight()/2 - this.gumInterface.getHeight()/2;
+        int x = Engine.window.largura()/2 - this.gumInterface.getWidth()/2;
+        int y = Engine.window.altura()/2 - this.gumInterface.getHeight()/2;
         this.pricePosition = new Point(x + 16*s, y + 77*s);
         this.font = FontHandler.font(FontHandler.Septem, Configs.HudScale()*8);
         this.ui_position = new Point(x, y);

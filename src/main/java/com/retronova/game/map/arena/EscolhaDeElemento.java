@@ -111,7 +111,7 @@ public class EscolhaDeElemento implements Activity {
     private void posicionar() {
         int s = MaoDeCartas.escala();
         int ch = MaoDeCartas.ALTURA * s;
-        cartas.posicionar(Engine.window.getHeight() / 2 - ch / 2 - 6 * s, s);
+        cartas.posicionar(Engine.window.altura() / 2 - ch / 2 - 6 * s, s);
     }
 
     @Override
@@ -134,8 +134,8 @@ public class EscolhaDeElemento implements Activity {
 
     @Override
     public void render(Graphics2D g) {
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+        int w = Engine.window.largura();
+        int h = Engine.window.altura();
         int s = MaoDeCartas.escala();
         posicionar();
         float saida = cartas.saida();

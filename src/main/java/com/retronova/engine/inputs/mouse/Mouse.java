@@ -152,8 +152,8 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
             pressingScroll = true;
         }
         //Sets
-        xClicked = e.getX();
-        yClicked = e.getY();
+        xClicked = emJogoX(e.getX());
+        yClicked = emJogoY(e.getY());
         Entrada.mouse();
     }
 
@@ -194,16 +194,16 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
     @Override
     public void mouseDragged(MouseEvent e) {
         //Set's
-        Mouse.xMouse = e.getX();
-        Mouse.yMouse = e.getY();
+        Mouse.xMouse = emJogoX(e.getX());
+        Mouse.yMouse = emJogoY(e.getY());
         Entrada.mouse();
     }
 
     @Override
     public void mouseMoved(MouseEvent e) {
         //Set's
-        Mouse.xMouse = e.getX();
-        Mouse.yMouse = e.getY();
+        Mouse.xMouse = emJogoX(e.getX());
+        Mouse.yMouse = emJogoY(e.getY());
         Entrada.mouse();
     }
 
@@ -211,6 +211,22 @@ public class Mouse implements MouseListener, MouseMotionListener, MouseWheelList
      * Mouse simulado, para o modo de foto (ver engine.Foto): leva o ponteiro a
      * (x, y) do canvas, como um mouseMoved faria. Nunca toca no mouse do sistema.
      */
+    /**
+     * O ponto do canvas levado para a imagem do jogo. Iguais quando a imagem tem o
+     * tamanho do canvas; diferentes quando ela é escalada (tela cheia em resolução
+     * menor que o monitor, janela redimensionada), e aí sem a conversão o clique
+     * cairia longe do botão.
+     */
+    private static int emJogoX(int xNoCanvas) {
+        return com.retronova.engine.Engine.window == null ? xNoCanvas
+                : com.retronova.engine.Engine.window.paraJogoX(xNoCanvas);
+    }
+
+    private static int emJogoY(int yNoCanvas) {
+        return com.retronova.engine.Engine.window == null ? yNoCanvas
+                : com.retronova.engine.Engine.window.paraJogoY(yNoCanvas);
+    }
+
     public static void simularPosicao(int x, int y) {
         xMouse = x;
         yMouse = y;

@@ -82,7 +82,9 @@ public class Configuracoes extends TelaDeMenu {
     private Rectangle painel = new Rectangle();
 
     // Mudanças que só podem ser aplicadas recriando a janela.
-    private int pendResolucao = Configs.getIndexResolution();
+    /** As resoluções deste monitor (ver Window.resolucoesDoMonitor) e a escolhida, por índice nela. */
+    private final List<java.awt.Dimension> resolucoes = Engine.window.resolucoesDoMonitor();
+    private int pendResolucao = indiceDaResolucaoAtual();
     private int pendTelaCheia = Configs.Fullscreen() ? 1 : 0;
 
     private final Button aplicar;
@@ -166,9 +168,11 @@ public class Configuracoes extends TelaDeMenu {
     private Musics previa;
 
     private void montarLinhas() {
-        String[] resolucoes = new String[Engine.resolutions.length];
-        for (int i = 0; i < resolucoes.length; i++) {
-            resolucoes[i] = Engine.resolutions[i][0] + " x " + Engine.resolutions[i][1];
+        java.awt.Dimension monitor = Engine.window.tamanhoDoMonitor();
+        String[] rotulosDeResolucao = new String[resolucoes.size()];
+        for (int i = 0; i < rotulosDeResolucao.length; i++) {
+            java.awt.Dimension r = resolucoes.get(i);
+            rotulosDeResolucao[i] = r.width + " x " + r.height + (r.equals(monitor) ? " *" : "");
         }
         String[] fps = new String[FPS_VALORES.length];
         for (int i = 0; i < fps.length; i++) {
@@ -178,8 +182,9 @@ public class Configuracoes extends TelaDeMenu {
         }
 
         List<OptionRow> video = new ArrayList<>();
-        video.add(OptionRow.cycle("Resolution", () -> pendResolucao, v -> pendResolucao = v, resolucoes)
-                .desc("Size of the game image. Takes effect after Apply."));
+        video.add(OptionRow.cycle("Resolution", () -> pendResolucao, v -> pendResolucao = v, rotulosDeResolucao)
+                .desc("Size of the game image, in screen pixels. * marks your monitor, the sharpest in fullscreen. "
+                        + "Takes effect after Apply."));
         video.add(OptionRow.toggle("Fullscreen", () -> pendTelaCheia, v -> pendTelaCheia = v)
                 .desc("Fills the whole screen with a borderless window. Needs Apply. F11 also toggles it."));
         video.add(OptionRow.cycle("Frame rate", Configuracoes::indiceFps,
@@ -272,16 +277,25 @@ public class Configuracoes extends TelaDeMenu {
         return 0;   // valor desconhecido cai no do monitor
     }
 
+    /** A resolução em vigor na lista deste monitor; a do monitor se ela não estiver lá. */
+    private int indiceDaResolucaoAtual() {
+        int[] atual = Engine.window.resolucao();
+        int i = resolucoes.indexOf(new java.awt.Dimension(atual[0], atual[1]));
+        return i >= 0 ? i : resolucoes.size() - 1;
+    }
+
     private boolean temPendencia() {
-        return pendResolucao != Configs.getIndexResolution()
+        return pendResolucao != indiceDaResolucaoAtual()
                 || (pendTelaCheia != 0) != Configs.Fullscreen();
     }
 
+    /** Resolução e tela cheia gravadas juntas e aplicadas numa passada só (ver Window.aplicarVideo). */
     private void aplicarPendentes() {
         if (!temPendencia()) {
             return;
         }
-        Configs.setIndexResolution(pendResolucao);
+        java.awt.Dimension r = resolucoes.get(pendResolucao);
+        Configs.setResolucao(r.width, r.height);
         Configs.setFullscreen(pendTelaCheia != 0);
         Engine.window.aplicarVideo();
     }
@@ -331,8 +345,8 @@ public class Configuracoes extends TelaDeMenu {
     protected void posicionar() {
         int s = Configs.UiScale();
         Rectangle area = areaDoConteudo();
-        int larguraPainel = Math.min(Engine.window.getWidth() - 16 * s, 240 * s);
-        int x = Engine.window.getWidth() / 2 - larguraPainel / 2;
+        int larguraPainel = Math.min(Engine.window.largura() - 16 * s, 240 * s);
+        int x = Engine.window.largura() / 2 - larguraPainel / 2;
 
         int alturaAbas = Abas.altura();
         // RESPIRO. Antes era tudo de 2 a 6 pixels: as linhas encostavam umas nas
@@ -618,7 +632,7 @@ public class Configuracoes extends TelaDeMenu {
             // desce para baixo da linha — e aí cobre a de baixo, o mal menor.
             Rectangle r = alvo.getBounds();
             y = r.y;
-            if (painel.x + painel.width + 4 * s + caixaW <= Engine.window.getWidth() - 2 * s) {
+            if (painel.x + painel.width + 4 * s + caixaW <= Engine.window.largura() - 2 * s) {
                 x = painel.x + painel.width + 4 * s;
             } else if (painel.x - 4 * s - caixaW >= 2 * s) {
                 x = painel.x - 4 * s - caixaW;
@@ -627,8 +641,8 @@ public class Configuracoes extends TelaDeMenu {
                 y = r.y + r.height + 2 * s;
             }
         }
-        x = Math.min(x, Engine.window.getWidth() - caixaW - 2 * s);
-        y = Math.min(y, Engine.window.getHeight() - caixaH - 2 * s);
+        x = Math.min(x, Engine.window.largura() - caixaW - 2 * s);
+        y = Math.min(y, Engine.window.altura() - caixaH - 2 * s);
         x = Math.max(2 * s, x);
         y = Math.max(2 * s, y);
 

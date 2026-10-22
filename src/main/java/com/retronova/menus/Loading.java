@@ -135,7 +135,7 @@ public class Loading implements Activity, Runnable {
     public void render(Graphics2D g2) {
         Graphics2D g = (Graphics2D) g2.create();
         g.setColor(FUNDO);
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
+        g.fillRect(0, 0, Engine.window.largura(), Engine.window.altura());
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacidade()));
 
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -143,8 +143,8 @@ public class Loading implements Activity, Runnable {
 
         int s = Configs.UiScale();
         int lado = 16 * s * 2;
-        int meio = Engine.window.getWidth() / 2;
-        int chao = Engine.window.getHeight() / 2;
+        int meio = Engine.window.largura() / 2;
+        int chao = Engine.window.altura() / 2;
 
         // Rastro de patinhas atras do gato, aparecendo uma a uma. E o que da a
         // leitura de progresso que o anel girando dava, so que dentro do jogo.
@@ -168,7 +168,7 @@ public class Loading implements Activity, Runnable {
         // A frase quebra em linhas se nao couber: em janela pequena com escala de
         // UI grande, uma linha so passava da largura da tela.
         Font fonte = FontHandler.font(FontHandler.Game, 6f * s);
-        int util = Engine.window.getWidth() - 40 * s;
+        int util = Engine.window.largura() - 40 * s;
         g.setFont(fonte);
         g.setColor(TEXTO);
         int y = chao + 22 * s;

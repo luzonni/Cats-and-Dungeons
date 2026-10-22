@@ -33,7 +33,7 @@ public final class Video {
             Insets barras = Toolkit.getDefaultToolkit().getScreenInsets(gc);
             AffineTransform dpi = gc.getDefaultTransform();
             DisplayMode modo = gc.getDevice().getDisplayMode();
-            int[] pedida = Engine.getResolution();
+            int[] pedida = {Configs.resolucaoLargura(), Configs.resolucaoAltura()};
             System.out.printf(java.util.Locale.ROOT,
                     "[video] %s: pedida=%dx%d imagem=%dx%d canvas=%dx%d janela=%s modo=%s%n"
                             + "[video]   monitor=%s (%s) barras=%s dpi=%.2fx%.2f (uiScale=%s) taxa=%s%n",

@@ -6,8 +6,14 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        String os = System.getProperty("os.name").toLowerCase();
-        if(os.contains("win")) {
+        // RESOLUÇÃO EM PIXELS DA TELA, EM TODO SISTEMA. Desde o Java 9 o Java2D
+        // aplica sozinho a escala de DPI do sistema (JEP 263, Windows e Linux): a
+        // 125%, uma janela "1280" ocuparia 1600 pixels, e o pixel art seria
+        // reamostrado. Com 1.0 a resolução escolhida é a da tela, e a escala é
+        // inteira e do jogo. Era só no Windows; o Linux com GDK_SCALE tinha o mesmo
+        // problema. O macOS desenha sempre na escala da tela e ignora a opção.
+        // Quem quiser outra escala passa -Dsun.java2d.uiScale na linha de comando.
+        if (System.getProperty("sun.java2d.uiScale") == null) {
             System.setProperty("sun.java2d.uiScale", "1.0");
         }
         // OPENGL AQUI, ANTES DE QUALQUER COISA DO AWT. A Window ligava esta mesma

@@ -62,8 +62,8 @@ public final class Rodape {
                 total += entreDicas;
             }
         }
-        int x = Engine.window.getWidth() / 2 - total / 2;
-        int yTecla = Engine.window.getHeight() - Configs.Margin() - alturaTecla;
+        int x = Engine.window.largura() / 2 - total / 2;
+        int yTecla = Engine.window.altura() - Configs.Margin() - alturaTecla;
         int baseTexto = yTecla + alturaTecla - 2 * s;
 
         Graphics2D g2 = (Graphics2D) g.create();

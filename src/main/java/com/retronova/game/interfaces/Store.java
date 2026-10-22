@@ -70,8 +70,8 @@ public class Store implements Activity {
     }
 
     private void refreshPosition() {
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+        int w = Engine.window.largura();
+        int h = Engine.window.altura();
         this.positionStore.setLocation(w/2 - store.largura()/2, h/2 - store.altura()/2);
         // O rodapé desceu junto com o painel: duas fileiras a mais de 16 pixels.
         int rodape = 72 + 16 * (FILEIRAS - 3);

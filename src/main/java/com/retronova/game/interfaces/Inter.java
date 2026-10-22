@@ -93,7 +93,7 @@ public class Inter implements Activity {
         String[] keys = keys();
         Rectangle rec = this.tabs[0];
         int width = rec.width * keys.length;
-        int x = Engine.window.getWidth()/2 - width/2;
+        int x = Engine.window.largura()/2 - width/2;
         int y = Configs.Margin();
         for(int i = 0; i < keys.length; i++) {
             tabs[i].setLocation(x + (rec.width+Configs.HudScale()*2)*i, y);
@@ -149,7 +149,7 @@ public class Inter implements Activity {
     @Override
     public void render(Graphics2D g) {
         g.setColor(new Color(0,0,0, 80));
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
+        g.fillRect(0, 0, Engine.window.largura(), Engine.window.altura());
         if(inter.containsKey(index))
             inter.get(index).render(g);
         renderTabs(g);

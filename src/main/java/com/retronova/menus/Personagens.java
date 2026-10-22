@@ -252,8 +252,8 @@ public class Personagens extends TelaDeMenu {
     @Override
     protected void posicionar() {
         int s = Configs.UiScale();
-        int janelaW = Engine.window.getWidth();
-        int janelaH = Engine.window.getHeight();
+        int janelaW = Engine.window.largura();
+        int janelaH = Engine.window.altura();
         int margem = Math.max(Configs.Margin(), 14 * s);
 
         int alturaBotao = Button.preferredHeight();
@@ -388,7 +388,7 @@ public class Personagens extends TelaDeMenu {
      * o último pedaço devagar. É o que faz o olho chegar junto com a luz.
      */
     private void desenharAmbiente(Graphics2D g) {
-        int w = Engine.window.getWidth(), h = Engine.window.getHeight();
+        int w = Engine.window.largura(), h = Engine.window.altura();
         g.setColor(Palette.DARKEST);
         g.fillRect(0, 0, w, h);
 
@@ -683,12 +683,12 @@ public class Personagens extends TelaDeMenu {
         int topo = 14 * s;
         int rodape = miniaturas[0].height > 0
                 ? miniaturas[0].y
-                : (int) (Engine.window.getHeight() * 0.78);
+                : (int) (Engine.window.altura() * 0.78);
         // Duas travas: nunca menor que um minimo legivel, nunca maior que a
         // janela. A segunda importa quando alguem fixa uma escala de UI grande
         // numa resolucao baixa — ai o rodape sobe tanto que o espaco calculado
         // ficaria negativo, e sem o teto o bloco voltaria a transbordar.
-        int disponivel = Math.min(Engine.window.getHeight() - topo - 8 * s,
+        int disponivel = Math.min(Engine.window.altura() - topo - 8 * s,
                 Math.max(30 * s, rodape - topo - 8 * s));
 
         // Encolhe em passos até caber. Cada passo remede, porque mudar a fonte

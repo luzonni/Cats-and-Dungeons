@@ -248,8 +248,8 @@ public class Game implements Activity {
         this.map = newMap;
         this.map.addPlayer(player);
         this.gCam = new Camera(this.map.getBounds(), 0.25d);
-        this.gCam.setX((int)player.getX() + player.getWidth()/2 - Engine.window.getWidth()/2);
-        this.gCam.setY((int)player.getY() + player.getHeight()/2 - Engine.window.getHeight()/2);
+        this.gCam.setX((int)player.getX() + player.getWidth()/2 - Engine.window.largura()/2);
+        this.gCam.setY((int)player.getY() + player.getHeight()/2 - Engine.window.altura()/2);
         this.gCam.setFollowed(player);
 
         // O PRIMEIRO PONTO DE RETOMADA E AQUI, ao ENTRAR no campo: dali em diante a
@@ -424,7 +424,7 @@ public class Game implements Activity {
     @Override
     public void render(Graphics2D g) {
         g.setColor(ROCHA);
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
+        g.fillRect(0, 0, Engine.window.largura(), Engine.window.altura());
         renderWorld(g);
         long t0 = System.nanoTime();
         // COM UM MENU ABERTO POR CIMA, SÓ O MUNDO. O HUD atrás do véu disputava
@@ -434,7 +434,7 @@ public class Game implements Activity {
         if (!(Engine.sobreposta() instanceof com.retronova.menus.shared.TelaDeMenu)) {
             hud.render(g);
             if (map instanceof com.retronova.game.map.arena.Arena) {
-                com.retronova.game.objects.entities.Furia.renderBarra(g, Engine.window.getWidth(), Engine.window.getHeight());
+                com.retronova.game.objects.entities.Furia.renderBarra(g, Engine.window.largura(), Engine.window.altura());
             }
         }
         com.retronova.engine.Desempenho.secao("hud", System.nanoTime() - t0);
@@ -461,7 +461,7 @@ public class Game implements Activity {
             return;
         }
         g.setColor(new java.awt.Color(0, 0, 0, (int) (255 * escuro)));
-        g.fillRect(0, 0, Engine.window.getWidth(), Engine.window.getHeight());
+        g.fillRect(0, 0, Engine.window.largura(), Engine.window.altura());
     }
 
     private void renderWorld(Graphics2D g) {
@@ -481,7 +481,7 @@ public class Game implements Activity {
         t = medir("particulas", t);
         cam.dispose();
         com.retronova.game.map.Atmosfera.renderLuz(g, entidades, alphaDoMundo());
-        com.retronova.game.objects.entities.Furia.renderTela(g, Engine.window.getWidth(), Engine.window.getHeight());
+        com.retronova.game.objects.entities.Furia.renderTela(g, Engine.window.largura(), Engine.window.altura());
         medir("luz", t);
     }
 
@@ -543,7 +543,7 @@ public class Game implements Activity {
     private Rectangle areaVisivel(Graphics2D g, int folgaEmTiles) {
         try {
             Rectangle r = g.getTransform().createInverse().createTransformedShape(
-                    new Rectangle(0, 0, Engine.window.getWidth(), Engine.window.getHeight())).getBounds();
+                    new Rectangle(0, 0, Engine.window.largura(), Engine.window.altura())).getBounds();
             int folga = folgaEmTiles * com.retronova.game.objects.GameObject.SIZE();
             r.grow(folga, folga);
             return r;

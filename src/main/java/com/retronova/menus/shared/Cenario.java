@@ -61,8 +61,8 @@ public class Cenario {
 
     public void tick() {
         tempo += 1f / 60f;
-        int w = Math.max(1, Engine.window.getWidth());
-        int h = Math.max(1, Engine.window.getHeight());
+        int w = Math.max(1, Engine.window.largura());
+        int h = Math.max(1, Engine.window.altura());
         for (Poeira p : poeiras) {
             if (p != null) {
                 p.tick(w, h, rand);
@@ -73,8 +73,8 @@ public class Cenario {
     // ----------------------------------------------------------------- render
 
     public void render(Graphics2D g) {
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+        int w = Engine.window.largura();
+        int h = Engine.window.altura();
         // Tempo do QUADRO, nao do tick: a bruma corre liso acima de 60 FPS.
         float tempo = this.tempo + Engine.alpha() / 60f;
         preparar(w, h);
@@ -166,7 +166,7 @@ public class Cenario {
         if (bruma == null) {
             return;
         }
-        int w = Engine.window.getWidth();
+        int w = Engine.window.largura();
         int largura = bruma.getWidth();
         int inicio = (int) (deslocamento % largura) - largura;
         Graphics2D g2 = (Graphics2D) g.create();

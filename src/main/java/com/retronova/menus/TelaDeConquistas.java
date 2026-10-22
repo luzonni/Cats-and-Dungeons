@@ -61,7 +61,7 @@ public class TelaDeConquistas extends TelaDeMenu {
     private int escala() {
         Rectangle area = areaDoConteudo();
         int porAltura = area.height / (14 + LINHAS * 36 + 26);
-        int porLargura = (Engine.window.getWidth() - 20) / (COLUNAS * 112 + 8);
+        int porLargura = (Engine.window.largura() - 20) / (COLUNAS * 112 + 8);
         return Math.max(1, Math.min(Configs.UiScale(), Math.min(porAltura, porLargura)));
     }
 
@@ -77,7 +77,7 @@ public class TelaDeConquistas extends TelaDeMenu {
     private Rectangle cartao(int i, int s) {
         int w = larguraCartao(s), h = alturaCartao(s), vao = 6 * s;
         int total = COLUNAS * w + (COLUNAS - 1) * vao;
-        int x0 = Engine.window.getWidth() / 2 - total / 2;
+        int x0 = Engine.window.largura() / 2 - total / 2;
         Rectangle area = areaDoConteudo();
         int alturaTotal = 14 * s + LINHAS * (h + vao) + 10 * s + com.retronova.menus.shared.Button.preferredHeight();
         int y0 = area.y + Math.max(0, (area.height - alturaTotal) / 2) + 14 * s;
@@ -90,7 +90,7 @@ public class TelaDeConquistas extends TelaDeMenu {
         int s = escala();
         Rectangle ultimo = cartao(TODAS.length - 1, s);
         int largura = Button.preferredWidth();
-        voltar.setBounds(new Rectangle(Engine.window.getWidth() / 2 - largura / 2,
+        voltar.setBounds(new Rectangle(Engine.window.largura() / 2 - largura / 2,
                 ultimo.y + ultimo.height + 10 * s, largura, Button.preferredHeight()));
     }
 
@@ -129,7 +129,7 @@ public class TelaDeConquistas extends TelaDeMenu {
         Rectangle primeiro = cartao(0, s);
         Font miuda = FontHandler.font(FontHandler.Septem, 7f * s);
         String contagem = progresso.totalDesbloqueadas() + " / " + TODAS.length + " unlocked";
-        TextFx.draw(g, contagem, miuda, Engine.window.getWidth() / 2 - FontHandler.getWidth(contagem, miuda) / 2,
+        TextFx.draw(g, contagem, miuda, Engine.window.largura() / 2 - FontHandler.getWidth(contagem, miuda) / 2,
                 primeiro.y - 6 * s, Palette.LIGHT, s);
     }
 

@@ -104,7 +104,7 @@ final class FeedbackDeDano {
         prepararBorda();
         Composite antes = g.getComposite();
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.min(1f, alfa)));
-        g.drawImage(borda, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
+        g.drawImage(borda, 0, 0, Engine.window.largura(), Engine.window.altura(), null);
         g.setComposite(antes);
     }
 

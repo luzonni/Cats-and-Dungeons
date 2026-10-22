@@ -207,7 +207,7 @@ public class Roleta implements Activity {
      */
     private int escala() {
         int s = Configs.UiScale();
-        int cabe = Math.max(1, (Engine.window.getHeight() - 20) / 215);
+        int cabe = Math.max(1, (Engine.window.altura() - 20) / 215);
         return Math.max(1, Math.min(s, cabe));
     }
 
@@ -247,7 +247,7 @@ public class Roleta implements Activity {
         tickMoedas();
         boolean confirmar = KeyBoard.KeyPressed("Enter") || KeyBoard.KeyPressed("Space")
                 || Mouse.clickOn(Mouse_Button.LEFT,
-                new Rectangle(0, 0, Engine.window.getWidth(), Engine.window.getHeight()));
+                new Rectangle(0, 0, Engine.window.largura(), Engine.window.altura()));
         if (!revelada) {
             tempo++;
             // Clicar durante o giro pula para o fim.
@@ -300,8 +300,8 @@ public class Roleta implements Activity {
         Sound.play(Sounds.Conquista);
         Sound.play(Sounds.Coin);
         int s = escala();
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+        int w = Engine.window.largura();
+        int h = Engine.window.altura();
         // As moedas saem da BANDEJA da maquina, como num pagamento de verdade, e
         // duas rajadas menores dos lados. Moderado: moeda demais cobre o premio.
         int bandejaY = h / 2 + 88 * s;
@@ -327,8 +327,8 @@ public class Roleta implements Activity {
     }
 
     private void tickMoedasDoFundo() {
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+        int w = Engine.window.largura();
+        int h = Engine.window.altura();
         int s = escala();
         // Chovem mais no jackpot.
         double chance = revelada ? 0.9 : 0.35;
@@ -354,7 +354,7 @@ public class Roleta implements Activity {
 
     private void tickMoedas() {
         tickMoedasDoFundo();
-        int h = Engine.window.getHeight();
+        int h = Engine.window.altura();
         int s = escala();
         for (int i = moedas.size() - 1; i >= 0; i--) {
             Moeda m = moedas.get(i);
@@ -372,8 +372,8 @@ public class Roleta implements Activity {
 
     @Override
     public void render(Graphics2D g) {
-        int w = Engine.window.getWidth();
-        int h = Engine.window.getHeight();
+        int w = Engine.window.largura();
+        int h = Engine.window.altura();
         int s = escala();
         float a = Engine.alpha();
         double quadro = tempo + desdeARevelacao + a;

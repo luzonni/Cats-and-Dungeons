@@ -46,7 +46,6 @@ public class Engine implements Runnable {
 
     public static final String resPath = "/com/retronova/resources/";
 
-    public static final int[][] resolutions = {{1280, 720}, {1366, 768}, {1600, 900}, {1920, 1080}, {2560, 1440}, {3840, 2160}};
 
     public static Window window;
     private static BufferStrategy BUFFER;
@@ -227,7 +226,7 @@ public class Engine implements Runnable {
     }
 
     public static int[] getResolution() {
-        return Engine.resolutions[Configs.getIndexResolution()];
+        return window.resolucao();
     }
 
     /**
@@ -279,6 +278,11 @@ public class Engine implements Runnable {
                 monitorDaTaxa = dev;
                 taxaCacheada = nova;
                 System.out.println("Monitor refresh: " + nova + " Hz" + (taxa > 0 ? "" : " (unknown, using 60)"));
+            }
+            // A janela pode ter sido arrastada para outro monitor: a resolução que
+            // vale (e o encaixe na tela) depende do tamanho dele.
+            if (window != null) {
+                window.atualizarMonitor();
             }
         } catch (Exception ignorado) {
             if (taxaCacheada == 0) {
@@ -337,6 +341,89 @@ public class Engine implements Runnable {
      * Só uma IllegalStateException (componente sem tela: janela fechada ou ainda
      * não exibida) descarta a estratégia — aí ela não tem mesmo como continuar.
      */
+    /** O quadro inteiro no tamanho da imagem do jogo, no Graphics dado. */
+    private static void desenharJogo(Graphics2D g) {
+        prepararQuadro(g);
+        desenharTelas(g);
+        if (Debugging.running) {
+            Debugging.render(g);
+        }
+    }
+
+    /**
+     * A imagem do jogo e a ampliação inteira dela, na placa de vídeo.
+     *
+     * VolatileImage porque ela mora na memória da placa (Javadoc de VolatileImage)
+     * e o OpenGL a escala sem passar pela CPU; e por isso também ela pode ser
+     * perdida — validate() a refaz quando é preciso.
+     */
+    private static java.awt.image.VolatileImage imagemDoJogo, imagemAmpliada;
+
+    /**
+     * A imagem do jogo escalada para o canvas, centrada, com tarjas pretas.
+     *
+     * NÍTIDA NA ESCALA INTEIRA, E SÓ SUAVE NO RESTO. Ampliar pixel art direto por
+     * um fator quebrado (1280 em 1920 é 1,5x) dá duas escolhas ruins: vizinho mais
+     * próximo, com pixels de larguras diferentes que tremem quando a câmera anda,
+     * ou suavização, que borra tudo. Aqui a imagem é primeiro ampliada pelo maior
+     * inteiro que cabe, sem suavizar, e só o que falta (de 1x a 2x) é suavizado —
+     * o "sharp bilinear" dos emuladores: as bordas ficam firmes e o borrão fica
+     * restrito a um pixel. Reduzir (janela menor que a imagem) usa a suavização
+     * direto, que é o que reduz sem serrilhar.
+     */
+    private static void desenharEscalado(Graphics2D tela) {
+        int w = window.largura(), h = window.altura();
+        GraphicsConfiguration gc = window.getGraphicsConfiguration();
+        if (gc == null || w <= 0 || h <= 0) {
+            return;
+        }
+        imagemDoJogo = valida(imagemDoJogo, gc, w, h);
+        do {
+            if (imagemDoJogo.validate(gc) == java.awt.image.VolatileImage.IMAGE_INCOMPATIBLE) {
+                imagemDoJogo = valida(null, gc, w, h);
+            }
+            Graphics2D g = imagemDoJogo.createGraphics();
+            try {
+                desenharJogo(g);
+            } finally {
+                g.dispose();
+            }
+        } while (imagemDoJogo.contentsLost());
+
+        Rectangle destino = window.areaNaTela();
+        tela.setColor(Color.black);
+        tela.fillRect(0, 0, window.getCanvasLargura(), window.getCanvasAltura());
+        double escala = window.escalaNaTela();
+        int inteiro = (int) Math.floor(escala + 1e-6);
+        java.awt.Image origem = imagemDoJogo;
+        if (inteiro >= 2 && Math.abs(escala - inteiro) > 1e-6) {
+            imagemAmpliada = valida(imagemAmpliada, gc, w * inteiro, h * inteiro);
+            Graphics2D a = imagemAmpliada.createGraphics();
+            a.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            a.drawImage(imagemDoJogo, 0, 0, w * inteiro, h * inteiro, null);
+            a.dispose();
+            origem = imagemAmpliada;
+        }
+        boolean nitida = Math.abs(escala - Math.round(escala)) < 1e-6;
+        tela.setRenderingHint(RenderingHints.KEY_INTERPOLATION, nitida
+                ? RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR
+                : RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        tela.drawImage(origem, destino.x, destino.y, destino.width, destino.height, null);
+    }
+
+    /** A VolatileImage do tamanho pedido, refeita só se mudou de tamanho ou de placa. */
+    private static java.awt.image.VolatileImage valida(java.awt.image.VolatileImage atual,
+                                                       GraphicsConfiguration gc, int w, int h) {
+        if (atual == null || atual.getWidth() != w || atual.getHeight() != h
+                || atual.validate(gc) == java.awt.image.VolatileImage.IMAGE_INCOMPATIBLE) {
+            if (atual != null) {
+                atual.flush();
+            }
+            return gc.createCompatibleVolatileImage(w, h, Transparency.OPAQUE);
+        }
+        return atual;
+    }
+
     private static int quadrosPerdidos, estrategiasCriadas;
     /** Quadros seguidos com a superfície perdida antes de recriar a estratégia (~1 s). */
     private static final int QUADROS_ATE_RECRIAR = 60;
@@ -368,10 +455,10 @@ public class Engine implements Runnable {
                 do {
                     Graphics2D g = (Graphics2D) buffer.getDrawGraphics();
                     try {
-                        prepararQuadro(g);
-                        desenharTelas(g);
-                        if (Debugging.running) {
-                            Debugging.render(g);
+                        if (window.desenhoDireto()) {
+                            desenharJogo(g);
+                        } else {
+                            desenharEscalado(g);
                         }
                     } finally {
                         g.dispose();
@@ -414,10 +501,19 @@ public class Engine implements Runnable {
         desenharTelas(g);
     }
 
+    /** O quadro como chega ao canvas, escalado se preciso. Para o modo de foto. */
+    static void desenharNaTela(Graphics2D g) {
+        if (window.desenhoDireto()) {
+            desenharJogo(g);
+        } else {
+            desenharEscalado(g);
+        }
+    }
+
     /** Fundo preto e as dicas de desenho das opcoes. Vale para a tela e para a foto. */
     private static void prepararQuadro(Graphics2D graphics) {
         graphics.setColor(Color.black);
-        graphics.fillRect(0, 0, window.getWidth(), window.getHeight());
+        graphics.fillRect(0, 0, window.largura(), window.altura());
         if(Configs.isNeatGraphics()) {
             // BILINEAR, e nao BICUBIC.
             //
@@ -481,7 +577,7 @@ public class Engine implements Runnable {
         long emUso = vm.totalMemory() - vm.freeMemory();
         Debugging.setInfo("RAM do jogo", Debugging.formatBytes(emUso)
                 + " de " + Debugging.formatBytes(vm.maxMemory()));
-        Debugging.setInfo("Screen Size", "[" + Engine.window.getWidth() + " / " + Engine.window.getHeight() + "]");
+        Debugging.setInfo("Screen Size", "[" + Engine.window.largura() + " / " + Engine.window.altura() + "]");
         Debugging.setInfo("Controle", Gamepad.conectado() ? "conectado" : "nenhum");
     }
 

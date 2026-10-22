@@ -274,8 +274,8 @@ public class Waves {
         }
         int s = GameObject.SIZE();
         double zoom = Math.max(0.3, com.retronova.engine.Configs.Zoom() / 100.0);
-        double rx = Engine.window.getWidth() / zoom / 2.0 / s + 1.5;
-        double ry = Engine.window.getHeight() / zoom / 2.0 / s + 1.5;
+        double rx = Engine.window.largura() / zoom / 2.0 / s + 1.5;
+        double ry = Engine.window.altura() / zoom / 2.0 / s + 1.5;
         double gx = (gato.getX() + gato.getWidth() / 2.0) / s;
         double gy = (gato.getY() + gato.getHeight() / 2.0) / s;
         double direcao = Engine.RAND.nextDouble() * Math.PI * 2;
@@ -314,8 +314,8 @@ public class Waves {
         }
         int s = GameObject.SIZE();
         double zoom = Math.max(0.3, com.retronova.engine.Configs.Zoom() / 100.0);
-        double rx = Engine.window.getWidth() / zoom / 2.0 / s + 1.5;
-        double ry = Engine.window.getHeight() / zoom / 2.0 / s + 1.5;
+        double rx = Engine.window.largura() / zoom / 2.0 / s + 1.5;
+        double ry = Engine.window.altura() / zoom / 2.0 / s + 1.5;
         double gx = (gato.getX() + gato.getWidth() / 2.0) / s;
         double gy = (gato.getY() + gato.getHeight() / 2.0) / s;
         for (int tentativa = 0; tentativa < 8; tentativa++) {

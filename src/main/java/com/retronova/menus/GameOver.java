@@ -97,7 +97,7 @@ public class GameOver extends TelaDeMenu {
     @Override
     protected void posicionar() {
         int s = escala();
-        int w = Engine.window.getWidth();
+        int w = Engine.window.largura();
         Rectangle area = areaDoConteudo();
         int pw = 150 * s, ph = 140 * s, vao = 10 * s;
         int total = ph + 10 * s + Button.preferredHeight();
@@ -229,7 +229,7 @@ public class GameOver extends TelaDeMenu {
         // como "Treasure Hunter" passavam da borda do aviso. Todos os avisos ficam
         // com a mesma largura, para a pilha não ficar serrilhada; se nem a janela
         // inteira couber, a fonte do nome desce um ponto por vez.
-        int maxW = Engine.window.getWidth() - 2 * margem;
+        int maxW = Engine.window.largura() - 2 * margem;
         int fixo = 4 * s + lado + 4 * s + 6 * s;
         float tamNome = 7f;
         Font fonteNome = FontHandler.font(FontHandler.Game, tamNome * s);
@@ -253,7 +253,7 @@ public class GameOver extends TelaDeMenu {
                 continue;
             }
             double suave = 1 - Math.pow(1 - t, 3);
-            int x = (int) (Engine.window.getWidth() - margem - w + (1 - suave) * (w + margem));
+            int x = (int) (Engine.window.largura() - margem - w + (1 - suave) * (w + margem));
             int y = margem + i * (h + vao);
 
             g.setColor(new Color(0, 0, 0, 100));
@@ -393,7 +393,7 @@ public class GameOver extends TelaDeMenu {
             g.drawString(t, x, y);
             return;
         }
-        int cabe = Math.max(1, (Engine.window.getHeight() - 20) / 210);
+        int cabe = Math.max(1, (Engine.window.altura() - 20) / 210);
         TextFx.draw(g, t, f, x, y, cor, Math.max(1, Math.min(Configs.UiScale(), cabe)));
     }
 

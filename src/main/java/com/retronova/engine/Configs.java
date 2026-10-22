@@ -63,7 +63,8 @@ public class Configs {
         // inconstante: sem VSync, o limite cai no ritmo exato do monitor, e não num
         // número fixo que pode estar acima do que a tela mostra (ver Engine).
         DEFAULTS.put("MaxFrames", LIMITE_MONITOR);
-        DEFAULTS.put("indexResolution", 0);
+        DEFAULTS.put("resW", 0);           // 0x0 = a resolução do monitor; ver resolucaoLargura
+        DEFAULTS.put("resH", 0);
         DEFAULTS.put("BATTLEMUSIC", 0);    // indice em Musics.COMBATE
         DEFAULTS.put("rumble", true);      // vibração do controle, ver Gamepad.vibrar
 
@@ -110,6 +111,9 @@ public class Configs {
         }
         if (objeto.get("AUDIOVERSION") == null) {
             migrarAudio();
+        }
+        if (objeto.get("resW") == null) {
+            migrarResolucao(objeto.get("indexResolution"));
         }
         invalidarCache();
     }
@@ -324,15 +328,38 @@ public class Configs {
         update();
     }
 
-    /** Índice em {@link Engine#resolutions}, sempre dentro dos limites do vetor. */
-    public static int getIndexResolution() {
-        int indice = inteiro("indexResolution");
-        return Math.max(0, Math.min(Engine.resolutions.length - 1, indice));
+    /**
+     * A resolução escolhida, em pixels: o tamanho da imagem do jogo. 0x0 é "a do
+     * monitor", o padrão da primeira execução.
+     *
+     * GRAVADA COMO LARGURA E ALTURA, e não como índice. O índice apontava para uma
+     * lista fixa, e a lista agora depende do monitor (ver Window.resolucoesDoMonitor):
+     * o mesmo índice viraria outra resolução ao trocar de monitor. Quem lê a
+     * resolução de fato é {@link Window#resolucao()}, que cai na do monitor quando a
+     * gravada não cabe nele.
+     */
+    public static int resolucaoLargura() {
+        return inteiro("resW");
     }
 
-    public static void setIndexResolution(int resolution) {
-        VALUES.put("indexResolution", resolution);
+    public static int resolucaoAltura() {
+        return inteiro("resH");
+    }
+
+    public static void setResolucao(int largura, int altura) {
+        VALUES.put("resW", largura);
+        VALUES.put("resH", altura);
         update();
+    }
+
+    /** Arquivo de antes da resolução por tamanho: traduz o índice da lista antiga. */
+    private static void migrarResolucao(Object indiceAntigo) {
+        int[][] antiga = {{1280, 720}, {1366, 768}, {1600, 900}, {1920, 1080}, {2560, 1440}, {3840, 2160}};
+        int i = indiceAntigo instanceof Number n ? n.intValue() : -1;
+        if (i >= 0 && i < antiga.length) {
+            VALUES.put("resW", antiga[i][0]);
+            VALUES.put("resH", antiga[i][1]);
+        }
     }
 
     /** Resolução lógica de referência para a UI. Múltiplos inteiros dela dão a escala. */
@@ -366,8 +393,8 @@ public class Configs {
         if (Engine.window == null) {
             return 3;
         }
-        int largura = Engine.window.getWidth();
-        int altura = Engine.window.getHeight();
+        int largura = Engine.window.largura();
+        int altura = Engine.window.altura();
         if (largura <= 0 || altura <= 0) {
             return 3;
         }

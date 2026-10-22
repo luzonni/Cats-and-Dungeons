@@ -67,13 +67,13 @@ public class HUD implements Activity {
     }
 
     private void createVignette() {
-        if(vignette == null || vignette.getWidth() != Engine.window.getWidth() || vignette.getHeight() != Engine.window.getHeight()) {
-            int Size = Engine.window.getWidth();
+        if(vignette == null || vignette.getWidth() != Engine.window.largura() || vignette.getHeight() != Engine.window.altura()) {
+            int Size = Engine.window.largura();
             BufferedImage CurrentVignette = new BufferedImage(Size, Size, BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics = getRadialGraphics2D(Size, CurrentVignette);
             graphics.fillRect(0, 0, Size, Size);
-            vignette = new BufferedImage(Engine.window.getWidth(), Engine.window.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            vignette.getGraphics().drawImage(CurrentVignette, 0, 0, Engine.window.getWidth(), Engine.window.getHeight(), null);
+            vignette = new BufferedImage(Engine.window.largura(), Engine.window.altura(), BufferedImage.TYPE_INT_ARGB);
+            vignette.getGraphics().drawImage(CurrentVignette, 0, 0, Engine.window.largura(), Engine.window.altura(), null);
         }
     }
 
@@ -172,7 +172,7 @@ public class HUD implements Activity {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         Player player = Game.getPlayer();
         int size = Configs.HudScale() * 15;
-        int x = Engine.window.getWidth() - size - Configs.Margin();
+        int x = Engine.window.largura() - size - Configs.Margin();
         int y = Configs.Margin();
         Font font = FontHandler.font(FontHandler.Game,Configs.HudScale() * 8);
         String value = "" + player.getLevel();
