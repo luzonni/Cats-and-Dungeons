@@ -1,10 +1,8 @@
 package com.retronova.game.objects.entities.utilities;
 
 import com.retronova.engine.Engine;
-import com.retronova.engine.sound.Sound;
-import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.game.map.arena.Roleta;
+import com.retronova.game.map.arena.AberturaDoBau;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Player;
 import studio.retrozoni.sheeter.SpriteSheet;
@@ -15,7 +13,8 @@ import java.awt.image.BufferedImage;
 
 /**
  * O bau que cai de um bicho morto: sempre da elite, e dos comuns conforme os
- * pontos de sorte do gato (Player.chanceDeBau). Abri-lo roda a Roleta.
+ * pontos de sorte do gato (Player.chanceDeBau). Abri-lo mostra o baú abrindo na
+ * tela (AberturaDoBau); antes rodava um caça-níquel (Roleta), hoje desligado.
  *
  * E UM OBJETO NO CHAO, e nao uma tela que abre sozinha, de proposito: interromper
  * o combate no meio de uma horda, sem o jogador pedir, e o jeito mais facil de
@@ -37,9 +36,10 @@ public class Bau extends Utility {
         // Meio segundo de carencia: se ele cair em cima do gato, nao abre no mesmo
         // quadro em que apareceu, antes de o jogador ver que ele existe.
         if (idade > 30 && player != null && player.colliding(this)) {
-            Sound.play(Sounds.Coin);
+            // Sem som aqui: a tela do baú toca o dela ao aparecer (BauAparece), e a
+            // moeda por cima virava dois sons no mesmo instante.
             disappear();
-            Engine.pause(new Roleta());
+            Engine.pause(new AberturaDoBau());
         }
     }
 

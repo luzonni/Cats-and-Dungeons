@@ -86,9 +86,11 @@ public class Engine implements Runnable {
             // Telas por cima, para conferir o desenho delas sem jogar ate elas.
             // Abrem depois de um segundo de partida: a chegada do gato fecha
             // qualquer pausa aberta antes dela.
-            if (Boolean.getBoolean("cd.roleta")) {
+            // -Dcd.roleta abre o baú também: a roleta foi desligada (ver Roleta), e
+            // roteiros antigos de bancada continuam caindo na tela que a substituiu.
+            if (Boolean.getBoolean("cd.bau") || Boolean.getBoolean("cd.roleta")) {
                 com.retronova.game.Game.depoisDeUmSegundo =
-                        () -> pause(new com.retronova.game.map.arena.Roleta());
+                        () -> pause(new com.retronova.game.map.arena.AberturaDoBau());
             } else if (Boolean.getBoolean("cd.fim")) {
                 // A tela de fim de corrida, com os numeros de 1s de partida.
                 com.retronova.game.Game.depoisDeUmSegundo = () -> {

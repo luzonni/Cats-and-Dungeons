@@ -50,7 +50,7 @@ um ano parado. Sem engine: tudo em Java puro.
 **Modo bancada** (propriedades de sistema lidas em `Engine`, `Waves`, `Meta`,
 `Conquistas`): `-Dcd.bench=true` pula os menus e entra numa corrida no espaço de
 save 0, que não grava nada. Com ele: `-Dcd.gato=0|1|2` (Muffin, Azrael, Finn),
-`-Dcd.minuto=N`, `-Dcd.roleta`, `-Dcd.fim`, `-Dcd.nivel`, `-Dcd.rei=1..4`,
+`-Dcd.minuto=N`, `-Dcd.bau` (abre um baú; `-Dcd.roleta` é apelido), `-Dcd.fim`, `-Dcd.nivel`, `-Dcd.rei=1..4`,
 `-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`, `-Dcd.buffs` (um nível de cada buff). `-Dcd.perf=true` liga o
 medidor de quadros. O `build.gradle.kts` só repassa `-Pvitrine` ao `run`; **como
 o time passa os `-Dcd.*` (IDE, `java -jar`?) está a confirmar**.
@@ -98,7 +98,7 @@ src/main/java/com/retronova/
 │   ├── items/                 armas da mão, consumíveis, Elemento, Classe,
 │   │                          Melhoria/Melhorias, Passiva, ArmaExtra, Evolucao
 │   ├── map/                   GameMap, Camera, Atmosfera (luz e sombra)
-│   │   ├── arena/             Arena, Waves, Gerador, cartas, roleta, música
+│   │   ├── arena/             Arena, Waves, Gerador, cartas, baú, música
 │   │   └── room/              Room (antecâmara)
 │   └── objects/               entidades, tiles, partículas, física
 │       └── entities/          Player, Bonus, Arsenal, ArmasDeArea, Furia,
@@ -144,7 +144,7 @@ docs/                          esta pasta
 | Subir de nível (3 cartas) | `game/map/arena/SubirDeNivel.java` |
 | Status do gato (tecla E) | `menus/TelaDeStatus.java` |
 | Portal de nascimento (cor e brilho) | `game/map/arena/Chegada.java` (`Tom`) |
-| Baú → caça-níquel | `utilities/Bau.java` → `game/map/arena/Roleta.java` |
+| Baú: abertura na tela e recompensa | `utilities/Bau.java` → `game/map/arena/AberturaDoBau.java`; regra em `game/items/RecompensaDoBau.java`; arte em `tools/GenBau.java`, sons em `tools/GenSonsDoBau.java`. A `Roleta` (caça-níquel) está desligada |
 | Escolha de elemento (aos 45 s), com a cerimônia | `game/map/arena/EscolhaDeElemento.java`; áudio em `tools/GenSonsDaEscolha.java` |
 | Save | `game/Corrida.java`, `menus/Saves.java` |
 | Entre corridas | `game/Meta.java`, `menus/GameOver.java` (loja de upgrades) |
@@ -205,7 +205,7 @@ docs/                          esta pasta
 | XP, nível e cartas de nível (reroll 2, skip 1) | ✅ | |
 | Passivas (7 gerais + 1 exclusiva por gato) | ✅ | |
 | Armas extras (6) e evoluções (6) | ✅ | |
-| Baú e caça-níquel | ✅ | |
+| Baú (abre na tela, sem roleta) | ✅ | o caça-níquel antigo foi desligado e ficou no código (`Roleta`, `@Deprecated`) |
 | Fúria Felina | ✅ | |
 | Quebráveis (cura ou XP grande) | ✅ | |
 | Escolha de elemento | ✅ | oferecida aos 45 s de corrida, com cerimônia própria (antecipação, cartas em destaque, trilha, confirmação); áudio sintetizado provisório no timbre |
@@ -266,7 +266,7 @@ usava, e só fora da corrida sem fim). Estão no histórico do git.
 | Elite | `Enemy.tornarElite`, chance em `Waves.prepararBicho` |
 | Vida, dano e golpe de cada inimigo | construtor de cada classe em `enemies/` |
 | Cartas de nível (pesos, raridade, valores) | `SubirDeNivel.sortearMao` |
-| Prêmios do caça-níquel | `Roleta.sortear` |
+| Prêmios do baú | `RecompensaDoBau` (`CHANCE_DE_ARMA = 0.40`, `CHANCE_DE_ARMA_SEM_NENHUMA = 0.55`) |
 | Valores das passivas | `Passiva.java` (`porNivel`) |
 | Números das habilidades exclusivas | `Bonus.java` (Retaliação, Explosão Arcana, Voleio) |
 | Armas extras | `Arsenal.java`, `ArmasDeArea.java` |
@@ -285,6 +285,7 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Hover e foco: velocidade, crescimento, brilho, setas | `Realce` (`VELOCIDADE`, `CRESCIMENTO`, `CAMADAS`, `ALFA`, `CLAREAMENTO`, `SETA`, `AFASTAMENTO`, `RESPIRO`, `PERIODO_DO_RESPIRO`) |
 | Cartas: entrada, fechamento, tamanho, vão | `MaoDeCartas` (`ENTRADA = 26`, `FECHAR = 18`, `LARGURA`, `ALTURA`, `VAO`); o hover vem do `Realce` |
 | Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `DESCIDA_DAS_CARTAS = 10`, `TITULO_ACIMA_DAS_CARTAS = 30`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |
+| Abertura do baú | `AberturaDoBau` (`ENTRADA = 12`, `TREMOR = 18`, `TAMPA = 9`, `SUBIDA = 16`, `ATE_COLETAR = 8` ticks; `PREVIA_POR_ICONE = 9`, `PREVIA_VISIVEIS = 7`, `ZOOM_DO_BAU = 5`, `TREMOR_MAXIMO = 2`, `FAISCAS = 46`, `VIDA_DA_FAISCA = 34`, `CLARAO = 8`, `FORCA_DO_CLARAO = 110`, `VEU = 228`); níveis do áudio em `GenSonsDoBau` |
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
 | Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
 | Fim de corrida: painéis, loja e avisos | `GameOver` (`PAINEL_W = 150`, `PAINEL_H = 154`, `LOJA_TOPO = 33`, `LINHA_H = 18`, `LINHA_PASSO = 21`, `CABECALHO = 13`, `FUNDO` preto, `AVISO_FICA = 240` ticks) |

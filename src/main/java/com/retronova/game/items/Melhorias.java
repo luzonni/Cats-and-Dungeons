@@ -86,7 +86,7 @@ public class Melhorias {
     }
 
     /**
-     * Sorteia melhorias para o caça-níquel do baú (ver Roleta).
+     * Sorteia melhorias para o baú (ver RecompensaDoBau).
      *
      * DUAS ROLAGENS SEPARADAS, como no Hades: primeiro o grau, depois qual
      * melhoria. Elas são independentes de propósito — se o grau dependesse da

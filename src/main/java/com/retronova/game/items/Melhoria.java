@@ -3,10 +3,10 @@ package com.retronova.game.items;
 import com.retronova.game.objects.entities.Modifiers;
 
 /**
- * UMA MELHORIA DE ATRIBUTO COM RARIDADE — o premio de carta do caça-niquel do
- * bau (ver Roleta). Nasceu como a carta de fim de sala, quando a corrida era
- * dividida em salas; a sala saiu e a melhoria ficou, como um dos premios da
- * maquina.
+ * UMA MELHORIA DE ATRIBUTO COM RARIDADE — um dos premios do bau (ver
+ * RecompensaDoBau e AberturaDoBau; antes, do caca-niquel Roleta). Nasceu como a
+ * carta de fim de sala, quando a corrida era dividida em salas; a sala saiu e a
+ * melhoria ficou, como um dos premios do bau.
  *
  * ---------------------------------------------------------------------------
  * POR QUE AS CARTAS DEIXARAM DE SER ARMAS

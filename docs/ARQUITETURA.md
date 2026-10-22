@@ -48,7 +48,7 @@ atual e à divisão clara entre motor e jogo.
 | `engine.sound` | Música, efeitos e curva de volume (`Ganho`) |
 | `com.retronova.game` | A partida (`Game`), o save (`Corrida`), a progressão entre corridas (`Meta`), as conquistas e as estatísticas da corrida |
 | `game.map` | Mapa base, câmera, luz e sombra (`Atmosfera`) |
-| `game.map.arena` | Arena, horda (`Waves`), campo gerado (`Gerador`), cartas de nível, caça-níquel, escolha de elemento, música da arena |
+| `game.map.arena` | Arena, horda (`Waves`), campo gerado (`Gerador`), cartas de nível, abertura do baú, escolha de elemento, música da arena |
 | `game.map.room` | Salas desenhadas à mão (hoje só a antecâmara) |
 | `game.objects` | Entidades, tiles, partículas, física e o golpe com aviso (`Investida`) |
 | `game.objects.entities` | Gato, inimigos, mobília, projéteis e as mecânicas de corrida: `Bonus`, `Arsenal`, `ArmasDeArea`, `Furia`, `Habilidades` |
@@ -72,7 +72,7 @@ interpolado**. Tick e quadro são **prazos absolutos** no relógio
   período recomeça a contagem dali, em vez de mandar quadros em rajada.
 - O desenho **interpola** entre o tick anterior e o atual (`Engine.alpha()`), e
   as animações de corpo usam `Game.tempoVisual()`. Com uma tela por cima (pausa,
-  cartas, roleta), a interpolação é desligada, senão o mundo parado tremeria.
+  cartas, baú), a interpolação é desligada, senão o mundo parado tremeria.
 - **Regra para código novo:** nada que conta tempo ou avança animação pode morar
   em `render`. O portal dos bichos avançava o quadro dentro do desenho e girava
   mais rápido a 240 FPS (corrigido em `2b4bdca`).
@@ -262,7 +262,7 @@ sozinhas (`Item.alvoAlcancavel`). O jogador anda, dá dash e escolhe cartas.
 | Fonte | Quando | Dá |
 |---|---|---|
 | `SubirDeNivel` | a cada nível | 3 cartas: atributo com raridade, passiva, próximo nível de arma extra |
-| `Roleta` | ao abrir um baú (elite ou sorte) | arma extra nova ou nível dela, carta de `Melhoria`, ou a evolução pronta |
+| `AberturaDoBau` (regra em `RecompensaDoBau`) | ao abrir um baú (elite ou sorte) | arma extra nova ou nível dela, carta de `Melhoria`, ou a evolução pronta |
 | `EscolhaDeElemento` | aos 45 s | o elemento da corrida, que transmuta a arma da mão |
 | `Furia` | a cada 30 abates | onda de choque automática |
 | `Quebravel` | caixotes e barris perto do gato | cura ou XP grande |
@@ -463,6 +463,69 @@ o que o level up não tem, e a hierarquia se lê antes do texto:
   impacto curto e forte da confirmação, com a volta rápida ao jogo.
 - **Ajuste fino:** tudo no topo de `EscolhaDeElemento` (ver `docs/CONTEXTO.md` §8).
 
+### Baú: a abertura (`AberturaDoBau`) e a recompensa (`RecompensaDoBau`)
+
+O baú cai de elite (sempre) e de bicho comum conforme a sorte
+(`Player.chanceDeBau`). Encostar nele abre `game/map/arena/AberturaDoBau.java`, que
+**pausa a corrida**, como a roleta pausava.
+
+**A regra e a tela são separadas.** `game/items/RecompensaDoBau.java` é só a regra:
+
+1. evolução pronta (arma no máximo + passiva parceira) sai garantida;
+2. senão, arma extra em 40% das vezes (55% sem nenhuma), no próximo nível;
+3. senão, uma `Melhoria` com o grau sorteado à parte (`Melhorias.oferecer`),
+   promovido pela sorte de `Modifiers.Fortune`.
+
+`abrir` decide o prêmio e conta o baú nas estatísticas, `entregar` aplica e grava a
+corrida, e `possiveis` lista o pool para a prévia. A tela só desenha o que já saiu:
+trocá-la de novo não mexe no que o jogador recebe (`RecompensaDoBau` tem testes).
+
+**O fluxo**, em ticks de 60 Hz desenhados com `Engine.alpha()` (igual a 60 e a 240+ FPS):
+
+| Fase | Ticks | O que acontece |
+|---|---|---|
+| Entrada | `ENTRADA = 12` | o véu sobe, o baú cai no meio e toca o som de chegada |
+| Espera | até o clique | o baú respira; embaixo, a prévia do que pode sair passa ícone a ícone, cada um com a moldura e o tic do seu grau |
+| Tremor | `TREMOR = 18` | o baú chacoalha e acende na cor do grau do prêmio |
+| Tampa | `TAMPA = 9` | três quadros da tampa, clarão curto e faíscas |
+| Subida | `SUBIDA = 16` | o cartão do prêmio sobe de dentro e assenta |
+| Pronto | `ATE_COLETAR = 8` | o clique coleta, entrega e devolve o jogo |
+
+Clique, Enter, Espaço ou A abrem e coletam; um clique no tremor, na tampa ou na
+subida pula para o cartão, sem pular o som nem a recompensa.
+
+**Duração medida no modo foto**, da tela aberta até liberar a coleta:
+
+| | Sem pular | Pulando |
+|---|---|---|
+| Roleta (antes) | 3,28 s | 1,18 s |
+| Baú | 1,28 s (clique de abrir aos 0,25 s; 0,85 s depois dele) | 0,65 s |
+
+**Por que um baú:** a roleta decidia o prêmio antes de girar e os três rolos sempre
+paravam nele, uma máquina de sorte que nunca errava. O baú conta a mesma coisa sem
+fingir sorte. Referências:
+- a cor do baú do Enter the Gungeon, que diz a qualidade antes de abrir (aqui, o
+  brilho do tremor);
+- a reclamação contra a animação longa do baú do Vampire Survivors, que ganhou
+  atalho para pular e versão curta;
+- "Juice it or lose it" (GDC 2012) e "The art of screenshake" para o tremor curto,
+  as faíscas e o som em cada passo.
+
+**Arte e som:**
+- `bau_abrindo.png` sai de `tools/GenBau.java`: os quadros CC0 do 0x72, remapeados
+  para a paleta do baú do chão;
+- os sons `bau_*.wav` saem de `tools/GenSonsDoBau.java`: chegada, tremor e tampa,
+  mais uma revelação e um tic de prévia por grau (comum, raro, épico, lendário), em
+  escada como o brilho;
+- na prévia, cada melhoria ganha um grau sorteado com as chances de verdade
+  (`Raridade.sortear`), então a fileira mostra o quanto cada grau é comum. É só
+  amostra: o prêmio já foi decidido ao abrir;
+- arma nova soa épica, nível de arma soa raro e evolução soa lendária
+  (`Premio.grau`).
+
+**A roleta foi desligada, não removida:** `Roleta` está `@Deprecated` e sem nenhuma
+porta de entrada; `-Dcd.roleta` abre o baú.
+
 ### Status do gato (`TelaDeStatus`) e o inventário desativado
 
 O **E** (Y no controle) abre `menus/TelaDeStatus.java`, uma `TelaDeMenu` que
@@ -474,7 +537,7 @@ colunas:
 |---|---|
 | Cat | vida, dano, golpes por segundo, velocidade, alcance, redução de dano, sorte, crítico, área, regeneração, ganho de XP, alcance do ímã |
 | Weapons + Run | arma da mão, elemento com dano e cadência, armas extras com nível ou evolução; nível e XP, abates, ouro, trocas e pulos de carta |
-| Buffs | passivas com nível e efeito acumulado, cartas de atributo e melhorias da roleta com quantidade e total |
+| Buffs | passivas com nível e efeito acumulado, cartas de atributo e melhorias do baú com quantidade e total |
 
 Os valores são os **finais**, lidos dos mesmos getters que o gameplay usa
 (`Entity.getDamage`, `Bonus.critico`, `Melhorias.somaDosPontos`...). O bônus de
@@ -548,7 +611,7 @@ não começou):
 
 1. ao entrar no campo (`Game.changeMap`);
 2. depois de cada escolha que não pode ser re-sorteada: elemento, carta de nível,
-   prêmio do caça-níquel — gravar antes faria do save uma máquina de re-rolar;
+   prêmio do baú — gravar antes faria do save uma máquina de re-rolar;
 3. a cada minuto do relógio (`Arena.gravarACadaMinuto`), contra fechamento à força;
 4. ao sair pela pausa ("Main Menu" ou "Quit").
 
