@@ -241,3 +241,20 @@ Correções de regressões de vídeo. Ver [ARQUITETURA.md](../ARQUITETURA.md#la�
 - **VSync ignorado detectado em 20 quadros** (`b6b8ae9`), e não em um segundo:
   ao abrir o jogo, no F11 e ao ligar o VSync, o primeiro segundo rodava solto a
   400+ FPS. Em Settings, limites acima da taxa do monitor vêm marcados com "!".
+
+## A escolha de elemento como o momento da corrida (2026-10-22, branch `feat/destaque-do-elemento`)
+
+A escolha de elemento acontece uma vez por corrida e decide a corrida inteira, mas
+era apresentada como um level up. Agora ela tem uma cerimônia própria. Ver
+[ARQUITETURA.md](../ARQUITETURA.md#escolha-de-elemento-a-cerimônia-escolhadeelemento).
+
+- **Antecipação** (`2e93761`): o jogo congela, o HUD some, um véu e uma vinheta
+  fecham a tela, dois anéis saem do gato e o título cresce. As cartas sobem uma a
+  uma. Enter, Espaço, Esc, clique, A ou B pulam a cerimônia, sem escolher.
+- **Cartas em destaque** (`bb132ca`): moldura dupla na cor do elemento, pedras nos
+  cantos, brilho, aura e partículas no jeito de cada elemento; o foco intensifica.
+- **Áudio** (`a5ac699`, `2b61806`): stinger, trilha própria em cruzamento com a da
+  arena, som do elemento no foco e confirmação por elemento. Sons sintetizados no
+  projeto (`tools/GenSonsDaEscolha.java`), provisórios no timbre.
+- **Confirmação** (`5071c2d`): clarão na cor do elemento, explosão de partículas e
+  a carta voando até o gato, onde a arma se transmuta; volta ao jogo em 0,6 s.

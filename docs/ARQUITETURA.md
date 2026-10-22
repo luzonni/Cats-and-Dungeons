@@ -367,6 +367,39 @@ Uso: criar com a lista de cartas; a cada tick chamar `posicionar(y, s)` e
 quando `fechou()` for verdadeiro. `pronta()` diz se a mão já aceita entrada, para
 os controles em volta dela (Reroll, Skip).
 
+**Variante de destaque**, para escolhas raras, sem um segundo componente de
+carta. Os padrões são os das cartas de buff:
+
+- `comEntrada(atraso, virada, subida)`: ritmo de entrada próprio;
+  `pularEntrada()` termina a entrada sem escolher nada.
+- `comEnfeite(Enfeite)`: desenha por trás da carta (aura, partículas) e por cima
+  (moldura especial), já com a entrada, o realce e o voo aplicados.
+- `comSons(aoFocar, aoEscolher)`: o som do foco e o da escolha, por carta.
+- `comFechamento(ticks, destino, inicioDoVoo)`: a escolhida voa até um ponto.
+- `comVao(vao)`: mais espaço entre as cartas, para um enfeite largo.
+
+### Escolha de elemento: a cerimônia (`EscolhaDeElemento`)
+
+Acontece **uma vez por corrida**, aos 45 s, e decide o elemento da corrida
+inteira; o level up acontece dezenas de vezes e muda um número. Por isso ela tem
+o que o level up não tem, e a hierarquia se lê antes do texto:
+
+| Etapa | Duração | O que acontece |
+|---|---|---|
+| Antecipação | 42 ticks (0,7 s) | O jogo congela e o HUD some. Um véu e uma vinheta fecham a tela, um clarão e dois anéis saem do gato, e o título (maior que o do level up) cresce com um halo nas cores dos três elementos oferecidos. Toca o stinger, e a trilha da arena desce enquanto a da escolha sobe. |
+| Revelação | ~36 ticks | As cartas sobem desde baixo e viram, uma a cada 9 ticks (as de buff: 5). |
+| Escolha | livre | Cartas em destaque: moldura dupla na cor do elemento, pedras nos cantos, brilho diagonal, aura que respira e partículas no jeito de cada elemento. O foco usa o `Realce` e, por cima dele, a aura cresce, as partículas triplicam e toca o som do elemento. |
+| Confirmação | 36 ticks (0,6 s) | Toca a confirmação do elemento. Clarão na cor dele, explosão de partículas, as outras cartas somem, e a escolhida voa até o gato com rastro. Na chegada, a arma se transmuta. A trilha da escolha desce e a da arena volta. |
+
+- **Pular:** Enter, Espaço, Esc, clique (esquerdo ou direito), A ou B pulam a
+  antecipação e a revelação direto para as cartas. A tecla é consumida e não
+  escolhe nada.
+- **Referências:** a cor de borda por raridade das bênçãos do Hades (a hierarquia
+  lida antes do nome); a cerimônia com música própria e pulável do baú de evolução
+  do Vampire Survivors; "Juice it or lose it" (Jonasson e Purho, GDC 2012) para o
+  impacto curto e forte da confirmação, com a volta rápida ao jogo.
+- **Ajuste fino:** tudo no topo de `EscolhaDeElemento` (ver `docs/CONTEXTO.md` §8).
+
 ### Status do gato (`TelaDeStatus`) e o inventário desativado
 
 O **E** (Y no controle) abre `menus/TelaDeStatus.java`, uma `TelaDeMenu` que
@@ -422,7 +455,8 @@ Ao escolher o elemento, a arma da mão vira a variante elemental em **18 ticks
 A arma anima a partir da pose da mão (`Item.renderNaMao`; o `Bow` o sobrescreve
 para manter a mira), então o primeiro e o último quadro são a arma em mãos, sem
 salto. O gato anda, ataca e usa habilidades o tempo todo. Antes eram 136 ticks
-(2,3 s) com a arma parada acima da cabeça.
+(2,3 s) com a arma parada acima da cabeça. Ela não toca mais o arpejo de
+conquista: o som de recompensa é a confirmação do elemento, na escolha.
 
 ## Persistência
 
@@ -526,6 +560,21 @@ como Service Provider do `javax.sound`: como o TinySound usa
 `AudioSystem.getAudioInputStream()` por baixo, basta a biblioteca estar no
 classpath. Nenhuma linha de código de áudio mudou por causa do formato — só a
 extensão do arquivo.
+
+A exceção é `escolha_elemento.wav`, a trilha da escolha de elemento. Ela é gerada
+por código (`tools/GenSonsDaEscolha.java`), e o gerador não tem codificador
+Vorbis. Uma música cujo nome em `Musics` já traz a extensão é carregada como está.
+
+**Desvanecimento** (`Sound.desvanecer`): leva uma faixa a um volume em N ticks,
+numa rampa em cosseno, e pode pará-la no fim. Quem anda a rampa é o
+`Engine.tick`, e não a tela que pediu. Por isso a volta da trilha da arena termina
+mesmo depois que a escolha de elemento fechou. Um `Sound.volume` pedido no meio
+de uma rampa muda o destino dela, em vez de pular o volume.
+
+**Sons da escolha de elemento** (gerados, ver `tools/GenSonsDaEscolha.java`):
+`elemento_revelacao` (stinger da entrada), `escolha_elemento` (trilha em loop de
+16 s) e `elemento_fogo/gelo/agua/terra/ar` (confirmação de cada elemento). No
+foco de cada carta toca o `hit_*` do elemento, o mesmo do golpe.
 
 ### A régua de loudness
 

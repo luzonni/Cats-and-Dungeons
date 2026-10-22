@@ -145,7 +145,7 @@ docs/                          esta pasta
 | Status do gato (tecla E) | `menus/TelaDeStatus.java` |
 | Portal de nascimento (cor e brilho) | `game/map/arena/Chegada.java` (`Tom`) |
 | Baú → caça-níquel | `utilities/Bau.java` → `game/map/arena/Roleta.java` |
-| Escolha de elemento (aos 45 s) | `game/map/arena/EscolhaDeElemento.java` |
+| Escolha de elemento (aos 45 s), com a cerimônia | `game/map/arena/EscolhaDeElemento.java`; áudio em `tools/GenSonsDaEscolha.java` |
 | Save | `game/Corrida.java`, `menus/Saves.java` |
 | Entre corridas | `game/Meta.java`, `menus/GameOver.java` (loja de upgrades) |
 | Vitória | `menus/Vitoria.java`, `Game.vencer` |
@@ -206,7 +206,7 @@ docs/                          esta pasta
 | Baú e caça-níquel | ✅ | |
 | Fúria Felina | ✅ | |
 | Quebráveis (cura ou XP grande) | ✅ | |
-| Escolha de elemento | ✅ | oferecida aos 45 s de corrida |
+| Escolha de elemento | ✅ | oferecida aos 45 s de corrida, com cerimônia própria (antecipação, cartas em destaque, trilha, confirmação); áudio sintetizado provisório no timbre |
 | Ouro e upgrades permanentes | ✅ | |
 | Conquistas (10) | ✅ | |
 | Controle de Xbox, foco por D-pad | ✅ | só Windows |
@@ -282,6 +282,7 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Transição das telas de menu | `TelaDeMenu` (`TRANSICAO = 9` ticks, `SUBIDA = 6` px) |
 | Hover e foco: velocidade, crescimento, brilho, setas | `Realce` (`VELOCIDADE`, `CRESCIMENTO`, `CAMADAS`, `ALFA`, `CLAREAMENTO`, `SETA`, `AFASTAMENTO`, `RESPIRO`, `PERIODO_DO_RESPIRO`) |
 | Cartas: entrada, fechamento, tamanho, vão | `MaoDeCartas` (`ENTRADA = 26`, `FECHAR = 18`, `LARGURA`, `ALTURA`, `VAO`); o hover vem do `Realce` |
+| Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
 | Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
