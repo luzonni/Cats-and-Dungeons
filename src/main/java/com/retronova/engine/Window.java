@@ -53,6 +53,12 @@ public class Window extends Canvas {
      */
     private void initFrame() {
         this.frame = new JFrame(this.name);
+        // PRETO DESDE O PRIMEIRO INSTANTE. Até o primeiro quadro, o sistema pinta a
+        // janela com o fundo dela, que por padrão é claro: era o clarão antes de a
+        // abertura começar. Preto, a abertura sai do preto sem emenda.
+        setBackground(Color.BLACK);
+        frame.getContentPane().setBackground(Color.BLACK);
+        frame.setBackground(Color.BLACK);
         frame.add(this);
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
