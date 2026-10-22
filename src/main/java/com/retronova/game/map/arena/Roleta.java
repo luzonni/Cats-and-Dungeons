@@ -29,6 +29,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * DESLIGADA: SUBSTITUÍDA PELO BAÚ (AberturaDoBau). Nada no jogo abre esta tela —
+ * o baú do chão (Bau) e a bancada (-Dcd.roleta) levam ao baú. Fica no código,
+ * isolada, para consulta, e pode ser removida. O prêmio e a entrega moram em
+ * RecompensaDoBau, que o baú também usa.
+ *
+ * Por que saiu: o prêmio era decidido antes do giro e os três rolos sempre
+ * paravam nele — uma máquina de sorte que nunca erra. O baú conta a mesma coisa
+ * sem fingir sorte, e em menos tempo (ver AberturaDoBau).
+ *
+ * ---------------------------------------------------------------------------
  * O bau abre num caca-niquel: tres rolos verticais que param um de cada vez, ate
  * o mesmo premio cair nos tres.
  *
@@ -42,6 +52,7 @@ import java.util.List;
  * sao so a cerimonia. Nao ha escolha — a escolha mora nas cartas de nivel
  * (SubirDeNivel); aqui o jogador so torce.
  */
+@Deprecated
 public class Roleta implements Activity {
 
     /** Simbolos em cada rolo. A vencedora fica perto do fim, para o giro ser longo. */
