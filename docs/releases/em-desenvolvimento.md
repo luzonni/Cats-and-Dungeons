@@ -258,3 +258,20 @@ era apresentada como um level up. Agora ela tem uma cerimônia própria. Ver
   projeto (`tools/GenSonsDaEscolha.java`), provisórios no timbre.
 - **Confirmação** (`5071c2d`): clarão na cor do elemento, explosão de partículas e
   a carta voando até o gato, onde a arma se transmuta; volta ao jogo em 0,6 s.
+
+## O baú no lugar da roleta (2026-10-22, branch `feat/bau-no-lugar-da-roleta`)
+
+Ver [ARQUITETURA.md](../ARQUITETURA.md#baú-a-abertura-aberturadobau-e-a-recompensa-recompensadobau).
+
+- **Regra separada da tela** (`374b5c0`). O sorteio, a evolução garantida, a
+  contagem e a entrega saíram da `Roleta` para `RecompensaDoBau`, com testes. Nada
+  mudou no que o baú dá.
+- **Arte e som** (`e7f2b90`). Quadros do baú abrindo, remapeados do DungeonTileset
+  II (CC0) para a paleta do baú do jogo, e sons sintetizados: tremor, tampa e uma
+  revelação por grau.
+- **O baú abre na tela** (`b304cde`). Clique para abrir; o baú treme e acende na cor
+  do grau, a tampa abre e o prêmio sobe de dentro. Enquanto espera, uma prévia
+  mostra o que pode sair. Pular leva direto ao prêmio. Da tela aberta até poder
+  coletar: 1,28 s (0,65 s pulando), contra 3,28 s (1,18 s) da roleta.
+- **Roleta desligada** (`c9dec42`). O baú do chão abre a tela nova; a `Roleta` ficou
+  no código, sem porta de entrada, e `-Dcd.roleta` abre o baú.

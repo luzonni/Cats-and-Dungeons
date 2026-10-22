@@ -29,7 +29,7 @@ Não têm publicação no Maven Central.
 |---|---|---|---|
 | [Kenney — Tiny Dungeon](https://kenney.nl/assets/tiny-dungeon) | Kenney | CC0 1.0 | Base dos tiles e props do cenário da antecâmara |
 | [Simple Torch Animation 16x16](https://opengameart.org/content/simple-torch-animation-16x16) | Natural_Privateer | CC0 1.0 | Quadros de chama da tocha e do braseiro |
-| [16x16 DungeonTileset II](https://0x72.itch.io/dungeontileset-ii) | 0x72 (recoloração de GrafxKid) | CC0 1.0 | Base das armas |
+| [16x16 DungeonTileset II](https://0x72.itch.io/dungeontileset-ii) | 0x72 (recoloração de GrafxKid) | CC0 1.0 | Base das armas e dos quadros do baú abrindo (`tools/GenBau.java`, remapeados para a paleta do baú do jogo) |
 | [16x16 Assorted RPG Icons](https://opengameart.org/content/16x16-assorted-rpg-icons) | Shade | CC0 1.0 | Desenhos das espadas e as rampas elementais |
 | [16x16 Weapon RPG Icons](https://opengameart.org/content/16x16-weapon-rpg-icons) | Shade | CC0 1.0 | Desenhos dos machados e cajados |
 | [16x16 weapon sprites free](https://opengameart.org/content/16x16-weapon-sprites-free) | Bennyboi_hack | CC0 1.0 | Desenhos dos arcos |
@@ -219,6 +219,17 @@ emenda, o que importa numa faixa de dois minutos que repete.
 
 Todas foram reencodadas em Vorbis a 128 kbps, 44,1 kHz, só para casar com o
 formato das outras.
+
+### Arte e áudio do baú
+
+- **Quadros do baú abrindo** (`sprites/objects/furniture/bau_abrindo.png`): os três
+  quadros `chest_full_open_anim` do 16x16 DungeonTileset II (0x72, CC0 1.0),
+  remapeados cor a cor para a paleta do baú do jogo por `tools/GenBau.java`. Os
+  originais estão em `tools/assets/fonte/dtii`.
+- **Sons** (`bau_tremor`, `bau_abre`, `bau_premio_comum/raro/epico/lendario`):
+  sintetizados por `tools/GenSonsDoBau.java`, sem arquivo de fora e sem licença a
+  conferir. São provisórios no timbre: uma versão definitiva feita por quem faz
+  som entra trocando os arquivos.
 
 ### Áudio próprio da escolha de elemento
 

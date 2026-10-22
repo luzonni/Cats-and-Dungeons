@@ -62,7 +62,7 @@ antecâmara pede.
 
 ## Armas extras
 
-Ganhas no **caça-níquel do baú** (`Roleta`) e subidas pelas cartas de nível.
+Ganhas no **baú** (`AberturaDoBau`, regra em `RecompensaDoBau`) e subidas pelas cartas de nível.
 Atacam por conta própria, ao mesmo tempo que a arma da mão, como no Vampire
 Survivors. Cada uma vai até o **nível 5**. A lógica fica em `Arsenal` (orbitais)
 e `ArmasDeArea` (área).

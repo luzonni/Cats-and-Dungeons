@@ -5,7 +5,7 @@ paths:
   - "src/main/java/com/retronova/game/interfaces/**"
   - "src/main/java/com/retronova/game/map/arena/SubirDeNivel.java"
   - "src/main/java/com/retronova/game/map/arena/EscolhaDeElemento.java"
-  - "src/main/java/com/retronova/game/map/arena/Roleta.java"
+  - "src/main/java/com/retronova/game/map/arena/AberturaDoBau.java"
   - "src/main/java/com/retronova/engine/graphics/**"
   - "tools/GenUiAssets.java"
 ---

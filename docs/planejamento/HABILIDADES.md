@@ -20,7 +20,7 @@ refeita por outro caminho, no modelo do **Vampire Survivors** e não do Hades:
 | O que o plano previa | O que existe hoje |
 |---|---|
 | Cartas de fim de sala (`Recompensa`) | A corrida não tem salas. A `Recompensa` ficou sem uso e foi removida em 2026-10-21 (está no histórico do git) |
-| Melhorias de atributo empilháveis | Continuam (`Melhoria`), mas só saem do caça-níquel do baú (`Roleta`) |
+| Melhorias de atributo empilháveis | Continuam (`Melhoria`), mas só saem do baú (`RecompensaDoBau`) |
 | Encaixes que descartam (ATAQUE, DASH, PULSO, REVIDE) | Não existem. As cartas de nível (`SubirDeNivel`) oferecem atributo com raridade, passiva ou nível de arma extra, e tudo empilha |
 | Vocabulário de status | Não existe. `EFFECT_POISON` e `EFFECT_REGENERATION` seguem sem uso |
 | Ganchos `aoDarDash`, `aoAcertar`, `aoLevarDano`... | Não há sistema de ganchos. A Retaliação chama `Habilidades.aoLevarDano` direto do `Player.strike` |
@@ -137,7 +137,7 @@ Levantado, não presumir de novo:
 
 | Peça | Onde | Estado |
 |---|---|---|
-| `Melhoria` (7 atributos + `Modifiers`) | `game/items/Melhoria.java` | pronto; hoje sai só do caça-níquel |
+| `Melhoria` (7 atributos + `Modifiers`) | `game/items/Melhoria.java` | pronto; hoje sai só do baú |
 | `Melhorias` (livro-caixa, `oferecer`, serialização) | `game/items/Melhorias.java` | pronto; também guarda pontos de nível, armas extras, passivas e evoluções |
 | `Recompensa` (tela de 3 cartas) | removida em 2026-10-21 | estava sem uso na corrida sem fim; está no histórico do git |
 | `SubirDeNivel` (3 cartas por nível, reroll e skip) | `game/map/arena/SubirDeNivel.java` | pronto — nasceu depois deste plano |

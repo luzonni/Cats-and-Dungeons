@@ -76,7 +76,7 @@
   parágrafo. Siga o estilo ao comentar código novo.
 - **Feedback de gameplay rápido e sem bloquear.** Efeito de acerto, morte, dano ou
   nível dura frações de segundo e nunca trava a entrada; o que cobre a tela fica nas
-  bordas. Telas que pausam (cartas, roleta, vitória) aceitam teclado, mouse e controle.
+  bordas. Telas que pausam (cartas, baú, vitória) aceitam teclado, mouse e controle.
 - **Interface:** regras em `.claude/rules/interface.md` (carregado ao mexer em menus, HUD e cartas).
 - **Pixel art em escala inteira.** Use `Configs.GameScale()` / `Configs.UiScale()`;
   ao ampliar imagens, fator inteiro e `VALUE_INTERPOLATION_NEAREST_NEIGHBOR`.

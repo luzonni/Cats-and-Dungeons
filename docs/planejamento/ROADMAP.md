@@ -97,7 +97,7 @@ campo `money` do `Player` (gravado no save).
 
 - [x] XP e nível com cartas sorteadas (atributo com raridade, passiva, arma),
       com reroll e skip
-- [x] Baú com caça-níquel
+- [x] Baú com caça-níquel (substituído pela abertura do baú na tela)
 - [x] Seis armas extras e seis evoluções
 - [x] Passivas e uma habilidade exclusiva por gato
 - [x] Ouro e upgrades permanentes entre corridas
@@ -190,5 +190,5 @@ Ainda sem implementação, mantidas como referência criativa.
 ### Máquina de gacha
 
 Ideia registrada, sem detalhamento. Duas coisas no jogo se aproximam dela: o
-caça-níquel do baú (`Roleta`) e a máquina de chiclete (`GumMachine`), que existe
+caça-níquel do baú (`Roleta`, desligado: o baú agora só abre) e a máquina de chiclete (`GumMachine`), que existe
 no código mas não está em nenhum mapa.
