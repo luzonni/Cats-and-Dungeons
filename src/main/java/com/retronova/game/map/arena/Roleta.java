@@ -12,9 +12,9 @@ import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
-import com.retronova.game.items.ArmaExtra;
 import com.retronova.game.items.Melhorias;
-import com.retronova.game.objects.entities.Modifiers;
+import com.retronova.game.items.RecompensaDoBau;
+import com.retronova.game.items.RecompensaDoBau.Premio;
 import com.retronova.game.objects.entities.Player;
 
 import java.awt.AlphaComposite;
@@ -96,107 +96,19 @@ public class Roleta implements Activity {
 
     public Roleta() {
         Player gato = Game.getPlayer();
-        double promocao = gato.hasModifier(Modifiers.Fortune)
-                ? gato.valueModifier(Modifiers.Fortune) : 0;
         Melhorias melhorias = gato.getMelhorias();
-        // EVOLUCAO PRONTA SAI GARANTIDA: arma no maximo + passiva parceira fazem o
-        // proximo bau ser dela. E o jackpot de verdade da corrida.
-        com.retronova.game.items.Evolucao evolucao = melhorias.evolucaoDisponivel();
-        this.vencedor = evolucao != null
-                ? new Premio(null, evolucao.arma(), EVOLUCAO)
-                : sortear(melhorias, promocao);
-        com.retronova.game.Estatisticas.bauAberto();
+        double promocao = RecompensaDoBau.promocao(gato);
+        // O premio, a evolucao garantida e a contagem vem de RecompensaDoBau: aqui
+        // so mora o desenho. Os outros simbolos dos rolos sao sorteios de enfeite.
+        this.vencedor = RecompensaDoBau.abrir(gato);
         for (int r = 0; r < 3; r++) {
             List<Premio> rolo = new ArrayList<>();
             for (int i = 0; i < SIMBOLOS; i++) {
-                rolo.add(i == VENCEDORA ? vencedor : sortear(melhorias, promocao));
+                rolo.add(i == VENCEDORA ? vencedor : RecompensaDoBau.sortear(melhorias, promocao));
             }
             rolos.add(rolo);
         }
         Sound.play(Sounds.Coin);
-    }
-
-    // ------------------------------------------------------------ premios
-
-    /**
-     * O que a maquina pode dar: uma melhoria de atributo (carta) ou uma arma extra
-     * (ou o proximo nivel dela). Uma das duas e nula.
-     */
-    /** nivelNovo especial: o premio e a EVOLUCAO da arma. */
-    private static final int EVOLUCAO = -1;
-
-    private record Premio(Melhorias.Carta carta, ArmaExtra arma, int nivelNovo) {
-
-        Color cor() {
-            if (nivelNovo == EVOLUCAO) {
-                return new Color(0xFFD23F);
-            }
-            return arma != null ? arma.cor() : carta.raridade().cor();
-        }
-
-        String rotulo() {
-            if (nivelNovo == EVOLUCAO) {
-                return "EVOLUTION!";
-            }
-            if (arma == null) {
-                return carta.raridade().rotulo();
-            }
-            return nivelNovo <= 1 ? "NEW WEAPON" : "WEAPON LV " + nivelNovo;
-        }
-
-        String nome() {
-            if (nivelNovo == EVOLUCAO) {
-                return com.retronova.game.items.Evolucao.de(arma).nome();
-            }
-            return arma != null ? arma.nome() : carta.melhoria().nome();
-        }
-
-        String efeito() {
-            if (nivelNovo == EVOLUCAO) {
-                return com.retronova.game.items.Evolucao.de(arma).descricao();
-            }
-            return arma != null ? arma.efeito(nivelNovo) : carta.efeito();
-        }
-
-        String icone() {
-            return arma != null ? arma.name() : carta.melhoria().name();
-        }
-
-        /**
-         * A cor do SIMBOLO, que e do assunto e nao da raridade: um coracao comum
-         * cinza sobre a fita creme sumia. A raridade vai numa faixa ao lado.
-         */
-        Color corDoIcone() {
-            if (arma != null) {
-                return arma.cor();
-            }
-            return switch (carta.melhoria()) {
-                case VIGOR -> new Color(0xE0334F);
-                case FURIA -> new Color(0xF07A22);
-                case COURO -> new Color(0x5B8BD6);
-                case PATAS -> new Color(0x2FB7D6);
-                case FRENESI -> new Color(0xB45CF0);
-                case INSTINTO -> new Color(0x3DBF52);
-                case PRESAGIO -> new Color(0xE0A800);
-            };
-        }
-    }
-
-    /**
-     * Arma ou carta. Arma sai em ~40% das vezes — 55% enquanto o gato nao tem
-     * nenhuma, para a primeira chegar cedo e a corrida ganhar forma.
-     */
-    private static Premio sortear(Melhorias melhorias, double promocao) {
-        List<ArmaExtra> armas = melhorias.armasDisponiveis();
-        boolean temAlguma = java.util.Arrays.stream(ArmaExtra.values())
-                .anyMatch(a -> melhorias.nivel(a) > 0);
-        double chanceArma = temAlguma ? 0.40 : 0.55;   // seis armas na mesa: mais chance de sair uma
-        if (!armas.isEmpty() && Engine.RAND.nextDouble() < chanceArma) {
-            ArmaExtra a = armas.get(Engine.RAND.nextInt(armas.size()));
-            return new Premio(null, a, melhorias.nivel(a) + 1);
-        }
-        Melhorias.Carta c = melhorias.oferecer(1, promocao).getFirst();
-        return new Premio(c, null, 0);
     }
 
     // ------------------------------------------------------------ medidas
@@ -280,16 +192,7 @@ public class Roleta implements Activity {
             Sound.play(Sounds.Coin);
         }
         if (confirmar && desdeARevelacao > ESPERA_DO_CARTAO + 12) {
-            Player gato = Game.getPlayer();
-            if (vencedor.nivelNovo() == EVOLUCAO) {
-                gato.getMelhorias().evoluir(com.retronova.game.items.Evolucao.de(vencedor.arma()));
-            } else if (vencedor.arma() != null) {
-                gato.getMelhorias().subirArma(vencedor.arma());
-            } else {
-                gato.getMelhorias().aplicar(gato, vencedor.carta().melhoria(),
-                        vencedor.carta().raridade());
-            }
-            com.retronova.game.Corrida.gravar();
+            RecompensaDoBau.entregar(Game.getPlayer(), vencedor);
             Sound.play(Sounds.Button);
             Engine.pause(null);
         }
