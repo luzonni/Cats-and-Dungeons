@@ -299,3 +299,6 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
   conquista e título passam para as cores da Palette e para o painel padrão dos
   menus (contorno, corpo fundo e cabeçalho como a aba ativa). Eram cabeçalhos
   ciano e amarelo, corpo em gradiente roxo e cantos arredondados.
+- **Status fora da arena não derruba mais o jogo** (`ac7b298`). Abrir o Status (E)
+  na sala do começo fechava o jogo: o bloco Run pedia a wave de uma arena que não
+  existe. Agora a linha de abates só aparece dentro da arena.
