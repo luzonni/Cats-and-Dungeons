@@ -41,12 +41,11 @@ public class Configs {
         DEFAULTS.put("vsync", true);
         DEFAULTS.put("fullscreen", false);
         DEFAULTS.put("SCALE", 4);
-        // Interface em POR CENTO do tamanho padrão e margem em pixels de
+        // Tamanhos em PASSOS a partir do padrão da resolução e margem em pixels de
         // referência (ver EscalaDaInterface): o mesmo valor, a mesma proporção em
         // qualquer resolução.
-        DEFAULTS.put("UI_PCT", EscalaDaInterface.PCT_PADRAO);
-        DEFAULTS.put("HUD_PCT", EscalaDaInterface.PCT_PADRAO);
-        DEFAULTS.put("MENUS_PCT", EscalaDaInterface.PCT_PADRAO);
+        DEFAULTS.put("HUD_TAMANHO", EscalaDaInterface.TAMANHO_PADRAO);
+        DEFAULTS.put("MENU_TAMANHO", EscalaDaInterface.TAMANHO_PADRAO);
         DEFAULTS.put("MARGEM_REF", EscalaDaInterface.MARGEM_PADRAO);
         DEFAULTS.put("ZOOM", 80);         // por cento; ver Zoom(). Era 130: perto demais para ler a horda chegando
         DEFAULTS.put("NeatGraphics", true);   // barato desde que o OpenGL liga de verdade (Main)
@@ -116,7 +115,7 @@ public class Configs {
         if (objeto.get("AUDIOVERSION") == null) {
             migrarAudio();
         }
-        if (objeto.get("UI_PCT") == null) {
+        if (objeto.get("MENU_TAMANHO") == null) {
             migrarEscala(objeto);
         }
         if (objeto.get("resW") == null) {
@@ -373,8 +372,8 @@ public class Configs {
     //
     // TODA A CONTA MORA EM EscalaDaInterface; aqui só as preferências gravadas e as
     // leituras de todo quadro, que passam por lá com o tamanho da imagem do jogo.
-    // As preferências são em POR CENTO do tamanho padrão (50 a 200, passos de 25)
-    // e a margem em pixels de referência: o mesmo valor dá a mesma proporção em
+    // Os tamanhos são PASSOS a partir do padrão da resolução (0 = Default), e a
+    // margem em pixels de referência: o mesmo valor dá a mesma proporção em
     // qualquer resolução.
 
     private static int largura() {
@@ -385,17 +384,25 @@ public class Configs {
         return Engine.window == null ? 0 : Engine.window.altura();
     }
 
-    /** Pixels de tela por pixel de arte dos menus (Interface% × Menus%). */
+    /** Pixels de tela por pixel de arte dos menus: o padrão da tela mais o passo escolhido. */
     public static int UiScale() {
-        return EscalaDaInterface.menus(largura(), altura(), InterfacePct(), MenusPct());
+        return faixaDosMenus().escala(MenuTamanho());
     }
 
     /**
-     * Pixels de tela por pixel de arte do HUD EM VIGOR (Interface% × HUD%), no teto
-     * do que cabe sem sobrepor peças (ver LayoutDoHud).
+     * Pixels de tela por pixel de arte do HUD EM VIGOR: o padrão da tela mais o
+     * passo escolhido, no teto do que cabe sem sobrepor peças (ver LayoutDoHud).
      */
     public static int HudScale() {
-        return Math.min(EscalaDaInterface.hud(largura(), altura(), InterfacePct(), HudPct()), HudScaleMaxima());
+        return faixaDoHud().escala(HudTamanho());
+    }
+
+    public static EscalaDaInterface.Faixa faixaDoHud() {
+        return EscalaDaInterface.faixaDoHud(largura(), altura(), HudScaleMaxima());
+    }
+
+    public static EscalaDaInterface.Faixa faixaDosMenus() {
+        return EscalaDaInterface.faixaDosMenus(largura(), altura());
     }
 
     /** A maior escala do HUD que cabe na imagem do jogo agora. */
@@ -411,35 +418,26 @@ public class Configs {
         return EscalaDaInterface.margem(largura(), altura(), MargemDeReferencia());
     }
 
-    /** Tamanho geral da interface, em por cento: multiplica menus e HUD. */
-    public static int InterfacePct() {
-        return EscalaDaInterface.pctValido(inteiro("UI_PCT"));
+    /** O passo gravado do HUD (0 = Default); a tela pode comportar menos, ver faixaDoHud. */
+    public static int HudTamanho() {
+        return EscalaDaInterface.tamanhoValido(inteiro("HUD_TAMANHO"));
     }
 
-    public static int HudPct() {
-        return EscalaDaInterface.pctValido(inteiro("HUD_PCT"));
-    }
-
-    public static int MenusPct() {
-        return EscalaDaInterface.pctValido(inteiro("MENUS_PCT"));
+    public static int MenuTamanho() {
+        return EscalaDaInterface.tamanhoValido(inteiro("MENU_TAMANHO"));
     }
 
     public static int MargemDeReferencia() {
         return Math.max(0, Math.min(EscalaDaInterface.MARGEM_MAXIMA, inteiro("MARGEM_REF")));
     }
 
-    public static void setInterfacePct(int pct) {
-        VALUES.put("UI_PCT", EscalaDaInterface.pctValido(pct));
+    public static void setHudTamanho(int tamanho) {
+        VALUES.put("HUD_TAMANHO", EscalaDaInterface.tamanhoValido(tamanho));
         update();
     }
 
-    public static void setHudPct(int pct) {
-        VALUES.put("HUD_PCT", EscalaDaInterface.pctValido(pct));
-        update();
-    }
-
-    public static void setMenusPct(int pct) {
-        VALUES.put("MENUS_PCT", EscalaDaInterface.pctValido(pct));
+    public static void setMenuTamanho(int tamanho) {
+        VALUES.put("MENU_TAMANHO", EscalaDaInterface.tamanhoValido(tamanho));
         update();
     }
 
@@ -450,59 +448,35 @@ public class Configs {
 
     /** Volta tamanhos e margem da interface ao padrão. */
     public static void restaurarInterface() {
-        VALUES.put("UI_PCT", EscalaDaInterface.PCT_PADRAO);
-        VALUES.put("HUD_PCT", EscalaDaInterface.PCT_PADRAO);
-        VALUES.put("MENUS_PCT", EscalaDaInterface.PCT_PADRAO);
+        VALUES.put("HUD_TAMANHO", EscalaDaInterface.TAMANHO_PADRAO);
+        VALUES.put("MENU_TAMANHO", EscalaDaInterface.TAMANHO_PADRAO);
         VALUES.put("MARGEM_REF", EscalaDaInterface.MARGEM_PADRAO);
         update();
     }
 
     /**
-     * Os maiores por cento que ainda cabem na tela atual, para o máximo de cada
-     * slider: o HUD no teto do layout, os menus no teto dos menus.
-     */
-    public static int HudPctMaximo() {
-        int w = largura(), h = altura(), ui = InterfacePct();
-        return EscalaDaInterface.maiorPctQueCabe(p -> EscalaDaInterface.hud(w, h, ui, p), HudScaleMaxima());
-    }
-
-    public static int MenusPctMaximo() {
-        int w = largura(), h = altura(), ui = InterfacePct();
-        return EscalaDaInterface.maiorPctQueCabe(
-                p -> (int) Math.round(EscalaDaInterface.fator(w, h) * EscalaDaInterface.MENUS_POR_REFERENCIA
-                        * ui / 100.0 * p / 100.0),
-                EscalaDaInterface.tetoDosMenus(w, h));
-    }
-
-    public static int InterfacePctMaximo() {
-        int w = largura(), h = altura(), hud = HudPct(), menus = MenusPct();
-        int peloHud = EscalaDaInterface.maiorPctQueCabe(p -> EscalaDaInterface.hud(w, h, p, hud), HudScaleMaxima());
-        int pelosMenus = EscalaDaInterface.maiorPctQueCabe(
-                p -> (int) Math.round(EscalaDaInterface.fator(w, h) * EscalaDaInterface.MENUS_POR_REFERENCIA
-                        * p / 100.0 * menus / 100.0),
-                EscalaDaInterface.tetoDosMenus(w, h));
-        return Math.min(peloHud, pelosMenus);
-    }
-
-    /**
-     * Arquivo de antes da escala em por cento: traduz as preferências antigas.
+     * Arquivo de antes dos passos de tamanho: traduz as preferências antigas pela
+     * escala que davam em 1080p, onde o padrão do HUD e dos menus é 3.
      *
-     *   - GUI size "3" vira Menus 150%; os outros, 100% (o tamanho padrão novo);
-     *   - HUD size, o multiplicador cru, vira por cento do padrão de 1080p (3);
+     *   - Interface/HUD/Menus em por cento (a primeira versão desta escala): o
+     *     passo é a escala de 1080p menos 3;
+     *   - HUD size, o multiplicador cru, vira passo a partir de 3;
+     *   - GUI size vira Default: o "3" automático era o tamanho grande demais;
      *   - Margin em pixels vira pixels de referência (um terço, o fator de 1080p).
      */
     private static void migrarEscala(JSONObject antigo) {
-        Object gui = antigo.get("UISCALE");
-        if (gui instanceof Number n) {
-            int t = n.intValue();
-            VALUES.put("MENUS_PCT", t == 3 ? 150 : 100);
+        double ui = antigo.get("UI_PCT") instanceof Number n ? n.doubleValue() / 100 : 1;
+        if (antigo.get("HUD_PCT") instanceof Number n) {
+            VALUES.put("HUD_TAMANHO", EscalaDaInterface.tamanhoValido(
+                    (int) Math.round(3 * ui * n.doubleValue() / 100) - 3));
+        } else if (antigo.get("HUDSCALE") instanceof Number n) {
+            VALUES.put("HUD_TAMANHO", EscalaDaInterface.tamanhoValido(n.intValue() - 3));
         }
-        Object hud = antigo.get("HUDSCALE");
-        if (hud instanceof Number n) {
-            VALUES.put("HUD_PCT", EscalaDaInterface.pctValido((int) Math.round(n.intValue() / 3.0 * 100)));
+        if (antigo.get("MENUS_PCT") instanceof Number n) {
+            VALUES.put("MENU_TAMANHO", EscalaDaInterface.tamanhoValido((int) Math.round(
+                    3 * EscalaDaInterface.MENUS_POR_REFERENCIA * ui * n.doubleValue() / 100) - 3));
         }
-        Object margem = antigo.get("MARGIN");
-        if (margem instanceof Number n) {
+        if (antigo.get("MARGEM_REF") == null && antigo.get("MARGIN") instanceof Number n) {
             VALUES.put("MARGEM_REF", Math.max(0, Math.min(EscalaDaInterface.MARGEM_MAXIMA,
                     (int) Math.round(n.intValue() / 3.0))));
         }

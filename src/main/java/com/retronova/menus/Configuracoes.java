@@ -241,26 +241,27 @@ public class Configuracoes extends TelaDeMenu {
                 .desc("Track for normal arenas. Plays here so you can compare. Boss fights have their own."));
 
         List<OptionRow> ui = new ArrayList<>();
-        // TAMANHOS EM POR CENTO DO PADRÃO, e o mesmo valor dá a mesma proporção em
-        // qualquer resolução (ver EscalaDaInterface). O máximo de cada um é o que
-        // cabe na tela atual: acima disso a escolha não teria efeito.
-        int min = EscalaDaInterface.PCT_MINIMO, max = EscalaDaInterface.PCT_MAXIMO, passo = EscalaDaInterface.PASSO;
-        ui.add(OptionRow.stepper("Interface size", Configs::InterfacePct, Configs::setInterfacePct, min, max, passo, "%")
-                .ate(Configs::InterfacePctMaximo)
-                .desc("Overall size of menus and HUD together. Scales with your resolution: 100% takes the same "
-                        + "share of the screen at any resolution."));
-        ui.add(OptionRow.stepper("Menu size", Configs::MenusPct, Configs::setMenusPct, min, max, passo, "%")
-                .ate(Configs::MenusPctMaximo)
-                .desc("Size of menus, buttons and cards, on top of Interface size."));
-        ui.add(OptionRow.stepper("HUD size", Configs::HudPct, Configs::setHudPct, min, max, passo, "%")
-                .ate(Configs::HudPctMaximo)
-                .desc("Size of the in-game HUD: life, clock, XP, hotbar. Capped at what fits this resolution, "
-                        + "so nothing overlaps."));
+        // TAMANHOS EM PASSOS A PARTIR DO PADRÃO DA RESOLUÇÃO, um bloco por tamanho
+        // que se vê e só os que cabem na tela atual (ver EscalaDaInterface). Eram
+        // por cento de 50 a 200: com a escala inteira, a maioria dos passos não
+        // mudava nada.
+        ui.add(OptionRow.tamanho("Menu size",
+                () -> Configs.faixaDosMenus().efetivo(Configs.MenuTamanho()), Configs::setMenuTamanho,
+                () -> Configs.faixaDosMenus().menor(), () -> Configs.faixaDosMenus().maior(),
+                EscalaDaInterface::nome)
+                .desc("Size of menus, buttons and cards. Default follows your resolution; "
+                        + "only the sizes that fit this screen are offered."));
+        ui.add(OptionRow.tamanho("HUD size",
+                () -> Configs.faixaDoHud().efetivo(Configs.HudTamanho()), Configs::setHudTamanho,
+                () -> Configs.faixaDoHud().menor(), () -> Configs.faixaDoHud().maior(),
+                EscalaDaInterface::nome)
+                .desc("Size of the in-game HUD: life, clock, XP, hotbar. Default follows your resolution; "
+                        + "larger sizes appear only when they fit without overlapping."));
         ui.add(OptionRow.stepper("Margin", Configs::MargemDeReferencia, Configs::setMargemDeReferencia,
                 0, EscalaDaInterface.MARGEM_MAXIMA, 1)
                 .desc("Distance between the interface and the edges of the screen. Scales with your resolution."));
         ui.add(OptionRow.acao("Reset interface", Configs::restaurarInterface)
-                .desc("Back to 100% sizes and the default margin."));
+                .desc("Back to the default sizes and margin for your resolution."));
         ui.add(OptionRow.toggle("Show hitboxes",
                 () -> Configs.Hitboxes() ? 1 : 0, v -> Debugging.mostrarHitBox(v != 0))
                 .desc("Draws the collision box over entities. Same as pressing F4 in game."));

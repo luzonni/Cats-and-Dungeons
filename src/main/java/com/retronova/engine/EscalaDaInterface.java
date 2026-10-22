@@ -26,30 +26,35 @@ package com.retronova.engine;
  *
  *     fator = min(largura / 640, altura / 360)
  *
- * E a escala de cada camada é SEMPRE MULTIPLICATIVA e calculada dos valores de
- * referência, nunca do valor já escalado (que acumularia arredondamento):
+ * O PADRÃO de cada camada sai do fator, e o jogador escolhe PASSOS INTEIROS a
+ * partir dele, só entre os que cabem na tela:
  *
- *     HUD    = arredonda(fator × Interface% × HUD%)
- *     menus  = arredonda(fator × 1,125 × Interface% × Menus%)
- *     margem = arredonda(fator × margem de referência)
+ *     HUD padrão    = arredonda(fator)          (720p = 2, 1080p = 3, 4K = 6)
+ *     menus padrão  = arredonda(fator × 1,125)  (720p = 2, 1080p = 3)
+ *     escala        = padrão + passo, entre o mínimo legível e o teto da tela
+ *     margem        = arredonda(fator × margem de referência)
  *
- * ESCALA INTEIRA, ARREDONDADA UMA VEZ, NO FIM. Pixel art ampliada por fator
- * quebrado borra (suavizada) ou fica com pixels de larguras diferentes (vizinho
- * mais próximo); por isso a escala é inteira, como no Minecraft e em todo jogo de
- * pixel art que escala a interface. Arredondar só o produto final — e não o fator
- * e depois cada preferência — mantém a proporção o mais perto possível do pedido:
- * as resoluções 16:9 comuns são múltiplas de 640x360 (720p = 2, 1080p = 3, 1440p
- * = 4, 4K = 6), e entre elas 100% ocupa EXATAMENTE a mesma fração da tela. Fora
- * delas (1366x768, 1600x900) o erro é o de arredondar para o pixel inteiro.
+ * ESCALA INTEIRA. Pixel art ampliada por fator quebrado borra (suavizada) ou fica
+ * com pixels de larguras diferentes (vizinho mais próximo); por isso a escala é
+ * inteira, como no Minecraft (GUI Scale 1, 2, 3, 4 e Auto). As resoluções 16:9
+ * comuns são múltiplas de 640x360, e entre elas o padrão ocupa EXATAMENTE a mesma
+ * fração da tela.
+ *
+ * PASSOS, E NÃO POR CENTO. A primeira versão pedia 50% a 200% e multiplicava três
+ * camadas (Interface × Menus × HUD). Com escala inteira, em 1080p os menus têm uns
+ * quatro tamanhos de verdade, e a barra oferecia trinta e uma posições: a maioria
+ * não mudava nada, o "200%" aparecia cheio com a escala presa no teto, e acima de
+ * 100% não fazia sentido, já que o padrão já vem da resolução. Agora cada passo é
+ * um tamanho que se vê, e só existem os que cabem: em 720p os menus vão do padrão
+ * ao Larger; em 4K, o HUD vai de Smaller a Largest.
  *
  * O DPI NÃO ENTRA, de propósito, e é a mesma decisão da correção de resolução:
  * Main fixa sun.java2d.uiScale=1 (JEP 263), a resolução é em pixels da tela, e a
  * interface acompanha a resolução — numa tela de DPI alto, a mesma fração.
  *
  * Os menus usam 1,125 unidade por unidade do HUD: o tamanho que o jogador
- * escolheu como o certo (o "75%" da primeira versão, que usava 1,5) virou o 100%.
- * Com 1,5 os menus ficavam grandes demais no padrão (5 em 1080p); com 1,125 são 2
- * em 720p e 3 em 1080p.
+ * escolheu nos testes (2 em 720p e 3 em 1080p). Com 1,5 os menus ficavam grandes
+ * demais no padrão (5 em 1080p).
  */
 public final class EscalaDaInterface {
 
@@ -62,10 +67,17 @@ public final class EscalaDaInterface {
     public static final int REF_LARGURA = 640, REF_ALTURA = 360;
     /** Unidades dos menus por unidade do HUD (os menus são compostos em 568x320). */
     public static final double MENUS_POR_REFERENCIA = 1.125;
-    /** A menor tela que um menu precisa, em pixels de arte: nenhum menu passa dela. */
-    public static final int MENU_MINIMO_LARGURA = 320, MENU_MINIMO_ALTURA = 180;
-    /** Faixa e passo das preferências de tamanho, em por cento. */
-    public static final int PCT_MINIMO = 50, PCT_MAXIMO = 200, PASSO = 5, PCT_PADRAO = 100;
+    /**
+     * A menor tela que um menu precisa, em pixels de arte: nenhum menu passa dela.
+     * 384x224 e não 320x180: o painel de Settings, com título, abas, Resume e
+     * rodapé, ocupa uns 222 de altura, e com 180 a escala 5 numa janela de 1080p
+     * punha o Resume em cima do rodapé.
+     */
+    public static final int MENU_MINIMO_LARGURA = 384, MENU_MINIMO_ALTURA = 224;
+    /** Passos de tamanho a partir do padrão: dois menores e três maiores, no máximo. */
+    public static final int TAMANHO_MINIMO = -2, TAMANHO_MAXIMO = 3, TAMANHO_PADRAO = 0;
+    /** O nome de cada passo na tela, de TAMANHO_MINIMO a TAMANHO_MAXIMO. */
+    private static final String[] NOMES = {"Smaller", "Small", "Default", "Large", "Larger", "Largest"};
     /** Margem das bordas em pixels de referência: padrão e máximo. */
     public static final int MARGEM_PADRAO = 7, MARGEM_MAXIMA = 16;
     /**
@@ -77,6 +89,34 @@ public final class EscalaDaInterface {
 
     // ----------------------------------------------------------- fórmulas
 
+    /**
+     * As escalas possíveis de uma camada nesta tela: o padrão, o piso (legível) e o
+     * teto (o que cabe). O passo escolhido vira escala por aqui, e a barra de
+     * Settings mostra de {@link #menor()} a {@link #maior()}.
+     */
+    public record Faixa(int padrao, int piso, int teto) {
+
+        /** O menor passo que ainda muda alguma coisa nesta tela. */
+        public int menor() {
+            return Math.min(maior(), Math.max(TAMANHO_MINIMO, piso - padrao));
+        }
+
+        /** O maior passo que ainda cabe nesta tela. */
+        public int maior() {
+            return Math.max(TAMANHO_MINIMO, Math.min(TAMANHO_MAXIMO, teto - padrao));
+        }
+
+        /** O passo gravado, trazido para o que esta tela comporta. */
+        public int efetivo(int tamanho) {
+            return Math.max(menor(), Math.min(maior(), tamanho));
+        }
+
+        /** Pixels de tela por pixel de arte para este passo. */
+        public int escala(int tamanho) {
+            return Math.max(piso, Math.min(teto, padrao + efetivo(tamanho)));
+        }
+    }
+
     /** Quanto a resolução de referência cabe na imagem do jogo, pelo lado mais apertado. */
     public static double fator(int largura, int altura) {
         if (largura <= 0 || altura <= 0) {
@@ -85,22 +125,24 @@ public final class EscalaDaInterface {
         return Math.min(largura / (double) REF_LARGURA, altura / (double) REF_ALTURA);
     }
 
-    /** Pixels de tela por pixel de arte do HUD, antes do teto do layout (ver LayoutDoHud). */
-    public static int hud(int largura, int altura, int interfacePct, int hudPct) {
+    /** As escalas do HUD nesta tela; o teto vem do layout (ver LayoutDoHud.escalaMaxima). */
+    public static Faixa faixaDoHud(int largura, int altura, int tetoDoLayout) {
         double f = fator(largura, altura);
-        int u = (int) Math.round(f * interfacePct / 100.0 * hudPct / 100.0);
-        return Math.max(legivel(f), u);
+        return faixa((int) Math.round(f), legivel(f), Math.max(1, tetoDoLayout));
     }
 
-    /** Pixels de tela por pixel de arte dos menus, já no teto do que cabe na tela. */
-    public static int menus(int largura, int altura, int interfacePct, int menusPct) {
+    /** As escalas dos menus nesta tela; o teto é o menor menu caber inteiro. */
+    public static Faixa faixaDosMenus(int largura, int altura) {
         double f = fator(largura, altura);
-        int u = (int) Math.round(f * MENUS_POR_REFERENCIA * interfacePct / 100.0 * menusPct / 100.0);
-        int teto = tetoDosMenus(largura, altura);
-        return Math.max(Math.min(legivel(f), teto), Math.min(teto, u));
+        return faixa((int) Math.round(f * MENUS_POR_REFERENCIA), legivel(f), tetoDosMenus(largura, altura));
     }
 
-    /** A maior escala de menu que cabe na tela (o menor menu tem 320x180 pixels de arte). */
+    private static Faixa faixa(int padrao, int legivel, int teto) {
+        int piso = Math.min(legivel, teto);
+        return new Faixa(Math.max(piso, Math.min(teto, padrao)), piso, teto);
+    }
+
+    /** A maior escala de menu que cabe na tela (ver MENU_MINIMO_LARGURA). */
     public static int tetoDosMenus(int largura, int altura) {
         if (largura <= 0 || altura <= 0) {
             return 5;
@@ -117,23 +159,13 @@ public final class EscalaDaInterface {
         return fator >= ESCALA_LEGIVEL ? ESCALA_LEGIVEL : 1;
     }
 
-    /**
-     * O maior por cento (em passos de {@link #PASSO}) cuja escala não passa do teto.
-     * É o máximo que o slider deixa escolher: valor acima disso não teria efeito,
-     * ou faria peças se sobreporem.
-     */
-    public static int maiorPctQueCabe(java.util.function.IntUnaryOperator escalaDoPct, int teto) {
-        for (int pct = PCT_MAXIMO; pct > PCT_MINIMO; pct -= PASSO) {
-            if (escalaDoPct.applyAsInt(pct) <= teto) {
-                return pct;
-            }
-        }
-        return PCT_MINIMO;
+    /** Leva um passo gravado à faixa dos passos. */
+    public static int tamanhoValido(int tamanho) {
+        return Math.max(TAMANHO_MINIMO, Math.min(TAMANHO_MAXIMO, tamanho));
     }
 
-    /** Leva um valor gravado à faixa e ao passo das preferências. */
-    public static int pctValido(int pct) {
-        int p = Math.max(PCT_MINIMO, Math.min(PCT_MAXIMO, pct));
-        return Math.round(p / (float) PASSO) * PASSO;
+    /** O nome do passo na tela: Small, Default, Large... */
+    public static String nome(int tamanho) {
+        return NOMES[tamanhoValido(tamanho) - TAMANHO_MINIMO];
     }
 }
