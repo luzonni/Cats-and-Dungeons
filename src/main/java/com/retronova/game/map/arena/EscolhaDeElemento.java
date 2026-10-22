@@ -121,6 +121,12 @@ public class EscolhaDeElemento implements Activity {
     public static final int PERIODO_DO_BRILHO = 150;
     /** Ticks da trilha da arena descendo, da trilha da escolha subindo e da volta. */
     public static final int SAIDA_DA_ARENA = 40, ENTRADA_DA_TRILHA = 70, VOLTA_DA_ARENA = 60;
+    /** Ticks da escolha até a volta ao jogo (36 = 0,6 s), e em que tick a carta começa a voar. */
+    public static final int CONFIRMACAO = 36, INICIO_DO_VOO = 10;
+    /** Ticks do clarão na cor do elemento e a opacidade dele no começo (0-255). */
+    public static final int CLARAO = 14, FORCA_DO_CLARAO = 150;
+    /** Partículas da explosão da carta escolhida. */
+    public static final int FAISCAS_DA_EXPLOSAO = 70;
 
     private final List<Elemento> oferta = new ArrayList<>();
     private final MaoDeCartas cartas;
@@ -153,6 +159,7 @@ public class EscolhaDeElemento implements Activity {
                 .comSons(i -> tocar(oferta.get(i).som()), i -> {
                     tocar(oferta.get(i).somDaEscolha());
                     devolverTrilha();
+                    confirmar(i);
                 });
         acumulado = new double[oferta.size()];
         posicionar();
@@ -249,6 +256,8 @@ public class EscolhaDeElemento implements Activity {
         moverFaiscas();
         if (escolhido < 0) {
             soltarFaiscas();
+        } else {
+            deixarRastro();
         }
         if (cartas.fechou()) {
             Game.getPlayer().escolherElemento(oferta.get(escolhido));
@@ -301,10 +310,91 @@ public class EscolhaDeElemento implements Activity {
         if (t > ANTECIPACAO) {
             // AS PARTÍCULAS POR TRÁS DAS CARTAS: aparecem em volta da silhueta e
             // nunca tapam o texto, que é o que o jogador está lendo para decidir.
-            desenharFaiscas(g, s);
-            cartas.render(g, s);
+            // Depois da escolha, a explosão e o rastro vão NA FRENTE: são o impacto.
+            if (escolhido < 0) {
+                desenharFaiscas(g, s);
+                cartas.render(g, s);
+            } else {
+                cartas.render(g, s);
+                desenharFaiscas(g, s);
+            }
         }
         g.setComposite(original);
+        desenharClarao(g, w, h);
+    }
+
+    // ------------------------------------------------------------ confirmação
+
+    /**
+     * A ESCOLHA RESPONDE FORTE E SAI RÁPIDO.
+     *
+     * Um clarão na cor do elemento cobre a tela, a carta explode em partículas, as
+     * outras somem de vez, e a escolhida encolhe e voa até o gato, deixando rastro
+     * — o elemento "entra" nele, e na chegada a arma se transmuta ali mesmo (ver
+     * Transmutacao), com o anel na mesma cor. O escuro abre enquanto ela voa. Tudo
+     * em 0,6 s: o destaque mora na entrada e na escolha, e uma saída arrastada só
+     * atrasaria a volta à corrida ("Juice it or lose it", Jonasson e Purho: o
+     * impacto é curto e forte, e o controle volta logo).
+     */
+    private void confirmar(int i) {
+        cartas.comFechamento(CONFIRMACAO, gatoNaTela(), INICIO_DO_VOO);
+        clarao = 0;
+        Rectangle r = cartas.caixa(i);
+        int s = MaoDeCartas.escala();
+        java.util.Random rnd = Engine.RAND;
+        Elemento e = oferta.get(i);
+        for (int k = 0; k < FAISCAS_DA_EXPLOSAO; k++) {
+            Faisca f = new Faisca();
+            f.tipo = e;
+            f.explosao = true;
+            double ang = rnd.nextDouble() * 2 * Math.PI;
+            double vel = (1.5 + rnd.nextDouble() * 3.5) * s;
+            f.x = r.getCenterX() + Math.cos(ang) * r.width * 0.3;
+            f.y = r.getCenterY() + Math.sin(ang) * r.height * 0.3;
+            f.vx = Math.cos(ang) * vel;
+            f.vy = Math.sin(ang) * vel;
+            f.total = f.vida = 22 + rnd.nextInt(20);
+            f.cor = rnd.nextInt(3) == 0 ? Color.WHITE : (rnd.nextBoolean() ? e.cor() : clarear(e.cor(), 80));
+            faiscas.add(f);
+        }
+    }
+
+    /** Ticks desde a escolha, para o clarão; -1 antes dela. */
+    private int clarao = -1;
+
+    /** O rastro da carta que voa: partículas paradas que apagam onde ela passou. */
+    private void deixarRastro() {
+        if (clarao >= 0) {
+            clarao++;
+        }
+        if (cartas.fechamento() < INICIO_DO_VOO) {
+            return;
+        }
+        Point2D c = cartas.centroNaTela(escolhido);
+        Elemento e = oferta.get(escolhido);
+        for (int k = 0; k < 3; k++) {
+            Faisca f = new Faisca();
+            f.tipo = e;
+            f.explosao = true;
+            f.x = c.getX() + (Engine.RAND.nextDouble() - 0.5) * 8;
+            f.y = c.getY() + (Engine.RAND.nextDouble() - 0.5) * 8;
+            f.total = f.vida = 14 + Engine.RAND.nextInt(8);
+            f.cor = k == 0 ? Color.WHITE : e.cor();
+            faiscas.add(f);
+        }
+    }
+
+    private void desenharClarao(Graphics2D g, int w, int h) {
+        if (clarao < 0 || escolhido < 0) {
+            return;
+        }
+        double p = (clarao + Engine.alpha()) / CLARAO;
+        if (p >= 1) {
+            return;
+        }
+        Color c = oferta.get(escolhido).cor();
+        g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (FORCA_DO_CLARAO * (1 - p) * (1 - p))));
+        g.fillRect(0, 0, w, h);
     }
 
     // ---------------------------------------------------- carta em destaque
@@ -388,6 +478,8 @@ public class EscolhaDeElemento implements Activity {
         int vida, total;
         Color cor;
         Elemento tipo;
+        /** Da explosão ou do rastro: freia no ar, sem o jeito do elemento. */
+        boolean explosao;
     }
 
     private final List<Faisca> faiscas = new ArrayList<>();
@@ -465,7 +557,10 @@ public class EscolhaDeElemento implements Activity {
                 faiscas.remove(k);
                 continue;
             }
-            switch (f.tipo) {
+            if (f.explosao) {
+                f.vx *= 0.9;                                                 // freia no ar
+                f.vy *= 0.9;
+            } else switch (f.tipo) {
                 case GELO -> f.x += Math.sin(f.vida * 0.15) * 0.3 * s;      // o floco balança
                 case AGUA -> f.x += Math.sin(f.vida * 0.25) * 0.4 * s;      // a bolha ondula
                 case TERRA -> f.vy += 0.03 * s;                              // a poeira pesa
