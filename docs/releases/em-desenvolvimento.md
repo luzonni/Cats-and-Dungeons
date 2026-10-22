@@ -310,3 +310,6 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#escala-da-interface-e-layout-do-hud).
   terminava em "+N more". Agora cada coluna rola pelas setas, pelo D-pad e pela
   roda do mouse, com avisos do que há acima e abaixo. Para testar:
   `-Dcd.buffs` (`7c97ff3`) dá um nível de cada buff na bancada.
+- **Habilidade do gato dentro da ficha** (`c306e9b`). Na seleção de gato, papel e
+  habilidade numa linha só passavam da chapa (o Azrael); agora a habilidade desce
+  para a linha de baixo quando não cabe.
