@@ -432,7 +432,10 @@ public class Game implements Activity {
         // com o menu: o título "Paused" caía em cima do relógio e a hotbar aparecia
         // por baixo do botão Resume. O Hades faz o mesmo ao pausar — fica a cena,
         // sai a interface de combate.
-        if (!(Engine.sobreposta() instanceof com.retronova.menus.shared.TelaDeMenu)) {
+        // A escolha de elemento também: é a cerimônia da corrida, e o HUD por trás
+        // dela disputaria a atenção com as cartas (ver EscolhaDeElemento).
+        if (!(Engine.sobreposta() instanceof com.retronova.menus.shared.TelaDeMenu)
+                && !(Engine.sobreposta() instanceof com.retronova.game.map.arena.EscolhaDeElemento)) {
             hud.render(g);
             if (map instanceof com.retronova.game.map.arena.Arena) {
                 com.retronova.game.objects.entities.Furia.renderBarra(g, Engine.window.largura(), Engine.window.altura());
