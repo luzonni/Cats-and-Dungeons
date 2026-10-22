@@ -50,9 +50,9 @@ public class GenSonsDaAbertura {
         gravar(normalizado(logo(), -20), "abertura_logo");
     }
 
-    /** 4,5 s de ar: ruído escuro que respira e um grave em Lá batendo com Mi. */
+    /** 8 s de ar (a abertura completa dura 7,4 s): ruído escuro que respira e um grave em Lá batendo com Mi. */
     private static double[] vento() {
-        int n = amostras(4.5);
+        int n = amostras(8.0);
         double[] ruido = new double[n];
         for (int i = 0; i < n; i++) {
             ruido[i] = R.nextDouble() * 2 - 1;
@@ -61,7 +61,7 @@ public class GenSonsDaAbertura {
         double[] v = new double[n];
         for (int i = 0; i < n; i++) {
             double t = i / TAXA;
-            double env = Math.min(1, t / 1.2) * Math.min(1, (4.5 - t) / 1.5);
+            double env = Math.min(1, t / 1.2) * Math.min(1, (8.0 - t) / 2.0);
             double sopro = 0.7 + 0.3 * Math.sin(2 * Math.PI * 0.35 * t);
             double grave = 0.35 * Math.sin(2 * Math.PI * 55 * t) + 0.22 * Math.sin(2 * Math.PI * 82.4 * t);
             v[i] = env * (6 * ruido[i] * sopro + grave);
