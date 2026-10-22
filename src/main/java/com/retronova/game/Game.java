@@ -561,10 +561,14 @@ public class Game implements Activity {
             // classes de inimigo.
             if (entity instanceof com.retronova.game.objects.entities.Nascente nascente
                     && nascente.nascendo()) {
+                // A cor diz quem vem: perigo para os bichos, a luz da lua para
+                // quem não ameaça (o vendedor). Ver Chegada.Tom.
                 com.retronova.game.map.arena.Chegada.desenhar(g, portalDosBichos(),
                         (int) entity.getX() + entity.getWidth() / 2,
                         (int) entity.getY() + entity.getHeight() / 2,
-                        nascente.aberturaDoPortal());
+                        nascente.aberturaDoPortal(),
+                        entity instanceof Enemy ? com.retronova.game.map.arena.Chegada.Tom.PERIGO
+                                : com.retronova.game.map.arena.Chegada.Tom.CHEGADA);
             }
             if (entity instanceof com.retronova.game.objects.entities.Nascente chegando
                     && !chegando.corpoVisivel()) {
