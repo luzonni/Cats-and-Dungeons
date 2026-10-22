@@ -349,3 +349,6 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#abertura-do-jogo-abertura).
   que surge em volta da logo; os botões entram um a um. Completa na primeira vez
   (4,4 s), curta depois (1,6 s), pulável com qualquer tecla, clique ou botão. A janela
   aparece em 1,2 s, antes em 5 s.
+- **Abertura mais lenta** (`d0aee84`, `65d5a17`). Depois de jogar: a completa passou
+  de 4,4 s para 7,4 s e a curta de 1,6 s para 2,7 s, com tempo para ler o crédito e
+  ver a luz atravessar a logo. O ar de fundo dura 8 s para acompanhar.

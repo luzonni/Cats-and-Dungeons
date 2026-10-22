@@ -305,11 +305,11 @@ cima da tela inicial, que já espera embaixo na pilha:
 
 | Fase | Completa | Curta | O que acontece |
 |---|---|---|---|
-| Preto | 0,3 s | 0,17 s | o ar da masmorra entra (`abertura_vento`) |
-| Crédito | 1,5 s | — | "a game by" e o nome da equipe sobem do escuro e somem |
-| Logo | 1,5 s | 0,7 s | a lua acende atrás; a logo surge acinzentada e uma frente de luz a deixa branca |
-| Cena | 1,1 s | 0,7 s | a ilustração surge em volta da logo; música e ambiência da tela inicial sobem |
-| Menu | ~0,5 s | ~0,5 s | botões, troféu e versão surgem um a um (`Menu.entrarEmSequencia`) |
+| Preto | 0,5 s | 0,2 s | o ar da masmorra entra (`abertura_vento`) |
+| Crédito | 2,7 s | — | "a game by" e o nome da equipe sobem do escuro e somem |
+| Logo | 2,6 s | 1,5 s | a lua acende atrás; a logo surge acinzentada e uma frente de luz a deixa branca |
+| Cena | 1,6 s | 1,0 s | a ilustração surge em volta da logo; música e ambiência da tela inicial sobem |
+| Menu | ~0,8 s | ~0,8 s | botões, troféu e versão surgem um a um (`Menu.entrarEmSequencia`) |
 
 - **A logo vira a tela inicial.** `tools/GenLogo.java` extrai o letreiro da própria
   ilustração, e a abertura o desenha exatamente onde ele está na arte. Na fase da
@@ -332,8 +332,9 @@ cima da tela inicial, que já espera embaixo na pilha:
   A bancada e o modo foto pulam a abertura; `-Dcd.intro=completa|curta` a força.
 
 **Tempo de abertura**, medido do `main` ao primeiro quadro: 5,0 s antes, sem nada na
-tela até lá; 1,2 s agora, já na abertura. A tela inicial fica pronta em 5,5 s na
-versão completa e em 2,7 s na curta.
+tela até lá; 1,2 s agora, já na abertura. A tela inicial fica pronta, pela soma das fases, em
+uns 8,6 s na versão completa (7,4 s de abertura; a primeira versão, de 4,4 s, passava
+rápido demais para ler o crédito) e uns 3,9 s na curta (2,7 s).
 
 ### Sistema de menus (`TelaDeMenu`)
 
