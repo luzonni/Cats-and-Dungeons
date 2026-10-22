@@ -6,15 +6,30 @@ import kuusisto.tinysound.Music;
 import kuusisto.tinysound.TinySound;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Sound {
 	
 	private static Map<String, kuusisto.tinysound.Sound> sounds;
-	private static Map<String, Music> musics;
+	/** As faixas já carregadas. Enche por uma thread de fundo; ver load. */
+	private static final Map<String, Music> musics = new java.util.concurrent.ConcurrentHashMap<>();
+	/** Faixas pedidas antes de chegarem: tocam no Sound.tick em que ficarem prontas. */
+	private static final Map<Musics, Boolean> pendentes = new java.util.EnumMap<>(Musics.class);
+	private static volatile boolean musicasProntas;
 	/** O que a audicao das opcoes pausou. Ver pausarParaAudicao. */
 	private static final java.util.List<Musics> emAudicao = new java.util.ArrayList<>();
 
+	/**
+	 * Carrega os efeitos agora e as músicas por trás.
+	 *
+	 * AS MÚSICAS EM SEGUNDO PLANO. A TinySound decodifica cada OGG inteiro ao
+	 * carregar: os 10 MB de trilha levavam 3,4 s, e com os efeitos o jogo ficava
+	 * 3,9 s sem janela nenhuma depois do clique. Os efeitos (0,2 s) continuam aqui,
+	 * porque a abertura precisa deles; as músicas carregam numa thread enquanto a
+	 * abertura roda, e a da tela inicial primeiro. Pedir uma faixa que ainda não
+	 * chegou não quebra nada: ela fica pendente e começa quando estiver pronta.
+	 */
 	public static synchronized void load() {
 		TinySound.init();
         if(!TinySound.isInitialized())
@@ -22,8 +37,22 @@ public class Sound {
 		TinySound.setGlobalVolume(1f);
 		if(sounds == null)
 			loadSounds();
-		if(musics == null)
-			loadMusics();
+		if(musics.isEmpty() && !musicasProntas) {
+			Thread t = new Thread(Sound::loadMusics, "Sound-musicas");
+			t.setDaemon(true);
+			t.setPriority(Thread.MIN_PRIORITY);
+			t.start();
+		}
+	}
+
+	/** Todas as músicas já carregaram. */
+	public static boolean musicasProntas() {
+		return musicasProntas;
+	}
+
+	/** Esta faixa já carregou e pode tocar na hora. */
+	public static boolean pronta(Musics music) {
+		return musics.containsKey(music.resource());
 	}
 
 	/**
@@ -84,16 +113,28 @@ public class Sound {
 	 * javax.sound declarado no build. Por isso a única mudança aqui é a
 	 * extensão do arquivo.
 	 */
-	private static synchronized void loadMusics() {
-		musics = new HashMap<>();
-		Musics[] names = Musics.values();
-		for(Musics name : names) {
+	/**
+	 * Carrega as faixas, a da tela inicial e a ambiência primeiro: são as que
+	 * tocam logo depois da abertura. Roda na thread de fundo (ver load), sem segurar
+	 * o lock do Sound — tocar um efeito não espera uma faixa decodificar.
+	 */
+	private static void loadMusics() {
+		List<Musics> ordem = new java.util.ArrayList<>(List.of(Musics.Ambiente, Musics.Menu));
+		for (Musics m : Musics.values()) {
+			if (!ordem.contains(m)) {
+				ordem.add(m);
+			}
+		}
+		for(Musics name : ordem) {
 			// Ogg por padrão; um nome com extensão (a trilha gerada da escolha de
 			// elemento é WAV) é usado como está.
 			String arquivo = name.resource().contains(".") ? name.resource() : name.resource() + ".ogg";
 			Music music = TinySound.loadMusic(Engine.resPath + "audio/" + arquivo, true);
-			musics.put(name.resource(), music);
+			if (music != null) {
+				musics.put(name.resource(), music);
+			}
 		}
+		musicasProntas = true;
 	}
 	
 	/**
@@ -160,10 +201,18 @@ public class Sound {
 	}
 	
 	public static void play(Musics music, boolean loop) {
-		if(!musics.containsKey(music.resource()))
-			throw new RuntimeException("sound not exists");
 		fracoes.put(music, 1d);
-		musics.get(music.resource()).play(loop, ganhoDeMusica());
+		Music m = musics.get(music.resource());
+		if (m == null) {
+			pendente(music, loop);
+			return;
+		}
+		m.play(loop, ganhoDeMusica());
+	}
+
+	/** A faixa ainda carrega: toca quando chegar (ver tick). */
+	private static synchronized void pendente(Musics music, boolean loop) {
+		pendentes.put(music, loop);
 	}
 
 	/**
@@ -174,9 +223,16 @@ public class Sound {
 	 * a troca de mapa em vez de esconder.
 	 */
 	public static void keepPlaying(Musics music, boolean loop) {
-		if(!musics.containsKey(music.resource()))
-			throw new RuntimeException("sound not exists");
 		Music m = musics.get(music.resource());
+		if (m == null) {
+			synchronized (Sound.class) {
+				if (!pendentes.containsKey(music)) {
+					fracoes.put(music, 1d);
+					pendentes.put(music, loop);
+				}
+			}
+			return;
+		}
 		if(!m.playing()) {
 			fracoes.put(music, 1d);
 			m.play(loop, ganhoDeMusica());
@@ -208,13 +264,12 @@ public class Sound {
 	}
 
 	private static void aplicarVolume(Musics music, double fracao) {
-		if(musics == null) {
-			return;
-		}
+		// A FRAÇÃO VALE MESMO PARA FAIXA QUE AINDA CARREGA: uma rampa de entrada
+		// pedida antes de ela chegar faz a faixa começar no ponto certo da rampa.
+		double f = Math.max(0d, Math.min(1d, fracao));
+		fracoes.put(music, f);
 		Music m = musics.get(music.resource());
 		if(m != null) {
-			double f = Math.max(0d, Math.min(1d, fracao));
-			fracoes.put(music, f);
 			m.setVolume(f * ganhoDeMusica());
 		}
 	}
@@ -246,6 +301,17 @@ public class Sound {
 
 	/** Anda todos os desvanecimentos um tick. Chamado pelo Engine. */
 	public static synchronized void tick() {
+		if (!pendentes.isEmpty()) {
+			java.util.Iterator<Map.Entry<Musics, Boolean>> p = pendentes.entrySet().iterator();
+			while (p.hasNext()) {
+				Map.Entry<Musics, Boolean> e = p.next();
+				Music m = musics.get(e.getKey().resource());
+				if (m != null) {
+					m.play(e.getValue(), fracoes.getOrDefault(e.getKey(), 1d) * ganhoDeMusica());
+					p.remove();
+				}
+			}
+		}
 		if (desvanecendo.isEmpty()) {
 			return;
 		}
@@ -269,9 +335,12 @@ public class Sound {
 	}
 
 	public static void play(Musics music, boolean loop, double pan) {
-		if(!musics.containsKey(music.resource()))
-			throw new RuntimeException("sound not exists");
-		musics.get(music.resource()).play(loop, ganhoDeMusica(), pan);
+		Music m = musics.get(music.resource());
+		if (m == null) {
+			pendente(music, loop);      // ainda carrega: chega no centro, sem o pan
+			return;
+		}
+		m.play(loop, ganhoDeMusica(), pan);
 	}
 
 	public static void stop(Sounds sound) {
@@ -372,9 +441,13 @@ public class Sound {
 	}
 
 	public static void stop(Musics music) {
-		if(!musics.containsKey(music.resource()))
-			throw new RuntimeException("sound not exists");
-		musics.get(music.resource()).stop();
+		synchronized (Sound.class) {
+			pendentes.remove(music);
+		}
+		Music m = musics.get(music.resource());
+		if (m != null) {
+			m.stop();
+		}
 	}
 
 	public static void stopAllSounds() {
@@ -386,10 +459,11 @@ public class Sound {
 	}
 
 	public static void stopAllMusics() {
-		if (musics != null) {
-			for(Music music : musics.values()){
-				music.stop();
-			}
+		synchronized (Sound.class) {
+			pendentes.clear();
+		}
+		for(Music music : musics.values()){
+			music.stop();
 		}
 	}
 
