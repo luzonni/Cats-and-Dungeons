@@ -220,6 +220,16 @@ emenda, o que importa numa faixa de dois minutos que repete.
 Todas foram reencodadas em Vorbis a 128 kbps, 44,1 kHz, só para casar com o
 formato das outras.
 
+### Arte e áudio da abertura
+
+- **Logo** (`icons/logo.png`): não vem de fora. É o letreiro extraído da ilustração
+  do título do projeto (`icons/Gato.png`) por `tools/GenLogo.java`; vale a mesma
+  autoria da ilustração.
+- **Sons** (`abertura_vento`, `abertura_credito`, `abertura_logo`): sintetizados por
+  `tools/GenSonsDaAbertura.java`, sem arquivo de fora e sem licença a conferir.
+  São provisórios no timbre.
+- **Fontes:** as do jogo (`game`, `septem`), já em uso; nenhuma nova.
+
 ### Arte e áudio do baú
 
 - **Quadros do baú abrindo** (`sprites/objects/furniture/bau_abrindo.png`): os três

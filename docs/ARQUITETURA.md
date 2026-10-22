@@ -297,6 +297,44 @@ do zumbi. Está no histórico do git, antes da branch `docs/estado-atual`.
 Tudo o que é compartilhado entre telas fica em `menus/shared/`. Uma tela nova
 monta a partir daqui e não redesenha título, rodapé, hover ou carta.
 
+### Abertura do jogo (`Abertura`)
+
+Ao abrir o jogo, a janela aparece preta (`Window` pinta o fundo de preto antes do
+primeiro quadro, sem o clarão do fundo padrão) e `menus/Abertura.java` roda por
+cima da tela inicial, que já espera embaixo na pilha:
+
+| Fase | Completa | Curta | O que acontece |
+|---|---|---|---|
+| Preto | 0,3 s | 0,17 s | o ar da masmorra entra (`abertura_vento`) |
+| Crédito | 1,5 s | — | "a game by" e o nome da equipe sobem do escuro e somem |
+| Logo | 1,5 s | 0,7 s | a lua acende atrás; a logo surge acinzentada e uma frente de luz a deixa branca |
+| Cena | 1,1 s | 0,7 s | a ilustração surge em volta da logo; música e ambiência da tela inicial sobem |
+| Menu | ~0,5 s | ~0,5 s | botões, troféu e versão surgem um a um (`Menu.entrarEmSequencia`) |
+
+- **A logo vira a tela inicial.** `tools/GenLogo.java` extrai o letreiro da própria
+  ilustração, e a abertura o desenha exatamente onde ele está na arte. Na fase da
+  cena, as letras pintadas aparecem por baixo das da abertura, que somem sem pular.
+- **Crédito antes da logo:** é a convenção de apresentar quem fez antes do título
+  (como o "EXOK presents" antes do Celeste). É também a única ordem em que a logo
+  passa direto para a tela inicial.
+- **Completa só na primeira vez** (`Configs.IntroVista`). Depois vem a curta, sem
+  crédito: quem abre o jogo muitas vezes não quer ver o crédito toda vez.
+- **Pulável sempre:** qualquer tecla, clique ou botão do controle
+  (`KeyBoard.apertos`) leva à tela inicial já pronta, com a música entrando.
+- **Aproveita o carregamento:** as músicas carregam por trás (ver Áudio), e a
+  ilustração da tela inicial é escalada numa thread (`Cenario.prepararEmSegundoPlano`).
+- **Sem clarão:** só desvanecimentos e a passagem de luz, de baixo contraste, longe
+  do limite de três flashes por segundo da WCAG 2.3.1.
+- **O crédito da equipe** fica em `Abertura.CREDITO_ACIMA` e `CREDITO_EQUIPE`. Hoje é
+  um marcador (`[team name]`); com `CREDITO_EQUIPE` vazio, a fase do crédito não
+  acontece.
+- **Ajuste fino:** tudo no topo de `Abertura` e de `Menu` (ver `docs/CONTEXTO.md` §8).
+  A bancada e o modo foto pulam a abertura; `-Dcd.intro=completa|curta` a força.
+
+**Tempo de abertura**, medido do `main` ao primeiro quadro: 5,0 s antes, sem nada na
+tela até lá; 1,2 s agora, já na abertura. A tela inicial fica pronta em 5,5 s na
+versão completa e em 2,7 s na curta.
+
 ### Sistema de menus (`TelaDeMenu`)
 
 Toda tela de menu estende `TelaDeMenu`: Menu, Saves, Personagens,
@@ -692,6 +730,15 @@ como Service Provider do `javax.sound`: como o TinySound usa
 `AudioSystem.getAudioInputStream()` por baixo, basta a biblioteca estar no
 classpath. Nenhuma linha de código de áudio mudou por causa do formato — só a
 extensão do arquivo.
+
+**As músicas carregam em segundo plano** (`Sound.load`). Medido, carregar as
+faixas levava 3,4 s dos 3,9 s em que o jogo ficava sem janela depois do clique:
+a TinySound decodifica cada OGG inteiro ao carregar (com `streamFromFile`, para
+um arquivo temporário). Agora os efeitos (0,2 s) carregam antes da janela e as
+músicas numa thread de baixa prioridade, a da tela inicial e a ambiência
+primeiro, enquanto a abertura roda. Pedir uma faixa que ainda não chegou não
+quebra nada: ela fica pendente e o `Sound.tick` a inicia quando estiver pronta, no
+volume e na rampa que pediram; parar uma pendente só desfaz o pedido.
 
 A exceção é `escolha_elemento.wav`, a trilha da escolha de elemento. Ela é gerada
 por código (`tools/GenSonsDaEscolha.java`), e o gerador não tem codificador

@@ -333,3 +333,19 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#baú-a-abertura-aberturadobau-e-a-recompe
   tela, e cada ícone da prévia dá um tic no grau dele (comum grave e seco,
   lendário agudo e brilhante), com a moldura na cor do grau. As melhorias da
   prévia vêm com o grau sorteado pelas chances reais.
+
+## Abertura do jogo (2026-10-22, branch `feat/intro`)
+
+Ver [ARQUITETURA.md](../ARQUITETURA.md#abertura-do-jogo-abertura).
+
+- **Músicas em segundo plano** (`2f53632`). Carregar as faixas levava 3,4 s antes de
+  a janela existir; agora elas carregam por trás, e uma faixa pedida antes de chegar
+  toca quando ficar pronta.
+- **Janela preta antes do primeiro quadro** (`8373da1`), sem o clarão do fundo
+  padrão.
+- **Logo e sons da abertura** (`015d2a7`). O letreiro extraído da ilustração numa
+  camada própria e o ar, o crédito e a logo sintetizados.
+- **A abertura** (`5f7e14a`). Do preto ao crédito da equipe, à logo e à tela inicial,
+  que surge em volta da logo; os botões entram um a um. Completa na primeira vez
+  (4,4 s), curta depois (1,6 s), pulável com qualquer tecla, clique ou botão. A janela
+  aparece em 1,2 s, antes em 5 s.
