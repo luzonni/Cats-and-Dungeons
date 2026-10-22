@@ -602,7 +602,7 @@ public class Personagens extends TelaDeMenu {
     private record Medida(Font nome, Font stat, Font papel, Font lore, Font arma, Font nota,
                           List<Atributo> atributos, List<String> lores, int lado, int folga,
                           int entreLinhas, int larguraRotulo, int larguraValor,
-                          int altura) { }
+                          boolean habilidadeEmBaixo, int altura) { }
 
     /**
      * Um atributo da ficha: o rótulo, o número e o quanto ele enche o trilho.
@@ -681,15 +681,21 @@ public class Personagens extends TelaDeMenu {
             }
         }
 
+        // A HABILIDADE DESCE PARA A LINHA DE BAIXO quando não cabe depois do papel:
+        // "SORCERER  +20% WEAPON AREA, ARCANE BURST SKILL" passava da chapa.
+        String habilidade = com.retronova.game.objects.entities.Bonus.habilidade(p.getName());
+        boolean emBaixo = !habilidade.isEmpty()
+                && FontHandler.getWidth(p.getPapel().toUpperCase() + "  " + habilidade.toUpperCase(), papel) > util;
+
         int altura = folga
                 + FontHandler.getHeight("Ay", nome)
                 + entre + atributos.size() * entre
-                + entre
+                + entre + (emBaixo ? entre : 0)
                 + entre + lores.size() * entre
                 + entre + Math.max(lado, FontHandler.getHeight("Ay", arma) + entre)
                 + folga;
         return new Medida(nome, stat, papel, lore, arma, nota, atributos, lores, lado, folga,
-                entre, larguraRotulo, larguraValor, altura);
+                entre, larguraRotulo, larguraValor, emBaixo, altura);
     }
 
     /**
@@ -770,8 +776,13 @@ public class Personagens extends TelaDeMenu {
         // A habilidade propria do gato, logo depois do papel (ver Bonus).
         String habilidade = com.retronova.game.objects.entities.Bonus.habilidade(p.getName());
         if (!habilidade.isEmpty()) {
-            int depois = x + FontHandler.getWidth(p.getPapel().toUpperCase() + "  ", m.papel());
-            texto(g, habilidade.toUpperCase(), m.papel(), depois, y, HABILIDADE);
+            if (m.habilidadeEmBaixo()) {
+                y += m.entreLinhas();
+                texto(g, habilidade.toUpperCase(), m.papel(), x, y, HABILIDADE);
+            } else {
+                int depois = x + FontHandler.getWidth(p.getPapel().toUpperCase() + "  ", m.papel());
+                texto(g, habilidade.toUpperCase(), m.papel(), depois, y, HABILIDADE);
+            }
         }
 
         y += m.entreLinhas() * 2;
