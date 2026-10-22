@@ -242,21 +242,21 @@ public final class MaoDeCartas {
         }
         g.setColor(new Color(0, 0, 0, 90));
         g.fillRoundRect(x + 2 * s, y + 4 * s, cw, ch, 10 * s, 10 * s);
-        g.setColor(new Color(0x0E0A14));
+        g.setColor(Palette.DARKEST);
         g.fillRoundRect(x - 2 * s, y - 2 * s, cw + 4 * s, ch + 4 * s, 12 * s, 12 * s);
-        g.setPaint(new GradientPaint(0, y, new Color(0x2E2546), 0, y + ch, new Color(0x15101F)));
+        g.setPaint(new GradientPaint(0, y, Palette.DEEP, 0, y + ch, Palette.DARKEST));
         g.fillRoundRect(x, y, cw, ch, 10 * s, 10 * s);
         // Faixa do rótulo.
         g.setColor(cor);
         g.fillRoundRect(x, y, cw, 13 * s, 10 * s, 10 * s);
         g.fillRect(x, y + 7 * s, cw, 6 * s);
         Font rotulo = FontHandler.font(FontHandler.Septem, 6f * s);
-        centro(g, c.rotulo(), rotulo, x + cw / 2, y + 10 * s, new Color(0x14081C), s);
+        centro(g, c.rotulo(), rotulo, x + cw / 2, y + 10 * s, Palette.DARKEST, s);
 
         // Ícone grande num medalhão claro.
         int lado = 36 * s;
         int ix = x + (cw - lado) / 2, iy = y + 22 * s;
-        g.setColor(new Color(0xF4EBDD));
+        g.setColor(Palette.ACCENT);
         g.fillRoundRect(ix - 5 * s, iy - 5 * s, lado + 10 * s, lado + 10 * s, 12 * s, 12 * s);
         g.setColor(cor);
         g.drawRoundRect(ix - 5 * s, iy - 5 * s, lado + 10 * s, lado + 10 * s, 12 * s, 12 * s);
@@ -283,7 +283,7 @@ public final class MaoDeCartas {
         // Tecla de atalho no pé da carta.
         Font tecla = FontHandler.font(FontHandler.Septem, 6f * s);
         int tq = 10 * s;
-        g.setColor(new Color(0x0E0A14));
+        g.setColor(Palette.DARKEST);
         g.fillRoundRect(x + cw / 2 - tq / 2, y + ch - tq - 4 * s, tq, tq, 4 * s, 4 * s);
         centro(g, String.valueOf(i + 1), tecla, x + cw / 2, y + ch - 6 * s, sob ? cor : Palette.ACCENT, s);
         if (eleita && fechando < 8) {

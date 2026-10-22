@@ -243,25 +243,30 @@ public class SubirDeNivel implements Activity {
         float saida = cartas.saida();
         Composite original = g.getComposite();
 
+        // O VÉU DA PALETA, o mesmo das telas de menu sobre o jogo (Palette.VEIL).
         float veu = Math.min(1f, (float) quadro / 12f) * saida;
-        g.setColor(new Color(10, 6, 18, (int) (215 * veu)));
+        g.setColor(comAlfa(Palette.VEIL, (int) (Palette.VEIL.getAlpha() * veu)));
         g.fillRect(0, 0, w, h);
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, saida));
 
         Player gato = Game.getPlayer();
         Rectangle primeira = cartas.caixa(0);
-        // Titulo com halo dourado pulsando.
+        // TÍTULO NA PALETA DO PROJETO. Era um dourado alaranjado com halo da mesma
+        // cor — a única tela da interface fora da paleta fria, e a mais vista da
+        // corrida. Agora é o branco do título (Palette.TEXT) com o halo na luz da
+        // lua (Palette.ACCENT), pulsando: comemora sem sair da família. A cor
+        // quente fica com as próprias cartas, onde ela diz algo (raridade, tipo).
         Font titulo = FontHandler.font(FontHandler.Game, 16f * s);
         String texto = "LEVEL " + gato.getLevel() + "!";
         int tw = FontHandler.getWidth(texto, titulo);
         int ty = primeira.y - 20 * s;
         double pulso = 0.5 + 0.5 * Math.sin(quadro * 0.12);
         g.setFont(titulo);
-        g.setColor(new Color(255, 200, 60, (int) (50 + 40 * pulso)));
+        g.setColor(comAlfa(Palette.ACCENT, (int) (50 + 40 * pulso)));
         for (int d = -2; d <= 2; d += 2) {
             g.drawString(texto, w / 2 - tw / 2 + d * s / 2, ty + d * s / 2);
         }
-        contornado(g, texto, titulo, w / 2 - tw / 2, ty, new Color(255, 214, 90), s);
+        contornado(g, texto, titulo, w / 2 - tw / 2, ty, Palette.TEXT, s);
         Font sub = FontHandler.font(FontHandler.Septem, 6f * s);
         String resto = gato.niveisPendentes() > 1
                 ? "Choose one  (" + gato.niveisPendentes() + " level-ups waiting)" : "Choose one";
@@ -309,17 +314,22 @@ public class SubirDeNivel implements Activity {
         Font rotulo = FontHandler.font(FontHandler.Septem, 5f * s);
         centro(g, "YOUR BUILD", rotulo, w / 2, y - 3 * s, Palette.LIGHT);
         for (Object[] it : itens) {
-            g.setColor(new Color(0x1A1428));
+            g.setColor(Palette.OUTLINE);
             g.fillRoundRect(x, y, lado + 6 * s, lado + 6 * s, 6 * s, 6 * s);
             Icones.desenhar(g, (String) it[0], (Color) it[1], x + 3 * s, y + 3 * s, cel);
             String nivel = (String) it[2];
+            // A arma evoluída leva a estrela no tom de destaque, e não em dourado.
             contornado(g, nivel, f, x + lado + 2 * s, y + lado + 6 * s,
-                    "*".equals(nivel) ? new Color(255, 214, 90) : Color.WHITE, s);
+                    "*".equals(nivel) ? Palette.ACCENT : Palette.TEXT, s);
             x += passo;
         }
     }
 
     // ------------------------------------------------------------- texto
+
+    private static Color comAlfa(Color c, int alfa) {
+        return new Color(c.getRed(), c.getGreen(), c.getBlue(), Math.max(0, Math.min(255, alfa)));
+    }
 
     private static void centro(Graphics2D g, String texto, Font fonte, int cx, int y, Color cor) {
         centro(g, texto, fonte, cx, y, cor, true, Configs.UiScale());
