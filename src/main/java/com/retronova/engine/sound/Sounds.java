@@ -126,7 +126,16 @@ public enum Sounds {
 	EscolhaGelo("elemento_gelo"),
 	EscolhaAgua("elemento_agua"),
 	EscolhaTerra("elemento_terra"),
-	EscolhaAr("elemento_ar");
+	EscolhaAr("elemento_ar"),
+
+	// A abertura do baú (ver AberturaDoBau e tools/GenSonsDoBau.java): o tremor,
+	// a tampa e a revelação de cada grau, em escada.
+	BauTremor("bau_tremor"),
+	BauAbre("bau_abre"),
+	BauPremioComum("bau_premio_comum"),
+	BauPremioRaro("bau_premio_raro"),
+	BauPremioEpico("bau_premio_epico"),
+	BauPremioLendario("bau_premio_lendario");
 
 	
 	private final String ResourceName;
