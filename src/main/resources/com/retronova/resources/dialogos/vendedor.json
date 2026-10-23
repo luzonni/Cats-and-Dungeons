@@ -1,0 +1,196 @@
+{
+  "_nota": "Conversas do vendedor. Maior prioridade toca primeiro; empate = menos vista. repeticao 'once' = so uma vez por save. Condicoes em Condicoes.java. Todas abrem a loja ao terminar ou ao pular.",
+  "conversas": [
+    {
+      "id": "vendedor.apresentacao",
+      "gatilho": "interagir",
+      "prioridade": 100,
+      "repeticao": "once",
+      "condicoes": { "primeiro_encontro": true },
+      "falas": [
+        { "emocao": "surprised", "texto": "vendedor.apresentacao.1" },
+        { "emocao": "happy", "texto": "vendedor.apresentacao.2" },
+        { "emocao": "smug", "texto": "vendedor.apresentacao.3" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.primeira_vitoria",
+      "gatilho": "interagir",
+      "prioridade": 90,
+      "repeticao": "once",
+      "condicoes": { "ultima_corrida": "vitoria", "vitorias_minimo": 1 },
+      "falas": [
+        { "emocao": "surprised", "texto": "vendedor.primeira_vitoria.1" },
+        { "emocao": "happy", "texto": "vendedor.primeira_vitoria.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.vitoria.a",
+      "gatilho": "interagir",
+      "prioridade": 60,
+      "condicoes": { "ultima_corrida": "vitoria" },
+      "falas": [
+        { "emocao": "happy", "texto": "vendedor.vitoria.a.1" },
+        { "emocao": "smug", "texto": "vendedor.vitoria.a.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.vitoria.b",
+      "gatilho": "interagir",
+      "prioridade": 60,
+      "condicoes": { "ultima_corrida": "vitoria" },
+      "falas": [
+        { "emocao": "happy", "texto": "vendedor.vitoria.b.1" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.morte_rapida.a",
+      "gatilho": "interagir",
+      "prioridade": 55,
+      "condicoes": { "ultima_corrida": "morte", "ultima_corrida_ate_segundos": 120 },
+      "falas": [
+        { "emocao": "smug", "texto": "vendedor.morte_rapida.a.1" },
+        { "emocao": "smug", "texto": "vendedor.morte_rapida.a.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.morte_rapida.b",
+      "gatilho": "interagir",
+      "prioridade": 55,
+      "condicoes": { "ultima_corrida": "morte", "ultima_corrida_ate_segundos": 120 },
+      "falas": [
+        { "emocao": "confused", "texto": "vendedor.morte_rapida.b.1" },
+        { "emocao": "smug", "texto": "vendedor.morte_rapida.b.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.morte_longa",
+      "gatilho": "interagir",
+      "prioridade": 50,
+      "condicoes": { "ultima_corrida": "morte", "ultima_corrida_desde_segundos": 900 },
+      "falas": [
+        { "emocao": "sad", "texto": "vendedor.morte_longa.1" },
+        { "emocao": "happy", "texto": "vendedor.morte_longa.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.morte.a",
+      "gatilho": "interagir",
+      "prioridade": 40,
+      "condicoes": { "ultima_corrida": "morte" },
+      "falas": [
+        { "emocao": "sad", "texto": "vendedor.morte.a.1" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.morte.b",
+      "gatilho": "interagir",
+      "prioridade": 40,
+      "condicoes": { "ultima_corrida": "morte" },
+      "falas": [
+        { "emocao": "neutral", "texto": "vendedor.morte.b.1" },
+        { "emocao": "happy", "texto": "vendedor.morte.b.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.sem_moedas",
+      "gatilho": "interagir",
+      "prioridade": 45,
+      "condicoes": { "moedas_maximo": 9 },
+      "falas": [
+        { "emocao": "confused", "texto": "vendedor.sem_moedas.1" },
+        { "emocao": "sad", "texto": "vendedor.sem_moedas.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.veterano",
+      "gatilho": "interagir",
+      "prioridade": 70,
+      "repeticao": "once",
+      "condicoes": { "corridas_minimo": 10 },
+      "falas": [
+        { "emocao": "surprised", "texto": "vendedor.veterano.1" },
+        { "emocao": "happy", "texto": "vendedor.veterano.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.gato.muffin",
+      "gatilho": "interagir",
+      "prioridade": 10,
+      "condicoes": { "gato": "Muffin", "conversas_minimo": 1 },
+      "falas": [
+        { "emocao": "neutral", "texto": "vendedor.gato.muffin.1" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.gato.azrael",
+      "gatilho": "interagir",
+      "prioridade": 10,
+      "condicoes": { "gato": "Azrael", "conversas_minimo": 1 },
+      "falas": [
+        { "emocao": "surprised", "texto": "vendedor.gato.azrael.1" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.gato.finn",
+      "gatilho": "interagir",
+      "prioridade": 10,
+      "condicoes": { "gato": "Finn", "conversas_minimo": 1 },
+      "falas": [
+        { "emocao": "happy", "texto": "vendedor.gato.finn.1" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.generica.a",
+      "gatilho": "interagir",
+      "prioridade": 0,
+      "falas": [
+        { "emocao": "happy", "texto": "vendedor.generica.a.1" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.generica.b",
+      "gatilho": "interagir",
+      "prioridade": 0,
+      "falas": [
+        { "emocao": "angry", "texto": "vendedor.generica.b.1" },
+        { "emocao": "neutral", "texto": "vendedor.generica.b.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.generica.c",
+      "gatilho": "interagir",
+      "prioridade": 0,
+      "falas": [
+        { "emocao": "smug", "texto": "vendedor.generica.c.1" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    },
+    {
+      "id": "vendedor.generica.d",
+      "gatilho": "interagir",
+      "prioridade": 0,
+      "falas": [
+        { "emocao": "confused", "texto": "vendedor.generica.d.1" },
+        { "emocao": "neutral", "texto": "vendedor.generica.d.2" }
+      ],
+      "aoTerminar": ["abrir_loja_do_vendedor"]
+    }
+  ]
+}

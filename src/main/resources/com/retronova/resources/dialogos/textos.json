@@ -1,0 +1,43 @@
+{
+  "_nota": "Todas as falas, por chave. E o unico lugar com texto de dialogo: uma traducao futura troca so este arquivo.",
+
+  "vendedor.apresentacao.1": "Oh! A customer! Nobody comes down here on purpose.",
+  "vendedor.apresentacao.2": "Welcome to the only shop below the city. Weapons, trinkets, the odd snack.",
+  "vendedor.apresentacao.3": "Prices are fair. Mostly. Have a look.",
+
+  "vendedor.primeira_vitoria.1": "Wait. You came back... from the bottom?",
+  "vendedor.primeira_vitoria.2": "Then the old king is gone. Shopping is on me. Well, the browsing is.",
+
+  "vendedor.vitoria.a.1": "The champion returns! My best customer.",
+  "vendedor.vitoria.a.2": "I told everyone I sold you that blade. Don't make me a liar.",
+  "vendedor.vitoria.b.1": "Another crown in the bag? You make this look easy.",
+
+  "vendedor.morte_rapida.a.1": "Back already? I barely finished my nap.",
+  "vendedor.morte_rapida.a.2": "Maybe buy something sharper this time.",
+  "vendedor.morte_rapida.b.1": "Did you... go in at all?",
+  "vendedor.morte_rapida.b.2": "Don't worry. Your secret is safe with me and every rat down there.",
+
+  "vendedor.morte_longa.1": "That was a long one. I could hear the fighting from here.",
+  "vendedor.morte_longa.2": "You were close. Go on, gear up.",
+
+  "vendedor.morte.a.1": "Rough night? Happens to the best of us. Mostly to the rest of us.",
+  "vendedor.morte.b.1": "Nine lives, they say. Spend them wisely.",
+  "vendedor.morte.b.2": "And spend your coins here.",
+
+  "vendedor.sem_moedas.1": "Your pockets look... light.",
+  "vendedor.sem_moedas.2": "I can't give credit. Window shopping is still free.",
+
+  "vendedor.veterano.1": "Ten runs! You're practically furniture down here.",
+  "vendedor.veterano.2": "I saved the good stock for you. Don't tell the others.",
+
+  "vendedor.gato.muffin.1": "Muffin. Try not to swing that sword at my shelves.",
+  "vendedor.gato.azrael.1": "Your Majesty! Mind the staff, it glows on my receipts.",
+  "vendedor.gato.finn.1": "Finn! Good aim, good taste. Arrows are on the left.",
+
+  "vendedor.generica.a.1": "Fresh stock, straight from the dark. Take a look.",
+  "vendedor.generica.b.1": "Hey! I was napping!",
+  "vendedor.generica.b.2": "Fine, fine. What do you need?",
+  "vendedor.generica.c.1": "Every blade here has a story. Some of them even true.",
+  "vendedor.generica.d.1": "Did you hear something down the corridor?",
+  "vendedor.generica.d.2": "Never mind. Business as usual."
+}

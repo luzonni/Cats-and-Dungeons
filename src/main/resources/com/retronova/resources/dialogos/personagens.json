@@ -1,0 +1,10 @@
+{
+  "_nota": "Quem fala. nome = aba (tela em ingles); retrato = PNG em sprites/retratos (7 colunas, uma por emocao, na ordem de Emocao; linhas: olhos abertos, piscada, boca aberta); voz = nomes em Sounds, sorteados por letra; moldura = 9-slice em ui/; conversas = arquivo desta pasta.",
+  "vendedor": {
+    "nome": "Merchant",
+    "retrato": "vendedor",
+    "voz": ["VozVendedor1", "VozVendedor2", "VozVendedor3"],
+    "moldura": "dialogo",
+    "conversas": "vendedor.json"
+  }
+}
