@@ -95,6 +95,7 @@ public class Kunai extends Item {
                 double tiro = miraDe(ponta.x, ponta.y, target);
                 this.emVoo = new KunaiThrown(ponta.x, ponta.y, currentDamage, tiro, player);
                 Game.getMap().put(emVoo);
+                tocarGolpe(com.retronova.engine.sound.Sounds.Arremesso);
             }
         }else {
             countAttack = 0;

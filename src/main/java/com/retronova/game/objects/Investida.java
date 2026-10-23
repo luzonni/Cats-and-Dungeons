@@ -196,4 +196,34 @@ public final class Investida {
         double e = f * f * (3 - 2 * f);                      // smoothstep
         return 0.85 * (1 - e);
     }
+
+    /**
+     * O quanto o golpe "tomou conta" da arma, de 0 a 1.
+     *
+     * Zero fora do golpe, sobe ao longo do preparo, fica em um no corte e na
+     * extensao, e volta a zero na recuperacao. Quem desenha o golpe numa pose
+     * propria (a espada, que orbita o gato) mistura a pose da mao com a do golpe
+     * por este numero: a arma sai da mao e volta para ela, em vez de pular.
+     */
+    /** O preparo acabou: do corte em diante. Quem desenha borrao de golpe so desenha daqui. */
+    public boolean passouDoPreparo() {
+        return t >= preparo;
+    }
+
+    public double presenca(float alpha) {
+        if (t < 0) {
+            return 0;
+        }
+        double tt = Math.min(total(), t + Math.max(0, Math.min(1, alpha)));
+        if (tt < preparo) {
+            double f = tt / preparo;
+            return f * f * (3 - 2 * f);
+        }
+        double fimDaExtensao = preparo + corte + extensao;
+        if (tt <= fimDaExtensao) {
+            return 1;
+        }
+        double f = Math.min(1, (tt - fimDaExtensao) / Math.max(1, recuperacao));
+        return 1 - f * f * (3 - 2 * f);
+    }
 }

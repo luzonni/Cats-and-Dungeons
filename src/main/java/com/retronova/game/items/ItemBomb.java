@@ -33,6 +33,7 @@ public class ItemBomb extends Item {
                 bomb.getPhysical().addForce("throw", 10, nearest.getAngle(player));
                 Game.focus(bomb);
                 Game.getMap().put(bomb);
+                tocarGolpe(com.retronova.engine.sound.Sounds.Arremesso);
             }
         }
     }

@@ -129,12 +129,14 @@ docs/                          esta pasta
 | Hover e foco de todo elemento da interface | `menus/shared/Realce.java` |
 | Cartas de escolha (nível e elemento) | `menus/shared/MaoDeCartas.java` |
 | Transmutação da arma ao escolher o elemento | `game/objects/entities/Transmutacao.java` |
+| Animação da arma na mão (respiro, passo, virada, flutuação, gesto do ataque) | `game/items/AnimacaoDaArma.java`, somada em `Item.naMao`; espada em `Sword`, arco e corda em `Bow` + `CordaDoArco`, cajado em `Wand`; como animar uma arma nova em `docs/ARQUITETURA.md` ("Animação das armas") |
+| Pose de cada arma na mão (punho, giro, boca) | `game/items/Poses.java` + `resources/.../poses.properties`, editor em `tools/EditorDePose.java` |
 | Modo foto (capturas de tela por roteiro) | `engine/Foto.java` |
 | Partida | `game/Game.java` |
 | Corrida sem fim, horda, chefes | `game/map/arena/Waves.java` |
 | Campo gerado (160×160 tiles) | `game/map/arena/Gerador.java` |
 | Antecâmara | `game/map/room/Room.java` + `maps/beginning.{png,json}` |
-| Gato: movimento, dash, dano, XP, morte | `game/objects/entities/Player.java` |
+| Gato: movimento, dash, dano, XP, morte | `game/objects/entities/Player.java`, `EspiritoDoGato.java`; impacto em `game/map/ImpactoDaMorte.java` e `Camera.java` |
 | Atributos base dos gatos | `resources/.../players/*.json` |
 | Bônus de gato, passivas, meta | `game/objects/entities/Bonus.java` |
 | Habilidades exclusivas (Muffin, Azrael) | `game/objects/entities/Habilidades.java`; Finn em `items/Bow.java` |
@@ -146,11 +148,11 @@ docs/                          esta pasta
 | Golpe com aviso | `game/objects/Investida.java` |
 | Subir de nível (3 cartas) | `game/map/arena/SubirDeNivel.java` |
 | Status do gato (tecla E) | `menus/TelaDeStatus.java` |
-| Portal de nascimento (cor e brilho) | `game/map/arena/Chegada.java` (`Tom`) |
+| Portal de nascimento (arte e cor) | `game/map/arena/Chegada.java` (`Tom`), `tools/GenPortal.java` |
 | Baú: abertura na tela e recompensa | `utilities/Bau.java` → `game/map/arena/AberturaDoBau.java`; regra em `game/items/RecompensaDoBau.java`; arte em `tools/GenBau.java`, sons em `tools/GenSonsDoBau.java`. A `Roleta` (caça-níquel) está desligada |
 | Escolha de elemento (aos 45 s), com a cerimônia | `game/map/arena/EscolhaDeElemento.java`; áudio em `tools/GenSonsDaEscolha.java` |
 | Save | `game/Corrida.java`, `menus/Saves.java` |
-| Entre corridas | `game/Meta.java`, `menus/GameOver.java` (loja de upgrades) |
+| Entre corridas | `game/Meta.java`, `menus/GameOver.java`, `menus/ApresentacaoDoFim.java`, `menus/LayoutDoFim.java`, `menus/ResumoFinalDoGato.java` (relatório, ficha final e loja) |
 | Vitória | `menus/Vitoria.java`, `Game.vencer` |
 | Música da arena | `game/map/arena/TrilhaDaArena.java`, `engine/sound/Musics.java` |
 | Controle | `engine/inputs/gamepad/`, `engine/inputs/Entrada.java`, `game/interfaces/Grade.java` |
@@ -211,12 +213,18 @@ docs/                          esta pasta
 | XP, nível e cartas de nível (reroll 2, skip 1) | ✅ | |
 | Passivas (7 gerais + 1 exclusiva por gato) | ✅ | |
 | Armas extras (6) e evoluções (6) | ✅ | |
+| Timbre do mago | ✅ | cajado comum e grimório com efeito arcano próprio (`GenSomDoCajado`), 240 ms a -28 dB RMS; cajados elementais conservam seu elemento |
+| Sons das armas | ✅ | disparos no lançamento, cortes e orbitais no contato, explosões no impacto; recortes imediatos `hit_*` e `weapon_*`, com testes de ataque e loudness. Ver ARMAS e ARQUITETURA |
 | Baú (abre na tela, sem roleta) | ✅ | o caça-níquel antigo foi desligado e ficou no código (`Roleta`, `@Deprecated`) |
 | Fúria Felina | ✅ | |
 | Quebráveis (cura ou XP grande) | ✅ | |
 | Escolha de elemento | ✅ | oferecida aos 45 s de corrida, com cerimônia própria (antecipação, cartas em destaque, trilha, confirmação); áudio sintetizado provisório no timbre |
 | Ícones na identidade visual | ✅ | 34 ícones 16x16 num registro só (`Icone`): base DB32 (CC0) e desenhos no mesmo molde, todos na paleta; cada um reconhecível pela forma (`IconeTest`) |
 | Gameplay na identidade visual | ✅ | armas, orbitais, coletáveis, números, barras e efeitos pelo registro de ícones e pelas famílias de cor; teto de 36 números no ar. Controle real e todas as evoluções em jogo **a confirmar** |
+| Portais e alavanca na identidade visual | ✅ | aro em pixels, centro escuro e luz em cinco tons ACO/VIDA; mesma animação para chegada e perigo. Alavanca sem moldura; halo OURO no tick. Conferido em bancada |
+| Morte e entrada de Run Over | ✅ | impacto de 24 ticks independente do zoom e voz própria por gato; queda lenta, chama ACO e fechamento para preto; título, painéis e barras animados em 1 s, reveláveis após o título; bancada e testes |
+| Relatório final em destaque | ✅ | quase toda a largura, na escala dos menus; 12 atributos finais, armas, elemento, passivas/cartas e dano de todas as fontes. Ficha imutável antes de sair da partida; abas de build e loja, com rolagem |
+| Animação das armas na mão | ✅ | toda arma de mão respira, pesa no passo e se recolhe ao virar; espada sai da mão para o golpe e volta, com faísca de impacto; arco puxa a corda, treme, solta com coice e a corda vibra; cajados flutuam, pulsam, soltam faíscas do elemento e fazem o gesto de lançar no tick do tiro. Cajado do Azrael redesenhado pela arte oficial. Com controle real e em armas fora das três iniciais **a confirmar** |
 | Ouro e upgrades permanentes | ✅ | |
 | Conquistas (10) | ✅ | |
 | Controle de Xbox, foco por D-pad | ✅ | só Windows |
@@ -279,6 +287,7 @@ usava, e só fora da corrida sem fim). Estão no histórico do git.
 | Valores das passivas | `Passiva.java` (`porNivel`) |
 | Números das habilidades exclusivas | `Bonus.java` (Retaliação, Explosão Arcana, Voleio) |
 | Armas extras | `Arsenal.java`, `ArmasDeArea.java` |
+| Sons dos golpes | `tools/GenSonsElementais.java`: elementais/explosão 350 ms, lâmina/impacto 220 ms, magia/aura 200 ms, arremesso até 180 ms; -28 dB RMS, teto -1,5 dBFS; frente a 50% do pico local, margem de 2 ms. `LimiteDeVozes`: intervalo 40 ms, quatro vozes por efeito |
 | Fúria | `Furia.java` (`MORTES = 30`; barra: `PARTES = 3`, cores da família roxa dos ícones) |
 | Elementos (multiplicadores de dano e cadência) | `Elemento.java` |
 | Raridades e desgaste das melhorias | `Raridade.java`, `Melhoria.desgaste` |
@@ -299,8 +308,15 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `DESCIDA_DAS_CARTAS = 10`, `TITULO_ACIMA_DAS_CARTAS = 30`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |
 | Abertura do baú | `AberturaDoBau` (`ENTRADA = 12`, `TREMOR = 18`, `TAMPA = 9`, `SUBIDA = 16`, `ATE_COLETAR = 8` ticks; `PREVIA_POR_ICONE = 9`, `PREVIA_VISIVEIS = 7`, `ZOOM_DO_BAU = 5`, `TREMOR_MAXIMO = 2`, `FAISCAS = 46`, `VIDA_DA_FAISCA = 34`, `CLARAO = 8`, `FORCA_DO_CLARAO = 110`, `VEU = 228`); níveis do áudio em `GenSonsDoBau` |
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
-| Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
-| Fim de corrida: painéis, loja e avisos | `GameOver` (`PAINEL_W = 150`, `PAINEL_H = 154`, `LOJA_TOPO = 33`, `LINHA_H = 18`, `LINHA_PASSO = 21`, `CABECALHO = 13`, `FUNDO` preto, `AVISO_FICA = 240` ticks) |
+| Animação da arma na mão | `AnimacaoDaArma` (`RESPIRO_GRAUS = 2.5`, `PASSO_GRAUS = 6`, `PASSO_PX = 1`, `PASSO_ATRASO = 0.45`, `TROCA_DE_ANDAR = 0.15`, `VIRADA_TICKS = 7`, `VIRADA_GRAUS = 35`, `FLUTUA_GRAUS = 4`, `FLUTUA_PERIODO = 100`, `PREPARO_SUAVE = 0.3`); quanto o corpo afunda por quadro em `Player.AFUNDADO` (cópia do `GenGatos`) |
+| Cajado: gesto, halo e faíscas | `Wand` (`ANTECIPACAO = 12` ticks, `GESTO` = ação 3, volta 12, 16°/20°, 0/1 px, sem subida; `ORBE_PX = 2.5`, `HALO_PX = 3.2`, `HALO_CARGA_PX = 2.2`, `HALO_ALFA = 55`, `HALO_ALFA_CARGA = 70`, `PULSO_PERIODO = 48`, `PULSO = 0.12`, `FAISCAS = 10`, `FAISCA_A_CADA = {16, 10, 6}`, `FAISCAS_NO_TIRO = 3`, `FAISCA_VIDA = 36`); cor sem elemento `Familia.VERDE` |
+| Espada: impacto | `Sword` (`IMPACTO_TICKS = 5`, `IMPACTO_PX = 3.5`); entrada e saída do golpe por `Investida.presenca` |
+| Arco: puxada, tensão e soltura | `Bow` (`GIRO_SUAVE = 0.35`, `PUXADA_PX = 4`, `TENSAO = 0.85`, `SOLTURA_TICKS = 10`, `RECUO_PX = 2`, `COICE_GRAUS = 7`); corda achada por `CordaDoArco.MINIMO = 7` |
+| Luz da alavanca (sem moldura) | `Lever.PASSO_DO_BRILHO = 0,08` rad/tick; `Brilho` em cache, família OURO |
+| Portal de nascimento | `Chegada`: chegada 24 + 30 + 18 ticks; folha 4×16×16, 6 ticks/quadro; `TAMANHO = 1,4` tiles; `Tom.PERIGO` → VIDA, `Tom.CHEGADA` → ACO (cinco tons) |
+| Morte do gato | `Player`: `MORTE_PARADA = 18`, `MORTE_TOMBO = 72`, `MORTE_APAGAR = 48` ticks; zoom final 1,6×; `ImpactoDaMorte.DURACAO = 24` ticks e `AMPLITUDE = 8` pixels da UI, antes do zoom; `EspiritoDoGato.SUBIDA = 12` pixels nativos, cinco fragmentos ACO |
+| Entrada de Run Over | `ApresentacaoDoFim`: `TOTAL = 60`, `TITULO = 18`; `RESUMO = 12`, `LOJA = 20`, `PAINEL = 22`; `BARRAS = 24`, `CRESCIMENTO = 30`; `OURO = 42`, `BRILHO = 18`; `DESLOCAMENTO = 8` pixels nativos |
+| Fim de corrida: relatório e loja | `LayoutDoFim`: margem 12, vão 10, abas 13, espaço das abas 10; colunas 24%/38%/38%, sem redução da escala dos menus. `GameOver`: cabeçalho 20, margem interna 12, atributos 38/16, dano 78/24, build 30/32 (topo/passo); loja 64/36/42 (topo/altura/passo), recuo 8, retrato até 48, `AVISO_FICA = 240` ticks |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
 | Painel do Settings | `Configuracoes.LARGURA_DO_PAINEL = 288` px nativos |
 | Tela de Controles | `PainelDeControles` (`VAO_ENTRE_COLUNAS = 12`, `FOLGA_DA_LINHA = 2`, `FOLGA_ANTES_DO_GRUPO = 3`, `ALTURA_DO_GRUPO = 9`, `VAO_ENTRE_TECLAS = 1`, `VAO_ANTES_DO_MOUSE = 6`, `FOLGA_DA_LINHA_DO_CONTROLE = 10`, `VAO_ENTRE_ROTULOS = 2`, `ALTURA_DA_LEGENDA = 16`, `ALTURA_DO_SELETOR = 11`, `FOLGA_DO_SELETOR = 6`); desenho em `DesenhoDoControle` (`LARGURA × ALTURA = 118×80`, `PECAS`, `BOTAO_DO_MEIO`, `LUZ`, `SOMBRA_DESCE = 3`, `SOMBRA_ALFA = 110`, cores de face `VERDE`, `VERMELHO`, `AZUL`, `AMARELO`) |

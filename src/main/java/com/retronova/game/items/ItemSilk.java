@@ -27,6 +27,7 @@ public class ItemSilk extends Item {
             Silk silk = new Silk(player.getX() + player.getWidth() / 2d,
                     player.getY() + player.getHeight() / 2d, player.getDamage(), player);
             Game.getMap().put(silk);
+            tocarGolpe(com.retronova.engine.sound.Sounds.Arremesso);
         }
     }
 

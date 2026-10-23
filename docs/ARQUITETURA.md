@@ -623,20 +623,84 @@ antiga de sprite (`interfaces/shared/Status`) deixaram de ser abas da `Inter`
 e a loja do vendedor. Para religar a tela, basta registrar "inventory" de novo na
 `Inter`.
 
+### Morte e apresentação de Run Over
+
+`Player.die()` é idempotente: corta os efeitos de combate, abaixa a música,
+solta uma voz de morte e aplica um impacto de câmera próprio (`Camera.impactarNaMorte`) e vibração.
+O som não usa o intervalo dos gemidos de dano: o golpe fatal já o gastava e
+calava a morte. `death_muffin`, `death_azrael` e `death_finn` vêm dos próprios
+miados, com tom descendente e impacto grave, gerados por `GenSonsDaMorte`.
+Duram de 670 a 1175 ms, a -20 dB RMS; `run_over` dura 320 ms, a -24 dB RMS.
+
+A sequência dura 138 ticks: impacto/parada 18, tombo 72 com curva suave,
+desaparecimento 48. A câmera fecha até 1,6×. `ImpactoDaMorte` dura 24 ticks (0,4 s), com amplitude
+de oito pixels nativos da UI e envelope quadrático decrescente. O deslocamento
+entra na transformação antes do zoom: um ponto do cenário se move pela mesma
+distância na tela a 50% ou 200%. Substitui o tremor genérico, que era reduzido
+pelo zoom. A música permanece abafada durante a queda, em vez de voltar ao
+volume normal no tick seguinte.
+`EspiritoDoGato` desenha a chama e cinco fragmentos em pixels da família ACO,
+subindo 12 pixels nativos durante a segunda metade da queda e o apagamento.
+O véu chega a preto no fim, emendando no fundo preto da tela de resultados.
+
+`GameOver` usa `ApresentacaoDoFim`, relógio próprio de 60 ticks, sem mexer nos
+valores de `Estatisticas` ou `Meta`: título em 18 ticks; resumo começa em 12 e
+colunas de detalhe em 20, cada painel leva 22; barras crescem entre 24 e 54; brilho único do
+ouro e botões entre 42 e 60. O deslocamento é de oito pixels nativos. O som do
+título toca uma vez, apenas na derrota. Conquistas aparecem depois da entrada.
+`TelaDeMenu.desenharCabecalho` mantém o título padrão e permite esse gesto.
+O título é rasterizado opaco uma vez por escala; a imagem recebe o movimento e
+a transparência. Camadas ainda invisíveis não são desenhadas.
+
+Durante a entrada, a loja e os botões não recebem comandos. Após 18 ticks,
+clique, Enter/A ou Esc/B concluem a apresentação; o comando é consumido e não
+compra nem troca de tela. No tick seguinte, a navegação comum volta. A morte
+continua impedindo controle e dano, sem mudar o salvamento ou as recompensas.
+
+O relatório segue a distribuição ampla da tela de resultados de Hades II:
+identidade e resultado à esquerda, ficha final ao centro e dano por fonte à
+direita. `LayoutDoFim` usa toda a largura disponível menos 12 pixels nativos de
+margem por lado, vãos de dez e proporções 24%/38%/38%. A escala é a escolhida
+nos menus, sem encolher tudo para encaixar painéis fixos. Personagem tem retrato,
+nome, habilidade, tempo, abates, nível, baús, maior horda e ouro recebido.
+
+`ResumoFinalDoGato.capturar(player)` é chamado ANTES de descartar o `Game`.
+Guarda cópias imutáveis das mesmas linhas que `TelaDeStatus` calcula: 12 atributos
+finais, arma de mão, elemento, armas extras/evoluções, passivas e cartas, sem
+recalcular atributos na tela final nem consultar um personagem novo. Valores e
+ordem do dano também são copiados ao abrir `GameOver`; nenhuma fonte é descartada.
+
+As abas comuns (`Abas`) são `Run report`, `Final build` e `Upgrades`, acessíveis
+por clique, Q/E ou LB/RB. Listas que não cabem têm rolagem por mouse ou Up/Down;
+Left/Right escolhe a coluna de leitura e depois os botões. A loja fica em sua
+aba, nas duas colunas da direita, com cinco melhorias em duas colunas de cards.
+Só essa aba aceita compras; com interface ampliada, a loja rola e acompanha a
+linha focada, mantendo cliques dentro da área visível. O relatório é a apresentação inicial, preservando
+a entrada animada, o pulo seguro e o som da morte.
+
+Geometria de `GameOver`: margem interna 12; cabeçalhos 20; atributos começam em
+38 com passo 16; dano em 78 com passo 24; build em 30 com passo 32. Loja começa
+em 64, cards de altura 36 e passo 42, com recuo de oito. Fontes do corpo Septem 8,
+efeitos 6/7 e retrato de até 48 pixels nativos. Listas reservam espaço para seu
+rodapé. O retrato se adapta à altura, mantendo legíveis os números da corrida.
+
 ### Portal de nascimento (`Chegada.Tom`)
 
-O portal é o mesmo desenho (`portalCistern.png`) para todos, tingido em tempo de
-carga a partir de uma rampa de três cores pela luminosidade de cada pixel:
+O portal compartilha a folha `portalRunforce.png`, reproduzível com
+`java tools/GenPortal.java`: quatro quadros de 16×16, aro elíptico com trechos de
+luz circulando, centro escuro e fragmentos em pixels. Substitui a textura antiga
+recolorida e o halo suavizado; mantém abertura, formação e fechamento nos mesmos
+ticks, ancorados no centro do tile. Cada quadro dura seis ticks, nunca avança em
+`render`.
 
-- **`Tom.PERIGO` (inimigos):** o carmim das bandeiras da arte, a única família
-  quente da ilustração e a cor de aviso da interface (`Palette.WARN`), levado ao
-  claro para ler sobre a pedra e o mato. Por baixo, um brilho pulsante na mesma
-  cor. O verde de antes era a única cor da cena que não vinha da arte.
-- **`Tom.CHEGADA` (gato e vendedor):** a luz da lua da paleta
-  (`DEEP → LIGHT → TEXT`), sem brilho: chegada sem ameaça.
+`Chegada.Tom` converte os cinco níveis da folha diretamente nas cinco cores de
+`Familia.ACO` (jogador e vendedor) ou `Familia.VIDA` (inimigos), com cache por
+quadro. Sem gradientes intermediários ou elipses rasterizadas por portal. O
+tamanho cheio continua em `Chegada.TAMANHO` (1,4 tiles).
 
-A rampa de cada tom, `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO` e `TAMANHO`
-ficam em `Chegada`.
+A alavanca de entrada mantém cursor de interação e luz suave de `Familia.OURO`,
+sem retângulo de seleção. O halo usa `Brilho` em cache e fase avançada no tick
+(`Lever.PASSO_DO_BRILHO = 0,08`), independente da taxa de renderização.
 
 ### Transmutação da arma (`Transmutacao`)
 
@@ -655,6 +719,111 @@ para manter a mira), então o primeiro e o último quadro são a arma em mãos, 
 salto. O gato anda, ataca e usa habilidades o tempo todo. Antes eram 136 ticks
 (2,3 s) com a arma parada acima da cabeça. Ela não toca mais o arpejo de
 conquista: o som de recompensa é a confirmação do elemento, na escolha.
+
+### Animação das armas (`AnimacaoDaArma`)
+
+A arma da mão deixou de ser um adesivo preso à pata. Uma camada só,
+`AnimacaoDaArma`, dá o movimento que é igual para todas, e cada arma só diz
+**quando** ataca e **quanto** o gesto dela mexe.
+
+**Como roda.** Tempo fixo mais interpolação, como o resto do jogo: o estado anda
+no tick (60 Hz, chamado por `Player.tickItemHand` **antes** do tick da arma) e o
+desenho mistura o tick anterior com o atual por `Engine.alpha()`. O balanço fica
+contínuo a 144 ou 240 Hz e não acelera com a taxa de quadros. Nada é alocado por
+quadro: `calcular` escreve em campos e `Item.naMao` soma o resultado à pose de
+porte (ou à pose ajustada no editor), sem substituí-la. Os deslocamentos são
+arredondados ao pixel de tela.
+
+**Os estados**, somados:
+
+| Estado | O que faz | De onde vem o ritmo |
+|---|---|---|
+| Respiro (parado) | balanço de ±2,5° | ciclo de 72 ticks, o mesmo da folha parada do gato |
+| Passo (andando) | balanço de ±6° e 1 px de peso no contato do pé, com um tick de atraso (ação sobreposta) | `Player.faseDaFolha` e `Player.corpoAfundado`, os quadros reais da folha |
+| Troca parado ↔ andando | mistura dos dois em ~7 ticks | `TROCA_DE_ANDAR` |
+| Virada | a arma se recolhe 35° e volta em 7 ticks quando o gato troca de lado | `Player.getLadoDoPasso` |
+| Flutuação (porte `CAJADO`) | o orbe gira ±4° em volta da mão em 100 ticks, menos ao andar; a mão não solta a haste | `Item.flutua()` |
+| Gesto do ataque | antecipação (recolhe e sobe), ação (estende rápido, ease-out) e volta (smoothstep) | a arma chama `preparar(f)` com o tempo que falta para o disparo e `disparou()` **no tick em que o projétil nasce**; o pico cai nesse quadro |
+
+A ação parte de onde a antecipação estava, e a antecipação sem aviso cai sozinha
+(`PREPARO_SUAVE`): perder o alvo no meio da carga não deixa a arma erguida nem a
+faz pular. Os testes em `AnimacaoDaArmaTest` andam as curvas em quartos de tick e
+recusam salto.
+
+**O que a animação nunca muda:** de onde o tiro sai e a linha que libera o
+disparo. A varinha calcula a ponta duas vezes, a de jogo (sem animação, origem da
+bola) e a de desenho (com animação, para o halo e as faíscas); o arco atira com a
+mira exata e só o desenho persegue a mira (`GIRO_SUAVE`), encaixando no ângulo do
+tiro no tick da soltura. Dano, cadência, alcance, hitbox e velocidade de
+projétil não passam por aqui.
+
+**Por arma:**
+
+- **Espada (`Sword`).** O golpe orbita o gato (antecipação, corte, sustentação,
+  volta, pela `Investida`). Agora ele **sai da pose da mão e volta para ela**:
+  `Investida.presenca` mistura as duas poses, usando o mesmo desenho (espelhado
+  ou não) da mão. O rastro só acende depois do preparo (`passouDoPreparo`),
+  porque borrão na antecipação distrai do corte. No tick do acerto, uma estrela de
+  pixel e um disco de luz na ponta (`IMPACTO_TICKS`).
+- **Arco (`Bow`).** A corda pintada no PNG é achada (`CordaDoArco`: a maior
+  sequência de uma cor numa anti-diagonal), apagada de uma cópia do sprite e
+  redesenhada em dois segmentos das pontas até o encaixe. A carga é a mesma conta
+  do disparo (`countShot` e `count`), então a puxada (ease-in, 4 px) termina no
+  tick real do tiro. Na carga cheia a corda treme; na soltura o arco recua 2 px
+  com um coice de 7° e a corda passa do repouso e assenta (`cordaVoltando`). A
+  flecha encaixada segue o encaixe da corda; a próxima só aparece na metade da
+  soltura.
+- **Cajados (`Wand`).** Flutuam; um halo pulsa atrás do orbe e cresce com a
+  carga; faíscas saem do orbe (um punhado fixo, sem partícula do mapa) e andam
+  conforme o elemento: o fogo sobe rápido, gelo e água caem devagar, terra cai
+  pesada, ar sobe serpenteando. O gesto recolhe o cajado (em giro, sem tirá-lo da pata) nos últimos 12 ticks antes
+  do tiro e estende em 3 ticks no disparo, com clarão na ponta. Sem elemento, o
+  efeito é verde, como o brilho do orbe na arte oficial.
+- **Demais armas de mão** (machado, garra, foice, tridente, espada de fogo)
+  recebem respiro, passo, virada e flutuação pelo `naMao`; o golpe delas continua
+  o da `Investida` via `naMaoGolpeando`. Armas apontadas (laser, kunai, arco
+  elétrico) não passam pelo `naMao` e ficam como estavam.
+
+**Evolução.** A arma da mão evolui pela transmutação (variante elemental) e pela
+lendária. `Item.intensidade()` vale 0, 1 ou 2, e quem desenha efeito multiplica
+por ele: a espada evoluída tem halo mais largo e um fio claro no rastro e
+estrela maior; o arco evoluído acende a ponta da flecha durante a carga; o cajado
+evoluído tem halo maior e mais faíscas. A cor vem de `Item.familiaDoEfeito`, a
+família do elemento em `Familia`.
+
+**Animar uma arma nova:**
+
+1. Se ela é segurada, desenhe com `naMao(g, sprite)`: respiro, passo e virada vêm
+   de graça. Se é de magia, `porte()` = `CAJADO` (ou sobrescreva `flutua()`).
+2. Declare o gesto: sobrescreva `gesto()` com um `AnimacaoDaArma.Gesto` (ticks de
+   ação e de volta, graus e pixels para trás e para a frente, subida), em
+   constante nomeada no topo da classe.
+3. No `tick` da arma, chame `animacao().preparar(fração)` enquanto o ataque
+   carrega (a fração sai do mesmo contador que decide o disparo) e
+   `animacao().disparou()` no tick em que o dano ou o projétil sai.
+4. Efeitos (halo, clarão) leem `animacao().carga` e `.clarao` depois de
+   `calcular`, usam `Brilho.disco` e cores de `Familia.tom(degrau, alfa)`, e
+   escalam com `intensidade()`.
+5. Números novos vão para `docs/CONTEXTO.md` §8.
+
+**Referências usadas:** os 12 princípios de animação aplicados a jogos
+(antecipação, follow-through e ação sobreposta: [Game Developer](https://gamedeveloper.com/production/the-12-principles-of-animation-in-video-games));
+as fases de golpe em top-down e o "sem borrão na antecipação" do
+[Pixelblog 56, Raymond Schlitter](https://www.slynyrd.com/blog/2025/5/23/pixelblog-56-top-down-character-attack-animation);
+o *Animation Bootcamp* da GDC sobre Skullgirls (quadros-chave fortes,
+antecipação e timing com orçamento curto: [GDC Vault](https://gdcvault.com/play/1020575/contactUs));
+"The Art of Screenshake", de Jan Willem Nijman (Vlambeer), sobre reação da arma
+ao disparo; e *Fix Your Timestep*, de Glenn Fiedler
+([Gaffer on Games](https://gafferongames.com/post/fix_your_timestep/)), para o
+tick fixo com interpolação. O cajado flutuante do "LPC simple staff", de Dr.
+Jamgo ([OpenGameArt, CC0](https://opengameart.org/content/lpc-simple-staff)),
+foi só referência de gesto; nenhum arquivo dele está no jogo.
+
+**O cajado do Azrael** (`wand.png`) é desenhado por `tools/GenElementais.java`
+(`cajadoDoAzrael`), não recortado de pacote. Ele segue `icons/Gato.png`: haste
+longa dourada-clara, esfera dourada grande com luz em cima à esquerda, colar mais
+escuro e o brilho verde, que não vai no PNG e é desenhado em jogo. É o mesmo PNG
+na mão, na hotbar, no seletor de gatos e na tela de Status.
 
 ## Persistência
 
@@ -956,6 +1125,33 @@ de uma rampa muda o destino dela, em vez de pular o volume.
 foco de cada carta toca o `hit_*` do elemento, o mesmo do golpe.
 
 ### A régua de loudness
+
+**Timbre arcano:** `GenSomDoCajado.java` sintetiza `spell_arcane.wav` para
+`Sounds.FeiticoArcano`, usado pelo cajado comum no lançamento e pelo grimório no
+contato. É um sopro filtrado com ressonâncias estáveis, sem a varredura de laser;
+240 ms, ataque de 3 ms, cauda de 60 ms, -28 dB RMS, teto -1,5 dBFS. O laser
+continua com seu efeito próprio e cajados elementais mantêm os `hit_*`.
+
+**Sincronização dos golpes (2026-10-23):** a chamada de áudio pertence ao tick do
+evento. `Wand` tocava no callback de colisão, por isso o atraso variava com a
+distância e um tiro perdido ficava mudo; agora toca ao criar a bola, junto do
+gesto. Arremessáveis têm áudio no lançamento; foice, escudo e orbitais no contato;
+a aura toca por pulso com acerto. Bombas e meteoros tocam na explosão, não no
+aviso. Garra e machado mantêm o som do corte mesmo se o alvo escapar.
+
+Os WAV também atrasavam o retorno: medidos a 10% do pico, `sword.wav` começava
+perto de 202 ms, `laser.wav` de 78 ms e `woosh.wav` de 274 ms. `hit_earth.wav`
+começava fraco e tinha pico a 180 ms. `GenSonsElementais` agora procura uma frente
+forte no trecho inicial, preserva 2 ms antes dela, aplica abertura/queda suaves
+e normaliza em -28 dB RMS. Gera os seis `hit_*` e os seis `weapon_*`; os originais
+permanecem intactos. `Sounds.Sword/Laser` apontam para os recortes mecânicos.
+Os testes verificam os WAV reais (ataque em até 10 ms, cauda até 350 ms e nível).
+
+O segundo freio de 130 ms em `Item.tocarGolpe` foi retirado: ele descartava
+golpes legítimos de armas aceleradas. A proteção continua centralizada em
+`LimiteDeVozes`, sem fila de reprodução atrasada. A latência física do dispositivo
+e do buffer do TinySound não foi medida por esses testes; eles verificam a emissão
+no tick e o ataque dos arquivos, não a saída acústica do computador.
 
 Os arquivos **não** são usados como chegaram. `tools/GenMixagem.java` põe todos
 na mesma régua, e isso é o que torna os controles de volume utilizáveis.

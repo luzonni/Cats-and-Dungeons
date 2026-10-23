@@ -80,7 +80,7 @@ public class SwordFire extends Item {
             double r = enemy.getAngle(player);
             enemy.getPhysical().addForce("knockback", 16, r);
         }
-        Sound.play(Sounds.Sword);
+        Sound.play(Sounds.Fogo);
     }
 
     public void render(Graphics2D g) {

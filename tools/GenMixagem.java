@@ -107,14 +107,15 @@ public class GenMixagem {
         camada(-34, "walking", "hover", "purr");
         camada(-28, "sword", "bowshoot", "laser", "bones", "button", "woosh",
                 "hit_fire", "hit_ice", "hit_water", "hit_wind", "hit_earth",
-                "hit_thunder");
+                "hit_thunder", "weapon_blade", "weapon_magic", "weapon_throw",
+                "weapon_impact", "weapon_aura", "weapon_explosion", "spell_arcane");
         camada(-24, "coin", "slime", "zombie", "vampire", "mousesquire", "poison",
                 "crack", "portal", "earth", "cat", "cat_muffin", "cat_azrael",
-                "cat_finn");
+                "cat_finn", "run_over");
         camada(-20, "damage_cat", "damage_muffin", "damage_azrael", "damage_finn",
                 "elemento_revelacao", "elemento_fogo", "elemento_gelo", "elemento_agua",
                 "elemento_terra", "elemento_ar",
-                "explosion", "achievement");
+                "explosion", "achievement", "death_muffin", "death_azrael", "death_finn");
 
         for (String faixa : new String[] {"geral", "menu_principal", "dungeon_hall",
                 "fight", "fight_spooky", "fight_8bit", "fight_rpg", "fight_boss",

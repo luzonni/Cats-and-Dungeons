@@ -227,8 +227,9 @@ public class Game implements Activity {
             segundosDaCorrida = arena.getWaves().getSeconds();
         }
         Estatisticas.encerrar(segundosDaCorrida, abates, player.getLevel(), player.getName());
+        var fichaFinal = com.retronova.menus.ResumoFinalDoGato.capturar(player);
         Engine.backActivity();
-        Engine.heapActivity(new GameOver(gato, onde));
+        Engine.heapActivity(new GameOver(gato, onde, fichaFinal));
     }
 
     public void changeMap(GameMap newMap) {
@@ -293,7 +294,8 @@ public class Game implements Activity {
         // O jogo esta rodando: nenhum menu aberto por cima, a musica volta ao normal.
         // E a rede de seguranca de todo caminho que sai da pausa sem passar pelo
         // "voltar" dela (reiniciar, escolher carta, a vitoria).
-        com.retronova.engine.sound.Sound.abafarParaPausa(false);
+        // A queda mantém o abafamento para a voz da morte continuar em primeiro plano.
+        com.retronova.engine.sound.Sound.abafarParaPausa(player.morrendo());
         if (regravarSave) {
             regravarSave = false;
             if (map instanceof Arena arena) {
@@ -530,7 +532,7 @@ public class Game implements Activity {
     private java.awt.image.BufferedImage portalDosBichos() {
         if (portal == null) {
             portal = new studio.retrozoni.sheeter.SpriteSheet(
-                    "sprites/objects/furniture", new String[]{"portalCistern"});
+                    "sprites/objects/furniture", new String[]{"portalRunforce"});
         }
         return portal.getSprite();
     }

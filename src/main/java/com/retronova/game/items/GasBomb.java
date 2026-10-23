@@ -35,6 +35,7 @@ public class GasBomb extends Item {
                 ThrownGasBom bomb = new ThrownGasBom(player.getX(), player.getY(), player.getDamage() * 3);
                 bomb.getPhysical().addForce("throw", 10, nearest.getAngle(player));
                 Game.getMap().put(bomb);
+                tocarGolpe(com.retronova.engine.sound.Sounds.Arremesso);
             }
         }
     }

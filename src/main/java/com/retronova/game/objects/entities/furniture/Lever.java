@@ -1,7 +1,8 @@
 package com.retronova.game.objects.entities.furniture;
 
-import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.graphics.Brilho;
+import com.retronova.engine.graphics.Familia;
 import com.retronova.engine.inputs.mouse.Mouse_Button;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
@@ -9,10 +10,7 @@ import com.retronova.game.Game;
 import com.retronova.game.map.GameMap;
 import com.retronova.game.objects.GameObject;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 
 /**
  * Alavanca de parede que levanta o portão da dungeon.
@@ -29,9 +27,8 @@ import java.awt.Rectangle;
  * continua existindo — ela só passou a ser a própria grade subindo, que dura meio
  * segundo e não pede clique nenhum de volta.
  *
- * COMO SE SABE QUE DÁ PRA PUXAR. As mesmas três coisas da placa, porque foram as
- * que funcionaram lá: o cursor vira patinha em cima dela, a peça ganha um
- * contorno que pulsa quando o gato está por perto, e a arte tem punho de madeira
+ * COMO SE SABE QUE DÁ PRA PUXAR. O cursor vira patinha em cima dela, a peça ganha
+ * uma luz suave sem moldura, e a arte tem punho de madeira
  * no meio do ferro — a única madeira daquela parede, que é o que diz onde a mão
  * vai.
  */
@@ -43,7 +40,8 @@ public class Lever extends Furniture {
     /** Ticks por quadro do puxão. Curto: a mão é rápida, o portão é que é lento. */
     private static final int TICKS_POR_QUADRO = 4;
 
-    private static final Color REALCE = new Color(0xff, 0xd9, 0x8a);
+    /** Fase do halo em radianos por tick; independe do FPS. */
+    private static final double PASSO_DO_BRILHO = 0.08;
 
     /**
      * Só funciona uma vez.
@@ -158,43 +156,19 @@ public class Lever extends Furniture {
         if (puxada) {
             return;
         }
-        respiro += 0.08;
-        float pulso = (float) (0.7 + 0.3 * Math.sin(respiro));
-        int raio = (int) (GameObject.SIZE() * (0.9 + 0.25 * pulso));
+
+        float intensidade = (float) (0.7 + 0.3 * Math.sin(pulso * PASSO_DO_BRILHO));
+        int raio = (int) (GameObject.SIZE() * (0.9 + 0.25 * intensidade));
         int cx = (int) getX() + getWidth() / 2;
         int cy = (int) getY() + getHeight() / 2;
 
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
-                java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-        int camadas = 4;
-        for (int i = camadas; i >= 1; i--) {
-            int r = raio * i / camadas;
-            int alfa = (int) (34 * pulso * (1f - (i - 1) / (float) camadas));
-            g2.setColor(new java.awt.Color(255, 226, 160, Math.max(0, alfa)));
-            g2.fillOval(cx - r, cy - r, r * 2, r * 2);
-        }
-        g2.dispose();
+        Brilho.disco(g, cx, cy, raio, Familia.OURO.tom(Familia.LUZ, (int) (34 * intensidade)));
     }
-
-    private double respiro;
 
     @Override
     public void render(Graphics2D g) {
         brilhar(g);
         super.render(g);
-        if (puxada || !perto()) {
-            return;
-        }
-        // Pulso lento, em seno, para o realce respirar em vez de piscar.
-        double onda = (Math.sin(pulso / 22d) + 1) / 2;
-        int alfa = 60 + (int) (onda * 110);
-        Rectangle p = peca();
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setStroke(new BasicStroke(Math.max(1, Configs.GameScale() / 2f)));
-        g2.setColor(new Color(REALCE.getRed(), REALCE.getGreen(), REALCE.getBlue(), alfa));
-        g2.drawRect(p.x, p.y, p.width, p.height);
-        g2.dispose();
     }
 
     @Override
@@ -206,15 +180,4 @@ public class Lever extends Furniture {
         return Game.getPlayer().getDistance(this) <= GameObject.SIZE() * ALCANCE;
     }
 
-    /**
-     * Retângulo da PEÇA, que não é o do tile.
-     *
-     * A chapa e o cabo ocupam o miolo da célula; contornar os bounds desenhava o
-     * quadro em volta do tile de parede inteiro, e o realce parecia piscar na
-     * alvenaria. Mesma razão e mesmos números de grandeza que os da placa.
-     */
-    private Rectangle peca() {
-        int e = Configs.GameScale();
-        return new Rectangle((int) getX() + 3 * e, (int) getY() + e, 11 * e, 13 * e);
-    }
 }

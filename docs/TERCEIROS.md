@@ -60,6 +60,12 @@ quadros originais são um ciclo de voo e não um estouro que morre.
 
 As **variantes elementais** das armas são montadas por `tools/GenElementais.java`.
 
+O **cajado comum do Azrael** (`wand.png`) não vem mais de pacote: desde 2026-10-23
+ele é desenhado pelo próprio gerador (`cajadoDoAzrael`), a partir da arte oficial
+`icons/Gato.png`, e não tem autoria de terceiros. A animação das armas não usa
+nenhum arquivo externo; o "LPC simple staff" (Dr. Jamgo, CC0, OpenGameArt) foi só
+referência de gesto, e nada dele foi importado.
+
 **Cada variante é um desenho diferente**, e não a mesma arma pintada de outra cor.
 A primeira versão recolorava um sprite só, e o resultado era o que se esperaria:
 sete espadas idênticas em sete cores, que não dizem nada. Os pacotes trazem

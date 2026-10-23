@@ -71,7 +71,7 @@ public final class Habilidades {
         Game.getMap().put(new OndaDeChoque(cx, cy, raio,
                 com.retronova.engine.graphics.Familia.VERDE.tom(com.retronova.engine.graphics.Familia.LUZ), 0.7f));
         Camera.tremer(1.5);
-        Sound.play(Sounds.Woosh);
+        Sound.play(Sounds.Arremesso);
     }
 
     // ------------------------------------------------------- Explosao arcana

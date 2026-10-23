@@ -57,8 +57,8 @@ public enum Sounds {
 	 * botoes disparava tres confirmacoes seguidas.
 	 */
 	Hover("hover"),
-	Laser("laser"),
-	Sword("sword"),
+	Laser("weapon_magic"),
+	Sword("weapon_blade"),
 	Coin("coin"),
 	DamageCat("damage_cat"),
 	Poison("poison"),
@@ -147,7 +147,19 @@ public enum Sounds {
 	// por baixo, o crédito da equipe e a logo.
 	AberturaVento("abertura_vento"),
 	AberturaCredito("abertura_credito"),
-	AberturaLogo("abertura_logo");
+	AberturaLogo("abertura_logo"),
+	// Recortes imediatos de ataque, em vez dos arquivos longos de cena.
+	Arremesso("weapon_throw"),
+	ImpactoArma("weapon_impact"),
+	PulsoAura("weapon_aura"),
+	ExplosaoArma("weapon_explosion"),
+	/** Sopro e ressonância arcana do cajado/grimório; ver tools/GenSomDoCajado. */
+	FeiticoArcano("spell_arcane"),
+	/** Voz descendente com impacto curto; gerada por GenSonsDaMorte. */
+	MorteMuffin("death_muffin"),
+	MorteAzrael("death_azrael"),
+	MorteFinn("death_finn"),
+	FimDaRun("run_over");
 
 	
 	private final String ResourceName;

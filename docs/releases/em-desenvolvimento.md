@@ -1,5 +1,90 @@
 # Em desenvolvimento (depois da 0.1.3-alpha)
 
+- **Relatório final amplo, inspirado em Hades II** (2026-10-23; `b493edf`). Run Over ocupa a largura da janela, sem diminuir a escala
+  dos menus para caber em dois painéis fixos. Personagem/resultado, 12 atributos
+  finais e dano por fonte aparecem em três colunas. A ficha é capturada antes de
+  descartar a partida e usa os mesmos cálculos do Status. `Final build` reúne
+  armas, elemento, passivas e cartas; `Upgrades` separa a loja do relatório.
+  Abas por mouse/Q/E/LB/RB, listas com rolagem sem cortar fontes de dano ou buffs.
+  Testes de ocupação da janela, ficha imutável e bancada com build preenchida.
+
+- **Espaçamento do resumo e impacto visível na morte** (2026-10-23; `b493edf`,
+  `419aa45`). Painéis 176×260, cabeçalhos e margens maiores,
+  linhas da loja de 28 pixels, fontes menores ampliadas e nomes/valores acima
+  das barras. Ouro e ganho da run separados; habilidade em duas linhas.
+  `ImpactoDaMorte` aplica 24 ticks de deslocamento em pixels da tela, sem
+  redução pelo zoom; substitui o tremor genérico da morte. Mantido o abafamento
+  da música durante a queda. Testes verificam envelope e relógio; bancada
+  compara o deslocamento real da transformação em zoom 50% e 200% e confere
+  layouts de 640×360 até 1920×1080.
+
+- **Morte com impacto e entrada animada de Run Over** (2026-10-23; `419aa45`,
+  `b493edf`). Tremor curto, vibração e voz descendente própria
+  de cada gato, independente do intervalo de dano. Queda lenta em 138 ticks,
+  chama azul-lua com fragmentos e fechamento para preto. Título, painéis, barras
+  e brilho do ouro entram em 60 ticks; após o título, clique/Enter/A ou Esc/B
+  revelam tudo sem comprar ou reiniciar no mesmo comando. Stinger discreto na
+  derrota; conquistas entram após a apresentação. Gerador `GenSonsDaMorte`,
+  testes de fases/WAV e bancada instrumentada do fluxo completo.
+
+- **Portais na identidade visual e alavanca sem moldura** (2026-10-23;
+  `282368b`). Nova folha em pixel art gerada por
+  `GenPortal`: aro com trechos de luz, centro escuro e fragmentos orbitais.
+  Chegada e perigo usam as cinco cores de ACO e VIDA, sem o halo suavizado
+  antigo. Mantidos os tempos e a sequência jogador → inimigos. Alavanca perde
+  o quadrado; sua luz usa a família OURO e cache, com pulso no tick.
+
+- **Timbre arcano para o mago** (2026-10-23; `71deaa3`).
+  Cajado comum e grimório passam do recorte de laser para um sopro com
+  ressonâncias suaves, sintetizado por `GenSomDoCajado.java` em `spell_arcane.wav`.
+  Mantém som no lançamento/contato e volume de rotina; variantes elementais
+  continuam com seu elemento. Efeito de 240 ms, ataque de 3 ms e cauda de 60 ms.
+
+- **Áudio das armas e sincronização** (2026-10-23; `71deaa3`). Varinhas comuns/elementais tocam no disparo, em vez de aguardar o
+  impacto. Kunai, tridente, seda, bolas de pelo, foice, escudo e orbitais recebem
+  efeitos; bombas e meteoros tocam na explosão. Garra e machado também soam se o
+  alvo escapar do corte. Recortes `weapon_*` e `hit_*` eliminam entradas fracas
+  dos arquivos antigos, inclusive terra; o gerador mantém -28 dB RMS e preserva
+  as fontes. Removido o freio redundante de 130 ms por item, mantendo o limitador
+  central. Testes verificam os WAV reais; bancada instrumentada conferiu emissão
+  de 18 armas de mão/variantes e as seis extras, sem depender de saída acústica.
+
+- **Animação das armas na mão** (2026-10-23; `d00c06b`).
+  Camada `AnimacaoDaArma`: toda arma de mão respira parada, balança e pesa no
+  passo (nos quadros reais da folha do gato), se recolhe quando ele vira, e as
+  de magia flutuam. O gesto de ataque (antecipação, ação, volta) tem o pico no
+  tick real do disparo. Tick fixo com interpolação, nada alocado por quadro. Ver
+  ARQUITETURA, "Animação das armas".
+
+- **Espada sai da mão e volta para ela** (2026-10-23; `e38b4b2`).
+  O golpe deixou de pular para a pose do arco no primeiro quadro
+  (`Investida.presenca`). O rastro não acende mais na antecipação, uma estrela de
+  pixel marca o acerto, e as espadas elemental e lendária têm rastro mais forte.
+
+- **Arco com corda de verdade** (2026-10-23; `20333fe`).
+  A corda é achada no PNG (`CordaDoArco`) e redesenhada puxada: tensão na carga
+  cheia, coice e corda vibrando na soltura. A flecha encaixada andava para a
+  frente durante a carga; agora volta com a corda. O desenho persegue a mira em
+  vez de girar de uma vez; o tiro continua com a mira exata.
+
+- **Cajados com halo, faíscas e gesto de lançar** (2026-10-23; `36a01de`).
+  Halo pulsante atrás do orbe, faíscas que andam conforme o elemento, cajado que
+  se ergue antes do tiro e estende no tick em que a bola nasce. O clarão da
+  ponta saiu de `fillOval` suavizado com cor nova por quadro para disco em cache.
+
+- **Cajado do Azrael redesenhado** (2026-10-23; `51c60e7`).
+  `wand.png` agora é desenhado por `GenElementais` a partir da arte oficial:
+  haste dourada-clara, esfera dourada grande, colar e brilho verde em jogo. É o
+  mesmo PNG na mão, na hotbar, no seletor e no Status. Depois de testado em
+  jogo (`ba24057`, `f698e33`), passou a ser seguro pela ponta de baixo da haste,
+  como as varinhas elementais, e a flutuação virou um giro do orbe em volta da
+  pata: subir o cajado inteiro descolava a haste da mão.
+
+  Nenhuma das cinco mudanças altera dano, cadência, alcance, hitbox ou
+  velocidade de projétil. Na varinha nova, o ponto mais alto do desenho (de onde
+  a bola sai) mudou junto com a arte e a pose: **a confirmar** em jogo se o tiro
+  ainda sai da mesma altura percebida.
+
 - **Permissão para pular a abertura** (2026-10-23; `a20c558`).
   Por padrão, teclas, cliques e controle não pulam a abertura.
   Settings → Interface → Allow intro skip libera esse comportamento; a escolha

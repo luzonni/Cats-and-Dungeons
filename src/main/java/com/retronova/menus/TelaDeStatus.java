@@ -77,7 +77,7 @@ import java.util.Map;
 public class TelaDeStatus extends TelaDeMenu {
 
     /** Uma linha: rótulo à esquerda, valor à direita, e opcionalmente uma linha de efeito embaixo. */
-    private record Linha(String rotulo, String valor, Color cor, String efeito, String ajuda) {
+    public record Linha(String rotulo, String valor, Color cor, String efeito, String ajuda) {
         boolean dupla() {
             return efeito != null && !efeito.isEmpty();
         }
@@ -117,7 +117,7 @@ public class TelaDeStatus extends TelaDeMenu {
         colunas.add(List.of(new Bloco("BUFFS", buffs(gato))));
     }
 
-    private static List<Linha> atributos(Player gato) {
+    static List<Linha> atributos(Player gato) {
         List<Linha> l = new ArrayList<>();
         l.add(new Linha("Health", (int) Math.ceil(gato.getLife()) + "/" + (int) gato.getLifeSize()
                 + bonus(gato, Modifiers.Life, 0), Palette.TEXT, null,
@@ -174,7 +174,7 @@ public class TelaDeStatus extends TelaDeMenu {
         return l;
     }
 
-    private static List<Linha> armas(Player gato) {
+    static List<Linha> armas(Player gato) {
         List<Linha> l = new ArrayList<>();
         Item mao = gato.getInventory().getItemHand();
         l.add(new Linha("Hand", mao == null ? "-" : mao.getName(), Palette.TEXT, null,
@@ -201,7 +201,7 @@ public class TelaDeStatus extends TelaDeMenu {
         return l;
     }
 
-    private static List<Linha> buffs(Player gato) {
+    static List<Linha> buffs(Player gato) {
         List<Linha> l = new ArrayList<>();
         Melhorias m = gato.getMelhorias();
         for (Map.Entry<Passiva, Integer> p : m.passivas().entrySet()) {

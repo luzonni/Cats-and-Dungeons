@@ -208,7 +208,7 @@ public abstract class TelaDeMenu implements Activity {
         c.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, p));
         c.translate(0, Math.round((1 - p) * SUBIDA * s));
         if (titulo != null) {
-            desenharTitulo(c, titulo, corDoTitulo);
+            desenharCabecalho(c, titulo, corDoTitulo);
         }
         desenharConteudo(c);
         c.dispose();
@@ -219,6 +219,11 @@ public abstract class TelaDeMenu implements Activity {
 
     /** Hook de reentrada: a tela voltou a ser a corrente. */
     protected void aoEntrar() {
+    }
+
+    /** Permite que o encerramento tenha seu próprio gesto, usando o título comum. */
+    protected void desenharCabecalho(Graphics2D g, String texto, Color cor) {
+        desenharTitulo(g, texto, cor);
     }
 
     /** Calcula a posição de tudo pela janela atual. Chamado todo tick. */

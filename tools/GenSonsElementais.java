@@ -6,7 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 
 /**
- * Corta os sons elementais em versões de IMPACTO.
+ * Corta os sons elementais e mecânicos em versões de IMPACTO.
  *
  * ---------------------------------------------------------------------------
  * O PROBLEMA NÃO ERA VOLUME, ERA DURAÇÃO.
@@ -30,12 +30,13 @@ import java.io.File;
  *
  * Recorta os primeiros 350 ms A PARTIR DO ATAQUE — não do começo do arquivo, que
  * pode ter silêncio antes — e fecha com uma queda suave. Trezentos e cinquenta
- * milissegundos cabem inteiros entre dois golpes de espada, então nunca há duas
- * cópias somando.
+ * milissegundos limitam a cauda; Sound/LimiteDeVozes limita a sobreposição.
  *
- * O nível alvo é -18 dBFS, abaixo do som da própria arma. É deliberado: o
- * elemento é um TEMPERO do golpe, não o golpe. Ele diz de que corrida você é, e
- * precisa ser ouvido sem tapar o ferro da espada.
+ * O nível alvo é -28 dB RMS, a camada de rotina de GenMixagem. O começo precisa
+ * ter ataque de verdade: cruzar o limiar de silêncio não basta num arquivo que
+ * cresce lentamente. O gerador procura a primeira frente forte no trecho e
+ * preserva uma margem de 2 ms, com abertura e queda suaves para não estalar.
+ * As armas elementais usam o som do elemento; as comuns usam o recorte mecânico.
  *
  * Os originais ficam onde estão. Eles continuam bons para o que foram feitos — se
  * um dia houver ambiência de sala elemental, estão prontos.
@@ -49,9 +50,14 @@ public class GenSonsElementais {
 
     /** Quanto do original vira impacto. */
     private static final double DURACAO = 0.35;
+    private static final double DURACAO_LAMINA = 0.22, DURACAO_MAGIA = 0.20,
+            DURACAO_ARREMESSO = 0.18, DURACAO_IMPACTO = 0.22, DURACAO_AURA = 0.20;
 
-    /** Nível alvo, abaixo do som da arma de propósito. */
-    private static final double PICO_ALVO = -18;
+    /** A mesma camada de rotina de GenMixagem, sem precisar de ffmpeg. */
+    private static final double RMS_ALVO = -28;
+    private static final double TETO_PICO = -1.5;
+    /** Primeiro ataque forte, com apenas 2 ms de margem antes dele. */
+    private static final double FRACAO_DO_ATAQUE = 0.5, MARGEM_ATAQUE = 0.002;
 
     /** Acima disto o som já começou. Serve para pular silêncio inicial. */
     private static final double LIMIAR = 0.02;
@@ -62,30 +68,42 @@ public class GenSonsElementais {
     public static void main(String[] args) throws Exception {
         System.out.println("Impactos elementais");
         for (String nome : ELEMENTOS) {
-            File origem = new File(AUDIO + nome + ".wav");
-            if (!origem.exists()) {
-                System.err.println("  faltando: " + nome + ".wav");
-                continue;
-            }
-            AudioInputStream in = AudioSystem.getAudioInputStream(origem);
-            AudioFormat fmt = in.getFormat();
-            byte[] bruto = in.readAllBytes();
-            in.close();
-
-            double[] mono = paraMono(bruto, fmt);
-            double[] impacto = recortar(mono, fmt.getSampleRate());
-            normalizar(impacto, PICO_ALVO);
-
-            // SAI EM 16 BITS MONO. Os originais sao 24 bits estereo, que e formato
-            // de biblioteca de ambiencia; para um efeito de trezentos milissegundos
-            // isso e o triplo de bytes por nada, e o resto do arsenal do jogo ja e
-            // 16 bits.
-            AudioFormat saida = new AudioFormat(fmt.getSampleRate(), 16, 1, true, false);
-            gravar(impacto, saida, new File(AUDIO + "hit_" + nome + ".wav"));
-            System.out.printf("  hit_%-8s %.2fs -> %.2fs%n", nome + ".wav",
-                    (bruto.length / (double) fmt.getFrameSize()) / fmt.getSampleRate(),
-                    impacto.length / fmt.getSampleRate());
+            gerar(nome, "hit_" + nome, DURACAO);
         }
+        // RECORTES DE ARMA: os originais também servem a cenas e inimigos.
+        // Preservá-los evita encurtar esses eventos ao corrigir o tempo do golpe.
+        gerar("sword", "weapon_blade", DURACAO_LAMINA);
+        gerar("laser", "weapon_magic", DURACAO_MAGIA);
+        gerar("woosh", "weapon_throw", DURACAO_ARREMESSO);
+        gerar("crack", "weapon_impact", DURACAO_IMPACTO);
+        gerar("poison", "weapon_aura", DURACAO_AURA);
+        gerar("explosion", "weapon_explosion", DURACAO);
+    }
+
+    private static void gerar(String nome, String destino, double duracao) throws Exception {
+        File origem = new File(AUDIO + nome + ".wav");
+        if (!origem.exists()) {
+            System.err.println("  faltando: " + nome + ".wav");
+            throw new IllegalStateException("Fonte de áudio ausente: " + origem);
+        }
+        AudioInputStream in = AudioSystem.getAudioInputStream(origem);
+        AudioFormat fmt = in.getFormat();
+        byte[] bruto = in.readAllBytes();
+        in.close();
+
+        double[] mono = paraMono(bruto, fmt);
+        double[] impacto = recortar(mono, fmt.getSampleRate(), duracao);
+        normalizar(impacto, RMS_ALVO);
+
+        // SAI EM 16 BITS MONO. Os originais sao 24 bits estereo, que e formato
+        // de biblioteca de ambiencia; para um efeito de trezentos milissegundos
+        // isso e o triplo de bytes por nada, e o resto do arsenal do jogo ja e
+        // 16 bits.
+        AudioFormat saida = new AudioFormat(fmt.getSampleRate(), 16, 1, true, false);
+        gravar(impacto, saida, new File(AUDIO + destino + ".wav"));
+        System.out.printf("  %-22s %.2fs -> %.2fs%n", destino + ".wav",
+                (bruto.length / (double) fmt.getFrameSize()) / fmt.getSampleRate(),
+                impacto.length / fmt.getSampleRate());
     }
 
     private static double[] paraMono(byte[] b, AudioFormat fmt) {
@@ -114,7 +132,7 @@ public class GenSonsElementais {
      * silencio — e num efeito de trezentos milissegundos, cem de silencio sao um
      * terco do som jogado fora, e o golpe soaria atrasado em relacao ao que se ve.
      */
-    private static double[] recortar(double[] fonte, float taxa) {
+    private static double[] recortar(double[] fonte, float taxa, double duracao) {
         int inicio = 0;
         while (inicio < fonte.length && Math.abs(fonte[inicio]) < LIMIAR) {
             inicio++;
@@ -122,7 +140,19 @@ public class GenSonsElementais {
         if (inicio >= fonte.length) {
             inicio = 0;
         }
-        int quantos = Math.min((int) (DURACAO * taxa), fonte.length - inicio);
+        // SILÊNCIO NÃO É O ÚNICO ATRASO: sword e hit_earth já tinham amostras
+        // baixas no começo, mas o ataque percebido vinha 180–200 ms depois.
+        // Procura a primeira frente forte dentro do trecho, antes de recortar.
+        int fimDaBusca = Math.min(fonte.length, inicio + (int) (DURACAO * taxa));
+        double picoDoTrecho = 0;
+        for (int i = inicio; i < fimDaBusca; i++) {
+            picoDoTrecho = Math.max(picoDoTrecho, Math.abs(fonte[i]));
+        }
+        while (inicio < fimDaBusca && Math.abs(fonte[inicio]) < picoDoTrecho * FRACAO_DO_ATAQUE) {
+            inicio++;
+        }
+        inicio = Math.max(0, inicio - (int) (MARGEM_ATAQUE * taxa));
+        int quantos = Math.min((int) (duracao * taxa), fonte.length - inicio);
         double[] saida = new double[quantos];
         System.arraycopy(fonte, inicio, saida, 0, quantos);
         // A QUEDA E LONGA, um terco do trecho. Cortar seco criaria um clique, e
@@ -141,13 +171,16 @@ public class GenSonsElementais {
 
     private static void normalizar(double[] v, double alvoDbfs) {
         double pico = 0;
+        double energia = 0;
         for (double x : v) {
             pico = Math.max(pico, Math.abs(x));
+            energia += x * x;
         }
         if (pico == 0) {
             return;
         }
-        double ganho = Math.pow(10, alvoDbfs / 20.0) / pico;
+        double ganho = Math.min(Math.pow(10, alvoDbfs / 20.0) / Math.sqrt(energia / v.length),
+                Math.pow(10, TETO_PICO / 20.0) / pico);
         for (int i = 0; i < v.length; i++) {
             v[i] *= ganho;
         }

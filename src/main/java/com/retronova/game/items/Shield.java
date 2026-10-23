@@ -69,6 +69,7 @@ public class Shield extends Item {
             if (e.colliding(this.boundsAttack) && e != this.atingido) {
                 this.atingido = e;
                 e.strike(AttackTypes.Melee, player.getDamage() * 0.5);
+                tocarGolpe(com.retronova.engine.sound.Sounds.ImpactoArma);
                 break;
             }
         }
