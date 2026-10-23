@@ -1,5 +1,29 @@
 # Em desenvolvimento (depois da 0.1.3-alpha)
 
+- **Permissão para pular a abertura** (2026-10-23; `a20c558`).
+  Por padrão, teclas, cliques e controle não pulam a abertura.
+  Settings → Interface → Allow intro skip libera esse comportamento; a escolha
+  é salva para os próximos inícios e pode ser desligada novamente.
+
+- **Crédito da Runforce** (2026-10-23; `9f9b08a`).
+  O nome Runforce substitui o marcador `[team name]` na abertura do jogo.
+
+- **Tela cheia informa o modo ao Windows** (2026-10-23; `7a3b7c0`).
+  Desligar o redimensionamento sozinho não bastou no uso real.
+  `TelaCheiaDoWindows` usa `ITaskbarList2.MarkFullscreenWindow` para manter a barra
+  atrás do jogo ativo; reaplica depois de mostrar/ativar o frame e ao aplicar
+  vídeo, removendo a marca no modo janela. Validado também com o jogo completo,
+  com capturas do sistema na abertura e no menu em 1920×1080.
+
+- **Janela em primeiro plano ao iniciar** (2026-10-23; `7a3b7c0`).
+  `FocoDoWindows` pede ativação nativa uma vez na abertura, com
+  desbloqueio por Alt pressionado/solto se o pedido normal for recusado e nenhum
+  modificador estiver pressionado, conforme a implementação de inicialização da
+  Tao. Substitui a elevação temporária por `alwaysOnTop`, que não garantia
+  ativação: a barra permanecia até o clique. Validado iniciando o jogo pelo
+  Gradle, com `GetForegroundWindow` confirmando ativação, zero apertos recebidos
+  pela abertura e capturas sem a barra. Alt+Tab e modo foto não repetem a tentativa.
+
 > **Reconstruído a partir do histórico do git em 2026-10-21.** Nada disto saiu
 > numa versão: não há tag depois de `v0.1.3-alpha`, e o `build.gradle.kts`
 > continua em `0.1.3-alpha`. O número da próxima versão está **a confirmar**.
@@ -352,3 +376,6 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#abertura-do-jogo-abertura).
 - **Abertura mais lenta** (`d0aee84`, `65d5a17`). Depois de jogar: a completa passou
   de 4,4 s para 7,4 s e a curta de 1,6 s para 2,7 s, com tempo para ler o crédito e
   ver a luz atravessar a logo. O ar de fundo dura 8 s para acompanhar.
+- **Abertura completa recorrente** (`a20c558`). Os 7,4 s
+  se repetem a cada início, sem consultar nem gravar `introVista`. A curta de 2,7 s
+  fica só para `-Dcd.intro=curta`; o pulo depende de Allow intro skip.

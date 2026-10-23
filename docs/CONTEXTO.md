@@ -155,7 +155,7 @@ docs/                          esta pasta
 | Luz, sombra, vinheta | `game/map/Atmosfera.java` |
 | Configurações | `engine/Configs.java` (`config.json`, gravação atômica) |
 | Laço do jogo, limitador de quadros, VSync | `engine/Engine.java` (`run`, `esperarAte`, `periodoDoQuadro`), `engine/RelogioDoSistema.java` |
-| Janela, resolução, tela cheia, escala da imagem | `engine/Window.java` (`aplicarVideo`, `resolucoesDoMonitor`), `Engine.desenharEscalado` |
+| Janela, resolução, tela cheia, escala da imagem | `engine/Window.java` (`aplicarVideo`, `resolucoesDoMonitor`, `destacarAoIniciar`), `engine/FocoDoWindows.java` (ativação nativa na abertura), `engine/TelaCheiaDoWindows.java` (marca de tela cheia para o Shell), `Engine.desenharEscalado` |
 | Escala da interface (HUD, menus, margem) | `engine/EscalaDaInterface.java`, preferências em `Configs` |
 | Layout do HUD por âncoras e teto | `game/hud/LayoutDoHud.java` (F7 desenha as caixas) |
 | Diagnóstico de vídeo | `engine/Video.java` (`-Dcd.video`), gráfico do F3 em `engine/Debugging.java` |
@@ -195,8 +195,8 @@ docs/                          esta pasta
 | Funcionalidade | Estado | Nota |
 |---|---|---|
 | Menu, Settings (vídeo, áudio, interface), pausa | ✅ | todas sobre `TelaDeMenu`; a pausa é o painel de Settings com a aba Run (`Configuracoes`) |
-| Vídeo: resolução, tela cheia sem bordas, VSync e limite de quadros | ✅ | resolução aplicada em janela e em tela cheia, sem piscar; limite "Monitor" por padrão; HUD limitado ao que cabe. Testado num monitor 1920x1080 a 180 Hz; outros monitores, DPI e sistemas **a confirmar** (ver ARQUITETURA) |
-| Abertura do jogo | ✅ | completa na primeira vez (7,4 s), curta depois (2,7 s), pulável; o crédito da equipe é um marcador até a equipe ter nome |
+| Vídeo: resolução, tela cheia sem bordas, VSync e limite de quadros | ✅ | resolução aplicada em janela e em tela cheia, sem piscar; Windows recebe marca explícita de tela cheia (`TelaCheiaDoWindows`) para manter a barra de tarefas atrás do jogo ativo; limite "Monitor" por padrão; HUD limitado ao que cabe. Testado num monitor 1920x1080 a 180 Hz; outros monitores, DPI e sistemas **a confirmar** (ver ARQUITETURA) |
+| Abertura do jogo | ✅ | completa a cada início (7,4 s); pulo bloqueado por padrão, liberável em Settings → Interface → Allow intro skip; curta (2,7 s) só com `-Dcd.intro=curta`; crédito da equipe: Runforce |
 | Seleção de personagem (3 gatos) | ✅ | |
 | Três espaços de save, retomar e apagar | ✅ | |
 | Antecâmara com vendedor, placas e portão | ✅ | o portão leva à corrida |
