@@ -94,13 +94,13 @@ class Hotbar {
         Slot slot = player.getInventory().getHotbar()[getIndexHot()];
         player.getInventory().setItemHand(slot.item());
         if(!slot.isEmpty()) {
-            if(KeyBoard.KeyPressed("F")) {
+            if(com.retronova.engine.inputs.Acao.USAR_ITEM.apertou()) {
                 if(slot.item() instanceof Consumable consumable) {
                     consumable.consume();
                     slot.take();
                 }
             }
-            if(KeyBoard.KeyPressed("Q")) {
+            if(com.retronova.engine.inputs.Acao.LARGAR_ITEM.apertou()) {
                 player.dropLoot(slot.take());
             }
         }

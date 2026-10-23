@@ -730,6 +730,75 @@ Duas regras pesam no desempenho e no comportamento:
   telas, o B volta. O papel é decidido no aperto e fica até soltar, para o B
   que abre a loja não fechá-la no tick seguinte.
 
+### Ações e a tela de Controles
+
+**A fonte única é `engine/inputs/Acao.java`.** Cada ação diz o nome que a tela
+mostra, o grupo dela e quais **teclas virtuais** ela lê; o resto é derivado:
+
+- a tecla física sai de `KeyBoard.Keys` (o código `KeyEvent` de cada nome);
+- o botão do controle sai do mapa do `Gamepad` (`Gamepad.comandosDaTecla`), com as
+  duas regras que não estão no mapa: o B (interage em jogo, volta nas telas) e o
+  analógico esquerdo, que também aperta as setas;
+- quem lê o controle direto (LB/RB da hotbar e das abas, o analógico direito da
+  câmera) declara a peça na própria ação.
+
+As ações de jogo leem por ela (`Acao.PAUSAR.apertou()`, `STATUS`, `INTERAGIR`,
+`DASH`, `USAR_ITEM`, `LARGAR_ITEM`, `TELA_CHEIA`), então trocar a tecla de uma
+delas muda o jogo e a tela juntos. As telas de menu continuam lendo setas, Enter
+e Esc pelo nome. O `AcaoTest` varre `src/main/java` e falha se o código ler uma
+tecla, ou um botão direto do controle, que não esteja em nenhuma ação. Não há
+remapeamento; se vier, ele muda `KeyBoard.Keys` e o mapa do `Gamepad`, e a tela já
+mostra o resultado.
+
+**Ação nova:** uma constante em `Acao`, no grupo dela, com o rótulo em inglês e a
+frase de ajuda. Ela aparece sozinha nas duas visões e o teste passa a cobri-la.
+Se for lida no jogo, leia por `Acao.X.apertou()`.
+
+**A tela** é a aba **Controls** do Settings (`menus/controles/PainelDeControles`),
+pela tela inicial e pela pausa. A linha **Device** troca entre as duas visões, e a
+aba abre na do último aparelho usado (`Entrada`).
+
+- **Teclado e mouse:** lista em duas colunas por grupo (Movement, In a run, Menus,
+  System): ação à esquerda, teclas à direita. WASD e setas do movimento em cruz.
+  Sem mini-teclado: com umas vinte teclas espalhadas de F3 a Enter, um teclado
+  inteiro nesta largura deixaria cada tecla com 4 ou 5 pixels.
+- **Controle:** o desenho (`DesenhoDoControle`) com uma linha de cada peça até o
+  rótulo. A **carcaça** é o Xbox One do pacote do lightUP (ver `TERCEIROS.md`),
+  remapeada para a paleta e esculpida com volume; o logotipo do botão do meio é
+  coberto por um botão liso. As **peças** (analógicos, direcional, botões de face
+  com a letra, View e Menu) são pintadas em código por cima. Volume por escultura:
+  a distância até a borda vira altura, o declive vira a direção da superfície e
+  uma luz do alto à esquerda escolhe o tom numa rampa curta da paleta.
+- **Linhas com um ângulo no máximo** (`LigacoesDoControle`). A maior parte vai a
+  uma coluna: reta até a borda do desenho e diagonal até o rótulo, com os rótulos
+  na ordem das âncoras para as diagonais não se cruzarem. View e Menu (na altura
+  do analógico esquerdo) sobem retos até uma fileira de rótulos acima do desenho;
+  o X (cercado pelos outros botões de face) e o analógico direito descem até uma
+  fileira abaixo. O `DesenhoDoControleTest` confere que nada se cruza e que
+  nenhuma reta passa por cima de outra peça.
+- **Seletor In a run / In menus** acima do desenho: a mesma peça muda de papel (o
+  B interage em jogo e volta nas telas), e cada rótulo mostra só o papel do
+  contexto escolhido. Peça sem papel naquele contexto (o A na corrida, os
+  gatilhos nos menus) sai esmaecida e sem rótulo. Clique, ou foco com
+  esquerda/direita/Enter. A primeira versão mostrava os dois papéis com uma
+  legenda de cores, que se lia como botão e não era.
+- Foco ou mouse numa ação acende a peça; mouse na peça acende a ação. O balão
+  de ajuda, nesta aba, aparece só pelo mouse: pelo foco ele ficaria parado em
+  cima do desenho.
+- **Escala:** cada visão usa a maior escala inteira que cabe, até a da interface
+  (`escalaQueCabe`); o desenho do controle cresce até o dobro da escala do texto
+  se houver espaço. Só em 1x, sem ter para onde descer, a lista do teclado rola.
+- O painel do Settings passou de 240 para 288 pixels nativos de largura, para o
+  desenho e as duas colunas de rótulos caberem, e cresce na altura até caber a
+  lista do teclado, igual em todas as abas.
+
+**Glyphs** (`engine/graphics/Glyphs`): teclas, mouse e botões do pacote da Kenney
+(ver `TERCEIROS.md`), com a auréola de dois pixels da folha afinada para um
+contorno de um pixel na cor da paleta e o desenho recortado. Ampliados por fator
+inteiro e guardados por escala. O **rodapé** (`Rodape`) usa os mesmos desenhos:
+cada pedaço do rótulo separado por "/" vira um desenho, e o rótulo sem desenho
+continua como texto numa capa de tecla.
+
 ## Recursos
 
 Sprites são PNG em pixel art de 16×16, ampliados por fator **inteiro** com

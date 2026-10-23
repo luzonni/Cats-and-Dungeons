@@ -21,6 +21,7 @@ import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.OptionRow;
 import com.retronova.menus.shared.Rodape;
 import com.retronova.menus.shared.TelaDeMenu;
+import com.retronova.menus.controles.PainelDeControles;
 
 import java.awt.AlphaComposite;
 import java.awt.Font;
@@ -59,6 +60,9 @@ import java.util.List;
  */
 public class Configuracoes extends TelaDeMenu {
 
+    /** Largura máxima do painel, em pixels nativos. */
+    private static final int LARGURA_DO_PAINEL = 288;
+
     /** Limites de quadros, na ordem do ciclo: o do monitor primeiro, sem limite por último. */
     private static final int[] FPS_VALORES = {Configs.LIMITE_MONITOR, 30, 60, 120, 144, 165, 240, Configs.SEM_LIMITE};
 
@@ -87,6 +91,8 @@ public class Configuracoes extends TelaDeMenu {
 
     private final Button aplicar;
     private final Button voltar;
+    /** O conteúdo da aba Controls, abaixo da linha Device. */
+    private final PainelDeControles controles = new PainelDeControles();
 
     /** As configurações, pela tela inicial. */
     public Configuracoes() {
@@ -102,8 +108,8 @@ public class Configuracoes extends TelaDeMenu {
         super(naCorrida ? "Paused" : "Settings");
         this.naCorrida = naCorrida;
         this.abas = naCorrida
-                ? new Abas("Run", "Video", "Audio", "Interface")
-                : new Abas("Video", "Audio", "Interface");
+                ? new Abas("Run", "Video", "Audio", "Interface", "Controls")
+                : new Abas("Video", "Audio", "Interface", "Controls");
         if (naCorrida) {
             linhas.add(linhasDaCorrida());
         }
@@ -272,9 +278,30 @@ public class Configuracoes extends TelaDeMenu {
                 () -> Configs.PermitirPularAbertura() ? 1 : 0, v -> Configs.setPermitirPularAbertura(v != 0))
                 .desc("Allow a key, click or controller button to skip the opening. Off by default."));
 
+        // CONTROLS: só a escolha do aparelho é uma linha; o resto é o painel de
+        // controles logo abaixo dela (ver PainelDeControles).
+        List<OptionRow> controle = new ArrayList<>();
+        controle.add(OptionRow.cycle("Device", controles::visao, controles::setVisao,
+                PainelDeControles.rotulosDasVisoes())
+                .desc("Show the keyboard and mouse or the controller. Opens on the one you used last."));
+
         linhas.add(video);
         linhas.add(audio);
         linhas.add(ui);
+        linhas.add(controle);
+    }
+
+    private boolean naAbaDeControles() {
+        return abas.atual() == linhas.size() - 1;
+    }
+
+    /** O painel de controles conta como um item a mais no foco, logo depois das linhas da aba. */
+    private int extras() {
+        return naAbaDeControles() ? 1 : 0;
+    }
+
+    private int focoDoPainel() {
+        return naAbaDeControles() ? atuais().size() : -1;
     }
 
     private static int indiceFps() {
@@ -355,7 +382,9 @@ public class Configuracoes extends TelaDeMenu {
     protected void posicionar() {
         int s = Configs.UiScale();
         Rectangle area = areaDoConteudo();
-        int larguraPainel = Math.min(Engine.window.largura() - 16 * s, 240 * s);
+        // 288 E NÃO 240: a aba Controls põe o desenho do controle entre duas colunas
+        // de rótulos, e em 240 os rótulos dos menus ("Skip level-up") não cabiam.
+        int larguraPainel = Math.min(Engine.window.largura() - 16 * s, LARGURA_DO_PAINEL * s);
         int x = Engine.window.largura() / 2 - larguraPainel / 2;
 
         int alturaAbas = Abas.altura();
@@ -385,6 +414,15 @@ public class Configuracoes extends TelaDeMenu {
             entreBlocos = Math.max(6 * s, entreBlocos - s);
         }
 
+        // A lista do teclado da aba Controls é a mais alta de todas: o painel
+        // cresce por ela, em todas as abas, para não mudar de altura na troca. Só
+        // até onde a tela deixa; numa tela baixa a lista rola (PainelDeControles).
+        int dosControles = margemTopo + OptionRow.height() + entreLinhas
+                + PainelDeControles.alturaNecessaria() * s + margemBase;
+        int cresce = Math.max(0, Math.min(dosControles - alturaLinhas, area.height - total));
+        alturaLinhas += cresce;
+        total += cresce;
+
         int yAbas = area.y + Math.max(0, (area.height - total) / 2);
         abas.posicionar(x, yAbas, larguraPainel);
         this.painel = new Rectangle(x, yAbas + alturaAbas, larguraPainel, alturaLinhas);
@@ -402,6 +440,10 @@ public class Configuracoes extends TelaDeMenu {
             Rectangle ultima = linhas.getFirst().getLast().getBounds();
             yDoResumo = ultima.y + ultima.height + entreLinhas;
         }
+        Rectangle device = linhas.getLast().getFirst().getBounds();
+        int topoDosControles = device.y + device.height + entreLinhas;
+        controles.posicionar(new Rectangle(x + margemX, topoDosControles, larguraPainel - 2 * margemX,
+                painel.y + painel.height - margemBase - topoDosControles));
 
         int larguraBotao = Button.preferredWidth();
         int yBotoes = yAbas + alturaAbas + alturaLinhas + entreBlocos;
@@ -414,19 +456,25 @@ public class Configuracoes extends TelaDeMenu {
 
     /** Índice do foco que cai no Apply, ou -1 quando ele não está na tela. */
     private int focoDoAplicar() {
-        return temPendencia() ? atuais().size() : -1;
+        return temPendencia() ? atuais().size() + extras() : -1;
     }
 
     private int focoDoVoltar() {
-        return atuais().size() + (temPendencia() ? 1 : 0);
+        return atuais().size() + extras() + (temPendencia() ? 1 : 0);
     }
 
     @Override
     protected void atualizar() {
         if (abas.tick()) {
             foco = 0;
+            if (naAbaDeControles()) {
+                controles.mostrarUltimoDispositivo();
+            }
         }
         navegarPeloTeclado();
+        if (naAbaDeControles()) {
+            controles.tick(foco == focoDoPainel());
+        }
 
         List<OptionRow> rows = atuais();
         for (int i = 0; i < rows.size(); i++) {
@@ -455,6 +503,23 @@ public class Configuracoes extends TelaDeMenu {
     private void navegarPeloTeclado() {
         List<OptionRow> rows = atuais();
         int quantos = focoDoVoltar() + 1;
+        // DENTRO DO PAINEL DE CONTROLES as setas são dele: andam pelas ações e só
+        // devolvem o foco ao passar da primeira ou da última.
+        if (foco == focoDoPainel()) {
+            int sai = controles.navegar();
+            if (sai != 0) {
+                foco += sai;
+            }
+            return;
+        }
+        int antes = foco;
+        navegarNaLista(rows, quantos);
+        if (foco == focoDoPainel() && foco != antes) {
+            controles.entrar(antes < foco);
+        }
+    }
+
+    private void navegarNaLista(List<OptionRow> rows, int quantos) {
         if (KeyBoard.KeyPressed("Down")) {
             foco = (foco + 1) % quantos;
         } else if (KeyBoard.KeyPressed("Up")) {
@@ -478,6 +543,9 @@ public class Configuracoes extends TelaDeMenu {
     @Override
     protected List<Rodape.Dica> dicas() {
         Rodape.Dica sair = naCorrida ? new Rodape.Dica("Esc", "B", "Resume") : Rodape.VOLTAR;
+        if (naAbaDeControles() && foco == focoDoPainel()) {
+            return List.of(new Rodape.Dica("Arrows", "D-pad", "Browse"), Rodape.ABAS, sair);
+        }
         return List.of(naAbaDaCorrida() ? Rodape.SELECIONAR : Rodape.AJUSTAR, Rodape.ABAS, sair);
     }
 
@@ -514,6 +582,9 @@ public class Configuracoes extends TelaDeMenu {
             if (naAbaDaCorrida()) {
                 desenharResumo(g);
             }
+            if (naAbaDeControles()) {
+                controles.render(g);
+            }
             return;
         }
         int s = Configs.UiScale();
@@ -527,6 +598,9 @@ public class Configuracoes extends TelaDeMenu {
         }
         if (naAbaDaCorrida()) {
             desenharResumo(g2);
+        }
+        if (naAbaDeControles()) {
+            controles.render(g2);
         }
         g2.dispose();
     }
@@ -603,25 +677,37 @@ public class Configuracoes extends TelaDeMenu {
      * acima de tudo, e preso dentro da janela para não vazar pelas bordas.
      */
     private void desenharTooltip(Graphics2D g) {
-        OptionRow alvo = null;
+        String texto = null;
+        Rectangle alvo = null;
         boolean peloMouse = false;
         for (OptionRow linha : atuais()) {
             if (linha.estaSobreLinha() && !linha.getDescricao().isEmpty()) {
-                alvo = linha;
+                texto = linha.getDescricao();
+                alvo = linha.getBounds();
                 peloMouse = true;
                 break;
             }
         }
-        if (alvo == null && com.retronova.engine.inputs.Entrada.porFoco() && foco < atuais().size()) {
-            alvo = atuais().get(foco);
+        // NA ABA CONTROLS O BALÃO É SÓ DO MOUSE. Pelo foco ele ficaria parado em
+        // cima do desenho do controle ou da coluna vizinha — o painel ocupa a tela
+        // toda na largura —, e o rótulo e a peça acesa já dizem o que é.
+        if (texto == null && naAbaDeControles() && controles.ajudaPeloMouse()) {
+            texto = controles.descricao();
+            alvo = controles.alvoDaDescricao();
+            peloMouse = true;
         }
-        if (alvo == null || alvo.getDescricao().isEmpty()) {
+        if (texto == null && !naAbaDeControles() && com.retronova.engine.inputs.Entrada.porFoco()
+                && foco < atuais().size()) {
+            texto = atuais().get(foco).getDescricao();
+            alvo = atuais().get(foco).getBounds();
+        }
+        if (texto == null || texto.isEmpty() || alvo == null) {
             return;
         }
         int s = Configs.UiScale();
         Font fonte = FontHandler.font(FontHandler.Game, 5f * s);
         int larguraMax = 96 * s;
-        List<String> linhasTexto = quebrar(alvo.getDescricao(), fonte, larguraMax);
+        List<String> linhasTexto = quebrar(texto, fonte, larguraMax);
 
         int alturaLinha = 7 * s;
         int pad = 4 * s;
@@ -640,7 +726,7 @@ public class Configuracoes extends TelaDeMenu {
             // Pelo foco, o balão fica ao lado do painel, na altura da linha: à
             // direita se couber, senão à esquerda. Só sem espaço nos dois lados ele
             // desce para baixo da linha — e aí cobre a de baixo, o mal menor.
-            Rectangle r = alvo.getBounds();
+            Rectangle r = alvo;
             y = r.y;
             if (painel.x + painel.width + 4 * s + caixaW <= Engine.window.largura() - 2 * s) {
                 x = painel.x + painel.width + 4 * s;
