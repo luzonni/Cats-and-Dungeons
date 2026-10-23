@@ -29,7 +29,10 @@ public class Spark extends Particle {
     @Override
     public void render(Graphics2D g) {
         int size = Configs.GameScale();
-        g.setColor(new Color(255, 0,0, 255 - (int)(255 * (count/getSeconds()))));
+        // Na família da vida, com a opacidade em degraus prontos: era um vermelho
+        // puro e uma cor nova por faísca, por quadro.
+        g.setColor(com.retronova.engine.graphics.Familia.VIDA.tom(com.retronova.engine.graphics.Familia.LUZ,
+                Math.max(0, 255 - (int) (255 * (count / getSeconds())))));
         g.fillRect((int)getX(), (int)getY(), size, size);
     }
 }

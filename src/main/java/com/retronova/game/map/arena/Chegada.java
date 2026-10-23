@@ -152,11 +152,14 @@ public class Chegada {
          *
          * POR QUE TÃO CLARO. O WARN da interface é escuro (é texto sobre painel);
          * sobre o chão de pedra cinza e as manchas de mato do campo ele sumiria. A
-         * rampa vai do vinho ao rosa-claro, e o miolo claro mais o brilho que
+         * rampa é a da família da vida (Familia.VIDA: o vermelho das barras e do
+         * golpe), do vinho ao rosa-claro, e o miolo claro mais o brilho que
          * pulsa por baixo dão contraste de VALOR, além de matiz, sobre qualquer
          * chão — o que importa no meio da horda, onde se olha de relance.
          */
-        PERIGO(new Color(0x3A1424), new Color(0xB8344F), new Color(0xFF9AA8), true),
+        PERIGO(com.retronova.engine.graphics.Familia.VIDA.tom(com.retronova.engine.graphics.Familia.SOMBRA_FUNDA),
+                com.retronova.engine.graphics.Familia.VIDA.tom(com.retronova.engine.graphics.Familia.BASE),
+                com.retronova.engine.graphics.Familia.VIDA.tom(com.retronova.engine.graphics.Familia.BRILHO), true),
         /** A luz da lua da arte (Palette.DEEP → LIGHT → TEXT): chegada sem ameaça. */
         CHEGADA(com.retronova.engine.graphics.Palette.DEEP, com.retronova.engine.graphics.Palette.LIGHT,
                 com.retronova.engine.graphics.Palette.TEXT, false);
