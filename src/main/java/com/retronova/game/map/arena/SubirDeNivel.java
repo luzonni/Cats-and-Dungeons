@@ -83,10 +83,11 @@ public class SubirDeNivel implements Activity {
     private record Carta(String rotulo, String icone, String nome, String efeito,
                          Color cor, Runnable aplicar) {
 
-        /** A carta como a mão a desenha: o ícone da build no medalhão. */
+        /** A carta como a mão a desenha: o ícone da build no medalhão, no maior fator inteiro que caiba. */
         MaoDeCartas.Carta naMao() {
+            com.retronova.game.items.Icone desenho = com.retronova.game.items.Icone.pelaChave(icone);
             return new MaoDeCartas.Carta(rotulo, cor,
-                    (g, x, y, lado, c) -> Icones.desenhar(g, icone, c.darker(), x, y, lado / 9),
+                    (g, x, y, lado, c) -> desenho.desenharNoCentro(g, x, y, lado),
                     nome, efeito);
         }
     }
@@ -298,16 +299,16 @@ public class SubirDeNivel implements Activity {
         List<Object[]> itens = new ArrayList<>();
         for (var e : m.armas().entrySet()) {
             String sufixo = m.evoluiu(e.getKey()) ? "*" : String.valueOf(e.getValue());
-            itens.add(new Object[]{e.getKey().name(), e.getKey().cor(), sufixo});
+            itens.add(new Object[]{com.retronova.game.items.Icone.de(e.getKey()), sufixo});
         }
         for (var e : m.passivas().entrySet()) {
-            itens.add(new Object[]{e.getKey().name(), e.getKey().cor(), String.valueOf(e.getValue())});
+            itens.add(new Object[]{com.retronova.game.items.Icone.de(e.getKey()), String.valueOf(e.getValue())});
         }
         if (itens.isEmpty()) {
             return;
         }
-        int cel = Math.max(1, 2 * s);
-        int lado = Icones.lado(cel);
+        int escala = Math.max(1, s);
+        int lado = com.retronova.game.items.Icone.lado(escala);
         int passo = lado + 12 * s;
         int x = w / 2 - (itens.size() * passo) / 2;
         Font f = FontHandler.font(FontHandler.Septem, 6f * s);
@@ -316,8 +317,8 @@ public class SubirDeNivel implements Activity {
         for (Object[] it : itens) {
             g.setColor(Palette.OUTLINE);
             g.fillRoundRect(x, y, lado + 6 * s, lado + 6 * s, 6 * s, 6 * s);
-            Icones.desenhar(g, (String) it[0], (Color) it[1], x + 3 * s, y + 3 * s, cel);
-            String nivel = (String) it[2];
+            ((com.retronova.game.items.Icone) it[0]).desenhar(g, x + 3 * s, y + 3 * s, escala);
+            String nivel = (String) it[1];
             // A arma evoluída leva a estrela no tom de destaque, e não em dourado.
             contornado(g, nivel, f, x + lado + 2 * s, y + lado + 6 * s,
                     "*".equals(nivel) ? Palette.ACCENT : Palette.TEXT, s);

@@ -678,9 +678,9 @@ public class Roleta implements Activity {
             if (velocidade > 0.15) {
                 int nivel = (int) Math.max(1, Math.min(Icones.NIVEIS_DE_RASTRO, Math.round(velocidade * 1.7)));
                 int passo = Math.max(1, (int) Math.round(nivel / 1.7 * ch * 0.18));
-                Icones.desenharComRastro(g, p.icone(), p.corDoIcone(), ix, iy, celula, nivel, passo);
+                Icones.desenharComRastro(g, p.icone(), ix, iy, celula, nivel, passo);
             } else {
-                Icones.desenhar(g, p.icone(), p.corDoIcone(), ix, iy, celula);
+                Icones.desenhar(g, p.icone(), ix, iy, celula);
             }
             // Divisoria fina entre simbolos.
             g.setColor(new Color(0, 0, 0, 25));
@@ -772,7 +772,7 @@ public class Roleta implements Activity {
         int ix = x + 8 * s, iy = y + 14 * s + (ch - 14 * s - lado) / 2;
         g.setColor(new Color(0xF4EBDD));
         g.fillRoundRect(ix - 2 * s, iy - 2 * s, lado + 4 * s, lado + 4 * s, 6 * s, 6 * s);
-        Icones.desenhar(g, vencedor.icone(), vencedor.corDoIcone(), ix, iy, celula);
+        Icones.desenhar(g, vencedor.icone(), ix, iy, celula);
 
         int tx = ix + lado + 8 * s;
         int larguraTexto = x + cw - 6 * s - tx;
