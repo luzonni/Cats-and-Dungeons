@@ -106,16 +106,139 @@ public class Wand extends Item {
         java.awt.geom.Point2D.Double bico = pontaDaVarinha(player);
         java.awt.geom.Point2D.Double origem = bocaUsavel(player, bico.x, bico.y);
         Entity perto = alvoAlcancavel(player, player.getRange(), origem.x, origem.y);
+        tickFaiscas(player);
         if (perto == null) {
             contador = 0;
             return;
         }
-        if (++contador < CADENCIA * cadencia()) {
+        double limiar = CADENCIA * cadencia();
+        if (++contador < limiar) {
+            // A ANTECIPACAO E O TEMPO QUE FALTA, contado pelo mesmo contador que
+            // decide o tiro: o cajado sobe nos ultimos ticks antes de ele sair, e
+            // nao num relogio paralelo que poderia escorregar.
+            animacao().preparar((contador - (limiar - ANTECIPACAO)) / ANTECIPACAO);
             return;
         }
         contador = 0;
         this.aceso = BRILHO;
         atirar(player, perto, origem);
+        animacao().disparou();
+        soltarFaiscas(FAISCAS_NO_TIRO);
+    }
+
+    // ---------------------------------------------------------------- animacao
+
+    /** Ticks antes do tiro em que o cajado se ergue: os ultimos 40% da cadencia base. */
+    private static final double ANTECIPACAO = 12;
+
+    /**
+     * O gesto de lancar: ergue e recolhe na antecipacao, estende rapido no tiro e
+     * volta devagar. Tres ticks de acao, porque e o tempo que o olho precisa para
+     * ver o golpe e ainda e mais curto que o voo da bola ate sair da ponta.
+     */
+    private static final AnimacaoDaArma.Gesto GESTO =
+            new AnimacaoDaArma.Gesto(3, 12, 16, 20, 1, 2, 2);
+
+    @Override
+    protected AnimacaoDaArma.Gesto gesto() {
+        return GESTO;
+    }
+
+    /** A cor do efeito da varinha comum: o verde do brilho do orbe na arte oficial (icons/Gato.png). */
+    private static final com.retronova.engine.graphics.Familia SEM_ELEMENTO =
+            com.retronova.engine.graphics.Familia.VERDE;
+
+    /**
+     * Do pixel mais alto da arma ate o meio do orbe, em pixels de arte. O halo e
+     * as faiscas nascem no MEIO da esfera; o tiro continua saindo da ponta.
+     */
+    private static final double ORBE_PX = 2.5;
+
+    /** Raio do halo do orbe, em pixels de arte, e quanto ele cresce com a carga. */
+    private static final double HALO_PX = 3.2, HALO_CARGA_PX = 2.2;
+    /** Opacidade do halo em repouso e a mais na carga cheia (0-255). */
+    private static final int HALO_ALFA = 55, HALO_ALFA_CARGA = 70;
+    /** Pulso do halo: periodo em ticks e amplitude relativa. */
+    private static final int PULSO_PERIODO = 48;
+    private static final double PULSO = 0.12;
+
+    // AS FAISCAS DO ORBE. Um punhado fixo, reaproveitado: nenhuma particula do
+    // mapa e criada, nada e alocado por quadro, e elas ficam por cima do cajado
+    // em vez de cair na ordenacao das entidades do mundo.
+    private static final int FAISCAS = 10;
+    /** Ticks entre duas faiscas, pela intensidade (comum, elemental, lendaria). */
+    private static final int[] FAISCA_A_CADA = {16, 10, 6};
+    /** Quantas saem de uma vez no tiro. */
+    private static final int FAISCAS_NO_TIRO = 3;
+    /** Vida de uma faisca, em ticks. */
+    private static final int FAISCA_VIDA = 36;
+
+    private final double[] fx = new double[FAISCAS], fy = new double[FAISCAS];
+    private final double[] fxAntes = new double[FAISCAS], fyAntes = new double[FAISCAS];
+    private final double[] fvx = new double[FAISCAS], fvy = new double[FAISCAS];
+    private final int[] fvida = new int[FAISCAS];
+    /**
+     * Sorteio SO DO ENFEITE, separado do Engine.RAND: faisca nao pode consumir
+     * numeros do sorteio que decide horda e cartas.
+     */
+    private static final java.util.Random VISUAL = new java.util.Random();
+    private int proximaFaisca;
+    /** Onde o orbe estava no ultimo desenho: e dali que as faiscas saem. */
+    private double orboX = Double.NaN, orboY;
+
+    /**
+     * Como a faisca anda, por elemento: o fogo sobe rapido, o gelo e a agua caem
+     * devagar (floco e gota), a terra cai pesada, o ar sobe girando. Em pixels de
+     * arte por tick, vertical e o quanto ela serpenteia para os lados.
+     */
+    private double subidaDaFaisca() {
+        return switch (elemento) {
+            case FOGO -> -0.45;
+            case GELO -> 0.12;
+            case AGUA -> 0.28;
+            case TERRA -> 0.34;
+            case AR -> -0.22;
+            default -> -0.25;
+        };
+    }
+
+    private double serpenteio() {
+        return elemento == Elemento.AR ? 0.35 : 0.12;
+    }
+
+    private void tickFaiscas(Player player) {
+        int px = Configs.GameScale();
+        for (int i = 0; i < FAISCAS; i++) {
+            fxAntes[i] = fx[i];
+            fyAntes[i] = fy[i];
+            if (fvida[i] <= 0) {
+                continue;
+            }
+            fvida[i]--;
+            fx[i] += fvx[i] * px + Math.sin((animacao().tempo() + i * 7) / 6d) * serpenteio() * px;
+            fy[i] += fvy[i] * px;
+        }
+        if (animacao().tempo() % FAISCA_A_CADA[intensidade()] == 0) {
+            soltarFaiscas(1);
+        }
+    }
+
+    private void soltarFaiscas(int quantas) {
+        if (Double.isNaN(orboX)) {
+            return;
+        }
+        int px = Configs.GameScale();
+        for (int k = 0; k < quantas; k++) {
+            int i = proximaFaisca;
+            proximaFaisca = (proximaFaisca + 1) % FAISCAS;
+            double ang = VISUAL.nextDouble() * Math.PI * 2;
+            double r = VISUAL.nextDouble() * 2 * px;
+            fx[i] = fxAntes[i] = orboX + Math.cos(ang) * r;
+            fy[i] = fyAntes[i] = orboY + Math.sin(ang) * r;
+            fvx[i] = (VISUAL.nextDouble() - 0.5) * 0.2;
+            fvy[i] = subidaDaFaisca() * (0.7 + VISUAL.nextDouble() * 0.6);
+            fvida[i] = FAISCA_VIDA - VISUAL.nextInt(10);
+        }
     }
 
     /**
@@ -136,6 +259,18 @@ public class Wand extends Item {
      * deslocamento da pose, mais a diferenca ponta-punho girada.
      */
     private java.awt.geom.Point2D.Double pontaDaVarinha(Player player) {
+        return pontaDaVarinha(player, 0, 0, 0, 0);
+    }
+
+    /**
+     * A ponta com o movimento da mao somado — so para DESENHAR.
+     *
+     * O tiro continua nascendo da ponta parada, acima: a animacao nao pode mudar
+     * de onde a bola sai nem a linha de tiro que libera o disparo. O brilho e as
+     * faiscas, que sao enfeite, seguem o orbe onde ele esta na tela.
+     */
+    private java.awt.geom.Point2D.Double pontaDaVarinha(Player player, double grausA,
+                                                        double avancoA, double desceA, double recuoPx) {
         int px = Configs.GameScale();
         int lado = player.getLadoDoPasso();
         Poses.Pose p = pose();
@@ -165,13 +300,19 @@ public class Wand extends Item {
             ponta = maisLongeDe(desenho, punho);
         }
 
-        double giro = Math.toRadians(graus * lado);
+        double giro = Math.toRadians((graus + grausA) * lado);
         double ox = ponta.x - punho.x, oy = ponta.y - punho.y;
+        double comprimento = Math.hypot(ox, oy);
+        if (recuoPx > 0 && comprimento > 0) {
+            double k = Math.max(0, comprimento - recuoPx * px) / comprimento;
+            ox *= k;
+            oy *= k;
+        }
         double c = Math.cos(giro), s = Math.sin(giro);
         Point mao = player.getMao();
         return new java.awt.geom.Point2D.Double(
-                mao.x + dx * px * lado + ox * c - oy * s,
-                mao.y + dy * px + ox * s + oy * c);
+                mao.x + Math.round((dx + avancoA) * px * lado) + ox * c - oy * s,
+                mao.y + dy * px + Math.round(desceA * px) + ox * s + oy * c);
     }
 
     private void atirar(Player player, Entity alvo, java.awt.geom.Point2D.Double origem) {
@@ -200,26 +341,64 @@ public class Wand extends Item {
 
     @Override
     public void render(Graphics2D g) {
-        naMao(g, getSprite());
-        if (aceso <= 0) {
+        Player player = Game.getPlayer();
+        if (player == null) {
+            naMao(g, getSprite());
             return;
         }
-        Player player = Game.getPlayer();
+        float alpha = com.retronova.engine.Engine.alpha();
+        AnimacaoDaArma anim = animacao();
+        anim.calcular(player, alpha);
+        java.awt.geom.Point2D.Double ponta = pontaDaVarinha(player, anim.graus, anim.avanco, anim.desce, ORBE_PX);
+        orboX = ponta.x;
+        orboY = ponta.y;
+        com.retronova.engine.graphics.Familia fam = familiaDoEfeito(SEM_ELEMENTO);
+        int px = Configs.GameScale();
+
+        // O HALO VEM ANTES DO CAJADO, para ficar atras do orbe: e luz em volta
+        // da esfera, como na arte oficial, e nao uma mancha por cima dela.
+        double pulso = 1 + PULSO * Math.sin(2 * Math.PI * (anim.tempo() + alpha) / PULSO_PERIODO);
+        double carga = Math.max(anim.carga, anim.clarao);
+        int forca = intensidade();
+        double raio = (HALO_PX + HALO_CARGA_PX * carga + forca * 0.6) * px * pulso;
+        int alfa = (int) (HALO_ALFA + forca * 15 + HALO_ALFA_CARGA * carga);
+        com.retronova.engine.graphics.Brilho.disco(g, ponta.x, ponta.y, raio,
+                fam.tom(com.retronova.engine.graphics.Familia.BASE, alfa));
+        com.retronova.engine.graphics.Brilho.disco(g, ponta.x, ponta.y, raio * 0.5,
+                fam.tom(com.retronova.engine.graphics.Familia.LUZ, (int) (alfa * 0.8)));
+
+        naMao(g, getSprite());
+
+        renderFaiscas(g, fam, alpha);
+        if (aceso <= 0 && anim.clarao <= 0) {
+            return;
+        }
         // Um CLARAO curto na ponta, e nao um raio ate o alvo: quem viaja agora e
         // a bola. Raio ate o inimigo somado a bola voando seria a mesma coisa
         // contada duas vezes, e o olho leria o raio primeiro.
-        java.awt.geom.Point2D.Double ponta = pontaDaVarinha(player);
-        double x = ponta.x;
-        double y = ponta.y;
-        float f = aceso / (float) BRILHO;
-        int raio = (int) (Configs.GameScale() * (1.5f + f * 2f));
-        Color c = elemento.cor();
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (150 * f)));
-        g2.fillOval((int) x - raio, (int) y - raio, raio * 2, raio * 2);
-        g2.setColor(new Color(255, 255, 255, (int) (200 * f)));
-        g2.fillOval((int) x - raio / 2, (int) y - raio / 2, raio, raio);
-        g2.dispose();
+        double f = anim.clarao;
+        double r = px * (1.5 + f * 2.5 + forca * 0.5);
+        com.retronova.engine.graphics.Brilho.disco(g, ponta.x, ponta.y, r,
+                fam.tom(com.retronova.engine.graphics.Familia.LUZ, (int) (170 * f)));
+        com.retronova.engine.graphics.Brilho.disco(g, ponta.x, ponta.y, r * 0.5,
+                fam.tom(com.retronova.engine.graphics.Familia.BRILHO, (int) (230 * f)));
+    }
+
+    /** As faiscas: quadrados de um pixel de arte, apagando no fim da vida. */
+    private void renderFaiscas(Graphics2D g, com.retronova.engine.graphics.Familia fam, float alpha) {
+        int px = Configs.GameScale();
+        for (int i = 0; i < FAISCAS; i++) {
+            if (fvida[i] <= 0) {
+                continue;
+            }
+            double x = fxAntes[i] + (fx[i] - fxAntes[i]) * alpha;
+            double y = fyAntes[i] + (fy[i] - fyAntes[i]) * alpha;
+            double vida = fvida[i] / (double) FAISCA_VIDA;
+            // Nascem no tom mais claro e esfriam para a base antes de sumir.
+            int degrau = vida > 0.5 ? com.retronova.engine.graphics.Familia.BRILHO
+                    : com.retronova.engine.graphics.Familia.LUZ;
+            g.setColor(fam.tom(degrau, (int) (255 * Math.min(1, vida * 1.6))));
+            g.fillRect((int) Math.round(x - px / 2d), (int) Math.round(y - px / 2d), px, px);
+        }
     }
 }
