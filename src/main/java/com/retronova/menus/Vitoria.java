@@ -125,11 +125,11 @@ public class Vitoria extends TelaDeMenu {
                 Palette.TEXT, s);
 
         Font valor = FontHandler.font(FontHandler.Game, 10f * s);
-        String bonus = "+" + Meta.BONUS_DE_VITORIA + " gold";
+        String bonus = "+" + com.retronova.game.save.RegrasDeMoedas.atuais().bonusDeVitoria() + " coins";
         TextFx.draw(g, bonus, valor, cx - FontHandler.getWidth(bonus, valor) / 2, p.y + 34 * s, OURO, s);
 
         Font miuda = FontHandler.font(FontHandler.Septem, 6f * s);
-        String dica = Estatisticas.venceu() ? "Already paid - closing the game keeps it" : "";
+        String dica = Estatisticas.venceu() ? "Paid when the run ends - closing the game keeps it" : "";
         TextFx.draw(g, dica, miuda, cx - FontHandler.getWidth(dica, miuda) / 2, p.y + 48 * s, Palette.LIGHT, s);
 
         for (Button botao : botoes) {

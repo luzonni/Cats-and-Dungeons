@@ -163,8 +163,20 @@ public final class Corrida {
      * corrida, e "relógio zerado, nenhum chefe ainda" é exatamente o que ele
      * descrevia. Os campos {@code nivel} e {@code dificuldade}, do tempo das salas,
      * são ignorados ao ler.
+     *
+     * VERSÃO 2: o {@code id} da corrida, que a progressão permanente usa para
+     * creditar as moedas uma vez só (ver save/Progresso). Um save da versão 1 é
+     * lido normalmente e ganha um id novo na leitura: ele nunca foi creditado,
+     * porque o crédito por id não existia.
      */
-    private static final long VERSAO = 1;
+    private static final long VERSAO = 2;
+
+    /** O id desta corrida. Ver o comentário de VERSAO. */
+    private final String id;
+
+    public String id() {
+        return this.id;
+    }
 
     /** Um chefe que estava vivo quando a corrida foi gravada. */
     public record ChefeVivo(EntityIDs tipo, double fracaoDeVida) {
@@ -219,9 +231,10 @@ public final class Corrida {
 
     private final Andamento andamento;
 
-    private Corrida(int gato, long segundos, double vida, double xp, int nivelDoGato,
+    private Corrida(String id, int gato, long segundos, double vida, double xp, int nivelDoGato,
                     int dinheiro, List<int[]> hotbar, List<int[]> mochila, List<int[]> passivos,
                     List<int[]> melhorias, int elemento, Andamento andamento) {
+        this.id = id;
         this.gato = gato;
         this.segundos = segundos;
         this.vida = vida;
@@ -331,7 +344,7 @@ public final class Corrida {
 
     private static Corrida de(Game jogo, Player gato) {
         Inventory inv = gato.getInventory();
-        return new Corrida(
+        return new Corrida(jogo.getIdDaCorrida(),
                 jogo.getIndexPlayer(), jogo.getSeconds(), gato.getLife(), gato.getXp(), gato.getLevel(),
                 gato.getMoney(),
                 doSlots(inv.getHotbar(), inv.getHotbarSize()),
@@ -391,6 +404,7 @@ public final class Corrida {
         }
         JSONObject o = new JSONObject();
         o.put("versao", VERSAO);
+        o.put("id", id);
         o.put("gato", (long) gato);
         o.put("segundos", segundos);
         o.put("vida", vida);
@@ -515,10 +529,53 @@ public final class Corrida {
             return null;
         }
         try {
-            return interpretar(Files.readString(arquivo, StandardCharsets.UTF_8));
+            Corrida lida = interpretar(Files.readString(arquivo, StandardCharsets.UTF_8));
+            if (lida != null && com.retronova.game.save.Progresso.foiCreditada(lida.id)) {
+                // ACABOU E JÁ FOI PAGA. O jogo fechou entre o crédito das moedas e o
+                // apagar deste arquivo: retomar daria a corrida e as moedas de novo.
+                apagar(espaco);
+                return null;
+            }
+            return lida;
         } catch (Exception e) {
             return null;            // consumir() dirá o que houve, e apagará
         }
+    }
+
+    /** Um id novo de corrida. */
+    public static String novoId() {
+        return java.util.UUID.randomUUID().toString();
+    }
+
+    /**
+     * A corrida deste espaço foi ABANDONADA: o jogador começou outra por cima,
+     * apagou o espaço ou recomeçou pela pausa. Credita a fração de abandono das
+     * moedas (ver save/RegrasDeMoedas) e apaga o arquivo.
+     *
+     * O crédito é por id: se a corrida viva já foi creditada (o "Restart" da pausa
+     * credita com os números ao vivo antes de apagar), aqui só se apaga.
+     */
+    public static void abandonar(int espaco) {
+        Corrida c = espiar(espaco);
+        if (c != null) {
+            var regras = com.retronova.game.save.RegrasDeMoedas.atuais();
+            int segundos = (int) c.segundosDaCorrida();
+            int abates = c.andamento.relogio().abates();
+            var resultado = c.andamento.venceu()
+                    ? com.retronova.game.save.RegrasDeMoedas.Resultado.VITORIA
+                    : com.retronova.game.save.RegrasDeMoedas.Resultado.ABANDONO;
+            int moedas = regras.moedas(resultado, segundos, abates, ganancia(c.nomeDoGato()));
+            com.retronova.game.save.Progresso.creditar(c.id, c.nomeDoGato(), moedas);
+        }
+        apagar(espaco);
+    }
+
+    /**
+     * O multiplicador de moedas do gato. Um ponto só, para o espelho (etapa 2)
+     * entrar aqui sem que quem credita precise saber dele.
+     */
+    public static double ganancia(String gato) {
+        return 1.0;
     }
 
     /**
@@ -541,6 +598,9 @@ public final class Corrida {
         try {
             String conteudo = Files.readString(arquivo, StandardCharsets.UTF_8);
             lida = interpretar(conteudo);
+            if (lida != null && com.retronova.game.save.Progresso.foiCreditada(lida.id)) {
+                lida = null;    // já paga: não se retoma (ver espiar)
+            }
         } catch (Exception e) {
             System.err.println("Corrida: save ilegível, descartado. " + e);
         }
@@ -553,11 +613,14 @@ public final class Corrida {
             conteudo = conteudo.substring(1);       // BOM, mesmo caso do Configs
         }
         JSONObject o = (JSONObject) new JSONParser().parse(conteudo);
-        if (inteiro(o, "versao", -1) != VERSAO) {
+        int versao = inteiro(o, "versao", -1);
+        if (versao != 1 && versao != VERSAO) {
             System.err.println("Corrida: formato desconhecido, save descartado.");
             return null;
         }
-        return new Corrida(
+        // Versão 1 não tinha id: ganha um agora (ver VERSAO).
+        String id = o.get("id") instanceof String s && !s.isEmpty() ? s : novoId();
+        return new Corrida(id,
                 inteiro(o, "gato", 0),
                 (long) inteiro(o, "segundos", 0),
                 real(o, "vida", 1),

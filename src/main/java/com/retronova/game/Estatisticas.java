@@ -54,11 +54,13 @@ public final class Estatisticas {
     private static boolean venceu;
 
     /**
-     * Registra a vitoria sobre o chefe final e DEPOSITA o bonus na hora.
+     * Registra a vitoria sobre o chefe final.
      *
-     * Na hora, e nao no fim da corrida: o jogador pode escolher continuar jogando,
-     * e se fechar o jogo no meio disso o bonus nao pode se perder. A segunda
-     * chamada nao paga de novo.
+     * O BONUS NAO E PAGO AQUI. Ele era depositado na hora, para nao se perder se o
+     * jogo fechasse depois da vitoria; com o credito unico por corrida (ver
+     * encerrar e save/Progresso), a vitoria fica gravada no save da corrida e o
+     * bonus entra junto com o resto quando ela acaba. Pagar aqui e no fim seria
+     * pagar duas vezes.
      *
      * @return true se foi a primeira vez nesta corrida
      */
@@ -67,7 +69,6 @@ public final class Estatisticas {
             return false;
         }
         venceu = true;
-        Meta.depositar(Meta.BONUS_DE_VITORIA);
         conquistasDaCorrida.addAll(Conquistas.registrarVitoria(gato));
         return true;
     }
@@ -113,16 +114,33 @@ public final class Estatisticas {
      * fechar o jogo na tela final, o que ele ganhou ja esta salvo.
      */
     public static void encerrar(int segundosDaCorrida, int abatesDaCorrida, int nivelDoGato, String nomeDoGato) {
+        encerrar(null, segundosDaCorrida, abatesDaCorrida, nivelDoGato, nomeDoGato);
+    }
+
+    /**
+     * Fecha a corrida e CREDITA AS MOEDAS no save permanente, uma vez só por id
+     * (ver save/Progresso): se a morte for processada de novo, ou o jogo fechar e
+     * a corrida for lida outra vez, o segundo pedido não paga nada.
+     *
+     * O bônus de vitória entra aqui, junto com o resto, e não mais na hora da
+     * vitória: o crédito é um só, no fim. Se o jogo fechar depois de vencer, a
+     * corrida fica gravada com a vitória e o bônus vem quando ela acabar (ou
+     * pelo abandono, se o espaço for apagado).
+     *
+     * @param idDaCorrida null só na bancada, que não credita nada
+     */
+    public static void encerrar(String idDaCorrida, int segundosDaCorrida, int abatesDaCorrida,
+                                int nivelDoGato, String nomeDoGato) {
         segundos = segundosDaCorrida;
         abates = abatesDaCorrida;
         nivel = nivelDoGato;
         gato = nomeDoGato;
-        ouroGanho = Meta.ouroDaCorrida(segundos, abates);
-        Meta.depositar(ouroGanho);
-        // O bonus de vitoria ja foi depositado em registrarVitoria; aqui so entra no
-        // numero mostrado, para a tela final somar o que o jogador de fato ganhou.
-        if (venceu) {
-            ouroGanho += Meta.BONUS_DE_VITORIA;
+        var resultado = venceu ? com.retronova.game.save.RegrasDeMoedas.Resultado.VITORIA
+                : com.retronova.game.save.RegrasDeMoedas.Resultado.MORTE;
+        ouroGanho = com.retronova.game.save.RegrasDeMoedas.atuais()
+                .moedas(resultado, segundos, abates, Corrida.ganancia(nomeDoGato));
+        if (idDaCorrida != null) {
+            com.retronova.game.save.Progresso.creditar(idDaCorrida, nomeDoGato, ouroGanho);
         }
         conquistasDaCorrida.addAll(Conquistas.registrarCorrida(segundos, abates, nivel, baus, maiorHorda));
     }

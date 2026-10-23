@@ -277,6 +277,17 @@ public class Configuracoes extends TelaDeMenu {
         ui.add(OptionRow.toggle("Allow intro skip",
                 () -> Configs.PermitirPularAbertura() ? 1 : 0, v -> Configs.setPermitirPularAbertura(v != 0))
                 .desc("Allow a key, click or controller button to skip the opening. Off by default."));
+        // APAGAR A PROGRESSÃO SÓ DO MENU PRINCIPAL. Na pausa, com uma corrida
+        // aberta, o gato em jogo já carrega as melhorias aplicadas; apagar ali
+        // deixaria a corrida com números que o save não tem mais.
+        if (!naCorrida) {
+            ui.add(OptionRow.acao("Reset progress",
+                    () -> confirmacao.perguntar("Erase all progress?",
+                            new String[]{"Coins and upgrades of every cat.",
+                                    "Saved runs are kept. This cannot be undone."},
+                            com.retronova.game.save.Progresso::apagarTudo))
+                    .desc("Erase the coins and permanent upgrades of all cats. Asks first."));
+        }
 
         // CONTROLS: só a escolha do aparelho é uma linha; o resto é o painel de
         // controles logo abaixo dela (ver PainelDeControles).

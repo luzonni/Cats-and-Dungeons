@@ -86,6 +86,12 @@ public class GameOver extends TelaDeMenu {
     private final int gato;
     private final int espaco;
 
+    /** O nome do gato da corrida: as moedas e os upgrades sao dele (ver save/Progresso). */
+    private String nomeDoGato() {
+        return gato >= 0 && gato < com.retronova.game.objects.entities.Player.TEMPLATES.length
+                ? com.retronova.game.objects.entities.Player.TEMPLATES[gato].getName() : "";
+    }
+
     public GameOver(int gato, int espaco) {
         this(gato, espaco, Engine.getACTIVITY() instanceof Game
                 ? ResumoFinalDoGato.capturar(Game.getPlayer()) : ResumoFinalDoGato.vazio());
@@ -260,7 +266,7 @@ public class GameOver extends TelaDeMenu {
     }
 
     private void comprar(int linha) {
-        if (Meta.comprar(Meta.Permanente.values()[linha])) {
+        if (Meta.comprar(nomeDoGato(), Meta.Permanente.values()[linha])) {
             Sound.play(Sounds.Conquista);
             brilhoDaCompra = linha;
             desdeACompra = 0;
@@ -472,7 +478,7 @@ public class GameOver extends TelaDeMenu {
                 {"Level", String.valueOf(Estatisticas.nivel())},
                 {"Chests", String.valueOf(Estatisticas.baus())},
                 {"Peak horde", String.valueOf(Estatisticas.maiorHorda())},
-                {"Gold earned", "+" + Estatisticas.ouroGanho()}
+                {"Coins earned", "+" + Estatisticas.ouroGanho()}
         };
         // Em janelas mais baixas o retrato cede espaço aos números, sem reduzir a fonte.
         int passo = Math.min(16 * s, Math.max(10 * s, (p.y + p.height - 12 * s - y) / valores.length));
@@ -581,7 +587,7 @@ public class GameOver extends TelaDeMenu {
         painel(g, p, "Upgrades", s);
         Font f = FontHandler.font(FontHandler.Septem, 8f * s);
         Font grande = FontHandler.font(FontHandler.Game, 8f * s);
-        String ouro = "Gold: " + Meta.ouro();
+        String ouro = "Coins: " + Meta.ouro(nomeDoGato());
         String ganho = "+" + Estatisticas.ouroGanho() + " this run";
         contornado(g, ouro, grande, p.x + MARGEM_INTERNA * s, p.y + 34 * s, Palette.TEXT, s);
         contornado(g, ganho, f, p.x + MARGEM_INTERNA * s, p.y + 47 * s, Palette.ACCENT, s);
@@ -598,9 +604,9 @@ public class GameOver extends TelaDeMenu {
         for (int i = 0; i < todos.length; i++) {
             Meta.Permanente m = todos[i];
             Rectangle r = linhasDaLoja.get(i);
-            int nivel = Meta.nivel(m);
+            int nivel = Meta.nivel(nomeDoGato(), m);
             boolean cheio = nivel >= Meta.Permanente.NIVEL_MAXIMO;
-            boolean podeComprar = !cheio && Meta.ouro() >= Meta.preco(m);
+            boolean podeComprar = !cheio && Meta.ouro(nomeDoGato()) >= Meta.preco(nomeDoGato(), m);
             boolean sob = Entrada.porFoco() ? focoLoja == i : r.contains(Mouse.getX(), Mouse.getY());
             // O realce comum (ver Realce) marca a linha sob o mouse ou o foco, MESMO
             // SEM OURO: a cor clara diz "da para comprar", o realce diz "e aqui".
@@ -635,7 +641,7 @@ public class GameOver extends TelaDeMenu {
             }
             // O preço: claro se dá para comprar, o vermelho de aviso se falta ouro,
             // numa plaquinha OUTLINE: o WARN direto sobre o MAIN da linha não se lia.
-            String preco = cheio ? "MAX" : Meta.preco(m) + "g";
+            String preco = cheio ? "MAX" : Meta.preco(nomeDoGato(), m) + "c";
             int pw = FontHandler.getWidth(preco, f);
             g.setColor(Palette.OUTLINE);
             g.fillRect(r.x + r.width - (RECUO_DA_LINHA + 2) * s - pw, r.y + 18 * s, pw + 4 * s, 13 * s);

@@ -153,7 +153,7 @@ public final class Bonus {
     /** Multiplicador do alcance do ima de XP. */
     public static double ima(Player gato) {
         return 1 + nivel(gato, Passiva.IMA) * Passiva.IMA.valorPorNivel()
-                + Meta.nivel(Meta.Permanente.IMA) * 0.10;
+                + (gato == null ? 0 : Meta.nivel(gato.getName(), Meta.Permanente.IMA)) * 0.10;
     }
 
     /** A habilidade do gato, em uma linha, para a selecao e a tela final. */

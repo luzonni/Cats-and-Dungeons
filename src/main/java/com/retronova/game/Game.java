@@ -52,6 +52,12 @@ public class Game implements Activity {
      * como ramificar. Ver Corrida.
      */
     private final int espaco;
+    /** O id desta corrida: e por ele que as moedas sao creditadas uma vez so (ver save/Progresso). */
+    private final String idDaCorrida;
+
+    public String getIdDaCorrida() {
+        return idDaCorrida;
+    }
 
     private long seconds;
     private int count;
@@ -93,6 +99,7 @@ public class Game implements Activity {
 
     private Game(Corrida corrida, int espaco) {
         this.espaco = espaco;
+        this.idDaCorrida = corrida.id();
         this.indexPlayer = corrida.gato();
         this.inter = new Inter();
         Player player = Player.newPlayer(this.indexPlayer);
@@ -140,8 +147,11 @@ public class Game implements Activity {
         //
         // OS OUTROS DOIS ESPACOS NAO SAO TOCADOS. Comecar uma corrida nova nao pode
         // custar as corridas dos outros espacos — e o motivo de existirem tres.
-        Corrida.apagar(espaco);
+        // A corrida que estava neste espaco foi ABANDONADA: credita a parte de
+        // abandono das moedas dela antes de apagar (ver Corrida.abandonar).
+        Corrida.abandonar(espaco);
         this.espaco = espaco;
+        this.idDaCorrida = Corrida.novoId();
         this.indexPlayer = indexPlayer;
         this.inter = new Inter();
         Player player = Player.newPlayer(indexPlayer);
@@ -214,7 +224,9 @@ public class Game implements Activity {
         // MORREU, NAO HA O QUE RETOMAR. Sem isto o save do inicio da sala ficaria
         // no disco depois da morte, e o botao de continuar do menu ofereceria
         // desfazer a derrota — que e precisamente o que a permadeath proibe.
-        Corrida.apagar(this.espaco);
+        // O APAGAR VEM DEPOIS DO CREDITO, logo abaixo: se o jogo fechar entre os
+        // dois, as moedas ja estao no progresso e o save, ao ser lido, se descarta
+        // sozinho (o id ja foi creditado). Na ordem inversa as moedas se perderiam.
         // LEVA O PERSONAGEM JUNTO. A partida e descartada aqui, entao quem quiser
         // tentar de novo depois nao tem mais de onde descobrir com qual gato o
         // jogador estava — e sem isso o botao de recomecar nao tem o que recomecar.
@@ -226,7 +238,8 @@ public class Game implements Activity {
             abates = arena.getWaves().abates();
             segundosDaCorrida = arena.getWaves().getSeconds();
         }
-        Estatisticas.encerrar(segundosDaCorrida, abates, player.getLevel(), player.getName());
+        Estatisticas.encerrar(idDaCorrida, segundosDaCorrida, abates, player.getLevel(), player.getName());
+        Corrida.apagar(this.espaco);
         var fichaFinal = com.retronova.menus.ResumoFinalDoGato.capturar(player);
         Engine.backActivity();
         Engine.heapActivity(new GameOver(gato, onde, fichaFinal));
@@ -794,12 +807,32 @@ public class Game implements Activity {
     public static void restart() {
         Game.getInter().dispose();
         Game game = getGame();
+        // RECOMECAR E ABANDONAR esta corrida: ela rende a fracao de abandono das
+        // moedas, com os numeros ao vivo (o save do espaco pode ter ate um minuto).
+        game.creditarAbandono();
         GameMap map = new Room("beginning");
         Engine.backActivity();
         // Passa pela tela de transicao, como o inicio de partida: reiniciar e
         // comecar uma corrida nova, e o corte seco fazia parecer um bug.
         // MESMO ESPACO. Reiniciar troca a corrida, nao o lugar onde ela mora.
         Engine.heapActivity(new Game(game.indexPlayer, map, game.espaco), () -> { });
+    }
+
+    /**
+     * Credita esta corrida como abandonada (ou como vitoria, se o chefe final ja
+     * caiu). Uma vez so por id, como todo credito (ver save/Progresso).
+     */
+    public void creditarAbandono() {
+        int segundos = (int) this.seconds, abates = 0;
+        if (map instanceof Arena arena) {
+            abates = arena.getWaves().abates();
+            segundos = arena.getWaves().getSeconds();
+        }
+        var resultado = Estatisticas.venceu() ? com.retronova.game.save.RegrasDeMoedas.Resultado.VITORIA
+                : com.retronova.game.save.RegrasDeMoedas.Resultado.ABANDONO;
+        int moedas = com.retronova.game.save.RegrasDeMoedas.atuais()
+                .moedas(resultado, segundos, abates, Corrida.ganancia(player.getName()));
+        com.retronova.game.save.Progresso.creditar(idDaCorrida, player.getName(), moedas);
     }
 
     public static Game getGame() {
