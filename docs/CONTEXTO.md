@@ -51,7 +51,7 @@ um ano parado. Sem engine: tudo em Java puro.
 `Conquistas`): `-Dcd.bench=true` pula os menus e entra numa corrida no espaço de
 save 0, que não grava nada. Com ele: `-Dcd.gato=0|1|2` (Muffin, Azrael, Finn),
 `-Dcd.minuto=N`, `-Dcd.bau` (abre um baú; `-Dcd.roleta` é apelido), `-Dcd.fim`, `-Dcd.nivel`, `-Dcd.rei=1..4`,
-`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`, `-Dcd.buffs` (um nível de cada buff). `-Dcd.perf=true` liga o
+`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`, `-Dcd.buffs` (um nível de cada buff). A bancada e o modo foto pulam a abertura; `-Dcd.intro=completa|curta` a força. `-Dcd.perf=true` liga o
 medidor de quadros. O `build.gradle.kts` só repassa `-Pvitrine` ao `run`; **como
 o time passa os `-Dcd.*` (IDE, `java -jar`?) está a confirmar**.
 
@@ -123,6 +123,7 @@ docs/                          esta pasta
 | Fluxo de telas | `Engine.heapActivity` / `backActivity` / `pause` (pilha de `Activity`) |
 | Base de toda tela de menu (título, rodapé, transição, voltar) | `menus/shared/TelaDeMenu.java`, `Rodape.java`, `Abas.java` |
 | Settings e pausa (um componente só) | `menus/Configuracoes.java` + `menus/shared/OptionRow.java` |
+| Abertura do jogo (crédito, logo, passagem para a tela inicial) | `menus/Abertura.java`; o texto do crédito em `Abertura.CREDITO_ACIMA` e `CREDITO_EQUIPE`; logo em `tools/GenLogo.java`, sons em `tools/GenSonsDaAbertura.java` |
 | Hover e foco de todo elemento da interface | `menus/shared/Realce.java` |
 | Cartas de escolha (nível e elemento) | `menus/shared/MaoDeCartas.java` |
 | Transmutação da arma ao escolher o elemento | `game/objects/entities/Transmutacao.java` |
@@ -154,7 +155,7 @@ docs/                          esta pasta
 | Luz, sombra, vinheta | `game/map/Atmosfera.java` |
 | Configurações | `engine/Configs.java` (`config.json`, gravação atômica) |
 | Laço do jogo, limitador de quadros, VSync | `engine/Engine.java` (`run`, `esperarAte`, `periodoDoQuadro`), `engine/RelogioDoSistema.java` |
-| Janela, resolução, tela cheia, escala da imagem | `engine/Window.java` (`aplicarVideo`, `resolucoesDoMonitor`), `Engine.desenharEscalado` |
+| Janela, resolução, tela cheia, escala da imagem | `engine/Window.java` (`aplicarVideo`, `resolucoesDoMonitor`, `destacarAoIniciar`), `engine/FocoDoWindows.java` (ativação nativa na abertura), `engine/TelaCheiaDoWindows.java` (marca de tela cheia para o Shell), `Engine.desenharEscalado` |
 | Escala da interface (HUD, menus, margem) | `engine/EscalaDaInterface.java`, preferências em `Configs` |
 | Layout do HUD por âncoras e teto | `game/hud/LayoutDoHud.java` (F7 desenha as caixas) |
 | Diagnóstico de vídeo | `engine/Video.java` (`-Dcd.video`), gráfico do F3 em `engine/Debugging.java` |
@@ -194,7 +195,8 @@ docs/                          esta pasta
 | Funcionalidade | Estado | Nota |
 |---|---|---|
 | Menu, Settings (vídeo, áudio, interface), pausa | ✅ | todas sobre `TelaDeMenu`; a pausa é o painel de Settings com a aba Run (`Configuracoes`) |
-| Vídeo: resolução, tela cheia sem bordas, VSync e limite de quadros | ✅ | resolução aplicada em janela e em tela cheia, sem piscar; limite "Monitor" por padrão; HUD limitado ao que cabe. Testado num monitor 1920x1080 a 180 Hz; outros monitores, DPI e sistemas **a confirmar** (ver ARQUITETURA) |
+| Vídeo: resolução, tela cheia sem bordas, VSync e limite de quadros | ✅ | resolução aplicada em janela e em tela cheia, sem piscar; Windows recebe marca explícita de tela cheia (`TelaCheiaDoWindows`) para manter a barra de tarefas atrás do jogo ativo; limite "Monitor" por padrão; HUD limitado ao que cabe. Testado num monitor 1920x1080 a 180 Hz; outros monitores, DPI e sistemas **a confirmar** (ver ARQUITETURA) |
+| Abertura do jogo | ✅ | completa a cada início (7,4 s); pulo bloqueado por padrão, liberável em Settings → Interface → Allow intro skip; curta (2,7 s) só com `-Dcd.intro=curta`; crédito da equipe: Runforce |
 | Seleção de personagem (3 gatos) | ✅ | |
 | Três espaços de save, retomar e apagar | ✅ | |
 | Antecâmara com vendedor, placas e portão | ✅ | o portão leva à corrida |
@@ -282,6 +284,7 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | O quê | Onde |
 |---|---|
 | Transição das telas de menu | `TelaDeMenu` (`TRANSICAO = 9` ticks, `SUBIDA = 6` px) |
+| Abertura do jogo e entrada da tela inicial | `Abertura` (`PRETO = 30`, `CREDITO_ENTRA = 42`, `CREDITO_FICA = 84`, `CREDITO_SAI = 36`, `LOGO_ENTRA = 84`, `LOGO_FICA = 72`, `CENA = 96`; curta: `PRETO_CURTA = 12`, `LOGO_ENTRA_CURTA = 54`, `LOGO_FICA_CURTA = 36`, `CENA_CURTA = 60`; `MUSICA_SOBE = 150` ticks, `TOM_NO_ESCURO = 0.62`, `LUA = 0.45`); `Menu` (`ATRASO_ENTRE_ELEMENTOS = 10`, `SURGIR_DO_ELEMENTO = 18`, `SUBIDA_DO_ELEMENTO = 6`); níveis do áudio em `GenSonsDaAbertura` |
 | Hover e foco: velocidade, crescimento, brilho, setas | `Realce` (`VELOCIDADE`, `CRESCIMENTO`, `CAMADAS`, `ALFA`, `CLAREAMENTO`, `SETA`, `AFASTAMENTO`, `RESPIRO`, `PERIODO_DO_RESPIRO`) |
 | Cartas: entrada, fechamento, tamanho, vão | `MaoDeCartas` (`ENTRADA = 26`, `FECHAR = 18`, `LARGURA`, `ALTURA`, `VAO`); o hover vem do `Realce` |
 | Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `DESCIDA_DAS_CARTAS = 10`, `TITULO_ACIMA_DAS_CARTAS = 30`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |

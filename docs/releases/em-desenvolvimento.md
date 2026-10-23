@@ -1,5 +1,29 @@
 # Em desenvolvimento (depois da 0.1.3-alpha)
 
+- **Permissão para pular a abertura** (2026-10-23; `a20c558`).
+  Por padrão, teclas, cliques e controle não pulam a abertura.
+  Settings → Interface → Allow intro skip libera esse comportamento; a escolha
+  é salva para os próximos inícios e pode ser desligada novamente.
+
+- **Crédito da Runforce** (2026-10-23; `9f9b08a`).
+  O nome Runforce substitui o marcador `[team name]` na abertura do jogo.
+
+- **Tela cheia informa o modo ao Windows** (2026-10-23; `7a3b7c0`).
+  Desligar o redimensionamento sozinho não bastou no uso real.
+  `TelaCheiaDoWindows` usa `ITaskbarList2.MarkFullscreenWindow` para manter a barra
+  atrás do jogo ativo; reaplica depois de mostrar/ativar o frame e ao aplicar
+  vídeo, removendo a marca no modo janela. Validado também com o jogo completo,
+  com capturas do sistema na abertura e no menu em 1920×1080.
+
+- **Janela em primeiro plano ao iniciar** (2026-10-23; `7a3b7c0`).
+  `FocoDoWindows` pede ativação nativa uma vez na abertura, com
+  desbloqueio por Alt pressionado/solto se o pedido normal for recusado e nenhum
+  modificador estiver pressionado, conforme a implementação de inicialização da
+  Tao. Substitui a elevação temporária por `alwaysOnTop`, que não garantia
+  ativação: a barra permanecia até o clique. Validado iniciando o jogo pelo
+  Gradle, com `GetForegroundWindow` confirmando ativação, zero apertos recebidos
+  pela abertura e capturas sem a barra. Alt+Tab e modo foto não repetem a tentativa.
+
 > **Reconstruído a partir do histórico do git em 2026-10-21.** Nada disto saiu
 > numa versão: não há tag depois de `v0.1.3-alpha`, e o `build.gradle.kts`
 > continua em `0.1.3-alpha`. O número da próxima versão está **a confirmar**.
@@ -333,3 +357,25 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#baú-a-abertura-aberturadobau-e-a-recompe
   tela, e cada ícone da prévia dá um tic no grau dele (comum grave e seco,
   lendário agudo e brilhante), com a moldura na cor do grau. As melhorias da
   prévia vêm com o grau sorteado pelas chances reais.
+
+## Abertura do jogo (2026-10-22, branch `feat/intro`)
+
+Ver [ARQUITETURA.md](../ARQUITETURA.md#abertura-do-jogo-abertura).
+
+- **Músicas em segundo plano** (`2f53632`). Carregar as faixas levava 3,4 s antes de
+  a janela existir; agora elas carregam por trás, e uma faixa pedida antes de chegar
+  toca quando ficar pronta.
+- **Janela preta antes do primeiro quadro** (`8373da1`), sem o clarão do fundo
+  padrão.
+- **Logo e sons da abertura** (`015d2a7`). O letreiro extraído da ilustração numa
+  camada própria e o ar, o crédito e a logo sintetizados.
+- **A abertura** (`5f7e14a`). Do preto ao crédito da equipe, à logo e à tela inicial,
+  que surge em volta da logo; os botões entram um a um. Completa na primeira vez
+  (4,4 s), curta depois (1,6 s), pulável com qualquer tecla, clique ou botão. A janela
+  aparece em 1,2 s, antes em 5 s.
+- **Abertura mais lenta** (`d0aee84`, `65d5a17`). Depois de jogar: a completa passou
+  de 4,4 s para 7,4 s e a curta de 1,6 s para 2,7 s, com tempo para ler o crédito e
+  ver a luz atravessar a logo. O ar de fundo dura 8 s para acompanhar.
+- **Abertura completa recorrente** (`a20c558`). Os 7,4 s
+  se repetem a cada início, sem consultar nem gravar `introVista`. A curta de 2,7 s
+  fica só para `-Dcd.intro=curta`; o pulo depende de Allow intro skip.

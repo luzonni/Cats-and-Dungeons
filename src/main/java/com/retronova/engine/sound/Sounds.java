@@ -141,7 +141,13 @@ public enum Sounds {
 	BauPreviaComum("bau_previa_comum"),
 	BauPreviaRaro("bau_previa_raro"),
 	BauPreviaEpico("bau_previa_epico"),
-	BauPreviaLendario("bau_previa_lendario");
+	BauPreviaLendario("bau_previa_lendario"),
+
+	// A abertura do jogo (ver menus/Abertura e tools/GenSonsDaAbertura.java): o ar
+	// por baixo, o crédito da equipe e a logo.
+	AberturaVento("abertura_vento"),
+	AberturaCredito("abertura_credito"),
+	AberturaLogo("abertura_logo");
 
 	
 	private final String ResourceName;

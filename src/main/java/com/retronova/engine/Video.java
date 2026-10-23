@@ -34,6 +34,10 @@ public final class Video {
             AffineTransform dpi = gc.getDefaultTransform();
             DisplayMode modo = gc.getDevice().getDisplayMode();
             int[] pedida = {Configs.resolucaoLargura(), Configs.resolucaoAltura()};
+            if (com.sun.jna.Platform.isWindows()) {
+                System.out.println("[video] foco: AWT=" + w.getFrame().isFocused()
+                        + ", primeiro plano no Windows=" + FocoDoWindows.emPrimeiroPlano(w.getFrame()));
+            }
             System.out.printf(java.util.Locale.ROOT,
                     "[video] %s: pedida=%dx%d imagem=%dx%d canvas=%dx%d janela=%s modo=%s%n"
                             + "[video]   monitor=%s (%s) barras=%s dpi=%.2fx%.2f (uiScale=%s) taxa=%s%n",

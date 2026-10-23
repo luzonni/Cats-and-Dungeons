@@ -70,6 +70,7 @@ public class Configs {
         DEFAULTS.put("resH", 0);
         DEFAULTS.put("BATTLEMUSIC", 0);    // indice em Musics.COMBATE
         DEFAULTS.put("rumble", true);      // vibração do controle, ver Gamepad.vibrar
+        DEFAULTS.put("permitirPularAbertura", false);
 
         VALUES = new LinkedHashMap<>(DEFAULTS);
         registrarFlushNoEncerramento();
@@ -561,6 +562,16 @@ public class Configs {
 
     public static void setRumble(boolean rumble) {
         VALUES.put("rumble", rumble);
+        update();
+    }
+
+    /** PULO SÓ COM PERMISSÃO: uma configuração antiga ou nova começa sem liberar. */
+    public static boolean PermitirPularAbertura() {
+        return Boolean.TRUE.equals(VALUES.get("permitirPularAbertura"));
+    }
+
+    public static void setPermitirPularAbertura(boolean permitir) {
+        VALUES.put("permitirPularAbertura", permitir);
         update();
     }
 

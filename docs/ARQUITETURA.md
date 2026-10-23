@@ -118,6 +118,21 @@ Hz, janela de 2 s estável):
 
 ### Janela, resolução e DPI
 
+- **Ativação ao iniciar** (`Window.destacarAoIniciar`, `FocoDoWindows`): uma única
+  chamada na EDT pede `SetForegroundWindow` e depois o teclado para o Canvas.
+  O antigo `alwaysOnTop` temporário elevava o frame sem garantir a ativação: a
+  barra só sumia depois do clique. O foco informado pelo AWT também não bastava:
+  foi observado `AWT=true` com `GetForegroundWindow` apontando para outro app.
+  Se o pedido normal for recusado, envia uma passagem de Alt pressionado/solto
+  e repete o pedido, como `force_window_active` da biblioteca Tao. Não faz esse
+  desbloqueio com Alt/Ctrl/Shift/Windows já pressionado. A tentativa ocorre uma
+  única vez; perder foco depois não a repete. O modo foto fica de fora, inclusive
+  com janela real. `-Dcd.video=true` diferencia foco AWT, primeiro plano nativo e
+  resultado do pedido de ativação. O sistema ainda pode recusar a operação.
+  Referências: [Tao](https://github.com/tauri-apps/tao/blob/dev/src/platform_impl/windows/window.rs),
+  [SetForegroundWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow)
+  e [LockSetForegroundWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-locksetforegroundwindow).
+
 - **Resolução é o tamanho da imagem do jogo**, em pixels da tela. Todo o jogo se
   posiciona por `window.largura()` e `window.altura()`, que são a resolução, e não
   o tamanho do canvas.
@@ -138,6 +153,15 @@ Hz, janela de 2 s estável):
   usada: ela troca o modo do monitor, o que apaga a tela a cada troca e a cada
   Alt+Tab (tutorial "Full-Screen Exclusive Mode" da Oracle). Resolução diferente
   da do monitor é feita pela escala acima.
+- **Barra de tarefas em tela cheia:** além de desligar o redimensionamento, o
+  Windows recebe uma marca explícita via `TelaCheiaDoWindows` e
+  `ITaskbarList2.MarkFullscreenWindow` (JNA/COM já disponível no projeto).
+  Só mudar `setResizable(false)` não resolveu no uso real: a detecção automática
+  do Shell ainda deixava a barra por cima. A marca é aplicada depois de mostrar
+  a janela, ao ativá-la e ao aplicar vídeo; ela se perde quando o frame é
+  escondido. Em modo janela a marca é removida. A barra continua disponível
+  nas outras aplicações, sem mudar sua configuração nem a resolução do monitor.
+  Referência: [Microsoft Learn](https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-itaskbarlist2-markfullscreenwindow).
 - **Em janela**, a janela tem a resolução pedida. Se não cabe na área útil do
   monitor (sem a barra de tarefas), ela encolhe na proporção da imagem.
 - **Aplicar vídeo não recria a janela** (`Window.aplicarVideo`): mudar a
@@ -296,6 +320,48 @@ do zumbi. Está no histórico do git, antes da branch `docs/estado-atual`.
 
 Tudo o que é compartilhado entre telas fica em `menus/shared/`. Uma tela nova
 monta a partir daqui e não redesenha título, rodapé, hover ou carta.
+
+### Abertura do jogo (`Abertura`)
+
+Ao abrir o jogo, a janela aparece preta (`Window` pinta o fundo de preto antes do
+primeiro quadro, sem o clarão do fundo padrão) e `menus/Abertura.java` roda por
+cima da tela inicial, que já espera embaixo na pilha:
+
+| Fase | Completa | Curta | O que acontece |
+|---|---|---|---|
+| Preto | 0,5 s | 0,2 s | o ar da masmorra entra (`abertura_vento`) |
+| Crédito | 2,7 s | — | "a game by" e o nome da equipe sobem do escuro e somem |
+| Logo | 2,6 s | 1,5 s | a lua acende atrás; a logo surge acinzentada e uma frente de luz a deixa branca |
+| Cena | 1,6 s | 1,0 s | a ilustração surge em volta da logo; música e ambiência da tela inicial sobem |
+| Menu | ~0,8 s | ~0,8 s | botões, troféu e versão surgem um a um (`Menu.entrarEmSequencia`) |
+
+- **A logo vira a tela inicial.** `tools/GenLogo.java` extrai o letreiro da própria
+  ilustração, e a abertura o desenha exatamente onde ele está na arte. Na fase da
+  cena, as letras pintadas aparecem por baixo das da abertura, que somem sem pular.
+- **Crédito antes da logo:** é a convenção de apresentar quem fez antes do título
+  (como o "EXOK presents" antes do Celeste). É também a única ordem em que a logo
+  passa direto para a tela inicial.
+- **Completa a cada início** (7,4 s), mesmo se a abertura já foi vista. O antigo
+  `introVista` do `config.json` é ignorado; a curta só é usada com `-Dcd.intro=curta`.
+- **Pulo bloqueado por padrão:** Settings → Interface → **Allow intro skip**
+  libera o pulo por tecla, clique ou botão do controle (`KeyBoard.apertos`).
+  A preferência `permitirPularAbertura` é persistida em `config.json`; quando
+  ausente, vale `false`, inclusive para configurações antigas. Ligada, permite
+  ir à tela inicial já pronta, com a música entrando; não pula automaticamente.
+- **Aproveita o carregamento:** as músicas carregam por trás (ver Áudio), e a
+  ilustração da tela inicial é escalada numa thread (`Cenario.prepararEmSegundoPlano`).
+- **Sem clarão:** só desvanecimentos e a passagem de luz, de baixo contraste, longe
+  do limite de três flashes por segundo da WCAG 2.3.1.
+- **O crédito da equipe** fica em `Abertura.CREDITO_ACIMA` e `CREDITO_EQUIPE`: "a game by"
+  e "Runforce". Com `CREDITO_EQUIPE` vazio, a fase do crédito não
+  acontece.
+- **Ajuste fino:** tudo no topo de `Abertura` e de `Menu` (ver `docs/CONTEXTO.md` §8).
+  A bancada e o modo foto pulam a abertura; `-Dcd.intro=completa|curta` a força.
+
+**Tempo de abertura**, medido do `main` ao primeiro quadro: 5,0 s antes, sem nada na
+tela até lá; 1,2 s agora, já na abertura. A tela inicial fica pronta, pela soma das fases, em
+uns 8,6 s na versão completa (7,4 s de abertura; a primeira versão, de 4,4 s, passava
+rápido demais para ler o crédito) e uns 3,9 s na curta (2,7 s).
 
 ### Sistema de menus (`TelaDeMenu`)
 
@@ -692,6 +758,15 @@ como Service Provider do `javax.sound`: como o TinySound usa
 `AudioSystem.getAudioInputStream()` por baixo, basta a biblioteca estar no
 classpath. Nenhuma linha de código de áudio mudou por causa do formato — só a
 extensão do arquivo.
+
+**As músicas carregam em segundo plano** (`Sound.load`). Medido, carregar as
+faixas levava 3,4 s dos 3,9 s em que o jogo ficava sem janela depois do clique:
+a TinySound decodifica cada OGG inteiro ao carregar (com `streamFromFile`, para
+um arquivo temporário). Agora os efeitos (0,2 s) carregam antes da janela e as
+músicas numa thread de baixa prioridade, a da tela inicial e a ambiência
+primeiro, enquanto a abertura roda. Pedir uma faixa que ainda não chegou não
+quebra nada: ela fica pendente e o `Sound.tick` a inicia quando estiver pronta, no
+volume e na rampa que pediram; parar uma pendente só desfaz o pedido.
 
 A exceção é `escolha_elemento.wav`, a trilha da escolha de elemento. Ela é gerada
 por código (`tools/GenSonsDaEscolha.java`), e o gerador não tem codificador

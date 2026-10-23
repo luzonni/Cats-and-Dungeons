@@ -268,6 +268,9 @@ public class Configuracoes extends TelaDeMenu {
         ui.add(OptionRow.toggle("Controller vibration",
                 () -> Configs.Rumble() ? 1 : 0, v -> Configs.setRumble(v != 0))
                 .desc("Rumble on an Xbox controller when the cat takes damage."));
+        ui.add(OptionRow.toggle("Allow intro skip",
+                () -> Configs.PermitirPularAbertura() ? 1 : 0, v -> Configs.setPermitirPularAbertura(v != 0))
+                .desc("Allow a key, click or controller button to skip the opening. Off by default."));
 
         linhas.add(video);
         linhas.add(audio);

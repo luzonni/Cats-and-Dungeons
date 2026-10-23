@@ -59,7 +59,7 @@ public class Cenario {
 
     // ------------------------------------------------------------------- tick
 
-    public void tick() {
+    public synchronized void tick() {
         tempo += 1f / 60f;
         int w = Math.max(1, Engine.window.largura());
         int h = Math.max(1, Engine.window.altura());
@@ -72,7 +72,7 @@ public class Cenario {
 
     // ----------------------------------------------------------------- render
 
-    public void render(Graphics2D g) {
+    public synchronized void render(Graphics2D g) {
         int w = Engine.window.largura();
         int h = Engine.window.altura();
         // Tempo do QUADRO, nao do tick: a bruma corre liso acima de 60 FPS.
@@ -106,7 +106,7 @@ public class Cenario {
      * desperdício puro — e como a cena não se move mais, uma cópia no tamanho da
      * tela basta para sempre.
      */
-    private void preparar(int w, int h) {
+    private synchronized void preparar(int w, int h) {
         if (arte != null && larguraPreparada == w && alturaPreparada == h) {
             return;
         }
@@ -117,6 +117,18 @@ public class Cenario {
         for (int i = 0; i < poeiras.length; i++) {
             poeiras[i] = Poeira.nova(w, h, rand, true);
         }
+    }
+
+    /**
+     * Prepara a cena numa thread de fundo, para o primeiro quadro dela não custar
+     * os ~0,7 s de reescalar a ilustração. A abertura chama no começo: quando a
+     * cena surge, ela já está pronta. Se o quadro chegar antes, render espera o
+     * preparo terminar (os dois são synchronized) em vez de fazer outro.
+     */
+    public void prepararEmSegundoPlano(int w, int h) {
+        Thread t = new Thread(() -> preparar(w, h), "Cenario-preparo");
+        t.setDaemon(true);
+        t.start();
     }
 
     private static BufferedImage escalar(BufferedImage origem, int w, int h) {

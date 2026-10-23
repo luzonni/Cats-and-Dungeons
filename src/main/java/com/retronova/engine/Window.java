@@ -8,6 +8,8 @@ import com.retronova.engine.sound.Sound;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serial;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ public class Window extends Canvas {
     /** Ultimo estado de foco visto, para so agir na troca. */
     private boolean focada = true;
     private JFrame frame;
+    private boolean focoInicialSolicitado;
     private final Toolkit toolkit;
 
     public Window(String name) {
@@ -53,6 +56,12 @@ public class Window extends Canvas {
      */
     private void initFrame() {
         this.frame = new JFrame(this.name);
+        // PRETO DESDE O PRIMEIRO INSTANTE. Até o primeiro quadro, o sistema pinta a
+        // janela com o fundo dela, que por padrão é claro: era o clarão antes de a
+        // abertura começar. Preto, a abertura sai do preto sem emenda.
+        setBackground(Color.BLACK);
+        frame.getContentPane().setBackground(Color.BLACK);
+        frame.setBackground(Color.BLACK);
         frame.add(this);
         frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -71,9 +80,19 @@ public class Window extends Canvas {
             frame.setAutoRequestFocus(false);
         }
         boolean telaCheia = Configs.Fullscreen();
+        // SEM REDIMENSIONAMENTO EM TELA CHEIA. A barra de tarefas é tratada
+        // explicitamente pelo Shell (TelaCheiaDoWindows), além das bordas e tamanho.
+        frame.setResizable(!telaCheia);
         frame.setUndecorated(telaCheia);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent evento) {
+                TelaCheiaDoWindows.marcar(frame, Configs.Fullscreen());
+            }
+        });
         dimensionar(telaCheia, true);
         frame.setVisible(true);
+        TelaCheiaDoWindows.marcar(frame, telaCheia);
         refreshSize();      // o cache precisa valer já no primeiro quadro
         showAccelerators();
         Video.registrar("abertura", this);
@@ -96,6 +115,29 @@ public class Window extends Canvas {
         frame.setLocation(-30000, -30000);
         frame.setVisible(true);
         refreshSize();
+    }
+
+    /**
+     * ATIVAÇÃO SÓ AO INICIAR. O antigo alwaysOnTop temporário trazia a janela à
+     * frente sem garantir a ativação nativa; a barra só sumia depois do clique.
+     * Pede a ativação ao Windows e depois o teclado ao Canvas, sem prender a
+     * janela acima das demais. A EDT executa uma única vez, após criar o jogo.
+     */
+    void destacarAoIniciar() {
+        if (Foto.ligado()) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            if (!frame.isShowing() || focoInicialSolicitado) {
+                return;
+            }
+            focoInicialSolicitado = true;
+            frame.toFront();
+            FocoDoWindows.ativarAoIniciar(frame);
+            frame.requestFocus();
+            requestFocusInWindow();
+            TelaCheiaDoWindows.marcar(frame, Configs.Fullscreen());
+        });
     }
 
     /**
@@ -139,6 +181,7 @@ public class Window extends Canvas {
             // O BufferStrategy pertence ao canvas exibível; esconder a janela o mata.
             Engine.invalidateBuffer();
             frame.dispose();
+            frame.setResizable(!telaCheia);
             frame.setUndecorated(telaCheia);
             dimensionar(telaCheia, true);
             frame.setVisible(true);
@@ -146,6 +189,7 @@ public class Window extends Canvas {
         } else {
             dimensionar(telaCheia, false);
         }
+        TelaCheiaDoWindows.marcar(frame, telaCheia);
         refreshSize();
         Video.registrar("aplicar", this);
     }

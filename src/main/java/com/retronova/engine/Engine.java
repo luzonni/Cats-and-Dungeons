@@ -68,7 +68,20 @@ public class Engine implements Runnable {
         //das entradas são comparados literalmente e o recurso não é encontrado.
         SpriteSheet.load(Engine.resPath.substring(0, Engine.resPath.length() - 1), Configs.GameScale());
         Engine.window = new Window(GameTag);
-        heapActivity(new Menu());
+        // A ABERTURA (ver Abertura) por cima da tela inicial, que já espera embaixo
+        // sem tocar a música: a abertura a traz por desvanecimento. Fica de fora na
+        // bancada e no modo de foto, que entram direto (os roteiros de foto contam
+        // com o menu no primeiro segundo); -Dcd.intro=completa|curta a força.
+        String intro = System.getProperty("cd.intro");
+        boolean abrir = !Boolean.getBoolean("cd.bench") && (!Foto.ligado() || intro != null);
+        Menu menu = new Menu(!abrir);
+        heapActivity(menu);
+        if (abrir) {
+            // COMPLETA A CADA INÍCIO: ter visto a abertura não deve encurtá-la.
+            // A versão curta fica disponível só pela flag de diagnóstico.
+            boolean completa = !"curta".equalsIgnoreCase(intro);
+            heapActivity(new com.retronova.menus.Abertura(menu, completa));
+        }
         // BANCADA (-Dcd.bench=true): entra direto numa arena com o Finn, para medir
         // desempenho sem navegar menus. Espaco 0 nao e um espaco de save valido —
         // nada e gravado nem apagado; as corridas do jogador ficam intactas.
@@ -622,7 +635,7 @@ public class Engine implements Runnable {
         int Hz = 0;
         int frames = 0;
         long timer = agora;
-        window.requestFocus();
+        window.destacarAoIniciar();
         while (isRunning) {
             try {
                 agora = System.nanoTime();

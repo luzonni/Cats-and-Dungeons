@@ -294,7 +294,12 @@ public abstract class TelaDeMenu implements Activity {
 
     // -------------------------------------------------------------- fundo
 
-    private static Cenario cenario() {
+    /**
+     * A ilustração animada do título, uma só para todas as telas. Pública porque a
+     * abertura (Abertura) faz a cena surgir com ESTA instância: com outra, a bruma e
+     * a poeira pulariam de lugar na passagem para a tela inicial.
+     */
+    public static synchronized Cenario cenario() {
         if (cenario == null) {
             cenario = new Cenario("icons.Gato");
         }
