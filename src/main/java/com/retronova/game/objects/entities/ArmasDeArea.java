@@ -2,18 +2,21 @@ package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.graphics.Brilho;
+import com.retronova.engine.graphics.Familia;
 import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
 import com.retronova.game.items.ArmaExtra;
+import com.retronova.game.items.Icone;
 import com.retronova.game.items.Melhorias;
 import com.retronova.game.map.Camera;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
+
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -266,6 +269,10 @@ public final class ArmasDeArea {
         if (relampagos.isEmpty() && ondas.isEmpty() && meteoros.isEmpty()) {
             return;
         }
+        // ARTE EM JOGO = ARTE DO ÍCONE: cada arma na família de cor do ícone dela
+        // (Familia), o meteoro que cai é o próprio ícone, e os discos são imagens
+        // prontas (Brilho), e não fillOval suavizado por quadro. Eram laranjas,
+        // vermelhos e um branco puro soltos aqui, sem relação com o card.
         float a = Engine.pausado() ? 0f : Engine.alpha();
         int s = Configs.GameScale();
         Graphics2D o = (Graphics2D) g.create();
@@ -273,38 +280,31 @@ public final class ArmasDeArea {
             double t = Math.min(1, (onda.idade + a) / Onda.VIDA);
             double r = onda.raioFinal * (1 - Math.pow(1 - t, 3));
             float vida = (float) (1 - t);
-            o.setColor(new Color(208, 138, 74, (int) (45 * vida)));
-            o.fillOval((int) (onda.x - r), (int) (onda.y - r), (int) (r * 2), (int) (r * 2));
+            Brilho.disco(o, onda.x, onda.y, r, Familia.TERRA.tom(Familia.BASE, (int) (45 * vida)));
             o.setStroke(new BasicStroke(4f * s * vida + s));
-            o.setColor(new Color(240, 200, 150, (int) (200 * vida)));
+            o.setColor(Familia.TERRA.tom(Familia.LUZ, (int) (200 * vida)));
             o.drawOval((int) (onda.x - r), (int) (onda.y - r), (int) (r * 2), (int) (r * 2));
         }
         for (Meteoro m : meteoros) {
             if (m.idade < Meteoro.QUEDA) {
-                // Aviso: um circulo vermelho que se fecha, e o meteoro descendo.
+                // Aviso: o círculo na cor do fogo que se fecha, e o ícone do
+                // meteoro descendo. Fogo, e não vermelho: é arma do gato, e
+                // vermelho no chão leria como perigo para ele.
                 double t = (m.idade + a) / Meteoro.QUEDA;
-                o.setColor(new Color(255, 60, 40, (int) (40 + 60 * t)));
-                o.fillOval((int) (m.x - m.raio), (int) (m.y - m.raio), (int) (m.raio * 2), (int) (m.raio * 2));
+                Brilho.disco(o, m.x, m.y, m.raio, Familia.FOGO.tom(Familia.SOMBRA, (int) (40 + 60 * t)));
                 o.setStroke(new BasicStroke(s));
-                o.setColor(new Color(255, 120, 80, 200));
+                o.setColor(Familia.FOGO.tom(Familia.LUZ, 200));
                 double rr = m.raio * (1 - t * 0.6);
                 o.drawOval((int) (m.x - rr), (int) (m.y - rr), (int) (rr * 2), (int) (rr * 2));
                 double altura = (1 - t) * 14 * GameObject.SIZE() / 4.0;
-                int tam = 4 * s;
-                o.setColor(new Color(255, 200, 90));
-                o.fillOval((int) (m.x - tam), (int) (m.y - altura - tam), tam * 2, tam * 2);
-                o.setColor(new Color(255, 110, 50, 160));
-                o.fillOval((int) (m.x - tam * 1.6), (int) (m.y - altura - tam * 3), (int) (tam * 3.2), tam * 3);
+                Icone.METEORO.desenharCentrado(o, (int) m.x, (int) (m.y - altura), Math.max(1, Math.round(s * 0.67f)));
             } else {
-                // Explosao: disco laranja que cresce e apaga.
+                // Explosão: o disco de fogo que cresce e apaga, com o miolo claro.
                 double t = (m.idade - Meteoro.QUEDA + a) / Meteoro.FOGO;
                 double r = m.raio * (0.8 + 0.4 * t);
                 float vida = (float) Math.max(0, 1 - t);
-                o.setColor(new Color(255, 150, 60, (int) (180 * vida)));
-                o.fillOval((int) (m.x - r), (int) (m.y - r), (int) (r * 2), (int) (r * 2));
-                o.setColor(new Color(255, 240, 200, (int) (220 * vida)));
-                double r2 = r * 0.5;
-                o.fillOval((int) (m.x - r2), (int) (m.y - r2), (int) (r2 * 2), (int) (r2 * 2));
+                Brilho.disco(o, m.x, m.y, r, Familia.FOGO.tom(Familia.BASE, (int) (180 * vida)));
+                Brilho.disco(o, m.x, m.y, r * 0.5, Familia.OURO.tom(Familia.BRILHO, (int) (220 * vida)));
             }
         }
         for (Relampago rel : relampagos) {
@@ -315,10 +315,10 @@ public final class ArmasDeArea {
                 ys[i] = (int) rel.pontos.get(i)[1];
             }
             o.setStroke(new BasicStroke(4f * s, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            o.setColor(new Color(127, 216, 255, (int) (110 * vida)));
+            o.setColor(Familia.ELETRICO.tom(Familia.BASE, (int) (110 * vida)));
             o.drawPolyline(xs, ys, xs.length);
             o.setStroke(new BasicStroke(Math.max(1f, 1.2f * s), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            o.setColor(new Color(255, 255, 255, (int) (255 * vida)));
+            o.setColor(Familia.ELETRICO.tom(Familia.BRILHO, (int) (255 * vida)));
             o.drawPolyline(xs, ys, xs.length);
         }
         o.dispose();

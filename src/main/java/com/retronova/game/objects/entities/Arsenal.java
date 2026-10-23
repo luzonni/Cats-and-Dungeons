@@ -4,13 +4,15 @@ import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
 import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
+import com.retronova.engine.graphics.Brilho;
+import com.retronova.engine.graphics.Familia;
 import com.retronova.game.items.ArmaExtra;
+import com.retronova.game.items.Icone;
 import com.retronova.game.items.Melhorias;
 import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.enemies.Enemy;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.List;
@@ -185,13 +187,23 @@ public final class Arsenal {
         int s = Configs.GameScale();
 
         if (aura > 0) {
+            // A AURA É A FOLHA DO CARD: o campo na família verde dos ícones (ouro na
+            // evolução, a Holy Catnip), a borda num tom de luz e três folhas do
+            // próprio ícone girando devagar na borda. Disco de imagem pronta (Brilho),
+            // e não fillOval suavizado por quadro.
+            boolean sagrado = evoluiu(ArmaExtra.AURA);
+            Familia f = sagrado ? Familia.OURO : Familia.VERDE;
             int r = (int) raioAura(aura);
             double pulso = 0.5 + 0.5 * Math.sin((tempo + alpha) * 0.12);
-            g.setColor(new Color(91, 224, 122, (int) (28 + 22 * pulso)));
-            g.fillOval((int) cx - r, (int) cy - r, r * 2, r * 2);
-            g.setColor(new Color(150, 255, 170, (int) (70 + 50 * pulso)));
+            Brilho.disco(g, cx, cy, r, f.tom(Familia.BASE, (int) (28 + 22 * pulso)));
+            g.setColor(f.tom(Familia.LUZ, (int) (70 + 50 * pulso)));
             g.setStroke(new BasicStroke(s));
             g.drawOval((int) cx - r, (int) cy - r, r * 2, r * 2);
+            int folha = Math.max(1, s / 2);
+            for (int i = 0; i < FOLHAS_DA_AURA; i++) {
+                double a = (tempo + alpha) * GIRO_DAS_FOLHAS + i * 2 * Math.PI / FOLHAS_DA_AURA;
+                Icone.AURA.desenharCentrado(g, (int) (cx + Math.cos(a) * r), (int) (cy + Math.sin(a) * r), folha);
+            }
         }
         if (grimorio > 0) {
             for (double[] p : posicoesGrimorio(cx, cy, grimorio, alpha)) {
@@ -200,43 +212,29 @@ public final class Arsenal {
         }
         if (novelo > 0) {
             for (double[] p : posicoesNovelo(cx, cy, novelo, alpha)) {
-                desenharNovelo(g, (int) p[0], (int) p[1], s, (tempo + alpha) * 0.3);
+                desenharNovelo(g, (int) p[0], (int) p[1], s);
             }
         }
     }
 
-    private static void desenharNovelo(Graphics2D g, int x, int y, int s, double giro) {
+    /** Folhas do ícone na borda da aura, e quanto elas giram por tick, em radianos. */
+    private static final int FOLHAS_DA_AURA = 3;
+    private static final double GIRO_DAS_FOLHAS = 0.01;
+
+    /**
+     * ARTE EM JOGO = ARTE DO ÍCONE. O novelo e o livro que orbitam o gato são os
+     * PNG do registro (Icone), os mesmos do card e do "Your build", em fator
+     * inteiro. Eram desenhados aqui à parte — o grimório era um livro vermelho de
+     * cruz dourada, e o card mostrava outro —, e o jogador não reconhecia no chão
+     * a carta que tinha escolhido. O tamanho segue o de antes (o alcance de dano
+     * não muda; ver posicoesNovelo e posicoesGrimorio).
+     */
+    private static void desenharNovelo(Graphics2D g, int x, int y, int s) {
         int r = (evoluiu(ArmaExtra.NOVELO) ? 6 : 4) * s;   // Novelo Gigante: bolas maiores
-        g.setColor(new Color(0x7A2A4A));
-        g.fillOval(x - r - s, y - r - s, (r + s) * 2, (r + s) * 2);
-        g.setColor(new Color(0xFF6FA8));
-        g.fillOval(x - r, y - r, r * 2, r * 2);
-        // Os fios: tres arcos girando, que e o que faz a bola parecer rolar.
-        g.setColor(new Color(0xFFC2DA));
-        g.setStroke(new BasicStroke(Math.max(1, s)));
-        for (int i = 0; i < 3; i++) {
-            int inicio = (int) Math.toDegrees(giro) + i * 60;
-            g.drawArc(x - r + s, y - r + s, (r - s) * 2, (r - s) * 2, inicio, 100);
-        }
-        g.setColor(Color.WHITE);
-        g.fillRect(x - r / 2, y - r / 2, s, s);
+        Icone.NOVELO.desenharCentrado(g, x, y, Math.max(1, (int) Math.ceil(2.0 * r / Icone.LADO)));
     }
 
     private static void desenharLivro(Graphics2D g, int x, int y, int s) {
-        int w = 9 * s;
-        int h = 11 * s;
-        int x0 = x - w / 2;
-        int y0 = y - h / 2;
-        g.setColor(new Color(255, 214, 90, 60));
-        g.fillOval(x0 - 3 * s, y0 - 3 * s, w + 6 * s, h + 6 * s);
-        g.setColor(new Color(0x2A1A10));
-        g.fillRect(x0 - s, y0 - s, w + 2 * s, h + 2 * s);
-        g.setColor(new Color(0x7A2E2E));
-        g.fillRect(x0, y0, w, h);
-        g.setColor(new Color(0xF2E6C8));            // paginas
-        g.fillRect(x0 + w - 2 * s, y0 + s, s, h - 2 * s);
-        g.setColor(new Color(0xC9A227));            // cruz dourada
-        g.fillRect(x0 + w / 2 - s, y0 + 2 * s, s * 2 - s, h - 4 * s);
-        g.fillRect(x0 + 2 * s, y0 + h / 3, w - 5 * s, s);
+        Icone.GRIMORIO.desenharCentrado(g, x, y, Math.max(1, Math.round(11f * s / Icone.LADO)));
     }
 }
