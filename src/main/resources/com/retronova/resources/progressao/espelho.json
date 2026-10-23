@@ -1,0 +1,14 @@
+{
+  "_nota": "Progressao permanente: as regras de moedas e (etapa 2) a tabela do espelho. Unico lugar com estes numeros; ver docs/ARQUITETURA.md, Progressao permanente.",
+  "moedas": {
+    "_nota": "Moedas de uma corrida = (segundos / segundosPorMoeda + abates / abatesPorMoeda + bonusDeVitoria se venceu) x fracao do resultado x ganancia do espelho. Creditadas UMA vez, no fim.",
+    "segundosPorMoeda": 6,
+    "abatesPorMoeda": 8,
+    "bonusDeVitoria": 200,
+    "fracao": {
+      "morte": 1.0,
+      "vitoria": 1.0,
+      "abandono": 0.5
+    }
+  }
+}
