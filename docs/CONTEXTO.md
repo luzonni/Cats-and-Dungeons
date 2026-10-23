@@ -51,7 +51,7 @@ um ano parado. Sem engine: tudo em Java puro.
 `Conquistas`): `-Dcd.bench=true` pula os menus e entra numa corrida no espaço de
 save 0, que não grava nada. Com ele: `-Dcd.gato=0|1|2` (Muffin, Azrael, Finn),
 `-Dcd.minuto=N`, `-Dcd.bau` (abre um baú; `-Dcd.roleta` é apelido), `-Dcd.fim`, `-Dcd.nivel`, `-Dcd.rei=1..4`,
-`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`, `-Dcd.buffs` (um nível de cada buff). A bancada e o modo foto pulam a abertura; `-Dcd.intro=completa|curta` a força. `-Dcd.perf=true` liga o
+`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`, `-Dcd.buffs` (um nível de cada buff). `-Dcd.dialogo=<id da conversa>` começa na antecâmara e abre essa conversa com o vendedor, sem marcá-la como vista (`auto` escolhe como o jogo escolheria). A bancada e o modo foto pulam a abertura; `-Dcd.intro=completa|curta` a força. `-Dcd.perf=true` liga o
 medidor de quadros. O `build.gradle.kts` só repassa `-Pvitrine` ao `run`; **como
 o time passa os `-Dcd.*` (IDE, `java -jar`?) está a confirmar**.
 
@@ -129,6 +129,8 @@ docs/                          esta pasta
 | Hover e foco de todo elemento da interface | `menus/shared/Realce.java` |
 | Cartas de escolha (nível e elemento) | `menus/shared/MaoDeCartas.java` |
 | Transmutação da arma ao escolher o elemento | `game/objects/entities/Transmutacao.java` |
+| Diálogos (dados, escolha, memória, caixa, retratos) | `game/dialogos/` (`Dialogos` é a porta de entrada, `CaixaDeDialogo` a tela); dados em `resources/.../dialogos/`; retratos em `sprites/retratos/` por `tools/GenRetratos.java`; molduras por `tools/GenUiAssets.java`; voz por `tools/GenVozesDeDialogo.java`; guia em `docs/ARQUITETURA.md` ("Diálogos") |
+| Transição de tela entrando de lado | `menus/shared/EntradaLateral.java` (a loja do vendedor usa via `Inter.open`) |
 | Animação da arma na mão (respiro, passo, virada, flutuação, gesto do ataque) | `game/items/AnimacaoDaArma.java`, somada em `Item.naMao`; espada em `Sword`, arco e corda em `Bow` + `CordaDoArco`, cajado em `Wand`; como animar uma arma nova em `docs/ARQUITETURA.md` ("Animação das armas") |
 | Pose de cada arma na mão (punho, giro, boca) | `game/items/Poses.java` + `resources/.../poses.properties`, editor em `tools/EditorDePose.java` |
 | Modo foto (capturas de tela por roteiro) | `engine/Foto.java` |
@@ -225,6 +227,8 @@ docs/                          esta pasta
 | Morte e entrada de Run Over | ✅ | impacto de 24 ticks independente do zoom e voz própria por gato; queda lenta, chama ACO e fechamento para preto; título, painéis e barras animados em 1 s, reveláveis após o título; bancada e testes |
 | Relatório final em destaque | ✅ | quase toda a largura, na escala dos menus; 12 atributos finais, armas, elemento, passivas/cartas e dano de todas as fontes. Ficha imutável antes de sair da partida; abas de build e loja, com rolagem |
 | Animação das armas na mão | ✅ | toda arma de mão respira, pesa no passo e se recolhe ao virar; espada sai da mão para o golpe e volta, com faísca de impacto; arco puxa a corda, treme, solta com coice e a corda vibra; cajados flutuam, pulsam, soltam faíscas do elemento e fazem o gesto de lançar no tick do tiro. Cajado do Azrael redesenhado pela arte oficial. Com controle real e em armas fora das três iniciais **a confirmar** |
+| Diálogos lineares com retratos | ✅ | base pronta e validada no vendedor: dados em JSON com condições e prioridade, 7 emoções, máquina de escrever, blips, conversas vistas em `saves/dialogos.json`. Escolhas de resposta e falas soltas (barks) ainda não; estrutura pronta |
+| Vendedor que fala | ✅ | conversa antes da loja, conforme o contexto (primeira vez, vitória, morte rápida ou longa, sem moedas, veterano, gato), e a loja entra deslizando; Esc/B pula direto para ela. Com controle real **a confirmar** |
 | Ouro e upgrades permanentes | ✅ | |
 | Conquistas (10) | ✅ | |
 | Controle de Xbox, foco por D-pad | ✅ | só Windows |
@@ -307,6 +311,7 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Números de dano e coleta | `NumeroDeDano` (`TAMANHO = 5`, `TAMANHO_CRITICO = 7`, `TAMANHO_POP = 8`, `POP = 5`, `JUNTAR = 12`, `VIDA = 0.6`, `VIDA_CRITICO = 0.9`, `MAXIMO_NO_AR = 36`); `Coleta.TICKS = 8`; `Furia.CLARAO = 60`; folhas da aura em `Arsenal` (`FOLHAS_DA_AURA = 3`, `GIRO_DAS_FOLHAS = 0.01`) |
 | Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `DESCIDA_DAS_CARTAS = 10`, `TITULO_ACIMA_DAS_CARTAS = 30`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |
 | Abertura do baú | `AberturaDoBau` (`ENTRADA = 12`, `TREMOR = 18`, `TAMPA = 9`, `SUBIDA = 16`, `ATE_COLETAR = 8` ticks; `PREVIA_POR_ICONE = 9`, `PREVIA_VISIVEIS = 7`, `ZOOM_DO_BAU = 5`, `TREMOR_MAXIMO = 2`, `FAISCAS = 46`, `VIDA_DA_FAISCA = 34`, `CLARAO = 8`, `FORCA_DO_CLARAO = 110`, `VEU = 228`); níveis do áudio em `GenSonsDoBau` |
+| Caixa de diálogo | `CaixaDeDialogo` (`ENTRADA = 10`, `SAIDA = 8` ticks, `SUBIDA = 10` px, `CARENCIA = 10` ticks, `FATOR_DO_RETRATO = 2`, `LARGURA_MAXIMA = 392` px, `TAMANHO_DO_TEXTO = 8`, `ENTRELINHA = 13`, `PISCAR_MIN = 150`, `PISCAR_MAX = 320`, `PISCADA = 7`, `RESPIRO = 150`, `BOCA = 5`, `PULO = 6` ticks, `LETRAS_POR_BLIP = 2`); `MaquinaDeEscrever` (`LETRAS_POR_SEGUNDO = {28, 48, 90, instantâneo}`, `PAUSA_FRASE = 9`, `PAUSA_VIRGULA = 4` ticks); `EntradaLateral.DURACAO = 14` ticks; blips do vendedor a -34 dB RMS (`GenMixagem`) |
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
 | Animação da arma na mão | `AnimacaoDaArma` (`RESPIRO_GRAUS = 2.5`, `PASSO_GRAUS = 6`, `PASSO_PX = 1`, `PASSO_ATRASO = 0.45`, `TROCA_DE_ANDAR = 0.15`, `VIRADA_TICKS = 7`, `VIRADA_GRAUS = 35`, `FLUTUA_GRAUS = 4`, `FLUTUA_PERIODO = 100`, `PREPARO_SUAVE = 0.3`); quanto o corpo afunda por quadro em `Player.AFUNDADO` (cópia do `GenGatos`) |
 | Cajado: gesto, halo e faíscas | `Wand` (`ANTECIPACAO = 12` ticks, `GESTO` = ação 3, volta 12, 16°/20°, 0/1 px, sem subida; `ORBE_PX = 2.5`, `HALO_PX = 3.2`, `HALO_CARGA_PX = 2.2`, `HALO_ALFA = 55`, `HALO_ALFA_CARGA = 70`, `PULSO_PERIODO = 48`, `PULSO = 0.12`, `FAISCAS = 10`, `FAISCA_A_CADA = {16, 10, 6}`, `FAISCAS_NO_TIRO = 3`, `FAISCA_VIDA = 36`); cor sem elemento `Familia.VERDE` |

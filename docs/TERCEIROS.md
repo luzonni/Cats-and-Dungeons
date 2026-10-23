@@ -313,6 +313,15 @@ CC-BY-SA 4.0 e ficou de fora pela regra CC0 do projeto.
   conferir. São provisórios no timbre: uma versão definitiva feita por quem faz
   som entra trocando os arquivos.
 
+### Diálogos: retratos, molduras e vozes
+
+Tudo próprio, sem asset de terceiros: o retrato do vendedor é desenhado por
+`tools/GenRetratos.java` a partir das cores do sprite dele; as molduras da caixa
+saem de `tools/GenUiAssets.java`, na paleta da interface; os blips de voz são
+sintetizados por `tools/GenVozesDeDialogo.java`. As referências de design
+(Hades, Stardew Valley, Celeste, Undertale) foram só estudadas; nada delas foi
+importado.
+
 ### Áudio próprio da escolha de elemento
 
 Os sons da escolha de elemento **não vêm de fora**: são sintetizados por

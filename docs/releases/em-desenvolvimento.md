@@ -1,5 +1,23 @@
 # Em desenvolvimento (depois da 0.1.3-alpha)
 
+- **Sistema de diálogos** (2026-10-23; `060cea5`, `2be72e5`, `4ad5de8`, `6082a78`).
+  Conversas lineares em JSON (`resources/.../dialogos/`): personagem, emoção,
+  chave de texto e eventos por fala; gatilho, condições, prioridade e repetição
+  por conversa. A escolha segue o Hades: maior prioridade, depois a menos vista.
+  Sete emoções com retrato 32×32 por coluna, piscada, boca falando e respiro.
+  Caixa com moldura de orelhas, aba de nome no desenho dos botões, máquina de
+  escrever com velocidade em Settings → Interface → Dialogue speed, blips de
+  voz e dicas com os glyphs dos Controles. Conversas vistas e a última corrida
+  em `saves/dialogos.json`. `EntradaLateral` faz a tela entrar de lado. Bancada:
+  `-Dcd.dialogo=<id|auto>`. Ver ARQUITETURA, "Diálogos".
+
+- **O vendedor fala** (2026-10-23; `88320c8`).
+  Antes da loja ele se apresenta, comemora a vitória, provoca depois de uma
+  morte rápida, consola depois de uma longa, nota o bolso vazio, reconhece o
+  veterano e cada gato, e gira quatro falas genéricas. A loja atual entra
+  deslizando pela direita ao fim da conversa ou ao pular com Esc/B; sem
+  conversa que sirva, abre direto como antes.
+
 - **Relatório final amplo, inspirado em Hades II** (2026-10-23; `b493edf`). Run Over ocupa a largura da janela, sem diminuir a escala
   dos menus para caber em dois painéis fixos. Personagem/resultado, 12 atributos
   finais e dano por fonte aparecem em três colunas. A ficha é capturada antes de

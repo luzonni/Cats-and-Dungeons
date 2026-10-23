@@ -57,7 +57,8 @@ Revisado em **2026-10-21** contra o código (commit `8a9cbb8` e a limpeza que ve
 - [ ] Ajustar as arenas — o campo gerado substituiu as arenas desenhadas na
       corrida; **a confirmar** se o item ainda vale para alguma delas
 - [ ] Alterar os sprites dos itens
-- [ ] Deixar mais claro que o vendedor é um vendedor
+- [x] Deixar mais claro que o vendedor é um vendedor: ele se apresenta e fala antes de abrir a loja (sistema de diálogos, 2026-10-23)
+- [x] Sistema de diálogos lineares com retratos e expressões (base). Escolhas de resposta e falas soltas durante a corrida: estrutura pronta, a fazer
 - ~~Mapas individuais por nível~~ — substituído pelo campo gerado a cada
       corrida (`Gerador`)
 - 🔄 Sprites dos bosses — o Rato Rei usa o escudeiro ampliado três vezes.
