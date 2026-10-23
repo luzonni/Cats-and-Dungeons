@@ -135,10 +135,35 @@ public class Sword extends Item {
         }
         investida.tick();
         this.atacando = investida.ativa();
+        if (impacto > 0) {
+            impacto--;
+        }
         if (investida.acertaAgora()) {
             attack(player);
+            impacto = IMPACTO_TICKS;
         }
     }
+
+    // ------------------------------------------------------------ o impacto
+
+    /**
+     * Quantos ticks a faisca do impacto fica na ponta da lamina.
+     *
+     * Cinco: o pico do corte dura tres, e a faisca tem de sobreviver a ele para
+     * ser vista, mas sumir antes da recuperacao. E o "contato" das referencias de
+     * golpe: o quadro em que o golpe ENCOSTA tem de ser o mais forte da animacao.
+     */
+    private static final int IMPACTO_TICKS = 5;
+    /** Tamanho da faisca no auge, em pixels de arte, mais um por grau de intensidade. */
+    private static final double IMPACTO_PX = 3.5;
+    private int impacto;
+
+    /** A pose da mao, de onde o golpe sai e para onde volta. */
+    private final PoseNaMao naMaoAgora = new PoseNaMao();
+
+    /** Cor do rastro e da faisca da espada sem elemento: o branco do aco. */
+    private static final com.retronova.engine.graphics.Familia SEM_ELEMENTO =
+            com.retronova.engine.graphics.Familia.ACO;
 
     private static double centroX(Player p) {
         return p.getX() + p.getWidth() / 2d;
@@ -198,7 +223,66 @@ public class Sword extends Item {
         double raio = GameObject.SIZE() * (0.55 + 0.15 * Math.max(0, suave()));
         double x = centroX(player) + Math.cos(lamina) * raio;
         double y = centroY(player) + Math.sin(lamina) * raio;
-        desenharGirado(g, sprite, x, y, lamina + Rotate.DIAGONAL);
+
+        // SAI DA MAO E VOLTA PARA ELA. O golpe trocava a pose de porte pela do
+        // arco no primeiro quadro, e a espada saltava de lugar e de angulo. Aqui
+        // as duas poses se misturam pela presenca da investida: no comeco do
+        // preparo a lamina ainda esta na mao, e o recuo da antecipacao a leva ate
+        // o arco; na recuperacao ela volta. O desenho usado e o mesmo da mao
+        // (espelhado ou nao), para nao trocar de lado no meio do caminho.
+        double b = investida.presenca(Engine.alpha());
+        PoseNaMao mao = poseNaMao(sprite, 0, 0, naMaoAgora);
+        BufferedImage desenho = sprite;
+        double pontaDaArte = PONTA_DA_ARTE;
+        if (mao != null) {
+            desenho = mao.sprite;
+            pontaDaArte = mao.virado ? PONTA_DA_ARTE_VIRADA : PONTA_DA_ARTE;
+            double pontaNaMao = pontaDaArte + mao.angulo;
+            lamina = pontaNaMao + diferenca(pontaNaMao, lamina) * b;
+            x = mao.centroX() + (x - mao.centroX()) * b;
+            y = mao.centroY() + (y - mao.centroY()) * b;
+        }
+        desenharGirado(g, desenho, x, y, lamina - pontaDaArte);
+        desenharImpacto(g, x, y, lamina);
+    }
+
+    /**
+     * Para onde a PONTA aponta no desenho parado: os pacotes desenham a lamina
+     * para cima e a esquerda (ver Rotate.DIAGONAL). Espelhado, para cima e a direita.
+     */
+    private static final double PONTA_DA_ARTE = -3 * Math.PI / 4, PONTA_DA_ARTE_VIRADA = -Math.PI / 4;
+
+    /** O menor giro de um angulo ate outro, de -PI a PI. */
+    private static double diferenca(double de, double para) {
+        double d = para - de;
+        return Math.atan2(Math.sin(d), Math.cos(d));
+    }
+
+    /**
+     * A faisca do impacto, na ponta da lamina: uma estrela de quatro pontas de
+     * pixel, sem suavizacao, com um disco de luz por tras. Cresce rapido e
+     * encolhe, e e maior na arma elemental e na lendaria — e a parte do golpe que
+     * mais diz "acertou com forca".
+     */
+    private void desenharImpacto(Graphics2D g, double x, double y, double lamina) {
+        if (impacto <= 0) {
+            return;
+        }
+        double f = (impacto - Engine.alpha()) / IMPACTO_TICKS;
+        if (f <= 0) {
+            return;
+        }
+        int px = Configs.GameScale();
+        double alcance = getSprite().getWidth() * 0.45;
+        double tx = x + Math.cos(lamina) * alcance, ty = y + Math.sin(lamina) * alcance;
+        com.retronova.engine.graphics.Familia fam = familiaDoEfeito(SEM_ELEMENTO);
+        double tamanho = (IMPACTO_PX + intensidade()) * px * Math.sin(f * Math.PI);
+        com.retronova.engine.graphics.Brilho.disco(g, tx, ty, tamanho * 1.3,
+                fam.tom(com.retronova.engine.graphics.Familia.LUZ, (int) (120 * f)));
+        int braco = (int) Math.round(tamanho), cx = (int) Math.round(tx), cy = (int) Math.round(ty);
+        g.setColor(fam.tom(com.retronova.engine.graphics.Familia.BRILHO, (int) (255 * Math.min(1, f * 1.5))));
+        g.fillRect(cx - braco, cy - px / 2, braco * 2, px);
+        g.fillRect(cx - px / 2, cy - braco, px, braco * 2);
     }
 
     /**
@@ -228,7 +312,12 @@ public class Sword extends Item {
      */
     private void drawAttackEffect(Graphics2D g, Player player) {
         double avanco = suave();
-        if (avanco < -0.6 || !investida.ativa()) {
+        // SO DEPOIS DO PREPARO. A condicao era so "avanco acima de -0,6", e o
+        // comeco da antecipacao (avanco ainda perto de zero) passava: o rastro
+        // acendia pela metade ANTES do corte. Borrao na antecipacao e o que as
+        // referencias de golpe pedem para nao fazer — ele distrai do movimento
+        // para a frente, que e o que importa.
+        if (avanco < -0.6 || !investida.ativa() || !investida.passouDoPreparo()) {
             return;
         }
         double inicio = mira - ARCO * side;
@@ -240,7 +329,9 @@ public class Sword extends Item {
         if (avanco > 0.86) {
             forca *= (float) ((1 - avanco) / 0.14);
         }
-        Color cor = elemento == Elemento.NENHUM ? Color.WHITE : elemento.cor();
+        // A cor sai da familia do elemento (o aco, sem elemento), em degraus de
+        // opacidade prontos: o rastro criava duas cores novas por quadro.
+        com.retronova.engine.graphics.Familia fam = familiaDoEfeito(SEM_ELEMENTO);
         double cx = centroX(player), cy = centroY(player);
 
         // UMA LUA CHEIA, E NAO DUAS LINHAS. Os dois tracos de espessura fixa liam
@@ -250,8 +341,20 @@ public class Sword extends Item {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         double espessura = raio * 0.42;
-        desenharFaixa(g2, cx, cy, inicio, fim, raio + s, espessura + 2 * s, cor, 70 * forca);   // halo
-        desenharFaixa(g2, cx, cy, inicio, fim, raio, espessura, cor, 220 * forca);             // miolo
+        // A ARMA EVOLUIDA RASTREIA MAIS FORTE: a elemental e a lendaria ganham
+        // halo mais largo e um fio mais claro na borda de fora, que e o que faz o
+        // golpe delas ler como mais poderoso sem mudar o desenho do arco.
+        int forte = intensidade();
+        int halo = fam == SEM_ELEMENTO ? com.retronova.engine.graphics.Familia.BRILHO
+                : com.retronova.engine.graphics.Familia.LUZ;
+        desenharFaixa(g2, cx, cy, inicio, fim, raio + s * (1 + forte), espessura + 2 * s * (1 + forte),
+                fam, halo, (70 + 25 * forte) * forca);                                          // halo
+        desenharFaixa(g2, cx, cy, inicio, fim, raio, espessura,
+                fam, com.retronova.engine.graphics.Familia.BRILHO, 220 * forca);              // miolo
+        if (forte > 0) {
+            desenharFaixa(g2, cx, cy, inicio, fim, raio + s, espessura * 0.35,
+                    fam, com.retronova.engine.graphics.Familia.BRILHO, 160 * forca);          // fio
+        }
         g2.dispose();
     }
 
@@ -265,13 +368,15 @@ public class Sword extends Item {
      * emenda. A espessura afina ate zero na cauda de cada camada.
      */
     private static void desenharFaixa(Graphics2D g, double cx, double cy, double inicio, double fim,
-                                      double raio, double espessura, Color cor, double alfaMax) {
+                                      double raio, double espessura,
+                                      com.retronova.engine.graphics.Familia fam, int degrau,
+                                      double alfaMax) {
         int camadas = 7;
         int alfa = (int) Math.max(0, Math.min(255, alfaMax / camadas * 1.6));
         if (alfa <= 0 || Math.abs(fim - inicio) < 1e-3) {
             return;
         }
-        g.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), alfa));
+        g.setColor(fam.tom(degrau, alfa));
         for (int c = 0; c < camadas; c++) {
             double u0 = c / (double) (camadas + 1);
             double a0 = inicio + (fim - inicio) * u0;
