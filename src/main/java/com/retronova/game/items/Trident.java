@@ -88,6 +88,7 @@ public class Trident extends Item {
         this.emVoo = new ThrownTrident(player, x, y, angle,
                 DANO + player.getDamage(), ALCANCE);
         Game.getMap().put(emVoo);
+        tocarGolpe(com.retronova.engine.sound.Sounds.Arremesso);
     }
 
     @Override

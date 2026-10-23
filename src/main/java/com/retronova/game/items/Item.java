@@ -917,42 +917,13 @@ public abstract class Item {
     }
 
     /**
-     * Tempo minimo entre dois sons de golpe da mesma arma, em milissegundos.
-     *
-     * MEDIDO NO RELOGIO, E NAO EM QUADROS — e a primeira versao errou exatamente
-     * nisso. O contador de quadros precisava de alguem chamando um tick, e o unico
-     * lugar disponivel era o tick do Inventory, que e uma ACTIVITY: ele so roda
-     * quando a bolsa esta ABERTA na tela. Fechada a bolsa, o contador congelava no
-     * zero, o freio ficava eternamente acionado, e a arma tocava o primeiro golpe e
-     * emudecia para sempre.
-     *
-     * O relogio nao depende de ninguem se lembrar de chama-lo. Cento e trinta
-     * milissegundos sao os mesmos oito quadros a sessenta por segundo — deixam
-     * passar sete golpes por segundo, mais do que qualquer arma daqui faz.
-     */
-    private static final long ENTRE_SONS_MS = 130;
-
-    private long ultimoSom;
-
-    /**
-     * Toca o golpe: o som da arma e, quando ha elemento, o do elemento junto.
-     *
-     * OS DOIS, E NAO UM OU OUTRO. A arma diz O QUE bateu — o ferro da espada, a
-     * corda do arco — e o elemento diz DE QUE a corrida e. Tocar so o elemento
-     * apagaria a diferenca entre as armas numa corrida de agua; tocar so a arma
-     * deixaria a escolha do elemento muda, que e justamente a queixa.
-     *
-     * O FREIO EXISTE PORQUE AS ARMAS SAO RAPIDAS. A garra fecha um golpe em dez
-     * quadros; sem intervalo minimo, oito quadros de som se sobrepondo viram
-     * estalo distorcido em vez de ritmo. Oito quadros deixam passar ate sete
-     * golpes por segundo, que e mais do que qualquer arma daqui faz.
+     * SOM NO TICK DO EVENTO, com o timbre do elemento quando existe. A proteção
+     * contra empilhamento fica em Sound/LimiteDeVozes (40 ms e quatro vozes).
+     * O segundo freio, de 130 ms por item, descartava golpes legítimos de armas
+     * aceleradas e fazia o áudio perder o ritmo da animação. Não há fila de sons
+     * atrasados nem contador que dependa do inventário estar aberto.
      */
     protected void tocarGolpe(com.retronova.engine.sound.Sounds daArma) {
-        long agora = System.currentTimeMillis();
-        if (agora - ultimoSom < ENTRE_SONS_MS) {
-            return;
-        }
-        ultimoSom = agora;
         // ARMA ELEMENTAL SOA DO ELEMENTO, SEMPRE. Nao as vezes.
         //
         // A versao anterior usava o som para dizer se o golpe tinha CONECTADO:

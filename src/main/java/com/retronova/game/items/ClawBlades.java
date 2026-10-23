@@ -60,8 +60,11 @@ public class ClawBlades extends Item {
         boolean estava = investida.ativa();
         investida.tick();
         this.atacando = investida.ativa();
-        if (investida.acertaAgora() && nearest != null) {
-            attack(player, nearest);
+        if (investida.acertaAgora()) {
+            tocarGolpe(Sounds.Sword);
+            if (nearest != null) {
+                attack(player, nearest);
+            }
         }
         if (estava && !investida.ativa()) {
             side *= -1;
@@ -91,7 +94,6 @@ public class ClawBlades extends Item {
     private void attack(Player player, Enemy enemy) {
         if(enemy.colliding(this.boundsAttack)) {
             enemy.strike(AttackTypes.Piercing, player.getDamage());
-            tocarGolpe(Sounds.Sword);
             double addLife = player.getLifeSize() * 0.05d;
             player.setLife(player.getLife() + addLife);
         }

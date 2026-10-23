@@ -60,6 +60,7 @@ public class Bomb extends Utility {
     }
 
     private void explosion() {
+        com.retronova.engine.sound.Sound.play(com.retronova.engine.sound.Sounds.ExplosaoArma);
         List<Entity> entities = Game.getMap().getEntities();
         double range = GameObject.SIZE() * 4;
         for(int i = 0; i < entities.size(); i++) {

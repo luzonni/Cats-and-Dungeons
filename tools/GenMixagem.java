@@ -107,7 +107,8 @@ public class GenMixagem {
         camada(-34, "walking", "hover", "purr");
         camada(-28, "sword", "bowshoot", "laser", "bones", "button", "woosh",
                 "hit_fire", "hit_ice", "hit_water", "hit_wind", "hit_earth",
-                "hit_thunder");
+                "hit_thunder", "weapon_blade", "weapon_magic", "weapon_throw",
+                "weapon_impact", "weapon_aura", "weapon_explosion", "spell_arcane");
         camada(-24, "coin", "slime", "zombie", "vampire", "mousesquire", "poison",
                 "crack", "portal", "earth", "cat", "cat_muffin", "cat_azrael",
                 "cat_finn");

@@ -100,12 +100,12 @@ public class BloodyAxe extends Item {
     }
 
     public void attack(Player player){
+        tocarGolpe(Sounds.Sword);
         if(enemy == null){
             return;
         }
         double damage = elemento.dano(player.getDamage());
         enemy.strike(elemento.ataque(AttackTypes.Piercing), damage);
-        tocarGolpe(Sounds.Sword);
         if (roubaVida) {
             player.setLife(player.getLife() + damage * 0.06);
         }

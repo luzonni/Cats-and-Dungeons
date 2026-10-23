@@ -330,7 +330,6 @@ public class Wand extends Item {
         Arrow bola = new Arrow(x, y, angulo, elemento.sprite("bolt"), VELOCIDADE_DA_BOLA,
                 player, alvoAtingido -> {
             alvoAtingido.strike(elemento.ataque(AttackTypes.Sorcery), total);
-            tocarGolpe(Sounds.Laser);
             alvoAtingido.getPhysical().addForce("knockback", 2, alvoAtingido.getAngle(player));
             // Explosao Arcana do Azrael: so faz algo se o gato tiver a habilidade.
             com.retronova.game.objects.entities.Habilidades.explosaoArcana(player, alvoAtingido, total,
@@ -338,6 +337,9 @@ public class Wand extends Item {
                             ? com.retronova.game.items.Passiva.EXPLOSAO_ARCANA.cor() : elemento.cor());
         });
         Game.getMap().put(bola);
+        // O SOM É DO DISPARO, junto do gesto e da bola saindo. No callback
+        // soava depois do voo e nem existia se a bola atingisse uma parede.
+        tocarGolpe(Sounds.FeiticoArcano);
         this.ultimoAngulo = angulo;
     }
 

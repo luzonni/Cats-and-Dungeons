@@ -195,7 +195,7 @@ public final class ArmasDeArea {
         }
         ondas.add(new Onda(x, y, raio));
         Camera.tremer(3);
-        Sound.play(Sounds.Crack);
+        Sound.play(Sounds.ImpactoArma);
     }
 
     private static void tickTremores() {
@@ -255,7 +255,7 @@ public final class ArmasDeArea {
                     }
                 }
                 Camera.tremer(2);
-                Sound.play(Sounds.Crack);
+                Sound.play(Sounds.ExplosaoArma);
             }
             if (m.idade > Meteoro.QUEDA + Meteoro.FOGO) {
                 it.remove();

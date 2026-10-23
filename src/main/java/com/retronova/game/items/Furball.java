@@ -19,6 +19,8 @@ public class Furball extends Item {
         cooldown++;
         if(cooldown > player.getAttackSpeed()){
             cooldown = 0;
+            // UMA VOZ PELA SALVA, não seis vozes idênticas pelas seis bolas.
+            tocarGolpe(com.retronova.engine.sound.Sounds.Arremesso);
             for(double angle = 0; angle < Math.PI * 2; angle += (Math.PI * 2) / 6){
                 ThrownFurball ball = new ThrownFurball(
                         player.getX() + player.getWidth() / 2d,

@@ -34,6 +34,7 @@ public class ThrownGasBom extends Utility {
     }
 
     private void explosion() {
+        com.retronova.engine.sound.Sound.play(com.retronova.engine.sound.Sounds.PulsoAura);
         List<Enemy> entities = Game.getMap().getEntities(Enemy.class);
         double range = GameObject.SIZE() * 4;
         for(int i = 0; i < entities.size(); i++) {

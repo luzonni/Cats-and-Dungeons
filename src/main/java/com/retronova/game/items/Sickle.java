@@ -81,7 +81,7 @@ public class Sickle extends Item {
 
     private void attack(Player player, Entity target) {
         target.strike(AttackTypes.Melee, damage + player.getDamage());
-        // Sound.play(Sounds.Slash);
+        tocarGolpe(com.retronova.engine.sound.Sounds.Sword);
     }
 
     @Override

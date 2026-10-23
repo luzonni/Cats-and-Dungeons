@@ -2,6 +2,8 @@ package com.retronova.game.objects.entities;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.Engine;
+import com.retronova.engine.sound.Sound;
+import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
 import com.retronova.engine.graphics.Brilho;
@@ -103,6 +105,7 @@ public final class Arsenal {
             double dano = (3 + 1.8 * aura + gato.getDamage() * 0.15) * (sagrado ? 2 : 1);
             int curados = 0;
             double raio = raioAura(aura);
+            boolean acertou = false;
             for (Enemy e : bichos) {
                 if (e.nascendo()) {
                     continue;
@@ -111,11 +114,15 @@ public final class Arsenal {
                 double dy = e.getY() + e.getHeight() / 2.0 - cy;
                 if (dx * dx + dy * dy < raio * raio) {
                     e.strike(AttackTypes.Poison, dano);
+                    acertou = true;
                     // Catnip Sagrado: cada bicho queimado devolve um pouco de vida (ate 3 por pulso).
                     if (sagrado && curados++ < 3) {
                         gato.setLife(Math.min(gato.getLifeSize(), gato.getLife() + 0.5));
                     }
                 }
+            }
+            if (acertou) {
+                Sound.play(Sounds.PulsoAura);
             }
         }
         Estatisticas.fonte(null);   // de volta a arma da mao
@@ -124,6 +131,7 @@ public final class Arsenal {
     private static void acertar(List<Enemy> bichos, Rectangle area, int arma, int intervalo,
                                 double dano, AttackTypes tipo, double empurrao,
                                 double cx, double cy) {
+        boolean acertou = false;
         for (Enemy e : bichos) {
             if (e.nascendo() || !e.getBounds().intersects(area)) {
                 continue;
@@ -134,10 +142,15 @@ public final class Arsenal {
             }
             ultimo[arma] = tempo;
             e.strike(tipo, dano);
+            acertou = true;
             if (empurrao > 0) {
                 double ang = Math.atan2(e.getY() - cy, e.getX() - cx);
                 e.getPhysical().addForce("arsenal", empurrao, ang);
             }
+        }
+        // Uma voz pelo contato deste orbital, sem um som por inimigo atingido.
+        if (acertou) {
+            Sound.play(arma == 0 ? Sounds.ImpactoArma : Sounds.FeiticoArcano);
         }
     }
 
