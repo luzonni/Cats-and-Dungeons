@@ -135,9 +135,13 @@ public class Wand extends Item {
      * O gesto de lancar: ergue e recolhe na antecipacao, estende rapido no tiro e
      * volta devagar. Tres ticks de acao, porque e o tempo que o olho precisa para
      * ver o golpe e ainda e mais curto que o voo da bola ate sair da ponta.
+     *
+     * QUASE TODO EM GIRO. O cajado e seguro pela ponta de baixo, e qualquer
+     * deslocamento tira o pe da haste da pata: a subida de dois pixels na
+     * antecipacao fazia ele descolar da mao. So sobra um pixel de avanco no tiro.
      */
     private static final AnimacaoDaArma.Gesto GESTO =
-            new AnimacaoDaArma.Gesto(3, 12, 16, 20, 1, 2, 2);
+            new AnimacaoDaArma.Gesto(3, 12, 16, 20, 0, 1, 0);
 
     @Override
     protected AnimacaoDaArma.Gesto gesto() {

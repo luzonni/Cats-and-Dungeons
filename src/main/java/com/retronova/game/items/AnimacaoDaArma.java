@@ -52,8 +52,16 @@ public final class AnimacaoDaArma {
     static final int VIRADA_TICKS = 7;
     /** O quanto ela se recolhe no meio da virada, em graus. */
     static final double VIRADA_GRAUS = 35;
-    /** Flutuacao das armas de magia: altura e periodo, em pixels de arte e ticks. */
-    static final double FLUTUA_PX = 1.5;
+    /**
+     * Flutuacao das armas de magia: giro do orbe em volta da mao, em graus, e o
+     * periodo, em ticks.
+     *
+     * GIRO, E NAO SUBIDA. A primeira versao subia e descia o cajado inteiro um
+     * pixel e meio, e o pe da haste descolava da pata: em jogo lia como cajado
+     * solto no ar ao lado do gato. Girando em volta do punho, a mao continua
+     * segurando e quem flutua e a cabeca, que e onde a magia esta.
+     */
+    static final double FLUTUA_GRAUS = 4;
     static final int FLUTUA_PERIODO = 100;
     /** Quanto a antecipacao alcanca do alvo por tick. Tira o salto quando o alvo some. */
     static final double PREPARO_SUAVE = 0.3;
@@ -179,7 +187,7 @@ public final class AnimacaoDaArma {
         if (flutua) {
             // A flutuacao nao depende do passo: e magia, nao peso. Andando ela
             // continua, mais curta, para nao brigar com o balanco.
-            desce -= FLUTUA_PX * (0.5 + 0.5 * Math.sin(2 * Math.PI * (t + a) / FLUTUA_PERIODO))
+            graus += FLUTUA_GRAUS * Math.sin(2 * Math.PI * (t + a) / FLUTUA_PERIODO)
                     * (1 - 0.5 * w);
         }
 
