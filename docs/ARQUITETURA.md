@@ -918,8 +918,11 @@ as genéricas giram sem repetir antes de todas tocarem.
 
 **A caixa** (`CaixaDeDialogo`): retrato na moldura com orelhas (`ui/retrato.png`)
 à esquerda, aba com o nome no desenho dos botões, painel `ui/dialogo.png` com a
-fala e, embaixo, as dicas com os glyphs da tela de Controles (Enter/A
-"Continue" quando a fala acabou, Esc/B "Skip" sempre). O jogo pausa por baixo.
+fala e, embaixo, as dicas com os glyphs da tela de Controles ("Continue"
+quando a fala acabou, com o botão do mouse, Espaço/Enter ou A conforme o
+aparelho em uso; Esc/B "Skip" sempre). O jogo pausa por baixo. O clique é lido
+à parte (`Mouse.click`), porque o `apertou()` das ações só lê teclas; o que for
+apertado na carência ou no deslize da loja é descartado.
 O primeiro clique, Enter, Espaço ou A completa a fala; o segundo passa. Esc/B
 pula a conversa e dispara os eventos do fim. Velocidade em Settings → Interface
 → Dialogue speed (28, 48 ou 90 letras/s, ou instantânea), com pausa depois de
