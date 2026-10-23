@@ -1134,7 +1134,7 @@ public class Player extends Entity {
         }
 
         countDash++;
-        if (KeyBoard.KeyPressed("SPACE")) {
+        if (com.retronova.engine.inputs.Acao.DASH.apertou()) {
             if (hasModifier(Modifiers.Dash) && countDash > 45) {
                 dash = true;
                 countDash = 0;

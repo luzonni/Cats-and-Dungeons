@@ -229,6 +229,42 @@ public final class Gamepad {
         return pendentes.remove(botao);
     }
 
+    /**
+     * As peças do controle que apertam uma tecla, para quem MOSTRA os controles
+     * (a tela de Controles, o rodapé). Sai do mesmo mapa que o {@link #aplicar}
+     * usa, mais as duas regras dele que não estão no mapa: o B, que interage em
+     * jogo e volta nas telas, e o analógico esquerdo, que também aperta as setas.
+     * Assim, mudar um botão aqui muda o que a tela de Controles mostra.
+     *
+     * @param emJogo a partida rolando, sem tela por cima (ver {@link #emJogo()})
+     */
+    public static Set<Comando> comandosDaTecla(String tecla, boolean emJogo) {
+        Set<Comando> saida = EnumSet.noneOf(Comando.class);
+        for (Map.Entry<Botao, String> e : TECLAS.entrySet()) {
+            if (e.getValue().equalsIgnoreCase(tecla)) {
+                saida.add(Comando.de(e.getKey()));
+            }
+        }
+        if (tecla.equalsIgnoreCase(emJogo ? "Interact" : "Escape")) {
+            saida.add(Comando.B);
+        }
+        for (String direcao : DIRECOES) {
+            if (direcao.equalsIgnoreCase(tecla)) {
+                saida.add(Comando.ANALOGICO_ESQ);
+            }
+        }
+        return saida;
+    }
+
+    /** Toda tecla que algum botão do controle aperta, para conferir o catálogo de ações. */
+    public static Set<String> teclasDoControle() {
+        Set<String> saida = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        saida.addAll(TECLAS.values());
+        saida.add("Interact");
+        saida.add("Escape");
+        return saida;
+    }
+
     // -------------------------------------------------------------- vibração
 
     /**

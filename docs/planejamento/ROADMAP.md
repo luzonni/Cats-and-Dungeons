@@ -121,7 +121,8 @@ campo `money` do `Player` (gravado no save).
 - [x] Navegação por foco (D-pad e setas) no inventário, nas lojas, na máquina
       de chiclete e nos upgrades do fim de corrida
 - [ ] Organizar as teclas de ação
-- [ ] Aba de Controles nas opções, com remapeamento de teclas
+- [x] Aba de Controles nas opções: teclado e controle, lida da fonte única `Acao`
+- [ ] Remapeamento de teclas
 
 ## Save
 

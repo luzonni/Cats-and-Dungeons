@@ -39,6 +39,7 @@ Não têm publicação no Maven Central.
 | [16x16 Puny Dungeon Tileset](https://opengameart.org/content/16x16-puny-dungeon-tileset) | Shade | CC0 1.0 | Tiles da cisterna inundada: o chão, a água e os enfeites do campo da corrida, gerado pelo `Gerador` |
 | [Pixelart Spells](https://opengameart.org/content/pixelart-spells) | DevWizard | CC0 1.0 | Lufada de vento da partícula de impacto do elemento ar |
 | Pixel Bow Pack | **a confirmar** | **⚠ a confirmar** | Desenhos dos arcos |
+| [Input Prompts Pixel 16×](https://opengameart.org/content/input-prompts-pixel-16%C3%97) (1.0, 2021) | Kenney | CC0 1.0 | Teclas, mouse e botões do Xbox da tela de Controles e do rodapé (`controles/kenney_input_prompts.png`, a folha empacotada inteira, com `LICENSE-kenney-input-prompts.txt` ao lado) |
 
 As **partículas de impacto elementais** são montadas por
 `tools/GenParticulasElementais.java`, e só duas das seis vieram de fora.
@@ -230,6 +231,31 @@ formato das outras.
   São provisórios no timbre.
 - **Fontes:** as do jogo (`game`, `septem`), já em uso; nenhuma nova.
 
+### Arte da tela de Controles
+
+- **Glyphs** de teclas, mouse e botões: Kenney, Input Prompts Pixel 16× (CC0 1.0),
+  baixado do OpenGameArt. Usados como vêm na folha, só com a auréola escura
+  afinada para um pixel na cor de contorno da paleta (`Glyphs`). As cores dos
+  botões A, B, X e Y são as do pacote; não há logotipo da Microsoft.
+- **Carcaça do controle** (`controles/lightup_xbox_one.png`, 118×76): o Xbox One
+  do [Gamepads Assets - Pixelart](https://julianoferreiradelima.itch.io/gamepads-assets-pixelart),
+  de lightUP (paleta Juice 32). Termos da página: uso livre em projeto comercial
+  ou gratuito, crédito não exigido (mas bem-vindo). A página não fala de
+  modificação nem de redistribuição dentro dos arquivos do jogo: **a confirmar**
+  com o autor. O PNG foi recortado, pixel a pixel, da imagem de divulgação de
+  1280×720 da página (a arte de 320×180 ampliada 4x, sem bloco irregular), porque
+  o `Gamepads.zip` só baixa por navegador; conferir contra o zip original fica
+  **a confirmar**. Na pintura (`DesenhoDoControle`) as cores viram as da paleta,
+  a carcaça ganha volume, o logotipo do botão do meio é coberto por um botão liso
+  e as peças são desenhadas por cima em código. O arquivo guardado é o original
+  recortado, sem retoque.
+- **Peças do controle** (analógicos, direcional, botões de face, View, Menu):
+  próprias, pintadas em código com a paleta do jogo. Comparados e não usados: o
+  "Xbox One controller (pixel art)" de Anton Revin (CC0, 48×33, com o círculo do
+  logotipo no meio) e o "XBOX + PC Controls" de keenjikun (CC0, com o logotipo).
+- Outros pacotes comparados para os glyphs: "16x16 Pixel Input Prompts"
+  (PrototypeGames, CC0) e "Pixel-art Input Prompts" (ChimeraDev, CC0, derivado do
+  da Kenney). O da Kenney ficou por ter teclado, mouse e Xbox num estilo só.
 ### Ícones de buff, passiva, arma extra, elemento e raridade
 
 Gerados por `tools/GenIcones.java` em `resources/.../icones/`, todos remapeados para

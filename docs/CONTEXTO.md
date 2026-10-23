@@ -154,6 +154,8 @@ docs/                          esta pasta
 | Vitória | `menus/Vitoria.java`, `Game.vencer` |
 | Música da arena | `game/map/arena/TrilhaDaArena.java`, `engine/sound/Musics.java` |
 | Controle | `engine/inputs/gamepad/`, `engine/inputs/Entrada.java`, `game/interfaces/Grade.java` |
+| Ações do jogador (fonte única dos controles) | `engine/inputs/Acao.java`; botões derivados de `Gamepad.comandosDaTecla`; peças do controle em `engine/inputs/gamepad/Comando.java` |
+| Tela de Controles (aba Controls do Settings) | `menus/controles/` (`PainelDeControles`, `DesenhoDoControle`, `LigacoesDoControle`); glyphs em `engine/graphics/Glyphs.java` |
 | Luz, sombra, vinheta | `game/map/Atmosfera.java` |
 | Configurações | `engine/Configs.java` (`config.json`, gravação atômica) |
 | Laço do jogo, limitador de quadros, VSync | `engine/Engine.java` (`run`, `esperarAte`, `periodoDoQuadro`), `engine/RelogioDoSistema.java` |
@@ -218,6 +220,7 @@ docs/                          esta pasta
 | Ouro e upgrades permanentes | ✅ | |
 | Conquistas (10) | ✅ | |
 | Controle de Xbox, foco por D-pad | ✅ | só Windows |
+| Tela de Controles | ✅ | aba Controls do Settings, teclado e controle, lida de `Acao`; rodapé com os mesmos glyphs. Sem remapeamento. Controle real e outras resoluções além de 800×450, 1280×720 e 1920×1080 **a confirmar** |
 | Luz dinâmica, sombras, interpolação, VSync | ✅ | |
 | Música que acompanha a corrida | ✅ | |
 | Save no meio da corrida | ✅ | relógio, chefes vivos e números da corrida vão junto; ver ARQUITETURA |
@@ -299,6 +302,8 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
 | Fim de corrida: painéis, loja e avisos | `GameOver` (`PAINEL_W = 150`, `PAINEL_H = 154`, `LOJA_TOPO = 33`, `LINHA_H = 18`, `LINHA_PASSO = 21`, `CABECALHO = 13`, `FUNDO` preto, `AVISO_FICA = 240` ticks) |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
+| Painel do Settings | `Configuracoes.LARGURA_DO_PAINEL = 288` px nativos |
+| Tela de Controles | `PainelDeControles` (`VAO_ENTRE_COLUNAS = 12`, `FOLGA_DA_LINHA = 2`, `FOLGA_ANTES_DO_GRUPO = 3`, `ALTURA_DO_GRUPO = 9`, `VAO_ENTRE_TECLAS = 1`, `VAO_ANTES_DO_MOUSE = 6`, `FOLGA_DA_LINHA_DO_CONTROLE = 10`, `VAO_ENTRE_ROTULOS = 2`, `ALTURA_DA_LEGENDA = 16`, `ALTURA_DO_SELETOR = 11`, `FOLGA_DO_SELETOR = 6`); desenho em `DesenhoDoControle` (`LARGURA × ALTURA = 118×80`, `PECAS`, `BOTAO_DO_MEIO`, `LUZ`, `SOMBRA_DESCE = 3`, `SOMBRA_ALFA = 110`, cores de face `VERDE`, `VERMELHO`, `AZUL`, `AMARELO`) |
 | Escala da interface | `EscalaDaInterface` (`REF_LARGURA × REF_ALTURA = 640×360`, `MENUS_POR_REFERENCIA = 1.125`, `MENU_MINIMO_LARGURA × MENU_MINIMO_ALTURA = 384×224`, `TAMANHO_MINIMO = -2`, `TAMANHO_MAXIMO = 3`, `MARGEM_PADRAO = 7`, `MARGEM_MAXIMA = 16`, `ESCALA_LEGIVEL = 2`) |
 | Peças e teto do HUD | `LayoutDoHud` (`Peca`: âncora, deslocamento e tamanho de cada peça; `VAO = 4`, `FRACAO_DA_ALTURA = 0.5`) |
 | Laço: recuperação de ticks, superfície perdida | `Engine` (`MAX_CATCHUP = 5`, `QUADROS_ATE_RECRIAR = 60`) |

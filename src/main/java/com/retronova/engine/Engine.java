@@ -651,7 +651,7 @@ public class Engine implements Runnable {
                     // milhoes de vezes por segundo — e cada leitura percorre as 47
                     // teclas comparando texto. Medido: ~22% do tempo da thread do
                     // jogo.
-                    if (KeyBoard.KeyPressed("F11") && window != null) {
+                    if (com.retronova.engine.inputs.Acao.TELA_CHEIA.apertou() && window != null) {
                         Configs.setFullscreen(!Configs.Fullscreen());
                         window.aplicarVideo();
                     }
