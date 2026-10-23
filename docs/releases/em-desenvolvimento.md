@@ -26,7 +26,10 @@
 - **Cajado do Azrael redesenhado** (2026-10-23; `51c60e7`).
   `wand.png` agora é desenhado por `GenElementais` a partir da arte oficial:
   haste dourada-clara, esfera dourada grande, colar e brilho verde em jogo. É o
-  mesmo PNG na mão, na hotbar, no seletor e no Status.
+  mesmo PNG na mão, na hotbar, no seletor e no Status. Depois de testado em
+  jogo (`ba24057`, `f698e33`), passou a ser seguro pela ponta de baixo da haste,
+  como as varinhas elementais, e a flutuação virou um giro do orbe em volta da
+  pata: subir o cajado inteiro descolava a haste da mão.
 
   Nenhuma das cinco mudanças altera dano, cadência, alcance, hitbox ou
   velocidade de projétil. Na varinha nova, o ponto mais alto do desenho (de onde

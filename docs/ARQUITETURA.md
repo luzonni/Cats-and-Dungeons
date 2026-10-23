@@ -678,7 +678,7 @@ arredondados ao pixel de tela.
 | Passo (andando) | balanço de ±6° e 1 px de peso no contato do pé, com um tick de atraso (ação sobreposta) | `Player.faseDaFolha` e `Player.corpoAfundado`, os quadros reais da folha |
 | Troca parado ↔ andando | mistura dos dois em ~7 ticks | `TROCA_DE_ANDAR` |
 | Virada | a arma se recolhe 35° e volta em 7 ticks quando o gato troca de lado | `Player.getLadoDoPasso` |
-| Flutuação (porte `CAJADO`) | sobe e desce 1,5 px em 100 ticks, menos ao andar | `Item.flutua()` |
+| Flutuação (porte `CAJADO`) | o orbe gira ±4° em volta da mão em 100 ticks, menos ao andar; a mão não solta a haste | `Item.flutua()` |
 | Gesto do ataque | antecipação (recolhe e sobe), ação (estende rápido, ease-out) e volta (smoothstep) | a arma chama `preparar(f)` com o tempo que falta para o disparo e `disparou()` **no tick em que o projétil nasce**; o pico cai nesse quadro |
 
 A ação parte de onde a antecipação estava, e a antecipação sem aviso cai sozinha
@@ -712,7 +712,7 @@ projétil não passam por aqui.
 - **Cajados (`Wand`).** Flutuam; um halo pulsa atrás do orbe e cresce com a
   carga; faíscas saem do orbe (um punhado fixo, sem partícula do mapa) e andam
   conforme o elemento: o fogo sobe rápido, gelo e água caem devagar, terra cai
-  pesada, ar sobe serpenteando. O gesto ergue o cajado nos últimos 12 ticks antes
+  pesada, ar sobe serpenteando. O gesto recolhe o cajado (em giro, sem tirá-lo da pata) nos últimos 12 ticks antes
   do tiro e estende em 3 ticks no disparo, com clarão na ponta. Sem elemento, o
   efeito é verde, como o brilho do orbe na arte oficial.
 - **Demais armas de mão** (machado, garra, foice, tridente, espada de fogo)
