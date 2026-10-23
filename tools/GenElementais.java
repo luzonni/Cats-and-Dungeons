@@ -166,14 +166,8 @@ public class GenElementais {
             new Peca("axe_earth",     STEEL,  2, 11, "earth"),
             new Peca("axe_air",       STEEL,  0, 14, "air"),
             // ---- cajados
-            // O CAJADO DO AZRAEL e dourado INTEIRO na arte, haste e orbe. O cabo
-            // sai dourado junto, senao sobraria uma haste de madeira no meio.
-            // O cajado inicial vinha de 19,0 — um graveto reto com uma tampinha
-            // em cada ponta, sem nada que desse leitura de "arma magica". Este e o
-            // desenho da varinha de fogo, que tem um ornamento redondo em cima,
-            // com a ponta DE BAIXO removida: sobra o cabo e o circulo, que e o
-            // formato de cajado que a arte oficial mostra.
-            new Peca("wand",          STEEL, 19,  4, "gold", "gold", "semPontaDeBaixo"),
+            // O CAJADO DO AZRAEL (wand.png) nao sai daqui: e desenhado em
+            // cajadoDoAzrael(), mais abaixo.
             new Peca("wand_fire",     STAVE_FOGO, 0, 0, "", null, "cru"),
             new Peca("wand_ice",      STEEL, 20,  2, "ice"),
             new Peca("wand_water",    STAVE_AGUA, 0, 0, "", null, "cru"),
@@ -238,9 +232,6 @@ public class GenElementais {
             BufferedImage cel = recortar(folhas.get(p.folha()), p.folha(), p.col(), p.lin());
             BufferedImage fonte = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
             fonte.getGraphics().drawImage(cel, 0, 0, null);
-            if ("semPontaDeBaixo".equals(p.truque())) {
-                tirarPontaDeBaixo(fonte);
-            }
             Point bolinha = "gema".equals(p.truque()) ? bolinhaDoCabo(fonte) : null;
             int[] cabo = p.cabo() == null ? MADEIRA : RAMPAS.get(p.cabo());
             // "cru": o desenho ja vem pronto e na cor certa, entao ele NAO passa
@@ -266,7 +257,9 @@ public class GenElementais {
                 System.out.println("  sprites/objects/utility/trident.png");
             }
         }
-        System.out.println("  " + PECAS.length + " armas");
+        ImageIO.write(cajadoDoAzrael(), "png", new File(ITENS + "wand.png"));
+        System.out.println("  sprites/items/wand.png (desenhado)");
+        System.out.println("  " + (PECAS.length + 1) + " armas");
         flechas();
         bolas();
     }
@@ -592,40 +585,70 @@ public class GenElementais {
     }
 
     /**
-     * Corta a ponta de baixo, deixando so o ornamento de cima.
+     * O CAJADO DO AZRAEL, desenhado e nao recortado.
      *
-     * O cajado e desenhado do canto de cima a esquerda para o de baixo a direita,
-     * entao o fim dessa diagonal e a ponta de baixo. Ela e APAGADA, e nao
-     * repintada: repintar deixava a mesma silhueta com outra cor, e como o cabo
-     * inteiro e dourado o resultado era um calombo de ouro na base. Apagando, a
-     * haste termina onde a mao segura — que e o formato de cajado da arte oficial:
-     * cabo liso e um circulo em cima.
+     * Na arte oficial (icons/Gato.png) ele e uma haste longa dourada-clara com uma
+     * ESFERA DOURADA GRANDE na ponta, um colar curto onde a haste encontra a
+     * esfera e um brilho verde de magia em volta. O sprite antigo vinha de um
+     * pacote, com a ponta de baixo cortada, e sobrava um palito com um calombo:
+     * a 16 pixels nao lia como cajado, e na mao do gato quase sumia.
      *
-     * Depois do corte o contorno e refeito na borda nova, senao o cajado terminava
-     * numa fatia de metal exposto.
+     * Aqui a esfera tem seis pixels de diametro, a luz em cima a esquerda (a
+     * mesma de toda a arte de item) e a borda de baixo na sombra; o colar e uma
+     * faixa mais escura atravessada; a haste tem tres pixels na diagonal, com o
+     * tom claro no lado de cima. As cores sao a rampa "gold", medida na arte. O
+     * brilho verde NAO entra no PNG: e luz, e e desenhado em jogo pela varinha,
+     * pulsando e mudando de cor com o elemento.
      */
-    private static void tirarPontaDeBaixo(BufferedImage im) {
-        final int corte = 22;
+    static BufferedImage cajadoDoAzrael() {
+        int[] ouro = RAMPAS.get("gold");
+        int[][] tom = new int[16][16];
+        for (int[] linha : tom) {
+            java.util.Arrays.fill(linha, -1);
+        }
         for (int y = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
-                if (x + y > corte) {
-                    im.setRGB(x, y, 0);
+                double cx = x + 0.5, cy = y + 0.5;
+                int soma = x + y, dif = x - y;
+                double doCentro = Math.hypot(cx - 4, cy - 4);
+                if (doCentro <= 3.0) {
+                    // A esfera: degraus de luz a partir de (3,3).
+                    double daLuz = Math.hypot(cx - 3, cy - 3);
+                    tom[y][x] = daLuz < 0.9 ? 4 : daLuz < 1.9 ? 3 : daLuz < 3.1 ? 2 : 1;
+                    if (soma >= 9 && doCentro > 2.1) {
+                        tom[y][x] = 1;
+                    }
+                } else if (soma >= 13 && soma <= 14 && Math.abs(dif) <= 2) {
+                    // O colar: mais largo que a haste, claro em cima e escuro embaixo.
+                    tom[y][x] = soma == 13 && Math.abs(dif) < 2 ? 3 : 1;
+                } else if (soma >= 15 && soma <= 28 && Math.abs(dif) <= 1) {
+                    // A haste, terminando numa ponteira escura.
+                    tom[y][x] = soma >= 27 ? 1 : dif == 0 ? 3 : dif == 1 ? 4 : 2;
                 }
             }
         }
-        BufferedImage antes = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-        antes.getGraphics().drawImage(im, 0, 0, null);
+        BufferedImage im = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         for (int y = 0; y < 16; y++) {
             for (int x = 0; x < 16; x++) {
-                if ((antes.getRGB(x, y) >>> 24) <= 16 || escuro(antes.getRGB(x, y) & 0xFFFFFF)) {
-                    continue;
-                }
-                if (vazio(antes, x - 1, y) || vazio(antes, x + 1, y)
-                        || vazio(antes, x, y - 1) || vazio(antes, x, y + 1)) {
-                    im.setRGB(x, y, 0xFF000000);
+                if (tom[y][x] >= 0) {
+                    im.setRGB(x, y, 0xFF000000 | ouro[tom[y][x]]);
+                } else if (vizinhoPintado(tom, x, y)) {
+                    im.setRGB(x, y, 0xFF000000 | CONTORNO);
                 }
             }
         }
+        return im;
+    }
+
+    private static boolean vizinhoPintado(int[][] tom, int x, int y) {
+        int[][] passos = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (int[] p : passos) {
+            int xx = x + p[0], yy = y + p[1];
+            if (xx >= 0 && yy >= 0 && xx < 16 && yy < 16 && tom[yy][xx] >= 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean vazio(BufferedImage im, int x, int y) {
