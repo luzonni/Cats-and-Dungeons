@@ -7,7 +7,6 @@ import com.retronova.game.objects.GameObject;
 import com.retronova.game.objects.entities.Player;
 import studio.retrozoni.sheeter.SpriteSheet;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -52,9 +51,11 @@ public class Bau extends Utility {
         int x = (int) getX() + (getWidth() - sprite.getWidth()) / 2;
         int y = (int) getY() - sprite.getHeight() + getHeight() - pulo;
         int brilho = 60 + (int) (40 * Math.sin(t * 6));
-        g.setColor(new Color(255, 214, 90, Math.max(0, brilho)));
+        // O brilho em ouro da família dos ícones (o grau lendário), e o disco é
+        // imagem pronta (Brilho), e não fillOval suavizado por quadro.
         int r = sprite.getWidth();
-        g.fillOval(x + sprite.getWidth() / 2 - r, y + sprite.getHeight() / 2 - r, r * 2, r * 2);
+        com.retronova.engine.graphics.Brilho.disco(g, x + sprite.getWidth() / 2.0, y + sprite.getHeight() / 2.0, r,
+                com.retronova.engine.graphics.Familia.OURO.tom(com.retronova.engine.graphics.Familia.LUZ, Math.max(0, brilho)));
         g.drawImage(sprite, x, y, null);
     }
 }
