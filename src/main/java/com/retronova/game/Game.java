@@ -227,8 +227,9 @@ public class Game implements Activity {
             segundosDaCorrida = arena.getWaves().getSeconds();
         }
         Estatisticas.encerrar(segundosDaCorrida, abates, player.getLevel(), player.getName());
+        var fichaFinal = com.retronova.menus.ResumoFinalDoGato.capturar(player);
         Engine.backActivity();
-        Engine.heapActivity(new GameOver(gato, onde));
+        Engine.heapActivity(new GameOver(gato, onde, fichaFinal));
     }
 
     public void changeMap(GameMap newMap) {
