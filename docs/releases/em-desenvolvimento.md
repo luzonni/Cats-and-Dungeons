@@ -1,5 +1,54 @@
 # Em desenvolvimento (depois da 0.1.3-alpha)
 
+- **Relatório final amplo, inspirado em Hades II** (2026-10-23; `b493edf`). Run Over ocupa a largura da janela, sem diminuir a escala
+  dos menus para caber em dois painéis fixos. Personagem/resultado, 12 atributos
+  finais e dano por fonte aparecem em três colunas. A ficha é capturada antes de
+  descartar a partida e usa os mesmos cálculos do Status. `Final build` reúne
+  armas, elemento, passivas e cartas; `Upgrades` separa a loja do relatório.
+  Abas por mouse/Q/E/LB/RB, listas com rolagem sem cortar fontes de dano ou buffs.
+  Testes de ocupação da janela, ficha imutável e bancada com build preenchida.
+
+- **Espaçamento do resumo e impacto visível na morte** (2026-10-23; `b493edf`,
+  `419aa45`). Painéis 176×260, cabeçalhos e margens maiores,
+  linhas da loja de 28 pixels, fontes menores ampliadas e nomes/valores acima
+  das barras. Ouro e ganho da run separados; habilidade em duas linhas.
+  `ImpactoDaMorte` aplica 24 ticks de deslocamento em pixels da tela, sem
+  redução pelo zoom; substitui o tremor genérico da morte. Mantido o abafamento
+  da música durante a queda. Testes verificam envelope e relógio; bancada
+  compara o deslocamento real da transformação em zoom 50% e 200% e confere
+  layouts de 640×360 até 1920×1080.
+
+- **Morte com impacto e entrada animada de Run Over** (2026-10-23; `419aa45`,
+  `b493edf`). Tremor curto, vibração e voz descendente própria
+  de cada gato, independente do intervalo de dano. Queda lenta em 138 ticks,
+  chama azul-lua com fragmentos e fechamento para preto. Título, painéis, barras
+  e brilho do ouro entram em 60 ticks; após o título, clique/Enter/A ou Esc/B
+  revelam tudo sem comprar ou reiniciar no mesmo comando. Stinger discreto na
+  derrota; conquistas entram após a apresentação. Gerador `GenSonsDaMorte`,
+  testes de fases/WAV e bancada instrumentada do fluxo completo.
+
+- **Portais na identidade visual e alavanca sem moldura** (2026-10-23;
+  `282368b`). Nova folha em pixel art gerada por
+  `GenPortal`: aro com trechos de luz, centro escuro e fragmentos orbitais.
+  Chegada e perigo usam as cinco cores de ACO e VIDA, sem o halo suavizado
+  antigo. Mantidos os tempos e a sequência jogador → inimigos. Alavanca perde
+  o quadrado; sua luz usa a família OURO e cache, com pulso no tick.
+
+- **Timbre arcano para o mago** (2026-10-23; `71deaa3`).
+  Cajado comum e grimório passam do recorte de laser para um sopro com
+  ressonâncias suaves, sintetizado por `GenSomDoCajado.java` em `spell_arcane.wav`.
+  Mantém som no lançamento/contato e volume de rotina; variantes elementais
+  continuam com seu elemento. Efeito de 240 ms, ataque de 3 ms e cauda de 60 ms.
+
+- **Áudio das armas e sincronização** (2026-10-23; `71deaa3`). Varinhas comuns/elementais tocam no disparo, em vez de aguardar o
+  impacto. Kunai, tridente, seda, bolas de pelo, foice, escudo e orbitais recebem
+  efeitos; bombas e meteoros tocam na explosão. Garra e machado também soam se o
+  alvo escapar do corte. Recortes `weapon_*` e `hit_*` eliminam entradas fracas
+  dos arquivos antigos, inclusive terra; o gerador mantém -28 dB RMS e preserva
+  as fontes. Removido o freio redundante de 130 ms por item, mantendo o limitador
+  central. Testes verificam os WAV reais; bancada instrumentada conferiu emissão
+  de 18 armas de mão/variantes e as seis extras, sem depender de saída acústica.
+
 - **Animação das armas na mão** (2026-10-23; `d00c06b`).
   Camada `AnimacaoDaArma`: toda arma de mão respira parada, balança e pesa no
   passo (nos quadros reais da folha do gato), se recolhe quando ele vira, e as

@@ -623,20 +623,84 @@ antiga de sprite (`interfaces/shared/Status`) deixaram de ser abas da `Inter`
 e a loja do vendedor. Para religar a tela, basta registrar "inventory" de novo na
 `Inter`.
 
+### Morte e apresentação de Run Over
+
+`Player.die()` é idempotente: corta os efeitos de combate, abaixa a música,
+solta uma voz de morte e aplica um impacto de câmera próprio (`Camera.impactarNaMorte`) e vibração.
+O som não usa o intervalo dos gemidos de dano: o golpe fatal já o gastava e
+calava a morte. `death_muffin`, `death_azrael` e `death_finn` vêm dos próprios
+miados, com tom descendente e impacto grave, gerados por `GenSonsDaMorte`.
+Duram de 670 a 1175 ms, a -20 dB RMS; `run_over` dura 320 ms, a -24 dB RMS.
+
+A sequência dura 138 ticks: impacto/parada 18, tombo 72 com curva suave,
+desaparecimento 48. A câmera fecha até 1,6×. `ImpactoDaMorte` dura 24 ticks (0,4 s), com amplitude
+de oito pixels nativos da UI e envelope quadrático decrescente. O deslocamento
+entra na transformação antes do zoom: um ponto do cenário se move pela mesma
+distância na tela a 50% ou 200%. Substitui o tremor genérico, que era reduzido
+pelo zoom. A música permanece abafada durante a queda, em vez de voltar ao
+volume normal no tick seguinte.
+`EspiritoDoGato` desenha a chama e cinco fragmentos em pixels da família ACO,
+subindo 12 pixels nativos durante a segunda metade da queda e o apagamento.
+O véu chega a preto no fim, emendando no fundo preto da tela de resultados.
+
+`GameOver` usa `ApresentacaoDoFim`, relógio próprio de 60 ticks, sem mexer nos
+valores de `Estatisticas` ou `Meta`: título em 18 ticks; resumo começa em 12 e
+colunas de detalhe em 20, cada painel leva 22; barras crescem entre 24 e 54; brilho único do
+ouro e botões entre 42 e 60. O deslocamento é de oito pixels nativos. O som do
+título toca uma vez, apenas na derrota. Conquistas aparecem depois da entrada.
+`TelaDeMenu.desenharCabecalho` mantém o título padrão e permite esse gesto.
+O título é rasterizado opaco uma vez por escala; a imagem recebe o movimento e
+a transparência. Camadas ainda invisíveis não são desenhadas.
+
+Durante a entrada, a loja e os botões não recebem comandos. Após 18 ticks,
+clique, Enter/A ou Esc/B concluem a apresentação; o comando é consumido e não
+compra nem troca de tela. No tick seguinte, a navegação comum volta. A morte
+continua impedindo controle e dano, sem mudar o salvamento ou as recompensas.
+
+O relatório segue a distribuição ampla da tela de resultados de Hades II:
+identidade e resultado à esquerda, ficha final ao centro e dano por fonte à
+direita. `LayoutDoFim` usa toda a largura disponível menos 12 pixels nativos de
+margem por lado, vãos de dez e proporções 24%/38%/38%. A escala é a escolhida
+nos menus, sem encolher tudo para encaixar painéis fixos. Personagem tem retrato,
+nome, habilidade, tempo, abates, nível, baús, maior horda e ouro recebido.
+
+`ResumoFinalDoGato.capturar(player)` é chamado ANTES de descartar o `Game`.
+Guarda cópias imutáveis das mesmas linhas que `TelaDeStatus` calcula: 12 atributos
+finais, arma de mão, elemento, armas extras/evoluções, passivas e cartas, sem
+recalcular atributos na tela final nem consultar um personagem novo. Valores e
+ordem do dano também são copiados ao abrir `GameOver`; nenhuma fonte é descartada.
+
+As abas comuns (`Abas`) são `Run report`, `Final build` e `Upgrades`, acessíveis
+por clique, Q/E ou LB/RB. Listas que não cabem têm rolagem por mouse ou Up/Down;
+Left/Right escolhe a coluna de leitura e depois os botões. A loja fica em sua
+aba, nas duas colunas da direita, com cinco melhorias em duas colunas de cards.
+Só essa aba aceita compras; com interface ampliada, a loja rola e acompanha a
+linha focada, mantendo cliques dentro da área visível. O relatório é a apresentação inicial, preservando
+a entrada animada, o pulo seguro e o som da morte.
+
+Geometria de `GameOver`: margem interna 12; cabeçalhos 20; atributos começam em
+38 com passo 16; dano em 78 com passo 24; build em 30 com passo 32. Loja começa
+em 64, cards de altura 36 e passo 42, com recuo de oito. Fontes do corpo Septem 8,
+efeitos 6/7 e retrato de até 48 pixels nativos. Listas reservam espaço para seu
+rodapé. O retrato se adapta à altura, mantendo legíveis os números da corrida.
+
 ### Portal de nascimento (`Chegada.Tom`)
 
-O portal é o mesmo desenho (`portalCistern.png`) para todos, tingido em tempo de
-carga a partir de uma rampa de três cores pela luminosidade de cada pixel:
+O portal compartilha a folha `portalRunforce.png`, reproduzível com
+`java tools/GenPortal.java`: quatro quadros de 16×16, aro elíptico com trechos de
+luz circulando, centro escuro e fragmentos em pixels. Substitui a textura antiga
+recolorida e o halo suavizado; mantém abertura, formação e fechamento nos mesmos
+ticks, ancorados no centro do tile. Cada quadro dura seis ticks, nunca avança em
+`render`.
 
-- **`Tom.PERIGO` (inimigos):** o carmim das bandeiras da arte, a única família
-  quente da ilustração e a cor de aviso da interface (`Palette.WARN`), levado ao
-  claro para ler sobre a pedra e o mato. Por baixo, um brilho pulsante na mesma
-  cor. O verde de antes era a única cor da cena que não vinha da arte.
-- **`Tom.CHEGADA` (gato e vendedor):** a luz da lua da paleta
-  (`DEEP → LIGHT → TEXT`), sem brilho: chegada sem ameaça.
+`Chegada.Tom` converte os cinco níveis da folha diretamente nas cinco cores de
+`Familia.ACO` (jogador e vendedor) ou `Familia.VIDA` (inimigos), com cache por
+quadro. Sem gradientes intermediários ou elipses rasterizadas por portal. O
+tamanho cheio continua em `Chegada.TAMANHO` (1,4 tiles).
 
-A rampa de cada tom, `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO` e `TAMANHO`
-ficam em `Chegada`.
+A alavanca de entrada mantém cursor de interação e luz suave de `Familia.OURO`,
+sem retângulo de seleção. O halo usa `Brilho` em cache e fase avançada no tick
+(`Lever.PASSO_DO_BRILHO = 0,08`), independente da taxa de renderização.
 
 ### Transmutação da arma (`Transmutacao`)
 
@@ -1061,6 +1125,33 @@ de uma rampa muda o destino dela, em vez de pular o volume.
 foco de cada carta toca o `hit_*` do elemento, o mesmo do golpe.
 
 ### A régua de loudness
+
+**Timbre arcano:** `GenSomDoCajado.java` sintetiza `spell_arcane.wav` para
+`Sounds.FeiticoArcano`, usado pelo cajado comum no lançamento e pelo grimório no
+contato. É um sopro filtrado com ressonâncias estáveis, sem a varredura de laser;
+240 ms, ataque de 3 ms, cauda de 60 ms, -28 dB RMS, teto -1,5 dBFS. O laser
+continua com seu efeito próprio e cajados elementais mantêm os `hit_*`.
+
+**Sincronização dos golpes (2026-10-23):** a chamada de áudio pertence ao tick do
+evento. `Wand` tocava no callback de colisão, por isso o atraso variava com a
+distância e um tiro perdido ficava mudo; agora toca ao criar a bola, junto do
+gesto. Arremessáveis têm áudio no lançamento; foice, escudo e orbitais no contato;
+a aura toca por pulso com acerto. Bombas e meteoros tocam na explosão, não no
+aviso. Garra e machado mantêm o som do corte mesmo se o alvo escapar.
+
+Os WAV também atrasavam o retorno: medidos a 10% do pico, `sword.wav` começava
+perto de 202 ms, `laser.wav` de 78 ms e `woosh.wav` de 274 ms. `hit_earth.wav`
+começava fraco e tinha pico a 180 ms. `GenSonsElementais` agora procura uma frente
+forte no trecho inicial, preserva 2 ms antes dela, aplica abertura/queda suaves
+e normaliza em -28 dB RMS. Gera os seis `hit_*` e os seis `weapon_*`; os originais
+permanecem intactos. `Sounds.Sword/Laser` apontam para os recortes mecânicos.
+Os testes verificam os WAV reais (ataque em até 10 ms, cauda até 350 ms e nível).
+
+O segundo freio de 130 ms em `Item.tocarGolpe` foi retirado: ele descartava
+golpes legítimos de armas aceleradas. A proteção continua centralizada em
+`LimiteDeVozes`, sem fila de reprodução atrasada. A latência física do dispositivo
+e do buffer do TinySound não foi medida por esses testes; eles verificam a emissão
+no tick e o ataque dos arquivos, não a saída acústica do computador.
 
 Os arquivos **não** são usados como chegaram. `tools/GenMixagem.java` põe todos
 na mesma régua, e isso é o que torna os controles de volume utilizáveis.

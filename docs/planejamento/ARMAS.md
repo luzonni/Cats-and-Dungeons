@@ -35,6 +35,32 @@ cajado comum do Azrael foi redesenhado a partir da arte oficial. Nada disso muda
 dano, cadência, alcance ou hitbox. Detalhes e como animar uma arma nova:
 [ARQUITETURA.md](../ARQUITETURA.md), "Animação das armas".
 
+### Áudio das armas (revisão de 2026-10-23)
+
+O som acompanha o evento real, sem alterar dano, cadência ou duração de animação:
+
+| Arma | Quando toca |
+|---|---|
+| Espada, machado e garra | tick de corte da `Investida`, mesmo se o alvo escapar |
+| Arco e arco elétrico | soltura da flecha; uma voz pela salva |
+| Varinha, inclusive elemental | criação do projétil, junto do gesto; não espera a colisão |
+| Laser | disparo que aplica o dano |
+| Kunai, tridente, seda e bolas de pelo | arremesso; uma voz pela salva de bolas |
+| Foice, escudo, novelo e grimório | contato que aplica dano |
+| Aura | pulso com alvo atingido, sem tocar continuamente no vazio |
+| Arco elétrico extra e tremor | descarga com alvo e início da onda, respectivamente |
+| Meteoro e bombas | explosão no tick do impacto/fim do pavio; bombas também têm arremesso |
+
+`GenSonsElementais` produz os `hit_*` e seis recortes mecânicos `weapon_*`,
+todos a -28 dB RMS. O ataque começa em poucos milissegundos; os originais longos
+ficam preservados para cenas e inimigos. O antigo freio extra de 130 ms por item
+foi removido: só `Sound/LimiteDeVozes` limita sobreposição (40 ms, quatro vozes
+por efeito), descartando duplicatas em vez de enfileirar som atrasado.
+
+O cajado comum e o grimório usam `Sounds.FeiticoArcano` (`spell_arcane.wav`),
+gerado por `tools/GenSomDoCajado.java`: sopro e ressonâncias suaves, sem o timbre
+de laser. Cajados elementais mantêm o som de seu elemento.
+
 ### Onde se consegue outra arma da mão
 
 Só na **loja da antecâmara**, antes de a corrida começar — e ela faz parte da
