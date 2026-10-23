@@ -379,3 +379,28 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#abertura-do-jogo-abertura).
 - **Abertura completa recorrente** (`a20c558`). Os 7,4 s
   se repetem a cada início, sem consultar nem gravar `introVista`. A curta de 2,7 s
   fica só para `-Dcd.intro=curta`; o pulo depende de Allow intro skip.
+
+## Tela de Controles (2026-10-23, branch `feat/tela-de-controles`, alteração local, commits a confirmar)
+
+Ver [ARQUITETURA.md](../ARQUITETURA.md#ações-e-a-tela-de-controles).
+
+- **Fonte única das ações** (`Acao`). Cada ação diz as teclas virtuais que lê; a
+  tecla física sai de `KeyBoard.Keys` e o botão, do mapa do `Gamepad`. As ações de
+  jogo (pausar, Status, interagir, dash, usar e largar item, tela cheia) passaram
+  a ler por ela, sem mudar nenhuma tecla. O `AcaoTest` falha se o código ler uma
+  tecla que a tela não mostra.
+- **Aba Controls no Settings**, pela tela inicial e pela pausa. Linha Device com
+  duas visões, abrindo na do último aparelho usado. Teclado: lista por grupo com o
+  desenho de cada tecla, WASD e setas em cruz. Controle: o Xbox One em pixel art
+  com uma linha de cada botão até o rótulo, e um seletor In a run / In menus que
+  troca o papel mostrado; botão sem papel no contexto sai esmaecido. Foco ou mouse
+  acendem a peça e o rótulo.
+- **Desenho do controle** a partir da carcaça do Xbox One do pacote do lightUP
+  (uso livre; modificação e redistribuição **a confirmar**), na paleta do jogo, com
+  volume esculpido, botão do meio liso no lugar do logotipo e as peças pintadas em
+  código por cima.
+- **Glyphs da Kenney** (Input Prompts Pixel 16×, CC0) para teclas, mouse e botões,
+  com o contorno afinado para a paleta. O **rodapé** dos menus passou a usá-los, no
+  teclado e no controle.
+- **Painel do Settings mais largo** (240 para 288 px nativos) e mais alto, igual em
+  todas as abas, para o desenho do controle e a lista do teclado caberem.
