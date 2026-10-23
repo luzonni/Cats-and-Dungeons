@@ -530,7 +530,7 @@ public class Game implements Activity {
     private java.awt.image.BufferedImage portalDosBichos() {
         if (portal == null) {
             portal = new studio.retrozoni.sheeter.SpriteSheet(
-                    "sprites/objects/furniture", new String[]{"portalCistern"});
+                    "sprites/objects/furniture", new String[]{"portalRunforce"});
         }
         return portal.getSprite();
     }
