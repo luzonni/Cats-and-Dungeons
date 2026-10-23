@@ -69,12 +69,12 @@ class RecompensaDoBauTest {
     @DisplayName("a prévia lista as armas disponíveis e todas as melhorias")
     void previaCobreOPool() {
         Melhorias m = new Melhorias();
-        List<String> possiveis = RecompensaDoBau.possiveis(m).stream().map(RecompensaDoBau.Premio::icone).toList();
+        List<Icone> possiveis = RecompensaDoBau.possiveis(m).stream().map(RecompensaDoBau.Premio::icone).toList();
         for (ArmaExtra a : m.armasDisponiveis()) {
-            assertTrue(possiveis.contains(a.name()), a.name());
+            assertTrue(possiveis.contains(Icone.de(a)), a.name());
         }
         for (Melhoria mel : Melhoria.values()) {
-            assertTrue(possiveis.contains(mel.name()), mel.name());
+            assertTrue(possiveis.contains(Icone.de(mel)), mel.name());
         }
     }
 }

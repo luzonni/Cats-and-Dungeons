@@ -2,10 +2,20 @@ package com.retronova.game.objects.particles;
 
 import com.retronova.engine.Configs;
 import com.retronova.engine.graphics.FontHandler;
+import com.retronova.engine.graphics.TextFx;
 import com.retronova.game.Game;
 
 import java.awt.*;
 
+/**
+ * Uma palavra que sobe no mundo: "Dodge", "FURY!", o nome da arma transmutada,
+ * os Zs do gato dormindo.
+ *
+ * NO TEXTO DA CASA (TextFx): a fonte do jogo com o contorno e a sombra da paleta.
+ * Era a Septem em drawString com uma sombra preta crua, a única palavra da tela
+ * fora do desenho do resto. Números de dano e cura não passam aqui: ver
+ * NumeroDeDano, que desenha cada algarismo uma vez só.
+ */
 public class Word extends Particle {
 
     private final String value;
@@ -15,7 +25,7 @@ public class Word extends Particle {
     private int count;
 
     public Word(String value, double x, double y, double seconds) {
-        this(value, x, y, seconds, Color.white);
+        this(value, x, y, seconds, TextFx.CLARO);
     }
 
     /** Com cor: o nome da arma nova na cor do elemento, por exemplo (ver Transmutacao). */
@@ -23,7 +33,7 @@ public class Word extends Particle {
         super(x, y, seconds);
         this.value = value;
         this.cor = cor;
-        this.font = FontHandler.font(FontHandler.Septem, Configs.GameScale() * 8);
+        this.font = FontHandler.font(FontHandler.Game, Configs.GameScale() * 6);
         int wF = FontHandler.getWidth(value, font);
         int hF = FontHandler.getHeight(value, font);
         boundsFont = new Rectangle(wF, hF);
@@ -46,13 +56,6 @@ public class Word extends Particle {
 
     @Override
     public void render(Graphics2D g) {
-        String value = this.value;
-        int x = (int)getX();
-        int y = (int)getY() + boundsFont.height;
-        g.setFont(font);
-        g.setColor(Color.black);
-        g.drawString(value, x + Configs.GameScale(), y + Configs.GameScale());
-        g.setColor(cor);
-        g.drawString(value, x, y);
+        TextFx.draw(g, value, font, (int) getX(), (int) getY() + boundsFont.height, cor, Configs.GameScale());
     }
 }

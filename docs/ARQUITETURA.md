@@ -487,9 +487,9 @@ Antes título e halo eram um dourado alaranjado solto no código.
 
 Cada carta só varia no conteúdo:
 `new MaoDeCartas.Carta(rotulo, cor, icone, nome, efeito)`. O `icone` é quem
-desenha o medalhão: `SubirDeNivel` usa `Icones.desenhar`, e
-`EscolhaDeElemento` usa `Relevo.desenhar` com o selo do elemento. O efeito
-aceita várias linhas separadas por `\n`.
+desenha o medalhão: `SubirDeNivel` e `EscolhaDeElemento` desenham o ícone do
+registro (`Icone.desenharNoCentro`, ver "Ícones" abaixo). O efeito aceita várias
+linhas separadas por `\n`.
 
 Uso: criar com a lista de cartas; a cada tick chamar `posicionar(y, s)` e
 `tick()`, que devolve o índice escolhido naquele tick (ou -1); fechar a tela
@@ -815,6 +815,109 @@ Os sprites de UI (botões e ícone) são **gerados** por `tools/GenUiAssets.java
 versionados. A CI regenera e compara: se o gerador e os PNGs divergirem, o build
 quebra. Um artista pode repintá-los à mão, desde que preserve dimensões e
 recortes — nesse caso, o gerador deve ser aposentado.
+
+### Ícones (`Icone`)
+
+Buffs (atributos), passivas, armas extras, o troféu, os elementos e as raridades
+têm um ícone cada, num **registro só**: `game/items/Icone`. Cada constante é um PNG
+de 16x16 em `resources/.../icones/`, gerado por `tools/GenIcones.java`. Quem
+desenha pede pelo tipo (`Icone.de(melhoria)`, `de(passiva)`, `de(arma)`,
+`de(elemento)`, `de(raridade)`) e nunca abre o arquivo direto. Aparecem nas cartas
+de nível e no "Your build" (`SubirDeNivel`), na prévia e no prêmio do baú
+(`AberturaDoBau`), nas cartas de elemento (`EscolhaDeElemento`), nos selos do item
+(`Selos`, caixa de informação), no troféu da tela inicial, do fim de corrida e das
+conquistas. A tela de Status e a HUD não desenham ícone de buff.
+
+**O padrão visual**, igual ao dos itens que o gato segura:
+
+- **Grade:** 16x16, a mesma dos sprites; desenhado em fator inteiro
+  (`Icone.lado(escala)`, `desenharNoCentro` escolhe o maior que caiba), com a cópia
+  de cada fator guardada. Nada de esticar por fator quebrado.
+- **Contorno:** um pixel, sempre `Palette.OUTLINE`, em volta da silhueta. Traço de
+  um pixel (haste de flecha) fica sem contorno, num tom só.
+- **Sombreado:** luz do alto à esquerda, como na interface inteira. Rampa de cinco
+  tons por material: sombra funda, sombra, base, luz e brilho. Sem antisserrilhado
+  nem pixel meio transparente.
+- **Cor:** cada material usa uma família de cor gerada da mesma fórmula a partir de
+  uma cor oficial do jogo (`Elemento.cor`, `Raridade.cor`, a vida da `BarraDeChefe`,
+  as cores das cartas), puxada 20% para `Palette.MAIN`; o metal é a escada da
+  própria `Palette`. Nada de preto ou branco puros.
+- **Forma antes da cor:** cada ícone da build tem silhueta própria, e o
+  `IconeTest` reprova dois com menos de 20 pixels de diferença de silhueta. Quem
+  não distingue as cores distingue as formas.
+- **Apagado:** `desenharApagado` leva cada pixel ao cinza da interface de mesma
+  luminância (DEEP, MAIN, LIGHT), mantendo o contorno: a prévia do baú fora do
+  destaque, a conquista por fazer, o troféu do menu sem hover.
+
+**De onde vêm:** a base é o pacote DB32 (CC0, `tools/assets/fonte/db32`),
+remapeado cor a cor: cada cor da paleta DawnBringer 32 tem um material, e dentro do
+material as cores vão para os degraus da rampa pela luminância. O que o pacote não
+tem é desenhado no gerador como silhueta de texto 16x16, com o sombreado e o
+contorno calculados pela mesma regra. A tabela de origem de cada ícone está em
+`docs/TERCEIROS.md`.
+
+**Ícone novo:** uma entrada em `ICONES` no `tools/GenIcones.java` (do pacote, com a
+família de cada material, ou desenhado), rodar `java tools/GenIcones.java`, e uma
+constante com o mesmo nome em `Icone` (e o `de(...)` do tipo, se for de um tipo
+novo). O `IconeTest` confere arquivo, tamanho, contorno, paleta e silhueta.
+
+Os ícones de antes ficam fora de uso: as matrizes 9x9 saíram de
+`game/map/arena/Icones` (que só sobrou para a Roleta desativada), e os PNG de
+`sprites/items/elementos/` e `sprites/items/melhorias/`, com os geradores
+`GenIconesElementais` e `GenIconesMelhorias`, não são lidos por nada.
+
+### A gameplay na identidade: arte em jogo = arte do ícone
+
+**A regra:** o que aparece na arena para uma arma, buff, elemento ou coletável sai
+do **mesmo registro** do card. A forma vem de `Icone` e a cor de `Familia`
+(`engine/graphics/Familia`): as mesmas famílias e a mesma fórmula do gerador de
+ícones, com as versões transparentes prontas em degraus (nenhuma `Color` nova por
+quadro). O `FamiliaTest` confere que toda cor dos PNG de ícone está numa família,
+para jogo e gerador nunca divergirem.
+
+| No mundo | De onde vem |
+|---|---|
+| Novelo e grimório orbitando | `Icone.NOVELO`, `Icone.GRIMORIO`, em fator inteiro (o grimório era um livro vermelho de cruz, outro que o do card) |
+| Aura de catnip | campo e borda na família verde (ouro na evolução), três folhas do `Icone.AURA` girando na borda |
+| Raio, tremor, meteoro | famílias elétrica, terra e fogo; o meteoro que cai é o `Icone.METEORO`; o aviso é fogo, e não vermelho (é arma do gato) |
+| Gema de XP, XP grande | `Icone.XP` (azul do raro), `Icone.XP_GRANDE` (ouro), halo de imagem pronta |
+| Coração de cura | `Icone.VIGOR`, o mesmo do card de vida |
+| Coleta | `Coleta`: o ícone sobe e pisca por 8 ticks |
+| Barra de vida e de armadura do bicho | o desenho das barras da HUD: contorno `OUTLINE`, fundo `DEEP`, família da vida (armadura em ouro) |
+| Aura de elite, brilho do baú | ouro da família; disco de imagem pronta |
+| Fúria (onda e clarão) e Retaliação | família épica (a barra) e verde (o ícone) |
+| Brasa do fogo, coração da regeneração, bolha do veneno, faísca do golpe | tiras remapeadas por `GenIcones` (originais em `tools/assets/particulas_original`); o veneno é roxo, como o número dele |
+| Aviso de spawn (`Chegada.Tom.PERIGO`) | família da vida |
+
+### Números de dano (`NumeroDeDano`)
+
+Uma partícula só para dano e cura; as palavras ("Dodge", "FURY!", o nome da arma
+transmutada) ficam em `Word`, no texto da casa (`TextFx`). A cor diz o que foi:
+
+| Número | Cor | Estilo |
+|---|---|---|
+| Dano comum | `TextFx.CLARO` | fonte do jogo 5 |
+| Dano de fogo, gelo, água, terra, ar | a luz da família do elemento (o ar na base) | 5 |
+| Veneno | família épica (roxa) | 5 |
+| Crítico | ouro (luz) | 7, com pop de 8 por 5 ticks e o estouro do `Icone.CRITICO` ao lado |
+| Cura | verde (luz), com "+" | 5 |
+
+O crítico não depende só da cor: é maior e leva o estouro. O rótulo "CRIT" saiu.
+**Golpes seguidos somam:** do mesmo tipo, no mesmo bicho, a menos de 12 ticks,
+viram um número que cresce. **Teto:** com 36 números no ar, um golpe comum só
+aparece se somar num que já está no ar; crítico e cura sempre aparecem. Cada
+algarismo é pintado uma vez por estilo e escala, com o contorno da casa um degrau
+mais fino que a escala; o quadro só copia imagens.
+
+**Hierarquia de leitura:** gato > perigo > projétil inimigo > coletável > efeito.
+Por isso o teto dos números, o contorno mais fino e o clarão da Fúria mais fraco
+(60 de opacidade em vez de 120: estoura várias vezes por minuto).
+
+**Visual novo:** se tem card, desenhe com o `Icone` dele; a cor sai de `Familia`
+(acrescente uma família nos dois lugares, `Familia` e `GenIcones`, se o assunto
+for novo); disco ou halo por `Brilho.disco`, nunca `fillOval` suavizado por
+quadro; partícula com tira PNG entra em `TIRAS` do `GenIcones`, com o original em
+`tools/assets/fonte`.
 
 ## Áudio
 

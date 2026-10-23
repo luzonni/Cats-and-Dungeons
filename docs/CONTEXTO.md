@@ -122,6 +122,8 @@ docs/                          esta pasta
 | Laço de jogo (60 Hz fixo, render separado) | `engine/Engine.java` |
 | Fluxo de telas | `Engine.heapActivity` / `backActivity` / `pause` (pilha de `Activity`) |
 | Base de toda tela de menu (título, rodapé, transição, voltar) | `menus/shared/TelaDeMenu.java`, `Rodape.java`, `Abas.java` |
+| Ícones de buff, passiva, arma, elemento, raridade e troféu | `game/items/Icone.java` (registro, PNG 16x16 em `resources/.../icones/`), gerador `tools/GenIcones.java`; padrão em `docs/ARQUITETURA.md` ("Ícones") |
+| Cores da gameplay e números de dano | `engine/graphics/Familia.java` (as famílias dos ícones), `game/objects/particles/NumeroDeDano.java`, `Coleta.java`; regra em `docs/ARQUITETURA.md` ("arte em jogo = arte do ícone") |
 | Settings e pausa (um componente só) | `menus/Configuracoes.java` + `menus/shared/OptionRow.java` |
 | Abertura do jogo (crédito, logo, passagem para a tela inicial) | `menus/Abertura.java`; o texto do crédito em `Abertura.CREDITO_ACIMA` e `CREDITO_EQUIPE`; logo em `tools/GenLogo.java`, sons em `tools/GenSonsDaAbertura.java` |
 | Hover e foco de todo elemento da interface | `menus/shared/Realce.java` |
@@ -213,6 +215,8 @@ docs/                          esta pasta
 | Fúria Felina | ✅ | |
 | Quebráveis (cura ou XP grande) | ✅ | |
 | Escolha de elemento | ✅ | oferecida aos 45 s de corrida, com cerimônia própria (antecipação, cartas em destaque, trilha, confirmação); áudio sintetizado provisório no timbre |
+| Ícones na identidade visual | ✅ | 34 ícones 16x16 num registro só (`Icone`): base DB32 (CC0) e desenhos no mesmo molde, todos na paleta; cada um reconhecível pela forma (`IconeTest`) |
+| Gameplay na identidade visual | ✅ | armas, orbitais, coletáveis, números, barras e efeitos pelo registro de ícones e pelas famílias de cor; teto de 36 números no ar. Controle real e todas as evoluções em jogo **a confirmar** |
 | Ouro e upgrades permanentes | ✅ | |
 | Conquistas (10) | ✅ | |
 | Controle de Xbox, foco por D-pad | ✅ | só Windows |
@@ -275,7 +279,7 @@ usava, e só fora da corrida sem fim). Estão no histórico do git.
 | Valores das passivas | `Passiva.java` (`porNivel`) |
 | Números das habilidades exclusivas | `Bonus.java` (Retaliação, Explosão Arcana, Voleio) |
 | Armas extras | `Arsenal.java`, `ArmasDeArea.java` |
-| Fúria | `Furia.java` (`MORTES = 30`) |
+| Fúria | `Furia.java` (`MORTES = 30`; barra: `PARTES = 3`, cores da família roxa dos ícones) |
 | Elementos (multiplicadores de dano e cadência) | `Elemento.java` |
 | Raridades e desgaste das melhorias | `Raridade.java`, `Melhoria.desgaste` |
 | Ouro e preços da meta | `Meta.java` |
@@ -290,6 +294,8 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Abertura do jogo e entrada da tela inicial | `Abertura` (`PRETO = 30`, `CREDITO_ENTRA = 42`, `CREDITO_FICA = 84`, `CREDITO_SAI = 36`, `LOGO_ENTRA = 84`, `LOGO_FICA = 72`, `CENA = 96`; curta: `PRETO_CURTA = 12`, `LOGO_ENTRA_CURTA = 54`, `LOGO_FICA_CURTA = 36`, `CENA_CURTA = 60`; `MUSICA_SOBE = 150` ticks, `TOM_NO_ESCURO = 0.62`, `LUA = 0.45`); `Menu` (`ATRASO_ENTRE_ELEMENTOS = 10`, `SURGIR_DO_ELEMENTO = 18`, `SUBIDA_DO_ELEMENTO = 6`); níveis do áudio em `GenSonsDaAbertura` |
 | Hover e foco: velocidade, crescimento, brilho, setas | `Realce` (`VELOCIDADE`, `CRESCIMENTO`, `CAMADAS`, `ALFA`, `CLAREAMENTO`, `SETA`, `AFASTAMENTO`, `RESPIRO`, `PERIODO_DO_RESPIRO`) |
 | Cartas: entrada, fechamento, tamanho, vão | `MaoDeCartas` (`ENTRADA = 26`, `FECHAR = 18`, `LARGURA`, `ALTURA`, `VAO`); o hover vem do `Realce` |
+| Ícones: tamanho, cor e reconhecimento | `Icone.LADO = 16`; `GenIcones` (famílias de cor puxadas 20% para `Palette.MAIN`, rampas de 5 tons); `IconeTest.DIFERENCA_MINIMA = 20` pixels de silhueta |
+| Números de dano e coleta | `NumeroDeDano` (`TAMANHO = 5`, `TAMANHO_CRITICO = 7`, `TAMANHO_POP = 8`, `POP = 5`, `JUNTAR = 12`, `VIDA = 0.6`, `VIDA_CRITICO = 0.9`, `MAXIMO_NO_AR = 36`); `Coleta.TICKS = 8`; `Furia.CLARAO = 60`; folhas da aura em `Arsenal` (`FOLHAS_DA_AURA = 3`, `GIRO_DAS_FOLHAS = 0.01`) |
 | Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `DESCIDA_DAS_CARTAS = 10`, `TITULO_ACIMA_DAS_CARTAS = 30`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |
 | Abertura do baú | `AberturaDoBau` (`ENTRADA = 12`, `TREMOR = 18`, `TAMPA = 9`, `SUBIDA = 16`, `ATE_COLETAR = 8` ticks; `PREVIA_POR_ICONE = 9`, `PREVIA_VISIVEIS = 7`, `ZOOM_DO_BAU = 5`, `TREMOR_MAXIMO = 2`, `FAISCAS = 46`, `VIDA_DA_FAISCA = 34`, `CLARAO = 8`, `FORCA_DO_CLARAO = 110`, `VEU = 228`); níveis do áudio em `GenSonsDoBau` |
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |

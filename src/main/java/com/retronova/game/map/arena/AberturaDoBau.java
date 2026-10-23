@@ -418,8 +418,8 @@ public class AberturaDoBau implements Activity {
         if (previa.isEmpty()) {
             return;
         }
-        int celula = Math.max(1, (int) Math.round(1.5 * s));
-        int lado = Icones.lado(celula);
+        int escala = Math.max(1, s);
+        int lado = com.retronova.game.items.Icone.lado(escala);
         int vao = 4 * s;
         int n = Math.min(PREVIA_VISIVEIS, previa.size());
         int total = n * lado + (n - 1) * vao;
@@ -443,7 +443,13 @@ public class AberturaDoBau implements Activity {
             g2.fillRect(x - s, y + s, lado + 2 * s, lado + 2 * s);
             g2.setColor(destaque ? Palette.MAIN : Palette.DEEP);
             g2.fillRect(x, y + 2 * s, lado, lado);
-            Icones.desenhar(g2, p.icone(), destaque ? p.corDoIcone() : Palette.LIGHT, x, y + 2 * s, celula);
+            // Fora do destaque, o ícone apagado nos cinzas da interface: a forma lê,
+            // a cor fica para o que está aceso.
+            if (destaque) {
+                p.icone().desenhar(g2, x, y + 2 * s, escala);
+            } else {
+                p.icone().desenharApagado(g2, x, y + 2 * s, escala);
+            }
         }
         g2.dispose();
     }
@@ -479,14 +485,14 @@ public class AberturaDoBau implements Activity {
         TextFx.draw(g2, rotulo, grau, r.x + r.width / 2 - FontHandler.getWidth(rotulo, grau) / 2,
                 r.y + 9 * s, Palette.TEXT, s);
 
-        int celula = 3 * s;
-        int lado = Icones.lado(celula);
+        int escala = 2 * s;
+        int lado = com.retronova.game.items.Icone.lado(escala);
         int ix = r.x + 7 * s, iy = r.y + 12 * s + (r.height - 12 * s - lado) / 2;
         g2.setColor(Palette.OUTLINE);
         g2.fillRect(ix - 2 * s, iy - 2 * s, lado + 4 * s, lado + 4 * s);
         g2.setColor(Palette.MAIN);
         g2.fillRect(ix - s, iy - s, lado + 2 * s, lado + 2 * s);
-        Icones.desenhar(g2, premio.icone(), premio.corDoIcone(), ix, iy, celula);
+        premio.icone().desenhar(g2, ix, iy, escala);
 
         int tx = ix + lado + 7 * s;
         int largura = r.x + r.width - 6 * s - tx;

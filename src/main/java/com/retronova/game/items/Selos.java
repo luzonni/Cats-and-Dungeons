@@ -1,10 +1,6 @@
 package com.retronova.game.items;
 
-import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Os selinhos de raridade e de elemento, num lugar só.
@@ -25,29 +21,16 @@ public final class Selos {
     private Selos() {
     }
 
-    private static final Map<String, BufferedImage> CACHE = new HashMap<>();
-
-    /** Carrega um selo pelo nome, ou devolve null se ele não existir. */
-    public static BufferedImage de(String nome) {
-        if (nome == null) {
-            return null;
-        }
-        return CACHE.computeIfAbsent(nome, n -> {
-            try {
-                return ImageIO.read(Selos.class.getResourceAsStream(
-                        "/com/retronova/resources/sprites/items/elementos/" + n + ".png"));
-            } catch (Exception naoTem) {
-                return null;
-            }
-        });
-    }
-
     /**
      * Desenha os selos de um item no CANTO SUPERIOR ESQUERDO de uma área.
      *
      * Esquerda, e não direita: no inventário o canto direito já é do número de
      * pilha dos consumíveis, e dois carimbos disputando a mesma quina fariam um
      * cobrir o outro na primeira poção empilhada.
+     *
+     * OS SELOS SÃO OS ÍCONES DO REGISTRO (Icone), a gema do grau e o símbolo do
+     * elemento, em fator inteiro: eram PNGs de 9x9 esticados para o lado pedido, e
+     * esticar por fator quebrado borrava o pixel.
      *
      * @param lado tamanho do selo em pixels; quem chama decide, porque um slot de
      *             inventário e uma carta de recompensa têm escalas diferentes
@@ -56,15 +39,12 @@ public final class Selos {
         if (item == null) {
             return;
         }
-        int cursor = x;
-        BufferedImage raridade = de(item.raridade().simbolo());
-        if (raridade != null) {
-            g.drawImage(raridade, cursor, y, lado, lado, null);
-            cursor += lado + Math.max(1, lado / 8);
-        }
-        BufferedImage elemento = de(item.elemento().simbolo());
+        int escala = Icone.escalaPara(lado);
+        int passo = Icone.lado(escala) + Math.max(1, lado / 8);
+        Icone.de(item.raridade()).desenhar(g, x, y, escala);
+        Icone elemento = Icone.de(item.elemento());
         if (elemento != null) {
-            g.drawImage(elemento, cursor, y, lado, lado, null);
+            elemento.desenhar(g, x + passo, y, escala);
         }
     }
 }

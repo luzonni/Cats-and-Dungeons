@@ -9,7 +9,7 @@ import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.sound.Musics;
 import com.retronova.engine.sound.Sound;
 import com.retronova.game.Conquistas;
-import com.retronova.game.map.arena.Icones;
+import com.retronova.game.items.Icone;
 import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.Rodape;
 import com.retronova.menus.shared.TelaDeMenu;
@@ -252,10 +252,14 @@ public class Menu extends TelaDeMenu {
         g.setColor(new Color(255, 255, 255, (int) (22 + 28 * h))); // brilho no topo
         g.fillRect(r.x + 2 * s, y + s, r.width - 4 * s, s);
 
-        int celula = Math.max(1, (int) Math.round(r.width * 0.6 / 9));
-        int lado = Icones.lado(celula);
-        Icones.desenhar(g, "TROFEU", aceso ? Palette.TEXT : Palette.LIGHT,
-                r.x + (r.width - lado) / 2, y + (r.height - lado) / 2, celula);
+        // A taça acende com o botão: apagada nos cinzas da interface, em ouro no hover e no foco.
+        int escala = Icone.escalaPara((int) Math.round(r.width * 0.7));
+        int lado = Icone.lado(escala);
+        if (aceso) {
+            Icone.TROFEU.desenhar(g, r.x + (r.width - lado) / 2, y + (r.height - lado) / 2, escala);
+        } else {
+            Icone.TROFEU.desenharApagado(g, r.x + (r.width - lado) / 2, y + (r.height - lado) / 2, escala);
+        }
 
         if (Conquistas.temNovas()) {
             // Pulsa devagar: chama atenção sem gritar.

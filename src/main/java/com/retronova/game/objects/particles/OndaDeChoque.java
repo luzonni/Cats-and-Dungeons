@@ -36,6 +36,18 @@ public class OndaDeChoque extends Particle {
         this.raio = raio;
         this.cor = cor;
         this.forca = Math.max(0f, Math.min(1f, forca));
+        // AS OPACIDADES FICAM PRONTAS AQUI, uma vez por onda: o anel criava duas
+        // cores novas por quadro enquanto abria.
+        for (int i = 0; i <= DEGRAUS; i++) {
+            degraus[i] = new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), Math.round(i * 255f / DEGRAUS));
+        }
+    }
+
+    private static final int DEGRAUS = 16;
+    private final Color[] degraus = new Color[DEGRAUS + 1];
+
+    private Color comAlfa(int alfa) {
+        return degraus[Math.max(0, Math.min(DEGRAUS, Math.round(alfa / 255f * DEGRAUS)))];
     }
 
     @Override
@@ -54,13 +66,12 @@ public class OndaDeChoque extends Particle {
             return;
         }
         Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         double cx = getX(), cy = getY();
-        // Um véu bem fraco dentro do anel, e o anel por cima.
-        g2.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), alfa / 5));
-        g2.fillOval((int) (cx - r), (int) (cy - r), (int) (r * 2), (int) (r * 2));
+        // Um véu bem fraco dentro do anel (disco de imagem pronta, ver Brilho), e o
+        // anel por cima, sem suavização: borda de pixel, como o resto do mundo.
+        com.retronova.engine.graphics.Brilho.disco(g2, cx, cy, r, comAlfa(alfa / 5));
         g2.setStroke(new BasicStroke(Math.max(1f, Configs.GameScale() * 0.75f)));
-        g2.setColor(new Color(cor.getRed(), cor.getGreen(), cor.getBlue(), alfa));
+        g2.setColor(comAlfa(alfa));
         g2.drawOval((int) (cx - r), (int) (cy - r), (int) (r * 2), (int) (r * 2));
         g2.dispose();
     }

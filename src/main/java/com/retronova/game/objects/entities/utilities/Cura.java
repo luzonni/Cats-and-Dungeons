@@ -6,9 +6,7 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Game;
 import com.retronova.game.objects.entities.Player;
-import com.retronova.game.objects.particles.Word;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 
 /**
@@ -39,9 +37,11 @@ public class Cura extends Utility {
         if (gato.colliding(this)) {
             double cura = gato.getLifeSize() * FRACAO;
             gato.setLife(Math.min(gato.getLifeSize(), gato.getLife() + cura));
-            Game.getMap().put(new Word("+" + (int) Math.ceil(cura),
-                    gato.getX() + gato.getWidth() / 2.0, gato.getY(), 1));
+            com.retronova.game.objects.particles.NumeroDeDano.cura((int) Math.ceil(cura),
+                    gato.getX() + gato.getWidth() / 2.0, gato.getY());
             Sound.play(Sounds.Coin);
+            Game.getMap().put(new com.retronova.game.objects.particles.Coleta(com.retronova.game.items.Icone.VIGOR,
+                    getX() + getWidth() / 2.0, getY() + getHeight() / 2.0, Math.max(1, Math.round(Configs.GameScale() * 0.67f))));
             disappear();
             return;
         }
@@ -53,34 +53,20 @@ public class Cura extends Utility {
         getPhysical().addForce("follow", velocidade, gato.getAngle(this));
     }
 
+    /**
+     * O CORAÇÃO É O ÍCONE DA VIDA (Icone.VIGOR), o mesmo do card: arte em jogo =
+     * arte do ícone. Era uma matriz pintada aqui com sombra preta, brilho branco
+     * puro e um halo suavizado por quadro. O pulso, que diz "pega", virou um
+     * sobe-e-desce em pixel inteiro, e o halo é imagem pronta na família da vida.
+     */
     @Override
     public void render(Graphics2D g) {
         int s = Configs.GameScale();
-        double pulso = 1 + 0.12 * Math.sin((idade + Engine.alpha()) * 0.2);
-        int cel = Math.max(1, (int) Math.round(s * pulso));
-        String[] coracao = {
-                ".##.##.",
-                "#+#####",
-                "#######",
-                ".#####.",
-                "..###..",
-                "...#..."};
-        int lado = 7 * cel;
-        int x0 = (int) getX() + getWidth() / 2 - lado / 2;
-        int y0 = (int) getY() + getHeight() / 2 - 3 * cel;
-        g.setColor(new Color(255, 70, 90, 60));
-        g.fillOval(x0 - lado / 2, y0 - lado / 2, lado * 2, lado * 2);
-        for (int ly = 0; ly < coracao.length; ly++) {
-            for (int lx = 0; lx < coracao[ly].length(); lx++) {
-                char c = coracao[ly].charAt(lx);
-                if (c == '.') {
-                    continue;
-                }
-                g.setColor(Color.BLACK);
-                g.fillRect(x0 + lx * cel + cel / 2, y0 + ly * cel + cel / 2, cel, cel);
-                g.setColor(c == '+' ? Color.WHITE : new Color(0xE0334F));
-                g.fillRect(x0 + lx * cel, y0 + ly * cel, cel, cel);
-            }
-        }
+        int escala = Math.max(1, Math.round(s * 0.67f));
+        int cx = (int) getX() + getWidth() / 2;
+        int cy = (int) (getY() + getHeight() / 2 - Math.round(Math.abs(Math.sin((idade + Engine.alpha()) * 0.1)) * 2) * s);
+        com.retronova.engine.graphics.Brilho.disco(g, cx, cy, 9 * s,
+                com.retronova.engine.graphics.Familia.VIDA.tom(com.retronova.engine.graphics.Familia.LUZ, 60));
+        com.retronova.game.items.Icone.VIGOR.desenharCentrado(g, cx, cy, escala);
     }
 }

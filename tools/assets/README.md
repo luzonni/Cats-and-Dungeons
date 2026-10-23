@@ -15,6 +15,7 @@ e o braseiro; os PNG do jogo são derivados, não cópias.
 
 | Arquivo | O que é |
 |---|---|
+| `particulas_original/` (`fire`, `heart`, `poison`, `damagemobs`) | As tiras de partícula antes de irem para as famílias de cor; `tools/GenIcones.java` lê daqui e grava as remapeadas em `sprites/objects/particle/` |
 | `finn_original_idle.png`, `finn_original_walking.png` | Sprites do Finn como o artista os entregou |
 | `gato_antigo_muffin.png`, `gato_antigo_azrael.png`, `gato_antigo_finn.png` | Os três jogáveis antes do redesenho |
 | `portao_original_gate.png` | A moldura do portão antes de virar folha animada |

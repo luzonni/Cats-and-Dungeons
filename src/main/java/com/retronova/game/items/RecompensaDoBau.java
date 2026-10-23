@@ -103,9 +103,9 @@ public final class RecompensaDoBau {
             return arma != null ? arma.efeito(nivelNovo) : carta.efeito();
         }
 
-        /** O nome do ícone em Icones: o da arma ou o da melhoria. */
-        public String icone() {
-            return arma != null ? arma.name() : carta.melhoria().name();
+        /** O ícone do prêmio (ver Icone): o da arma ou o da melhoria. */
+        public Icone icone() {
+            return arma != null ? Icone.de(arma) : Icone.de(carta.melhoria());
         }
 
         /**

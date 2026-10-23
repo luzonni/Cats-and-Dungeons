@@ -404,3 +404,40 @@ Ver [ARQUITETURA.md](../ARQUITETURA.md#ações-e-a-tela-de-controles).
   teclado e no controle.
 - **Painel do Settings mais largo** (240 para 288 px nativos) e mais alto, igual em
   todas as abas, para o desenho do controle e a lista do teclado caberem.
+
+## Identidade visual: ícones e gameplay (2026-10-23, branch `feat/identidade-visual`: `85e59b8` a `9761e1a`)
+
+Ver [ARQUITETURA.md](../ARQUITETURA.md#ícones-icone) e [TERCEIROS.md](../TERCEIROS.md).
+
+- **Ícones novos de buff, passiva, arma extra, troféu, elemento e raridade.** Os
+  antigos eram matrizes 9x9 com cor saturada, brilho branco e sombra preta, e selos
+  9x9 com contorno fora da paleta. Os novos têm 16x16, como os sprites: base no
+  pacote DB32 (CC0), o que faltava desenhado no mesmo molde, tudo remapeado para a
+  paleta (contorno `Palette.OUTLINE`, rampas de 5 tons a partir das cores oficiais).
+- **Registro central** `Icone`: cartas de nível e "Your build", baú, escolha de
+  elemento, selos do item e troféu desenham por ele, em fator inteiro. Fora do
+  destaque (prévia do baú, conquista por fazer, troféu sem hover) o ícone sai
+  apagado nos cinzas da interface.
+- **Reconhecível pela forma:** o `IconeTest` reprova dois ícones com silhueta quase
+  igual. Foi ele que pegou a primeira versão do Frenzy, igual à Fury sem a cor.
+- **Barra da Fúria no desenho da HUD.** Era um lilás saturado com moldura preta e o
+  rótulo em texto cru com sombra preta. Agora segue a barra do chefe: contorno e
+  fundo da paleta, preenchimento na família roxa dos ícones (o épico puxado para
+  `Palette.MAIN`) com luz em cima e sombra embaixo, um traço a cada dez mortes e
+  "FURY" pelo `TextFx`. As cores, inclusive o pulso de quase cheia, ficam prontas;
+  antes eram criadas a cada quadro.
+- **Gameplay na identidade visual: arte em jogo = arte do ícone.** O novelo e o
+  grimório que orbitam o gato são os ícones do card (o grimório era um livro vermelho
+  de cruz, diferente do card), a aura ganhou as folhas do ícone, e raio, tremor e
+  meteoro usam as famílias de cor dos ícones (`Familia`), com o meteoro caindo como
+  o próprio ícone. Gema de XP, XP grande e coração de cura são ícones do registro,
+  com animação curta de coleta. Barras de vida e armadura dos bichos no desenho das
+  barras da HUD; aura de elite, brilho do baú, onda da Fúria, Retaliação, aviso de
+  spawn e as tiras de fogo, coração, veneno e faísca nas famílias.
+- **Números de dano novos** (`NumeroDeDano`): cor por tipo (comum, elemento,
+  veneno, crítico, cura), o crítico maior com pop e o estouro do ícone, sem o rótulo
+  "CRIT"; golpes seguidos no mesmo bicho somam, e no máximo 36 números no ar.
+  Medido na horda do minuto 10: partículas de 0,54 para 0,15 ms por quadro, quadro
+  médio de 3,36 para 3,13 ms.
+- **Clarão da Fúria mais fraco** (120 para 60 de opacidade), para não ser um flash
+  de meia tela várias vezes por minuto.

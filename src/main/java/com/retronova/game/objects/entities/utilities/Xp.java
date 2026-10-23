@@ -73,39 +73,29 @@ public class Xp extends Utility {
 
     @Override
     /**
-     * O XP e uma GEMA: losango ciano com brilho branco, flutuando.
+     * O XP é uma GEMA: forma de cristal, que nenhum inimigo tem, flutuando.
      *
-     * O sprite antigo era uma bolha verde girando — a mesma familia de cor e de
-     * forma do veneno e das auras, e no meio da horda ele parecia uma ameaca a
-     * mais. Coletavel tem de ler como coletavel de relance: forma de cristal (que
-     * nenhum inimigo tem), cor fria e limpa, brilho, e o subir-e-descer de quem
-     * esta esperando ser pego. O orbe grande e a mesma gema, maior e dourada.
+     * O DESENHO É O DO REGISTRO DE ÍCONES (Icone.XP, Icone.XP_GRANDE): azul do grau
+     * raro, e a grande em ouro, nas famílias de cor do jogo. Era um losango
+     * pintado aqui com contorno branco puro e um halo suavizado por gema, todo
+     * quadro — o halo agora é imagem pronta (Brilho). O subir-e-descer de quem
+     * espera ser pego continua, em pixel inteiro.
      */
     public void render(java.awt.Graphics2D g) {
         int s = com.retronova.engine.Configs.GameScale();
         double t = (vivo + com.retronova.engine.Engine.alpha()) * 0.12;
-        int meia = (grande ? 5 : 3) * s;                       // meia largura do losango
-        int alto = (int) (meia * 1.4);
         int cx = (int) getX() + getWidth() / 2;
-        int cy = (int) (getY() + getHeight() / 2 - Math.abs(Math.sin(t)) * 1.5 * s);
-        java.awt.Color corpo = grande ? new java.awt.Color(0xFFC83C) : new java.awt.Color(0x3FD8FF);
-        java.awt.Color sombra = grande ? new java.awt.Color(0xB07A10) : new java.awt.Color(0x1F7FB8);
-        // Halo suave: diz "brilha", nao "ameaca".
-        g.setColor(new java.awt.Color(corpo.getRed(), corpo.getGreen(), corpo.getBlue(), grande ? 70 : 45));
-        g.fillOval(cx - meia * 2, cy - meia * 2, meia * 4, meia * 4);
-        int[] xs = {cx, cx + meia, cx, cx - meia};
-        int[] ys = {cy - alto, cy, cy + alto, cy};
-        g.setColor(java.awt.Color.WHITE);                       // contorno claro, nunca escuro
-        g.fillPolygon(new int[]{cx, cx + meia + s, cx, cx - meia - s},
-                new int[]{cy - alto - s, cy, cy + alto + s, cy}, 4);
-        g.setColor(sombra);
-        g.fillPolygon(xs, ys, 4);
-        g.setColor(corpo);                                      // faceta clara de cima
-        g.fillPolygon(new int[]{cx, cx + meia, cx, cx - meia}, new int[]{cy - alto, cy, cy, cy}, 4);
-        g.setColor(java.awt.Color.WHITE);                       // o brilho que pisca
-        if (Math.sin(t * 2.3) > 0.2) {
-            g.fillRect(cx - meia / 2, cy - alto / 2, Math.max(1, s), Math.max(1, s));
-        }
+        int cy = (int) (getY() + getHeight() / 2 - Math.round(Math.abs(Math.sin(t)) * 1.5) * s);
+        com.retronova.engine.graphics.Familia f = grande
+                ? com.retronova.engine.graphics.Familia.OURO : com.retronova.engine.graphics.Familia.RARO;
+        // Halo suave: diz "brilha", não "ameaça".
+        com.retronova.engine.graphics.Brilho.disco(g, cx, cy, (grande ? 10 : 6) * s,
+                f.tom(com.retronova.engine.graphics.Familia.LUZ, grande ? 70 : 45));
+        icone().desenharCentrado(g, cx, cy, s);
+    }
+
+    private com.retronova.game.items.Icone icone() {
+        return grande ? com.retronova.game.items.Icone.XP_GRANDE : com.retronova.game.items.Icone.XP;
     }
 
     public void setWeight(double weight) {
@@ -127,6 +117,9 @@ public class Xp extends Utility {
         Player player = Game.getPlayer();
         if(player.colliding(this)) {
             player.plusXp(getWeight());
+            Game.getMap().put(new com.retronova.game.objects.particles.Coleta(icone(),
+                    getX() + getWidth() / 2.0, getY() + getHeight() / 2.0,
+                    com.retronova.engine.Configs.GameScale()));
             disappear();
             return;
         }

@@ -13,7 +13,7 @@ import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Conquistas;
 import com.retronova.game.Conquistas.Conquista;
 import com.retronova.game.Conquistas.Progresso;
-import com.retronova.game.map.arena.Icones;
+import com.retronova.game.items.Icone;
 import com.retronova.menus.shared.Button;
 
 import java.awt.Color;
@@ -34,7 +34,6 @@ import java.util.List;
 public class TelaDeConquistas extends TelaDeMenu {
 
     private static final Color OURO = new Color(0xFFD23F);
-    private static final Color APAGADO = new Color(0x5A5A6E);
 
     private static final int COLUNAS = 2;
     private static final Conquista[] TODAS = Conquista.values();
@@ -149,9 +148,13 @@ public class TelaDeConquistas extends TelaDeMenu {
         int ix = r.x + 4 * s, iy = r.y + (r.height - caixa) / 2;
         g.setColor(feita ? new Color(0x2A200C) : new Color(0x0E0A14));
         g.fillRoundRect(ix, iy, caixa, caixa, 6 * s, 6 * s);
-        int celula = Math.max(1, 2 * s);
-        int lado = Icones.lado(celula);
-        Icones.desenhar(g, "TROFEU", feita ? OURO : APAGADO, ix + (caixa - lado) / 2, iy + (caixa - lado) / 2, celula);
+        int escala = Math.max(1, s);
+        int lado = Icone.lado(escala);
+        if (feita) {
+            Icone.TROFEU.desenhar(g, ix + (caixa - lado) / 2, iy + (caixa - lado) / 2, escala);
+        } else {
+            Icone.TROFEU.desenharApagado(g, ix + (caixa - lado) / 2, iy + (caixa - lado) / 2, escala);
+        }
 
         int tx = ix + caixa + 5 * s;
         int larguraTexto = r.x + r.width - 5 * s - tx;

@@ -4,7 +4,6 @@ import com.retronova.engine.Activity;
 import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
-import com.retronova.engine.graphics.Relevo;
 import com.retronova.engine.graphics.TextFx;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -18,7 +17,6 @@ import com.retronova.game.map.Camera;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.menus.shared.MaoDeCartas;
 
-import javax.imageio.ImageIO;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -34,7 +32,6 @@ import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -224,13 +221,18 @@ public class EscolhaDeElemento implements Activity {
      * cor e descobre o resto no susto.
      */
     private static MaoDeCartas.Carta carta(Elemento e) {
-        BufferedImage marca = selo(e.simbolo());
+        com.retronova.game.items.Icone marca = com.retronova.game.items.Icone.de(e);
         // A cadência é um INTERVALO: menor é mais rápido. O texto inverte para o
         // jogador ler o que sente, e não o que o campo guarda.
         String efeito = porcento(e.dano(1.0)) + " damage\n" + porcento(2 - e.cadencia()) + " attack speed";
         return new MaoDeCartas.Carta("ELEMENT", e.cor(),
-                // Fator inteiro e sem suavizar, com contorno e relevo: ver Relevo.
-                (g, x, y, lado, cor) -> Relevo.desenhar(g, marca, x + lado / 2, y + lado / 2, lado),
+                // O símbolo do registro de ícones, em fator inteiro: já vem com
+                // contorno e volume, e o Relevo por cima daria um contorno duplo.
+                (g, x, y, lado, cor) -> {
+                    if (marca != null) {
+                        marca.desenharNoCentro(g, x, y, lado);
+                    }
+                },
                 e.rotulo(), efeito);
     }
 
@@ -729,23 +731,6 @@ public class EscolhaDeElemento implements Activity {
         return new Color((int) (a.getRed() + (b.getRed() - a.getRed()) * f),
                 (int) (a.getGreen() + (b.getGreen() - a.getGreen()) * f),
                 (int) (a.getBlue() + (b.getBlue() - a.getBlue()) * f));
-    }
-
-    /** Selos já carregados, um por elemento. */
-    private static final Map<String, BufferedImage> SELOS = new HashMap<>();
-
-    private static BufferedImage selo(String nome) {
-        if (nome == null) {
-            return null;
-        }
-        return SELOS.computeIfAbsent(nome, n -> {
-            try {
-                return ImageIO.read(EscolhaDeElemento.class.getResourceAsStream(
-                        "/com/retronova/resources/sprites/items/elementos/" + n + ".png"));
-            } catch (Exception naoTem) {
-                return null;
-            }
-        });
     }
 
     /** 1.18 vira "+18%", 0.88 vira "-12%". */

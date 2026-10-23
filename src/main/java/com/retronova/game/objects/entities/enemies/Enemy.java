@@ -14,9 +14,9 @@ import com.retronova.game.objects.entities.Nascente;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.utilities.Xp;
+import com.retronova.game.objects.particles.NumeroDeDano;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.Volatile;
-import com.retronova.game.objects.particles.Word;
 import studio.retrozoni.sheeter.SpriteSheet;
 
 import java.awt.*;
@@ -40,6 +40,8 @@ public abstract class Enemy extends Entity implements Nascente {
     }
 
     private boolean tookDamage;
+    /** O último número de dano deste bicho, para golpes seguidos somarem nele (ver NumeroDeDano). */
+    private com.retronova.game.objects.particles.NumeroDeDano numeroDeDano;
     private int countTookDamage;
 
     /**
@@ -383,9 +385,10 @@ public abstract class Enemy extends Entity implements Nascente {
         particle.setX(x);
         particle.setY(y);
         if (damage >= 1d) {
-            Game.getMap().put(critico
-                    ? new com.retronova.game.objects.particles.Critico((int) damage, x, y)
-                    : new Word(String.valueOf((int) damage), x, y, 1));
+            // O número na cor do tipo de golpe (ou do crítico), somando no anterior
+            // se este bicho levou outro igual há pouco: ver NumeroDeDano.
+            NumeroDeDano.Estilo estilo = critico ? NumeroDeDano.Estilo.CRITICO : NumeroDeDano.estiloDe(type);
+            numeroDeDano = NumeroDeDano.mostrar(numeroDeDano, (int) damage, estilo, x, y);
         }
         Game.getMap().put(particle);
     }
@@ -527,8 +530,11 @@ public abstract class Enemy extends Entity implements Nascente {
         int cy = (int) getY() + getHeight() / 2;
         // Imagem pronta, e nao fillOval: ver Brilho. O oval suavizado era
         // rasterizado na CPU para cada elite, todo quadro.
+        // Ouro da família dos ícones, com a opacidade em degraus prontos (Familia):
+        // nenhuma cor nova por elite, por quadro.
         com.retronova.engine.graphics.Brilho.disco(g, cx, cy, r,
-                new Color(255, 200, 60, Math.max(0, Math.min(255, alfa))));
+                com.retronova.engine.graphics.Familia.OURO.tom(com.retronova.engine.graphics.Familia.LUZ,
+                        Math.max(0, Math.min(255, alfa))));
     }
 
     protected void setXpWeight(double weight) {
@@ -603,16 +609,31 @@ public abstract class Enemy extends Entity implements Nascente {
         int w = getWidth();
         int h = Configs.GameScale() * 3;
 
-        g.setColor(new Color(135, 35, 65));
-        g.fillRect(x, y, w, h);
-        double lifeSize = w * (getLife() / getLifeSize());
-        g.setColor(new Color(190, 49, 68));
-        g.fillRect(x, y, (int) lifeSize, h);
-
-        g.setStroke(new BasicStroke(Configs.GameScale()));
-        g.setColor(new Color(9, 18, 44));
-        g.drawRect(x, y, w, h);
+        barra(g, x, y, w, h, getLife() / getLifeSize(), com.retronova.engine.graphics.Familia.VIDA);
         renderArmadura(g);
+    }
+
+    /**
+     * Uma barra no mundo, no desenho das barras da HUD (BarraDeChefe, Fúria):
+     * contorno da paleta por fora, o fundo fundo, e o preenchimento na família de
+     * cor dela com o fio de luz em cima. Era um vinho, um vermelho e um azul-marinho
+     * soltos, com drawRect de traço grosso — e cada bicho criava três cores novas
+     * por quadro.
+     */
+    private static void barra(Graphics2D g, int x, int y, int w, int h, double fracao,
+                              com.retronova.engine.graphics.Familia familia) {
+        int s = Configs.GameScale();
+        g.setColor(com.retronova.engine.graphics.Palette.OUTLINE);
+        g.fillRect(x - s, y - s, w + 2 * s, h + 2 * s);
+        g.setColor(com.retronova.engine.graphics.Palette.DEEP);
+        g.fillRect(x, y, w, h);
+        int cheio = (int) (w * Math.max(0, Math.min(1, fracao)));
+        if (cheio > 0) {
+            g.setColor(familia.tom(com.retronova.engine.graphics.Familia.BASE));
+            g.fillRect(x, y, cheio, h);
+            g.setColor(familia.tom(com.retronova.engine.graphics.Familia.LUZ));
+            g.fillRect(x, y, cheio, Math.max(1, s));
+        }
     }
 
     /**
@@ -631,13 +652,8 @@ public abstract class Enemy extends Entity implements Nascente {
         int h = Configs.GameScale() * 3;
         int y = (int) getY() + getHeight() + Configs.GameScale() * 2 - h - Configs.GameScale();
         int w = getWidth();
-        g.setColor(new Color(90, 70, 25));
-        g.fillRect(x, y, w, h);
-        g.setColor(new Color(232, 200, 74));
-        g.fillRect(x, y, (int) (w * (armadura / armaduraCheia)), h);
-        g.setStroke(new BasicStroke(Configs.GameScale()));
-        g.setColor(new Color(9, 18, 44));
-        g.drawRect(x, y, w, h);
+        // Em ouro da família dos ícones: o amarelo do Hades para armadura, agora na paleta.
+        barra(g, x, y, w, h, armadura / armaduraCheia, com.retronova.engine.graphics.Familia.OURO);
     }
 
 

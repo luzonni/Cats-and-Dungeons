@@ -239,8 +239,8 @@ public class GameOver extends TelaDeMenu {
         }
         int h = 22 * s, vao = 4 * s;
         int margem = Configs.Margin();
-        int celula = Math.max(1, (int) Math.round(1.6 * s));
-        int lado = com.retronova.game.map.arena.Icones.lado(celula);
+        int escala = Math.max(1, s);
+        int lado = com.retronova.game.items.Icone.lado(escala);
         Font rotulo = FontHandler.font(FontHandler.Septem, 5f * s);
         // A LARGURA VEM DO MAIOR NOME, e não de um valor fixo: com 96 pixels, nomes
         // como "Treasure Hunter" passavam da borda do aviso. Todos os avisos ficam
@@ -284,8 +284,7 @@ public class GameOver extends TelaDeMenu {
             g.setColor(Palette.MAIN);
             g.fillRect(x + s, y + s, w - 2 * s, s);
 
-            com.retronova.game.map.arena.Icones.desenhar(g, "TROFEU", Palette.ACCENT,
-                    x + 4 * s, y + (h - lado) / 2, celula);
+            com.retronova.game.items.Icone.TROFEU.desenhar(g, x + 4 * s, y + (h - lado) / 2, escala);
 
             int tx = x + 4 * s + lado + 4 * s;
             TextFx.draw(g, "Achievement unlocked", rotulo, tx, y + 8 * s, Palette.LIGHT, s);
