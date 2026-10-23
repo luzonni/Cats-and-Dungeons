@@ -1105,8 +1105,12 @@ public class Player extends Entity {
 
     private void tickItemHand() {
         Item item = getInventory().getItemHand();
-        if(item != null)
+        if(item != null) {
+            // A ANIMACAO ANDA ANTES DO TICK DA ARMA: o disparo que a arma marcar
+            // agora fica no tempo zero do gesto, e o quadro deste tick ja o mostra.
+            item.animacao().tick(this);
             item.tick();
+        }
     }
 
     private void updateMovement() {
@@ -1331,6 +1335,37 @@ public class Player extends Entity {
     /** 1 se o gato anda para a direita, -1 para a esquerda. Espelha o item. */
     public int getLadoDoPasso() {
         return ladoDoPasso;
+    }
+
+    /**
+     * Quanto o corpo esta afundado em cada quadro de cada folha, em pixels de arte.
+     *
+     * COPIADO DO GERADOR, e nao medido no PNG: o tools/GenGatos.java afunda a
+     * cabeca um pixel no contato da caminhada e no respiro, e dois no sono fundo.
+     * A arma le isto para acompanhar o peso do passo no mesmo quadro em que o
+     * corpo desce. Mudou a folha, muda aqui.
+     */
+    private static final int[][] AFUNDADO = {{0, 0, 1, 1}, {1, 0, 1, 0}, {1, 1, 2, 2}};
+
+    /** O gato esta na folha de caminhada. */
+    public boolean andandoNaFolha() {
+        return estadoAnterior == ANDANDO;
+    }
+
+    /** Pixels de arte que o corpo afundou no quadro atual da folha. */
+    public int corpoAfundado() {
+        int estado = Math.max(0, estadoAnterior);
+        return AFUNDADO[estado][Math.floorMod(quadroAtual, 4)];
+    }
+
+    /**
+     * Onde a folha atual esta no ciclo de quatro quadros, de 0 a 1, com a fracao
+     * entre ticks. E o relogio que a arma usa para balancar no compasso do gato.
+     */
+    public double faseDaFolha(float alpha) {
+        int estado = Math.max(0, estadoAnterior);
+        double dentro = Math.min(1, (countAnim + alpha) / TICKS_DO_ESTADO[estado]);
+        return (Math.floorMod(quadroAtual, 4) + dentro) / 4d;
     }
 
     public Point getMao() {

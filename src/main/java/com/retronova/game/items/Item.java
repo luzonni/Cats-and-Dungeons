@@ -369,6 +369,61 @@ public abstract class Item {
         return Porte.MIUDO;
     }
 
+    /** O movimento da arma na mao. Ver AnimacaoDaArma. */
+    private AnimacaoDaArma animacao;
+
+    /**
+     * A animacao desta arma, montada no primeiro uso.
+     *
+     * NAO NO CONSTRUTOR: o gesto de algumas armas depende do elemento, e o
+     * elemento so existe depois que o construtor da subclasse roda.
+     */
+    public AnimacaoDaArma animacao() {
+        if (animacao == null) {
+            animacao = new AnimacaoDaArma();
+            animacao.configurar(gesto(), flutua());
+        }
+        return animacao;
+    }
+
+    /** Quanto o gesto de ataque desta arma mexe. A base nao tem gesto proprio. */
+    protected AnimacaoDaArma.Gesto gesto() {
+        return AnimacaoDaArma.Gesto.NENHUM;
+    }
+
+    /** Arma de magia flutua na mao em vez de pesar no passo. */
+    protected boolean flutua() {
+        return porte() == Porte.CAJADO;
+    }
+
+    /**
+     * Quanta enfase a arma ganha no desenho: 0 a comum, 1 a elemental, 2 a
+     * lendaria. E a "evolucao" da arma da mao — a transmutacao a troca pela
+     * variante — e quem desenha brilho, rastro ou faisca multiplica por isto.
+     */
+    public int intensidade() {
+        Elemento e = elemento();
+        return e == Elemento.NENHUM ? 0 : e == Elemento.LENDARIA ? 2 : 1;
+    }
+
+    /**
+     * A familia de cor do efeito desta arma: a do elemento, ou a de quem nao tem.
+     * A comum devolve {@code semElemento}, que cada arma escolhe (o verde do
+     * cajado do Azrael, o aco da espada).
+     */
+    public com.retronova.engine.graphics.Familia familiaDoEfeito(
+            com.retronova.engine.graphics.Familia semElemento) {
+        return switch (elemento()) {
+            case FOGO -> com.retronova.engine.graphics.Familia.FOGO;
+            case GELO -> com.retronova.engine.graphics.Familia.GELO;
+            case AGUA -> com.retronova.engine.graphics.Familia.AGUA;
+            case TERRA -> com.retronova.engine.graphics.Familia.TERRA;
+            case AR -> com.retronova.engine.graphics.Familia.AR;
+            case LENDARIA -> com.retronova.engine.graphics.Familia.OURO;
+            case NENHUM -> semElemento;
+        };
+    }
+
     /**
      * O PUNHO do sprite: onde a mão do gato o segura.
      *
@@ -1000,13 +1055,51 @@ public abstract class Item {
         return 0;
     }
 
+    /**
+     * Onde a arma esta na mao, para quem precisa SAIR da pose sem pular — a
+     * espada parte daqui para o arco do golpe e volta para ca. Preenchida por
+     * {@link #poseNaMao}; uma por arma, reaproveitada.
+     */
+    protected static final class PoseNaMao {
+        /** O sprite como foi desenhado (espelhado ou nao). */
+        public BufferedImage sprite;
+        public boolean virado;
+        /** Canto do sprite e o punho, em pixels de tela. */
+        public int x, y;
+        public Point punho;
+        /** Giro do desenho, em radianos. */
+        public double angulo;
+
+        /** O meio do sprite no mundo, depois do giro em volta do punho. */
+        public double centroX() {
+            double ox = sprite.getWidth() / 2d - punho.x, oy = sprite.getHeight() / 2d - punho.y;
+            return x + punho.x + ox * Math.cos(angulo) - oy * Math.sin(angulo);
+        }
+
+        public double centroY() {
+            double ox = sprite.getWidth() / 2d - punho.x, oy = sprite.getHeight() / 2d - punho.y;
+            return y + punho.y + ox * Math.sin(angulo) + oy * Math.cos(angulo);
+        }
+    }
+
     protected void naMao(Graphics2D g, BufferedImage sprite, double grausExtra, double avancoPx) {
         if (sprite == null) {
             return;
         }
+        PoseNaMao p = poseNaMao(sprite, grausExtra, avancoPx, poseDoDesenho);
+        if (p != null) {
+            Rotate.draw(p.sprite, p.x, p.y, p.angulo, p.punho, g);
+        }
+    }
+
+    private final PoseNaMao poseDoDesenho = new PoseNaMao();
+
+    /** Calcula a pose de porte — a mesma conta do {@link #naMao} — sem desenhar. */
+    protected PoseNaMao poseNaMao(BufferedImage sprite, double grausExtra, double avancoPx,
+                                  PoseNaMao saida) {
         Player jogador = Game.getPlayer();
-        if (jogador == null) {
-            return;
+        if (jogador == null || sprite == null) {
+            return null;
         }
         int px = Configs.GameScale();
         int lado = jogador.getLadoDoPasso();
@@ -1041,9 +1134,20 @@ public abstract class Item {
             dx = porte.dx;
             dy = porte.dy;
         }
-        int x = mao.x - punho.x + (int) ((dx + avancoPx) * px * lado);
-        int y = mao.y - punho.y + dy * px;
-        Rotate.draw(sprite, x, y, Math.toRadians((graus + grausExtra) * lado), punho, g);
+        // O MOVIMENTO DA MAO soma por cima da pose: respiro, passo, virada e o
+        // gesto do ataque (ver AnimacaoDaArma). Somado, e nao no lugar, pelo mesmo
+        // motivo do golpe acima: tudo parte de onde a arma ja estava.
+        AnimacaoDaArma anim = animacao();
+        anim.calcular(jogador, com.retronova.engine.Engine.alpha());
+        // Arredondado ao pixel DE TELA, e nao ao de arte: a um terco de pixel de
+        // arte por passo a flutuacao e continua; a um pixel inteiro ela tremia.
+        saida.sprite = sprite;
+        saida.virado = virar;
+        saida.punho = punho;
+        saida.x = mao.x - punho.x + (int) Math.round((dx + avancoPx + anim.avanco) * px * lado);
+        saida.y = mao.y - punho.y + dy * px + (int) Math.round(anim.desce * px);
+        saida.angulo = Math.toRadians((graus + grausExtra + anim.graus) * lado);
+        return saida;
     }
 
 }
