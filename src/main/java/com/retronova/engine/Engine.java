@@ -633,7 +633,7 @@ public class Engine implements Runnable {
         int Hz = 0;
         int frames = 0;
         long timer = agora;
-        window.requestFocus();
+        window.destacarAoIniciar();
         while (isRunning) {
             try {
                 agora = System.nanoTime();
