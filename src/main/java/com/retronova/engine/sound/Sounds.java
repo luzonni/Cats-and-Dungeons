@@ -154,7 +154,12 @@ public enum Sounds {
 	PulsoAura("weapon_aura"),
 	ExplosaoArma("weapon_explosion"),
 	/** Sopro e ressonância arcana do cajado/grimório; ver tools/GenSomDoCajado. */
-	FeiticoArcano("spell_arcane");
+	FeiticoArcano("spell_arcane"),
+	/** Voz descendente com impacto curto; gerada por GenSonsDaMorte. */
+	MorteMuffin("death_muffin"),
+	MorteAzrael("death_azrael"),
+	MorteFinn("death_finn"),
+	FimDaRun("run_over");
 
 	
 	private final String ResourceName;

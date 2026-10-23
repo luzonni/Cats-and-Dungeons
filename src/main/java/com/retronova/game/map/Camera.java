@@ -87,7 +87,10 @@ public class Camera {
         double zoom = cam.antZoom + (cam.currentZoom - cam.antZoom) * a;
         double centerX = camX + screenWidth / 2.0 / zoom;
         double centerY = camY + screenHeight / 2.0 / zoom;
-        at.translate(screenWidth / 2.0, screenHeight / 2.0);
+        // ANTES DO ZOOM: deslocamento em pixels da tela, inclusive com zoom baixo.
+        float faseImpacto = Engine.pausado() ? 0f : a;
+        at.translate(screenWidth / 2.0 + cam.impactoDaMorte.x(faseImpacto) * Configs.UiScale(),
+                screenHeight / 2.0 + cam.impactoDaMorte.y(faseImpacto) * Configs.UiScale());
         at.scale(zoom, zoom);
         at.translate(-centerX + (screenWidth/2d)/zoom, -centerY + (screenHeight/2d)/zoom);
         return at;
@@ -121,6 +124,12 @@ public class Camera {
 
     /** Amplitude atual do tremor de tela, em pixels do mundo. Decai sozinha. */
     private double tremor;
+    private final ImpactoDaMorte impactoDaMorte = new ImpactoDaMorte();
+
+    /** A morte tem envelope e unidade próprios; não disputa o teto dos golpes. */
+    public void impactarNaMorte() {
+        impactoDaMorte.iniciar();
+    }
 
     /**
      * Sacode a tela. Golpes grandes (a Furia, uma elite morrendo) precisam de
@@ -137,6 +146,7 @@ public class Camera {
         antY = y;
         antZoom = currentZoom;
         tremor *= 0.86;
+        impactoDaMorte.tick();
         if(followed != null)
             follow();
         // A aproximacao vem das opcoes, e nao mais de Ctrl+= / Ctrl+-. O atalho

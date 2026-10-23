@@ -293,7 +293,8 @@ public class Game implements Activity {
         // O jogo esta rodando: nenhum menu aberto por cima, a musica volta ao normal.
         // E a rede de seguranca de todo caminho que sai da pausa sem passar pelo
         // "voltar" dela (reiniciar, escolher carta, a vitoria).
-        com.retronova.engine.sound.Sound.abafarParaPausa(false);
+        // A queda mantém o abafamento para a voz da morte continuar em primeiro plano.
+        com.retronova.engine.sound.Sound.abafarParaPausa(player.morrendo());
         if (regravarSave) {
             regravarSave = false;
             if (map instanceof Arena arena) {

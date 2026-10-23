@@ -548,19 +548,17 @@ public class Player extends Entity {
     // inteiro. Entao a sequencia aqui e lenta de proposito e tem tres tempos, na
     // ordem em que o olho consegue ler:
     //
-    //   PARADA (12 ticks) — nada se move. E o mesmo recurso do impacto, o hitstop,
-    //   esticado: o silencio antes da queda e o que avisa que aquilo foi diferente
-    //   dos outros golpes que o gato levou na partida.
+    //   PARADA (18 ticks) — o corpo segura o impacto, com tremor e voz próprios.
     //
-    //   TOMBO (24 ticks) — o gato gira noventa graus ate o chao, desacelerando no
+    //   TOMBO (72 ticks) — o gato gira lentamente até o chão, desacelerando no
     //   fim. Girar, e nao afundar, porque o corpo dele tem uma silhueta em pe bem
     //   definida; deitado, ela le como tombo mesmo sem quadro desenhado para isso.
     //
-    //   APAGAR (24 ticks) — deitado, ele perde cor e some. So depois disso a tela
+    //   APAGAR (48 ticks) — deitado, ele perde cor e some. Só depois disso a tela
     //   de fim entra, e ai ela chega como conclusao e nao como interrupcao.
-    private static final int MORTE_PARADA = 40;
-    private static final int MORTE_TOMBO = 70;
-    private static final int MORTE_APAGAR = 55;
+    private static final int MORTE_PARADA = 18;
+    private static final int MORTE_TOMBO = 72;
+    private static final int MORTE_APAGAR = 48;
 
     /** Quanto a camera fecha em cima do gato durante a queda. */
     private static final float APROXIMACAO = 1.6f;
@@ -598,9 +596,9 @@ public class Player extends Entity {
         if (desde <= 0) {
             return 0f;
         }
-        // Nao chega a preto total: a ultima coisa a sumir e o gato, e um preto
-        // absoluto antes disso apagaria a propria queda.
-        return Math.min(0.88f, desde / (float) (MORTE_TOMBO / 2 + MORTE_APAGAR));
+        // PRETO SÓ NO FIM. A queda continua visível; a última imagem emenda no
+        // fundo do Run Over, onde o título entra antes dos painéis.
+        return Math.min(1f, desde / (float) (MORTE_TOMBO / 2 + MORTE_APAGAR));
     }
 
     /**
@@ -617,17 +615,17 @@ public class Player extends Entity {
             return;
         }
         this.morrendo = 0;
-        // UM GEMIDO POR VEZ, mesmo com quatro bichos batendo junto.
-        //
-        // Cada golpe tocava o proprio som, e cercado por quatro inimigos o gato
-        // gemia quatro vezes no mesmo quadro — as vozes se somam e o resultado e um
-        // estouro distorcido, alem de nao dizer nada: quatro gemidos nao informam
-        // quatro golpes, informam ruido. Um so, com uma pausa curta antes do
-        // proximo, continua avisando que voce esta apanhando e volta a ser legivel.
-        if (desdeOGemido >= ENTRE_GEMIDOS) {
-            desdeOGemido = 0;
-            Sound.play(this.dor);
-        }
+        // A MORTE TEM VOZ PRÓPRIA: não depende do intervalo dos gemidos de dano.
+        // O golpe fatal costumava gastar esse intervalo antes de die() chegar.
+        Sound.stopAllSounds();
+        Sound.abafarParaPausa(true);
+        Sound.play(switch (voz) {
+            case CatAzrael -> Sounds.MorteAzrael;
+            case CatFinn -> Sounds.MorteFinn;
+            default -> Sounds.MorteMuffin;
+        });
+        Game.getCam().impactarNaMorte();
+        Gamepad.vibrar(0.75, MORTE_PARADA);
     }
 
     private void tickMorte() {
@@ -668,13 +666,13 @@ public class Player extends Entity {
         return Expressao.Cara.MACHUCADO;
     }
 
-    /** De 0 (em pe) a 1 (deitado), com desaceleracao no fim do tombo. */
+    /** De 0 (em pé) a 1 (deitado): parte devagar e assenta sem salto no fim. */
     private double tombo() {
         if (morrendo < MORTE_PARADA) {
             return 0;
         }
         double t = Math.min(1, (morrendo - MORTE_PARADA) / (double) MORTE_TOMBO);
-        return 1 - Math.pow(1 - t, 3);
+        return t * t * (3 - 2 * t);
     }
 
     /** De 0 (ainda inteiro) a 1 (totalmente apagado). */
@@ -725,6 +723,9 @@ public class Player extends Entity {
         int y = ((int) getY() - apagado.getHeight() + getHeight());
         Point pe = new Point(apagado.getWidth() / 2, apagado.getHeight() - Configs.GameScale());
         Rotate.draw(apagado, x, y, tombo() * Math.PI / 2 * (ladoDoPasso == 1 ? -1 : 1), pe, g);
+        int inicio = MORTE_PARADA + MORTE_TOMBO / 2;
+        float fase = (morrendo - inicio + Engine.alpha()) / (MORTE_TOTAL - inicio);
+        EspiritoDoGato.desenhar(g, this, fase);
     }
 
     /** Levou pancada. */
