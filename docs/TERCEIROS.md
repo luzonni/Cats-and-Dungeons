@@ -35,7 +35,7 @@ Não têm publicação no Maven Central.
 | [16x16 weapon sprites free](https://opengameart.org/content/16x16-weapon-sprites-free) | Bennyboi_hack | CC0 1.0 | Desenhos dos arcos |
 | [Tiny gun icons (16x16)](https://opengameart.org/content/tiny-gun-icons-16x16) | congusbongus | CC0 1.0 | Desenho do laser |
 | [Ninja Throwing Items Kit](https://opengameart.org/content/ninja-throwing-items-kit-32x32) | kungfu4000 | CC0 1.0 | Desenho da kunai |
-| [16x16 RPG Items (DB32)](https://opengameart.org/content/16x16-rpg-items-db32) | ARoachIFoundOnMyPillow | CC0 1.0 | Varinhas de agua (orbe) e de fogo (tocha) |
+| [16x16 RPG Items (DB32)](https://opengameart.org/content/16x16-rpg-items-db32) | ARoachIFoundOnMyPillow | CC0 1.0 | Varinhas de agua (orbe) e de fogo (tocha); base dos ícones de buff, passiva, arma extra, troféu e raridade (ver "Ícones" abaixo) |
 | [16x16 Puny Dungeon Tileset](https://opengameart.org/content/16x16-puny-dungeon-tileset) | Shade | CC0 1.0 | Tiles da cisterna inundada: o chão, a água e os enfeites do campo da corrida, gerado pelo `Gerador` |
 | [Pixelart Spells](https://opengameart.org/content/pixelart-spells) | DevWizard | CC0 1.0 | Lufada de vento da partícula de impacto do elemento ar |
 | Pixel Bow Pack | **a confirmar** | **⚠ a confirmar** | Desenhos dos arcos |
@@ -229,6 +229,46 @@ formato das outras.
   `tools/GenSonsDaAbertura.java`, sem arquivo de fora e sem licença a conferir.
   São provisórios no timbre.
 - **Fontes:** as do jogo (`game`, `septem`), já em uso; nenhuma nova.
+
+### Ícones de buff, passiva, arma extra, elemento e raridade
+
+Gerados por `tools/GenIcones.java` em `resources/.../icones/`, todos remapeados para
+a paleta do jogo (ver `docs/ARQUITETURA.md`, "Ícones"). Origem de cada um:
+
+| Ícone | Representa | Origem |
+|---|---|---|
+| `furia` | Fury (dano) | DB32 `sword_iron`, recolorido |
+| `frenesi` | Frenzy (cadência) | DB32 `sword_iron` e o espelho dele, cruzados |
+| `couro` | Hide (resistência) | DB32 `shield_wood`, recolorido |
+| `patas` | Swift Paws (velocidade) | DB32 `armor_boots_iron`, em couro |
+| `presagio` | Omen (chance de carta melhor) | DB32 `item_orb`, recolorido |
+| `armadura` | Armor | DB32 `armor_chest_iron`, recolorido |
+| `regeneracao` | Regeneration | DB32 `potion_red`, recolorido |
+| `retaliacao` | Retaliate (Muffin) | DB32 `shield_metal` com a onda de choque desenhada |
+| `grimorio` | Grimoire | DB32 `item_book_purple`, recolorido |
+| `aura` | Catnip Aura | DB32 `item_leaf`, recolorido |
+| `trofeu` | Conquistas | DB32 `item_goblet_empty`, recolorido |
+| `comum`, `raro`, `epico`, `lendario` | Raridades | DB32 `item_gem_quartz`, `_sapphire`, `_amethyst`, `_amber`, na cor de cada grau |
+| `vigor`, `instinto`, `ima`, `pressa`, `critico`, `area`, `crescimento` | Vida, sorte, ímã, pressa, crítico, área, XP | desenhados no estilo do DB32 |
+| `voleio`, `explosao_arcana` | Volley (Finn), Arcane Burst (Azrael) | desenhados no estilo do DB32 |
+| `novelo`, `raio`, `tremor`, `meteoro` | Armas extras | desenhados no estilo do DB32 |
+| `fogo`, `gelo`, `agua`, `terra`, `ar` | Elementos | desenhados no estilo do DB32 |
+| `desconhecido` | Chave sem ícone | desenhado |
+| `xp`, `xp_grande` | Gemas de XP no chão | desenhados no estilo do DB32 |
+
+As tiras de partícula `fire`, `heart`, `poison` e `damagemobs`
+(`sprites/objects/particle/`) são as de antes, de origem **a confirmar** (estão no
+projeto desde a reorganização de pastas de 2026-09-06), remapeadas para as famílias
+de cor por `GenIcones`; os originais ficam em `tools/assets/particulas_original`.
+Nenhum pacote novo entrou para a gameplay: o DB32 e o gerador cobriram tudo.
+
+Pacotes avaliados e não usados: o [1-Bit Pack](https://kenney.nl/assets/1-bit-pack)
+da Kenney (CC0; muitos símbolos, mas silhuetas de uma cor só, sem o volume dos
+sprites do jogo — misturá-lo com o DB32 recriaria a mistura de estilos) e os
+[16x16 Assorted RPG Icons](https://opengameart.org/content/16x16-assorted-rpg-icons)
+de Shade (CC0; recipientes e equipamentos, sem os símbolos de buff). O
+[16x16 RPG Icons](https://opengameart.org/content/16x16-rpg-icons) de 16Pixel é
+CC-BY-SA 4.0 e ficou de fora pela regra CC0 do projeto.
 
 ### Arte e áudio do baú
 
