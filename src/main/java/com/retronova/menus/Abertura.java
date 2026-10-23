@@ -70,12 +70,11 @@ public class Abertura implements Activity {
     // ----------------------------------------------------------- o crédito
 
     /**
-     * O CRÉDITO DA EQUIPE, num lugar só. A equipe ainda não tem nome: o texto
-     * abaixo é um marcador, para trocar quando houver um. Com CREDITO_EQUIPE vazio,
+     * O CRÉDITO DA EQUIPE, num lugar só. Com CREDITO_EQUIPE vazio,
      * a fase do crédito não acontece (a abertura vai do preto direto à logo).
      */
     public static final String CREDITO_ACIMA = "a game by";
-    public static final String CREDITO_EQUIPE = "[team name]";
+    public static final String CREDITO_EQUIPE = "Runforce";
 
     // ----------------------------------------------------------- ajuste fino
 
