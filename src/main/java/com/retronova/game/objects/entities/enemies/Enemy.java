@@ -14,9 +14,9 @@ import com.retronova.game.objects.entities.Nascente;
 import com.retronova.game.objects.entities.Entity;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.game.objects.entities.utilities.Xp;
+import com.retronova.game.objects.particles.NumeroDeDano;
 import com.retronova.game.objects.particles.Particle;
 import com.retronova.game.objects.particles.Volatile;
-import com.retronova.game.objects.particles.Word;
 import studio.retrozoni.sheeter.SpriteSheet;
 
 import java.awt.*;
@@ -40,6 +40,8 @@ public abstract class Enemy extends Entity implements Nascente {
     }
 
     private boolean tookDamage;
+    /** O último número de dano deste bicho, para golpes seguidos somarem nele (ver NumeroDeDano). */
+    private com.retronova.game.objects.particles.NumeroDeDano numeroDeDano;
     private int countTookDamage;
 
     /**
@@ -383,9 +385,10 @@ public abstract class Enemy extends Entity implements Nascente {
         particle.setX(x);
         particle.setY(y);
         if (damage >= 1d) {
-            Game.getMap().put(critico
-                    ? new com.retronova.game.objects.particles.Critico((int) damage, x, y)
-                    : new Word(String.valueOf((int) damage), x, y, 1));
+            // O número na cor do tipo de golpe (ou do crítico), somando no anterior
+            // se este bicho levou outro igual há pouco: ver NumeroDeDano.
+            NumeroDeDano.Estilo estilo = critico ? NumeroDeDano.Estilo.CRITICO : NumeroDeDano.estiloDe(type);
+            numeroDeDano = NumeroDeDano.mostrar(numeroDeDano, (int) damage, estilo, x, y);
         }
         Game.getMap().put(particle);
     }
