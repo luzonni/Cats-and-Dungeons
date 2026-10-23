@@ -320,7 +320,7 @@ public class Game implements Activity {
             return;
         }
         hud.tick();
-        if(KeyBoard.KeyPressed("ESCAPE")) {
+        if(com.retronova.engine.inputs.Acao.PAUSAR.apertou()) {
             com.retronova.menus.shared.TelaDeMenu.abrir(Configuracoes.pausa());
             // Mais nada neste tick: um E apertado junto com o Esc abriria o Status
             // por baixo da pausa. Com a pausa aberta o jogo nem recebe ticks, e o
@@ -331,11 +331,11 @@ public class Game implements Activity {
         // inventário como mecânica, e o que se quer consultar no meio da corrida
         // são os atributos e a build (ver TelaDeStatus). O inventário NÃO foi
         // removido — só perdeu a porta de entrada (ver o construtor).
-        if(KeyBoard.KeyPressed("E")) {
+        if(com.retronova.engine.inputs.Acao.STATUS.apertou()) {
             com.retronova.menus.shared.TelaDeMenu.abrir(new com.retronova.menus.TelaDeStatus());
             return;
         }
-        if(KeyBoard.KeyPressed("Interact")) {
+        if(com.retronova.engine.inputs.Acao.INTERAGIR.apertou()) {
             map.interagir(player, GameObject.SIZE() * 3);
         }
         // Nivel novo: abre a escolha de atributo. Um por vez — com varios niveis
