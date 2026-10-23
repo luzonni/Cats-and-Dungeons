@@ -28,6 +28,13 @@ variantes de fogo, gelo, água, terra, ar e lendária. Cada elemento muda dano e
 cadência (`Elemento.java`): terra bate 45% mais e é 40% mais lenta; ar bate 22%
 menos e é 25% mais rápida.
 
+**Animação na mão** (2026-10-23): toda arma de mão respira, pesa no passo e se
+recolhe ao virar; a espada sai da mão para o golpe e volta, o arco puxa e solta a
+corda, e os cajados flutuam e fazem o gesto de lançar no tick real do tiro. O
+cajado comum do Azrael foi redesenhado a partir da arte oficial. Nada disso muda
+dano, cadência, alcance ou hitbox. Detalhes e como animar uma arma nova:
+[ARQUITETURA.md](../ARQUITETURA.md), "Animação das armas".
+
 ### Onde se consegue outra arma da mão
 
 Só na **loja da antecâmara**, antes de a corrida começar — e ela faz parte da

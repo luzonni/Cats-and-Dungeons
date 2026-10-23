@@ -656,6 +656,111 @@ salto. O gato anda, ataca e usa habilidades o tempo todo. Antes eram 136 ticks
 (2,3 s) com a arma parada acima da cabeça. Ela não toca mais o arpejo de
 conquista: o som de recompensa é a confirmação do elemento, na escolha.
 
+### Animação das armas (`AnimacaoDaArma`)
+
+A arma da mão deixou de ser um adesivo preso à pata. Uma camada só,
+`AnimacaoDaArma`, dá o movimento que é igual para todas, e cada arma só diz
+**quando** ataca e **quanto** o gesto dela mexe.
+
+**Como roda.** Tempo fixo mais interpolação, como o resto do jogo: o estado anda
+no tick (60 Hz, chamado por `Player.tickItemHand` **antes** do tick da arma) e o
+desenho mistura o tick anterior com o atual por `Engine.alpha()`. O balanço fica
+contínuo a 144 ou 240 Hz e não acelera com a taxa de quadros. Nada é alocado por
+quadro: `calcular` escreve em campos e `Item.naMao` soma o resultado à pose de
+porte (ou à pose ajustada no editor), sem substituí-la. Os deslocamentos são
+arredondados ao pixel de tela.
+
+**Os estados**, somados:
+
+| Estado | O que faz | De onde vem o ritmo |
+|---|---|---|
+| Respiro (parado) | balanço de ±2,5° | ciclo de 72 ticks, o mesmo da folha parada do gato |
+| Passo (andando) | balanço de ±6° e 1 px de peso no contato do pé, com um tick de atraso (ação sobreposta) | `Player.faseDaFolha` e `Player.corpoAfundado`, os quadros reais da folha |
+| Troca parado ↔ andando | mistura dos dois em ~7 ticks | `TROCA_DE_ANDAR` |
+| Virada | a arma se recolhe 35° e volta em 7 ticks quando o gato troca de lado | `Player.getLadoDoPasso` |
+| Flutuação (porte `CAJADO`) | sobe e desce 1,5 px em 100 ticks, menos ao andar | `Item.flutua()` |
+| Gesto do ataque | antecipação (recolhe e sobe), ação (estende rápido, ease-out) e volta (smoothstep) | a arma chama `preparar(f)` com o tempo que falta para o disparo e `disparou()` **no tick em que o projétil nasce**; o pico cai nesse quadro |
+
+A ação parte de onde a antecipação estava, e a antecipação sem aviso cai sozinha
+(`PREPARO_SUAVE`): perder o alvo no meio da carga não deixa a arma erguida nem a
+faz pular. Os testes em `AnimacaoDaArmaTest` andam as curvas em quartos de tick e
+recusam salto.
+
+**O que a animação nunca muda:** de onde o tiro sai e a linha que libera o
+disparo. A varinha calcula a ponta duas vezes, a de jogo (sem animação, origem da
+bola) e a de desenho (com animação, para o halo e as faíscas); o arco atira com a
+mira exata e só o desenho persegue a mira (`GIRO_SUAVE`), encaixando no ângulo do
+tiro no tick da soltura. Dano, cadência, alcance, hitbox e velocidade de
+projétil não passam por aqui.
+
+**Por arma:**
+
+- **Espada (`Sword`).** O golpe orbita o gato (antecipação, corte, sustentação,
+  volta, pela `Investida`). Agora ele **sai da pose da mão e volta para ela**:
+  `Investida.presenca` mistura as duas poses, usando o mesmo desenho (espelhado
+  ou não) da mão. O rastro só acende depois do preparo (`passouDoPreparo`),
+  porque borrão na antecipação distrai do corte. No tick do acerto, uma estrela de
+  pixel e um disco de luz na ponta (`IMPACTO_TICKS`).
+- **Arco (`Bow`).** A corda pintada no PNG é achada (`CordaDoArco`: a maior
+  sequência de uma cor numa anti-diagonal), apagada de uma cópia do sprite e
+  redesenhada em dois segmentos das pontas até o encaixe. A carga é a mesma conta
+  do disparo (`countShot` e `count`), então a puxada (ease-in, 4 px) termina no
+  tick real do tiro. Na carga cheia a corda treme; na soltura o arco recua 2 px
+  com um coice de 7° e a corda passa do repouso e assenta (`cordaVoltando`). A
+  flecha encaixada segue o encaixe da corda; a próxima só aparece na metade da
+  soltura.
+- **Cajados (`Wand`).** Flutuam; um halo pulsa atrás do orbe e cresce com a
+  carga; faíscas saem do orbe (um punhado fixo, sem partícula do mapa) e andam
+  conforme o elemento: o fogo sobe rápido, gelo e água caem devagar, terra cai
+  pesada, ar sobe serpenteando. O gesto ergue o cajado nos últimos 12 ticks antes
+  do tiro e estende em 3 ticks no disparo, com clarão na ponta. Sem elemento, o
+  efeito é verde, como o brilho do orbe na arte oficial.
+- **Demais armas de mão** (machado, garra, foice, tridente, espada de fogo)
+  recebem respiro, passo, virada e flutuação pelo `naMao`; o golpe delas continua
+  o da `Investida` via `naMaoGolpeando`. Armas apontadas (laser, kunai, arco
+  elétrico) não passam pelo `naMao` e ficam como estavam.
+
+**Evolução.** A arma da mão evolui pela transmutação (variante elemental) e pela
+lendária. `Item.intensidade()` vale 0, 1 ou 2, e quem desenha efeito multiplica
+por ele: a espada evoluída tem halo mais largo e um fio claro no rastro e
+estrela maior; o arco evoluído acende a ponta da flecha durante a carga; o cajado
+evoluído tem halo maior e mais faíscas. A cor vem de `Item.familiaDoEfeito`, a
+família do elemento em `Familia`.
+
+**Animar uma arma nova:**
+
+1. Se ela é segurada, desenhe com `naMao(g, sprite)`: respiro, passo e virada vêm
+   de graça. Se é de magia, `porte()` = `CAJADO` (ou sobrescreva `flutua()`).
+2. Declare o gesto: sobrescreva `gesto()` com um `AnimacaoDaArma.Gesto` (ticks de
+   ação e de volta, graus e pixels para trás e para a frente, subida), em
+   constante nomeada no topo da classe.
+3. No `tick` da arma, chame `animacao().preparar(fração)` enquanto o ataque
+   carrega (a fração sai do mesmo contador que decide o disparo) e
+   `animacao().disparou()` no tick em que o dano ou o projétil sai.
+4. Efeitos (halo, clarão) leem `animacao().carga` e `.clarao` depois de
+   `calcular`, usam `Brilho.disco` e cores de `Familia.tom(degrau, alfa)`, e
+   escalam com `intensidade()`.
+5. Números novos vão para `docs/CONTEXTO.md` §8.
+
+**Referências usadas:** os 12 princípios de animação aplicados a jogos
+(antecipação, follow-through e ação sobreposta: [Game Developer](https://gamedeveloper.com/production/the-12-principles-of-animation-in-video-games));
+as fases de golpe em top-down e o "sem borrão na antecipação" do
+[Pixelblog 56, Raymond Schlitter](https://www.slynyrd.com/blog/2025/5/23/pixelblog-56-top-down-character-attack-animation);
+o *Animation Bootcamp* da GDC sobre Skullgirls (quadros-chave fortes,
+antecipação e timing com orçamento curto: [GDC Vault](https://gdcvault.com/play/1020575/contactUs));
+"The Art of Screenshake", de Jan Willem Nijman (Vlambeer), sobre reação da arma
+ao disparo; e *Fix Your Timestep*, de Glenn Fiedler
+([Gaffer on Games](https://gafferongames.com/post/fix_your_timestep/)), para o
+tick fixo com interpolação. O cajado flutuante do "LPC simple staff", de Dr.
+Jamgo ([OpenGameArt, CC0](https://opengameart.org/content/lpc-simple-staff)),
+foi só referência de gesto; nenhum arquivo dele está no jogo.
+
+**O cajado do Azrael** (`wand.png`) é desenhado por `tools/GenElementais.java`
+(`cajadoDoAzrael`), não recortado de pacote. Ele segue `icons/Gato.png`: haste
+longa dourada-clara, esfera dourada grande com luz em cima à esquerda, colar mais
+escuro e o brilho verde, que não vai no PNG e é desenhado em jogo. É o mesmo PNG
+na mão, na hotbar, no seletor de gatos e na tela de Status.
+
 ## Persistência
 
 Tudo é JSON, gravado ao lado do executável (no `run`, a raiz do projeto):

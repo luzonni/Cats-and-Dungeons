@@ -129,6 +129,8 @@ docs/                          esta pasta
 | Hover e foco de todo elemento da interface | `menus/shared/Realce.java` |
 | Cartas de escolha (nível e elemento) | `menus/shared/MaoDeCartas.java` |
 | Transmutação da arma ao escolher o elemento | `game/objects/entities/Transmutacao.java` |
+| Animação da arma na mão (respiro, passo, virada, flutuação, gesto do ataque) | `game/items/AnimacaoDaArma.java`, somada em `Item.naMao`; espada em `Sword`, arco e corda em `Bow` + `CordaDoArco`, cajado em `Wand`; como animar uma arma nova em `docs/ARQUITETURA.md` ("Animação das armas") |
+| Pose de cada arma na mão (punho, giro, boca) | `game/items/Poses.java` + `resources/.../poses.properties`, editor em `tools/EditorDePose.java` |
 | Modo foto (capturas de tela por roteiro) | `engine/Foto.java` |
 | Partida | `game/Game.java` |
 | Corrida sem fim, horda, chefes | `game/map/arena/Waves.java` |
@@ -217,6 +219,7 @@ docs/                          esta pasta
 | Escolha de elemento | ✅ | oferecida aos 45 s de corrida, com cerimônia própria (antecipação, cartas em destaque, trilha, confirmação); áudio sintetizado provisório no timbre |
 | Ícones na identidade visual | ✅ | 34 ícones 16x16 num registro só (`Icone`): base DB32 (CC0) e desenhos no mesmo molde, todos na paleta; cada um reconhecível pela forma (`IconeTest`) |
 | Gameplay na identidade visual | ✅ | armas, orbitais, coletáveis, números, barras e efeitos pelo registro de ícones e pelas famílias de cor; teto de 36 números no ar. Controle real e todas as evoluções em jogo **a confirmar** |
+| Animação das armas na mão | ✅ | toda arma de mão respira, pesa no passo e se recolhe ao virar; espada sai da mão para o golpe e volta, com faísca de impacto; arco puxa a corda, treme, solta com coice e a corda vibra; cajados flutuam, pulsam, soltam faíscas do elemento e fazem o gesto de lançar no tick do tiro. Cajado do Azrael redesenhado pela arte oficial. Com controle real e em armas fora das três iniciais **a confirmar** |
 | Ouro e upgrades permanentes | ✅ | |
 | Conquistas (10) | ✅ | |
 | Controle de Xbox, foco por D-pad | ✅ | só Windows |
@@ -299,6 +302,10 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `DESCIDA_DAS_CARTAS = 10`, `TITULO_ACIMA_DAS_CARTAS = 30`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |
 | Abertura do baú | `AberturaDoBau` (`ENTRADA = 12`, `TREMOR = 18`, `TAMPA = 9`, `SUBIDA = 16`, `ATE_COLETAR = 8` ticks; `PREVIA_POR_ICONE = 9`, `PREVIA_VISIVEIS = 7`, `ZOOM_DO_BAU = 5`, `TREMOR_MAXIMO = 2`, `FAISCAS = 46`, `VIDA_DA_FAISCA = 34`, `CLARAO = 8`, `FORCA_DO_CLARAO = 110`, `VEU = 228`); níveis do áudio em `GenSonsDoBau` |
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
+| Animação da arma na mão | `AnimacaoDaArma` (`RESPIRO_GRAUS = 2.5`, `PASSO_GRAUS = 6`, `PASSO_PX = 1`, `PASSO_ATRASO = 0.45`, `TROCA_DE_ANDAR = 0.15`, `VIRADA_TICKS = 7`, `VIRADA_GRAUS = 35`, `FLUTUA_PX = 1.5`, `FLUTUA_PERIODO = 100`, `PREPARO_SUAVE = 0.3`); quanto o corpo afunda por quadro em `Player.AFUNDADO` (cópia do `GenGatos`) |
+| Cajado: gesto, halo e faíscas | `Wand` (`ANTECIPACAO = 12` ticks, `GESTO` = ação 3, volta 12, 16°/20°, 1/2 px, sobe 2 px; `ORBE_PX = 2.5`, `HALO_PX = 3.2`, `HALO_CARGA_PX = 2.2`, `HALO_ALFA = 55`, `HALO_ALFA_CARGA = 70`, `PULSO_PERIODO = 48`, `PULSO = 0.12`, `FAISCAS = 10`, `FAISCA_A_CADA = {16, 10, 6}`, `FAISCAS_NO_TIRO = 3`, `FAISCA_VIDA = 36`); cor sem elemento `Familia.VERDE` |
+| Espada: impacto | `Sword` (`IMPACTO_TICKS = 5`, `IMPACTO_PX = 3.5`); entrada e saída do golpe por `Investida.presenca` |
+| Arco: puxada, tensão e soltura | `Bow` (`GIRO_SUAVE = 0.35`, `PUXADA_PX = 4`, `TENSAO = 0.85`, `SOLTURA_TICKS = 10`, `RECUO_PX = 2`, `COICE_GRAUS = 7`); corda achada por `CordaDoArco.MINIMO = 7` |
 | Portal de nascimento | `Chegada` (`Tom.PERIGO` e `Tom.CHEGADA`: três cores de rampa cada; `ALFA_DO_BRILHO`, `ALCANCE_DO_BRILHO`, `PULSO`, `TAMANHO`) |
 | Fim de corrida: painéis, loja e avisos | `GameOver` (`PAINEL_W = 150`, `PAINEL_H = 154`, `LOJA_TOPO = 33`, `LINHA_H = 18`, `LINHA_PASSO = 21`, `CABECALHO = 13`, `FUNDO` preto, `AVISO_FICA = 240` ticks) |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |

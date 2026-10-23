@@ -1,5 +1,38 @@
 # Em desenvolvimento (depois da 0.1.3-alpha)
 
+- **Animação das armas na mão** (2026-10-23; `d00c06b`).
+  Camada `AnimacaoDaArma`: toda arma de mão respira parada, balança e pesa no
+  passo (nos quadros reais da folha do gato), se recolhe quando ele vira, e as
+  de magia flutuam. O gesto de ataque (antecipação, ação, volta) tem o pico no
+  tick real do disparo. Tick fixo com interpolação, nada alocado por quadro. Ver
+  ARQUITETURA, "Animação das armas".
+
+- **Espada sai da mão e volta para ela** (2026-10-23; `e38b4b2`).
+  O golpe deixou de pular para a pose do arco no primeiro quadro
+  (`Investida.presenca`). O rastro não acende mais na antecipação, uma estrela de
+  pixel marca o acerto, e as espadas elemental e lendária têm rastro mais forte.
+
+- **Arco com corda de verdade** (2026-10-23; `20333fe`).
+  A corda é achada no PNG (`CordaDoArco`) e redesenhada puxada: tensão na carga
+  cheia, coice e corda vibrando na soltura. A flecha encaixada andava para a
+  frente durante a carga; agora volta com a corda. O desenho persegue a mira em
+  vez de girar de uma vez; o tiro continua com a mira exata.
+
+- **Cajados com halo, faíscas e gesto de lançar** (2026-10-23; `36a01de`).
+  Halo pulsante atrás do orbe, faíscas que andam conforme o elemento, cajado que
+  se ergue antes do tiro e estende no tick em que a bola nasce. O clarão da
+  ponta saiu de `fillOval` suavizado com cor nova por quadro para disco em cache.
+
+- **Cajado do Azrael redesenhado** (2026-10-23; `51c60e7`).
+  `wand.png` agora é desenhado por `GenElementais` a partir da arte oficial:
+  haste dourada-clara, esfera dourada grande, colar e brilho verde em jogo. É o
+  mesmo PNG na mão, na hotbar, no seletor e no Status.
+
+  Nenhuma das cinco mudanças altera dano, cadência, alcance, hitbox ou
+  velocidade de projétil. Na varinha nova, o ponto mais alto do desenho (de onde
+  a bola sai) mudou junto com a arte e a pose: **a confirmar** em jogo se o tiro
+  ainda sai da mesma altura percebida.
+
 - **Permissão para pular a abertura** (2026-10-23; `a20c558`).
   Por padrão, teclas, cliques e controle não pulam a abertura.
   Settings → Interface → Allow intro skip libera esse comportamento; a escolha
