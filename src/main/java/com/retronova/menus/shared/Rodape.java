@@ -174,6 +174,7 @@ public final class Rodape {
             case "enter" -> List.of(Glyph.ENTER);
             case "esc", "escape" -> List.of(Glyph.ESC);
             case "space" -> List.of(Glyph.ESPACO);
+            case "click" -> List.of(Glyph.MOUSE_ESQ);
             case "q" -> List.of(Glyph.Q);
             case "e" -> List.of(Glyph.E);
             case "f" -> List.of(Glyph.F);

@@ -149,19 +149,39 @@ public final class CaixaDeDialogo implements Activity {
         }
         if (carencia > 0) {
             carencia--;
+            // O que for apertado na carencia e descartado, e nao guardado: o clique
+            // do mouse fica preso ate alguem le-lo, e passaria a fala sozinho depois.
+            avancou();
+            Acao.VOLTAR.apertou();
             return;
         }
         if (Acao.VOLTAR.apertou()) {
             sair();
             return;
         }
-        if (Acao.SELECIONAR.apertou() || KeyBoard.KeyPressed("Space")) {
+        if (avancou()) {
             if (maquina != null && !maquina.completo()) {
                 maquina.completar();
             } else {
                 proximaFala();
             }
         }
+    }
+
+    /**
+     * Clique, Enter, Espaco ou A: os quatro fazem a mesma coisa.
+     *
+     * O CLIQUE E LIDO AQUI, A PARTE. A Acao.SELECIONAR declara o botao esquerdo,
+     * mas o apertou() dela so le teclas; o clique nunca chegava e so o teclado
+     * passava a fala. Os tres sao lidos sempre (sem curto-circuito), para nenhum
+     * ficar guardado e disparar no tick seguinte.
+     */
+    private static boolean avancou() {
+        boolean clique = com.retronova.engine.inputs.mouse.Mouse.click(
+                com.retronova.engine.inputs.mouse.Mouse_Button.LEFT);
+        boolean enter = Acao.SELECIONAR.apertou();
+        boolean espaco = KeyBoard.KeyPressed("Space");
+        return clique || enter || espaco;
     }
 
     private void proximaFala() {
@@ -352,12 +372,18 @@ public final class CaixaDeDialogo implements Activity {
         }
     }
 
+    // A DICA MOSTRA O QUE ESTA NA MAO. Era sempre "Enter", e o Espaco (que faz o
+    // mesmo) parecia outra coisa. Agora: o botao do mouse para quem usa o mouse,
+    // Espaco/Enter no teclado e A no controle — os quatro passam a fala.
     private static final List<Rodape.Dica> CONTINUAR = List.of(
-            new Rodape.Dica("Enter", "A", "Continue"), new Rodape.Dica("Esc", "B", "Skip"));
+            new Rodape.Dica("Space/Enter", "A", "Continue"), new Rodape.Dica("Esc", "B", "Skip"));
+    private static final List<Rodape.Dica> CONTINUAR_NO_MOUSE = List.of(
+            new Rodape.Dica("Click", "A", "Continue"), new Rodape.Dica("Esc", "B", "Skip"));
     private static final List<Rodape.Dica> SO_PULAR = List.of(new Rodape.Dica("Esc", "B", "Skip"));
 
     private void desenharDicas(Graphics2D g, int direita, int fundo, int s, float opacidade) {
-        List<Rodape.Dica> dicas = maquina.completo() ? CONTINUAR : SO_PULAR;
+        List<Rodape.Dica> dicas = !maquina.completo() ? SO_PULAR
+                : com.retronova.engine.inputs.Entrada.porMouse() ? CONTINUAR_NO_MOUSE : CONTINUAR;
         int w = Rodape.largura(dicas);
         // A dica de continuar sobe e desce um pixel quando a fala acabou: é o
         // "pode apertar" das referências, sem precisar de seta piscando.

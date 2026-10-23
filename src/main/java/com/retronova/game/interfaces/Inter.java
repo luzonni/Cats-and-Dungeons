@@ -128,6 +128,10 @@ public class Inter implements Activity {
         if (entrada != null && entrada.ativa()) {
             entrada.tick();
             refreshPositions();
+            // Descarta o que for apertado no deslize: o clique do mouse fica preso
+            // ate ser lido, e compraria um item assim que a loja assentasse.
+            Mouse.click(Mouse_Button.LEFT);
+            KeyBoard.KeyPressed("Enter");
             return;
         }
         if(KeyBoard.KeyPressed("E") || KeyBoard.KeyPressed("Escape") ) {
