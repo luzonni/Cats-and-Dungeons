@@ -187,6 +187,8 @@ public class Game implements Activity {
      * cabem antes da troca.
      */
     private boolean acabou;
+    /** O chefe final caiu nesta corrida: o fim dela conta como vitória para quem lembra (MemoriaDosDialogos). */
+    private boolean venceu;
 
     /**
      * O chefe final caiu. Mostra a tela de vitoria por cima da corrida, que fica
@@ -195,6 +197,7 @@ public class Game implements Activity {
      * Nao faz nada na segunda chamada: a vitoria so conta uma vez por corrida.
      */
     public void vencer() {
+        this.venceu = true;
         if (Estatisticas.registrarVitoria(player.getName())) {
             com.retronova.menus.shared.TelaDeMenu.abrir(new com.retronova.menus.Vitoria());
         }
@@ -227,6 +230,9 @@ public class Game implements Activity {
             segundosDaCorrida = arena.getWaves().getSeconds();
         }
         Estatisticas.encerrar(segundosDaCorrida, abates, player.getLevel(), player.getName());
+        // O vendedor lembra como foi a corrida: as falas dele dependem disso.
+        com.retronova.game.dialogos.MemoriaDosDialogos.fimDeCorrida(venceu, segundosDaCorrida,
+                player.getLevel(), abates, player.getName());
         var fichaFinal = com.retronova.menus.ResumoFinalDoGato.capturar(player);
         Engine.backActivity();
         Engine.heapActivity(new GameOver(gato, onde, fichaFinal));

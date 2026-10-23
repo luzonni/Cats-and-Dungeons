@@ -39,9 +39,21 @@ public class Inter implements Activity {
     }
 
     public void open(String index) {
+        this.entrada = null;
         this.index = index;
         Engine.pause(this);
     }
+
+    /**
+     * Abre deslizando de lado (ver EntradaLateral). Enquanto a tela entra, nenhum
+     * aperto conta: o Enter que encerrou a conversa do vendedor não compra nada.
+     */
+    public void open(String index, com.retronova.menus.shared.EntradaLateral entrada) {
+        open(index);
+        this.entrada = entrada;
+    }
+
+    private com.retronova.menus.shared.EntradaLateral entrada;
 
     public void close() {
         Engine.pause(null);
@@ -113,6 +125,11 @@ public class Inter implements Activity {
     
     @Override
     public void tick() {
+        if (entrada != null && entrada.ativa()) {
+            entrada.tick();
+            refreshPositions();
+            return;
+        }
         if(KeyBoard.KeyPressed("E") || KeyBoard.KeyPressed("Escape") ) {
             close();
         }
@@ -148,12 +165,22 @@ public class Inter implements Activity {
 
     @Override
     public void render(Graphics2D g) {
-        g.setColor(new Color(0,0,0, 80));
+        g.setColor(VEU);
         g.fillRect(0, 0, Engine.window.largura(), Engine.window.altura());
+        Graphics2D c = g;
+        if (entrada != null && entrada.ativa()) {
+            c = (Graphics2D) g.create();
+            entrada.aplicar(c, Engine.alpha());
+        }
         if(inter.containsKey(index))
-            inter.get(index).render(g);
-        renderTabs(g);
+            inter.get(index).render(c);
+        renderTabs(c);
+        if (c != g) {
+            c.dispose();
+        }
     }
+
+    private static final Color VEU = new Color(0, 0, 0, 80);
 
     /**
      * As abas no mesmo desenho das abas das Opções (ver menus.shared.Abas): a
