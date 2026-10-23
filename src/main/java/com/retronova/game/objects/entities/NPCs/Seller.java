@@ -28,9 +28,23 @@ import java.util.Set;
  * maquina de chiclete) fica de pe e sem uso ate o dinheiro ganhar um papel na
  * corrida sem fim. Ver docs/planejamento/ROADMAP.md.
  */
-public class Seller extends NPC {
+public class Seller extends NPC implements com.retronova.game.dialogos.EventosDoDialogo.Lojista {
+
+    /** O id dele nos arquivos de diálogo (dialogos/personagens.json). */
+    public static final String PERSONAGEM = "vendedor";
 
     private final Store store;
+
+    /**
+     * A loja dele, entrando de lado (EntradaLateral). É o que o evento
+     * "abrir_loja_do_vendedor" chama no fim da conversa; a loja do espelho, quando
+     * existir, troca o que este evento abre sem mexer no diálogo.
+     */
+    @Override
+    public void abrirLoja() {
+        Game.getInter().put("store", this.store, true);
+        Game.getInter().open("store", com.retronova.menus.shared.EntradaLateral.daDireita());
+    }
     private int countAnim;
 
     public Item[] stock;
@@ -165,9 +179,13 @@ public class Seller extends NPC {
         Player player = Game.getPlayer();
         countAnim++;
         if (player.getDistance(this) <= GameObject.SIZE() * 3) {
-            if (GameMap.clickOnRect(Mouse_Button.LEFT, this.getBounds())) {
-                Game.getInter().put("store", this.store, true);
-                Game.getInter().open("store");
+            // FALA ANTES DE VENDER. A conversa é escolhida pelos dados
+            // (dialogos/vendedor.json) e termina no evento "abrir_loja_do_vendedor",
+            // que chama abrirLoja() aqui. Sem conversa que sirva, a loja abre
+            // direto, como sempre abriu: o diálogo nunca fica no caminho da compra.
+            if (GameMap.clickOnRect(Mouse_Button.LEFT, this.getBounds())
+                    && !com.retronova.game.dialogos.Dialogos.conversar(PERSONAGEM, this)) {
+                abrirLoja();
             }
             if (countAnim >= 10) {
                 countAnim = 0;

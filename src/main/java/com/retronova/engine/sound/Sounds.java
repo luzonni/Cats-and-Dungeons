@@ -159,7 +159,11 @@ public enum Sounds {
 	MorteMuffin("death_muffin"),
 	MorteAzrael("death_azrael"),
 	MorteFinn("death_finn"),
-	FimDaRun("run_over");
+	FimDaRun("run_over"),
+	/** Os blips da fala do vendedor, sorteados por letra; ver tools/GenVozesDeDialogo. */
+	VozVendedor1("voz_vendedor_1"),
+	VozVendedor2("voz_vendedor_2"),
+	VozVendedor3("voz_vendedor_3");
 
 	
 	private final String ResourceName;
