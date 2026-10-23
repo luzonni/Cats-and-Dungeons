@@ -70,7 +70,7 @@ public class Configs {
         DEFAULTS.put("resH", 0);
         DEFAULTS.put("BATTLEMUSIC", 0);    // indice em Musics.COMBATE
         DEFAULTS.put("rumble", true);      // vibração do controle, ver Gamepad.vibrar
-        DEFAULTS.put("introVista", false); // a abertura completa já passou uma vez; ver Abertura
+        DEFAULTS.put("permitirPularAbertura", false);
 
         VALUES = new LinkedHashMap<>(DEFAULTS);
         registrarFlushNoEncerramento();
@@ -565,17 +565,14 @@ public class Configs {
         update();
     }
 
-    /** A abertura completa já foi vista: as próximas aberturas são a versão curta. */
-    public static boolean IntroVista() {
-        Object v = VALUES.get("introVista");
-        return v != null && (boolean) v;
+    /** PULO SÓ COM PERMISSÃO: uma configuração antiga ou nova começa sem liberar. */
+    public static boolean PermitirPularAbertura() {
+        return Boolean.TRUE.equals(VALUES.get("permitirPularAbertura"));
     }
 
-    public static void marcarIntroVista() {
-        if (!IntroVista()) {
-            VALUES.put("introVista", true);
-            update();
-        }
+    public static void setPermitirPularAbertura(boolean permitir) {
+        VALUES.put("permitirPularAbertura", permitir);
+        update();
     }
 
     /** Limite de quadros "igual ao monitor": a taxa detectada (ver Engine.taxaDoMonitor). */

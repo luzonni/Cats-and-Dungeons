@@ -77,7 +77,9 @@ public class Engine implements Runnable {
         Menu menu = new Menu(!abrir);
         heapActivity(menu);
         if (abrir) {
-            boolean completa = intro != null ? !intro.equalsIgnoreCase("curta") : !Configs.IntroVista();
+            // COMPLETA A CADA INÍCIO: ter visto a abertura não deve encurtá-la.
+            // A versão curta fica disponível só pela flag de diagnóstico.
+            boolean completa = !"curta".equalsIgnoreCase(intro);
             heapActivity(new com.retronova.menus.Abertura(menu, completa));
         }
         // BANCADA (-Dcd.bench=true): entra direto numa arena com o Finn, para medir

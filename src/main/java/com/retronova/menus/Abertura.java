@@ -52,13 +52,13 @@ import java.awt.image.BufferedImage;
  *
  * Depois, o Menu assume e faz os botões surgirem um a um (Menu.entrarEmSequencia).
  *
- * VERSÃO CURTA A PARTIR DA SEGUNDA ABERTURA (Configs.IntroVista): sem crédito,
- * logo e cena mais rápidas, 2,7 s. Quem abre o jogo muitas vezes não quer ver o
- * crédito toda vez — há quem faça mod só para pular os logos de abertura —, e a
- * logo virando a tela inicial continua sendo a chegada do jogo.
+ * COMPLETA A CADA INÍCIO: os 7,4 s se repetem mesmo depois de já ter visto a
+ * abertura. A versão curta (2,7 s, sem crédito) fica apenas para diagnóstico,
+ * com -Dcd.intro=curta; não depende de preferência salva.
  *
- * PULÁVEL SEMPRE: qualquer tecla, clique ou botão do controle leva direto à tela
- * inicial, já pronta e com a música entrando. A abertura não esconde carregamento
+ * PULO LIBERADO NAS CONFIGURAÇÕES: por padrão, a abertura vai até o fim. Com
+ * "Allow intro skip" ligado, qualquer tecla, clique ou botão do controle leva à
+ * tela inicial, já pronta e com a música entrando. A abertura não esconde carregamento
  * nenhum que o pulo fosse obrigar a esperar: as músicas carregam por trás (Sound)
  * e a tela inicial toca a dela assim que chegar.
  *
@@ -86,7 +86,7 @@ public class Abertura implements Activity {
      */
     public static final int PRETO = 30, CREDITO_ENTRA = 42, CREDITO_FICA = 84, CREDITO_SAI = 36,
             LOGO_ENTRA = 84, LOGO_FICA = 72, CENA = 96;
-    /** Ticks de cada fase na versão curta, das aberturas seguintes (2,7 s). */
+    /** Ticks de cada fase na versão curta, apenas para diagnóstico (2,7 s). */
     public static final int PRETO_CURTA = 12, LOGO_ENTRA_CURTA = 54, LOGO_FICA_CURTA = 36, CENA_CURTA = 60;
     /** Ticks da música da tela inicial subindo, contados do começo da cena. */
     public static final int MUSICA_SOBE = 150;
@@ -122,7 +122,7 @@ public class Abertura implements Activity {
 
     /**
      * @param menu     a tela inicial, já criada e embaixo desta na pilha
-     * @param completa a versão completa (primeira abertura) ou a curta
+     * @param completa a versão completa (padrão) ou a curta de diagnóstico
      */
     public Abertura(Menu menu, boolean completa) {
         this.menu = menu;
@@ -152,8 +152,8 @@ public class Abertura implements Activity {
 
     @Override
     public void tick() {
-        if (KeyBoard.apertos() != apertosNoInicio
-                || Mouse.clickOn(Mouse_Button.LEFT, new Rectangle(0, 0, Engine.window.largura(), Engine.window.altura()))) {
+        if (Configs.PermitirPularAbertura() && (KeyBoard.apertos() != apertosNoInicio
+                || Mouse.clickOn(Mouse_Button.LEFT, new Rectangle(0, 0, Engine.window.largura(), Engine.window.altura())))) {
             terminar(true);
             return;
         }
@@ -216,7 +216,6 @@ public class Abertura implements Activity {
         } else {
             menu.entrarEmSequencia();
         }
-        Configs.marcarIntroVista();
         Engine.backActivity();
     }
 
