@@ -133,7 +133,7 @@ public final class Progresso {
         /** Zera as melhorias do gato e devolve {@code reembolso} moedas. */
         public void redistribuir(String gato, int reembolso) {
             DoGato g = gato(gato);
-            g.moedas += Math.max(0, reembolso);
+            g.moedas = Math.addExact(g.moedas, Math.max(0, reembolso));
             g.melhorias.clear();
         }
 
@@ -176,12 +176,12 @@ public final class Progresso {
                 for (Object k : gs.keySet()) {
                     JSONObject g = (JSONObject) gs.get(k);
                     DoGato dg = d.gato(String.valueOf(k));
-                    dg.moedas = (int) Math.max(0, longo(g.get("moedas")));
+                    dg.moedas = Math.toIntExact(Math.max(0, longo(g.get("moedas"))));
                     dg.ganhas = Math.max(0, longo(g.get("ganhas")));
                     JSONObject ms = (JSONObject) g.get("melhorias");
                     if (ms != null) {
                         for (Object mk : ms.keySet()) {
-                            int n = (int) Math.max(0, longo(ms.get(mk)));
+                            int n = Math.toIntExact(Math.max(0, longo(ms.get(mk))));
                             if (n > 0) {
                                 dg.melhorias.put(String.valueOf(mk), n);
                             }

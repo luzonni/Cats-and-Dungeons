@@ -19,9 +19,9 @@ import java.nio.file.StandardCopyOption;
  *  2. o arquivo atual, se lê, vira o ".bak" — o último save que funcionou;
  *  3. o ".tmp" substitui o arquivo num movimento atômico (ATOMIC_MOVE), e onde o
  *     sistema não oferece isso, num REPLACE_EXISTING comum.
- * Faltar luz no meio deixa ou o arquivo velho inteiro, ou o novo inteiro; nunca
- * meio arquivo. É a recomendação da documentação do Java para Files.move e o
- * padrão "escreve ao lado e renomeia" de quem faz save em jogo.
+ * O temporário é forçado ao dispositivo antes da troca. A troca é atômica
+ * quando suportada; o fallback depende do sistema de arquivos e do backup.
+ * Isto não promete proteção contra qualquer falha de hardware.
  *
  * LER: tenta o arquivo; se ele não abre (ou o conteúdo não passa na leitura de
  * quem chamou), tenta o ".bak"; se nenhum serve, começa do zero. O arquivo que
@@ -158,6 +158,9 @@ public final class ArquivoSeguro {
     private static void guardarCorrompido(Path arquivo) {
         try {
             Path destino = arquivo.resolveSibling(arquivo.getFileName() + ".corrompido");
+            if (Files.exists(destino)) {
+                destino = arquivo.resolveSibling(arquivo.getFileName() + ".corrompido-" + System.nanoTime());
+            }
             Files.move(arquivo, destino, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             System.err.println("[save] nao consegui separar o arquivo ruim: " + e.getMessage());
