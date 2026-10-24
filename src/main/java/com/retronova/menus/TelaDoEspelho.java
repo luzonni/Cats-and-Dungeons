@@ -5,6 +5,7 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.graphics.TextFx;
+import com.retronova.engine.graphics.SpriteHandler;
 import com.retronova.engine.inputs.Entrada;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -25,6 +26,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +58,9 @@ public class TelaDoEspelho extends TelaDeMenu {
     /** Largura do painel de detalhe e o vão até a grade. */
     static final int DETALHE_W = 196, VAO_DO_DETALHE = 10;
     /** Altura da faixa do saldo, acima da grade. */
-    static final int FAIXA = 22;
+    static final int FAIXA = 64;
+    /** Retrato usa os dois quadros acordados do próprio NPC, em escala inteira. */
+    static final int RETRATO = 48, QUADRO_DO_VENDEDOR = 18, FALA_DURA = 180;
     /** Ticks do clarão da compra, do tremor sem moedas e do "-preço" subindo. */
     static final int CLARAO = 18, TREMOR = 10, PRECO_SOBE = 36;
     /** Lado dos pips de nível, em pixels nativos. */
@@ -76,6 +81,19 @@ public class TelaDoEspelho extends TelaDeMenu {
 
     private int clarao, tremor, precoSubindo;
     private int ultimaComprada = -1, ultimaRecusada = -1, ultimoPreco;
+    private final BufferedImage[] vendedor = carregarVendedor();
+    private int tempoVendedor, falaRestante;
+    private String fala = "A little stronger, every journey.";
+
+    private static BufferedImage[] carregarVendedor() {
+        SpriteHandler folha = new SpriteHandler("sprites/objects/npc", "seller", 1);
+        return new BufferedImage[]{folha.getSpriteWithIndex(0, 0), folha.getSpriteWithIndex(1, 0)};
+    }
+
+    private void dizer(String texto) {
+        fala = texto;
+        falaRestante = FALA_DURA;
+    }
 
     public TelaDoEspelho(Player gato) {
         super("Merchant's Mirror");
@@ -95,7 +113,7 @@ public class TelaDoEspelho extends TelaDeMenu {
 
     /**
      * A escala da interface, ou a maior menor que caiba: a grade e o detalhe somam
-     * 572 x 208 pixels nativos, e a 1280x720 a escala 3 nao cabe. Mesmo calculo da
+     * 572 x 250 pixels nativos, incluindo o vendedor; a 1280x720 a escala 3 não cabe. Mesmo cálculo da
      * TelaDeConquistas (regra de interface: telas que podem nao caber se ajustam).
      */
     private static int escala() {
@@ -136,6 +154,8 @@ public class TelaDoEspelho extends TelaDeMenu {
 
     @Override
     protected void atualizar() {
+        tempoVendedor++;
+        if (falaRestante > 0 && --falaRestante == 0) fala = "A little stronger, every journey.";
         if (clarao > 0) clarao--;
         if (tremor > 0) tremor--;
         if (precoSubindo > 0) precoSubindo--;
@@ -190,6 +210,7 @@ public class TelaDoEspelho extends TelaDeMenu {
         int preco = m.custo(Espelho.nivel(nome(), m));
         switch (Espelho.comprar(gato, m)) {
             case FEITA -> {
+                dizer("A fine choice. Make it count!");
                 Sound.play(Sounds.Coin);
                 clarao = CLARAO;
                 precoSubindo = PRECO_SOBE;
@@ -199,11 +220,16 @@ public class TelaDoEspelho extends TelaDeMenu {
             case ERRO_AO_SALVAR -> confirmacao.perguntar("Could not save",
                     new String[]{"Your coins and upgrades were kept.", "Check disk access and try again."}, () -> {});
             case SEM_MOEDAS, NO_MAXIMO -> {
+                dizer(nivelMaximo(m) ? "Already polished to perfection." : "A few more coins, little one.");
                 Sound.play(Sounds.Button);
                 tremor = TREMOR;
                 ultimaRecusada = i;
             }
         }
+    }
+
+    private boolean nivelMaximo(MelhoriaDoEspelho m) {
+        return Espelho.nivel(nome(), m) >= m.nivelMaximo();
     }
 
     private void perguntarReembolso() {
@@ -219,6 +245,7 @@ public class TelaDoEspelho extends TelaDeMenu {
                     FalhaDeSave.tentar(() -> {
                         Espelho.redistribuir(gato);
                         Sound.play(Sounds.Coin);
+                        dizer("A fresh start? Your coins are yours.");
                     });
                 });
     }
@@ -244,14 +271,33 @@ public class TelaDoEspelho extends TelaDeMenu {
 
     /** O saldo e de quem são as melhorias. */
     private void desenharFaixa(Graphics2D g, int s) {
+        TelaDeMenu.desenharPainel(g, faixa);
+        Graphics2D retrato = (Graphics2D) g.create();
+        retrato.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        int px = faixa.x + 6 * s, py = faixa.y + 5 * s;
+        retrato.setColor(Palette.OUTLINE);
+        retrato.fillRect(px, py, RETRATO * s, RETRATO * s);
+        retrato.drawImage(vendedor[(tempoVendedor / QUADRO_DO_VENDEDOR) % vendedor.length],
+                px, py, RETRATO * s, RETRATO * s, null);
+        retrato.dispose();
         Font grande = FontHandler.font(FontHandler.Game, 9f * s);
         Font fina = FontHandler.font(FontHandler.Septem, 7f * s);
-        int base = faixa.y + faixa.height - 4 * s;
-        TextFx.draw(g, nome() + "'s upgrades", fina, faixa.x, base, Palette.ACCENT, s);
+        int tx = faixa.x + (RETRATO + 14) * s;
+        TextFx.draw(g, "The Merchant", grande, tx, faixa.y + 19 * s, Palette.TEXT, s);
+        int fy = faixa.y + 36 * s;
+        int limiteFala = faixa.width - (RETRATO + 132) * s;
+        for (String linha : quebrar(fala, fina, limiteFala)) {
+            TextFx.draw(g, linha, fina, tx, fy, Palette.ACCENT, s);
+            fy += 10 * s;
+        }
+        int base = faixa.y + 24 * s;
         String saldo = String.valueOf(Progresso.moedas(nome()));
         int w = FontHandler.getWidth(saldo, grande);
-        int xSaldo = faixa.x + faixa.width - w;
+        int xSaldo = faixa.x + faixa.width - 8 * s - w;
         TextFx.draw(g, saldo, grande, xSaldo, base, Palette.TEXT, s);
+        String dono = nome() + "'s upgrades";
+        TextFx.draw(g, dono, fina, faixa.x + faixa.width - 8 * s - FontHandler.getWidth(dono, fina),
+                faixa.y + 43 * s, Palette.LIGHT, s);
         Icone.MOEDA.desenhar(g, xSaldo - (Icone.LADO + 3) * s, base - Icone.LADO * s + 2 * s, s);
         // O "-preço" da última compra sobe do saldo e some.
         if (precoSubindo > 0) {
