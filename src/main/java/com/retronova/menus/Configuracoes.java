@@ -292,6 +292,9 @@ public class Configuracoes extends TelaDeMenu {
                             () -> FalhaDeSave.tentar(com.retronova.game.save.Progresso::apagarTudo)))
                     .desc("Erase the coins and permanent upgrades of all cats. Asks first."));
         }
+        ui.add(OptionRow.cycle("Dialogue speed", Configs::VelocidadeDoTexto, Configs::setVelocidadeDoTexto,
+                new String[]{"Slow", "Normal", "Fast", "Instant"})
+                .desc("How fast dialogue text is typed. A click always completes the line."));
 
         // CONTROLS: só a escolha do aparelho é uma linha; o resto é o painel de
         // controles logo abaixo dela (ver PainelDeControles).

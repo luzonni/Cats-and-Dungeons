@@ -71,6 +71,7 @@ public class Configs {
         DEFAULTS.put("BATTLEMUSIC", 0);    // indice em Musics.COMBATE
         DEFAULTS.put("rumble", true);      // vibração do controle, ver Gamepad.vibrar
         DEFAULTS.put("permitirPularAbertura", false);
+        DEFAULTS.put("velocidadeDoTexto", 1);   // diálogos: 0 lenta, 1 normal, 2 rápida, 3 instantânea
 
         VALUES = new LinkedHashMap<>(DEFAULTS);
         registrarFlushNoEncerramento();
@@ -572,6 +573,16 @@ public class Configs {
 
     public static void setPermitirPularAbertura(boolean permitir) {
         VALUES.put("permitirPularAbertura", permitir);
+        update();
+    }
+
+    /** Velocidade da máquina de escrever dos diálogos: 0 lenta, 1 normal, 2 rápida, 3 instantânea. */
+    public static int VelocidadeDoTexto() {
+        return Math.max(0, Math.min(3, inteiro("velocidadeDoTexto")));
+    }
+
+    public static void setVelocidadeDoTexto(int velocidade) {
+        VALUES.put("velocidadeDoTexto", Math.max(0, Math.min(3, velocidade)));
         update();
     }
 

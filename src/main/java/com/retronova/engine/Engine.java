@@ -88,8 +88,9 @@ public class Engine implements Runnable {
         if (Boolean.getBoolean("cd.bench")) {
             // -Dcd.gato=0|1|2 escolhe Muffin, Azrael ou Finn (o padrao e o Finn).
             int gatoDaBancada = Math.max(0, Math.min(2, Integer.getInteger("cd.gato", 2)));
-            // -Dcd.espelho comeca na antecamara, onde o vendedor (e o espelho) estao.
-            heapActivity(new com.retronova.game.Game(gatoDaBancada, Boolean.getBoolean("cd.espelho")
+            // Ambas as bancadas começam no hub do vendedor.
+            String dialogo = System.getProperty("cd.dialogo");
+            heapActivity(new com.retronova.game.Game(gatoDaBancada, dialogo != null || Boolean.getBoolean("cd.espelho")
                     ? new com.retronova.game.map.room.Room("beginning")
                     : new com.retronova.game.map.arena.Arena(), 0));
             // -Dcd.piloto=true anda e da dash sozinho; -Dcd.imortal=true (ver
@@ -112,9 +113,22 @@ public class Engine implements Runnable {
                     com.retronova.game.Estatisticas.encerrar(312, 840, 17, "Finn");
                     heapActivity(new com.retronova.menus.GameOver(2, 0));
                 };
+            } else if (System.getProperty("cd.dialogo") != null) {
+                // -Dcd.dialogo=<id da conversa> abre essa conversa com o vendedor, sem
+                // grava-la como vista: para ver cada contexto e cada expressao sem
+                // jogar ate eles. -Dcd.dialogo=auto escolhe como o jogo escolheria.
+                String id = System.getProperty("cd.dialogo");
+                com.retronova.game.Game.depoisDeUmSegundo = () -> {
+                    var vendedores = com.retronova.game.Game.getMap()
+                            .getEntities(com.retronova.game.objects.entities.NPCs.Seller.class);
+                    Object falante = vendedores.isEmpty() ? null : vendedores.get(0);
+                    if (id.equals("auto")) {
+                        com.retronova.game.dialogos.Dialogos.conversar("vendedor", falante);
+                    } else {
+                        com.retronova.game.dialogos.Dialogos.mostrarParaTeste(id, falante);
+                    }
+                };
             } else if (Boolean.getBoolean("cd.espelho")) {
-                // -Dcd.espelho abre o espelho do vendedor. Com o modo foto, o progresso
-                // vem de build/foto/saves, que da para preparar com moedas.
                 com.retronova.game.Game.depoisDeUmSegundo = () -> com.retronova.menus.shared.TelaDeMenu.abrir(
                         new com.retronova.menus.TelaDoEspelho(com.retronova.game.Game.getPlayer()));
             } else if (Boolean.getBoolean("cd.nivel")) {

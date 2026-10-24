@@ -5,7 +5,11 @@ import com.retronova.engine.Engine;
 import com.retronova.engine.graphics.FontHandler;
 import com.retronova.engine.graphics.Palette;
 import com.retronova.engine.graphics.TextFx;
-import com.retronova.engine.graphics.SpriteHandler;
+import com.retronova.game.dialogos.CatalogoDeDialogos;
+import com.retronova.game.dialogos.Emocao;
+import com.retronova.game.dialogos.Personagem;
+import com.retronova.game.dialogos.Retrato;
+import com.retronova.game.objects.entities.NPCs.Seller;
 import com.retronova.engine.inputs.Entrada;
 import com.retronova.engine.inputs.keyboard.KeyBoard;
 import com.retronova.engine.inputs.mouse.Mouse;
@@ -21,6 +25,7 @@ import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.Realce;
 import com.retronova.menus.shared.Rodape;
 import com.retronova.menus.shared.TelaDeMenu;
+import com.retronova.menus.shared.EntradaLateral;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -58,9 +63,9 @@ public class TelaDoEspelho extends TelaDeMenu {
     /** Largura do painel de detalhe e o vão até a grade. */
     static final int DETALHE_W = 196, VAO_DO_DETALHE = 10;
     /** Altura da faixa do saldo, acima da grade. */
-    static final int FAIXA = 64;
-    /** Retrato usa os dois quadros acordados do próprio NPC, em escala inteira. */
-    static final int RETRATO = 48, QUADRO_DO_VENDEDOR = 18, FALA_DURA = 180;
+    static final int FAIXA = 80;
+    /** A mesma folha de emoções dos diálogos, em escala inteira. */
+    static final int RETRATO = 64, BOCA = 6, PISCADA = 180, FALA_DURA = 180;
     /** Ticks do clarão da compra, do tremor sem moedas e do "-preço" subindo. */
     static final int CLARAO = 18, TREMOR = 10, PRECO_SOBE = 36;
     /** Lado dos pips de nível, em pixels nativos. */
@@ -81,17 +86,16 @@ public class TelaDoEspelho extends TelaDeMenu {
 
     private int clarao, tremor, precoSubindo;
     private int ultimaComprada = -1, ultimaRecusada = -1, ultimoPreco;
-    private final BufferedImage[] vendedor = carregarVendedor();
+    private final Personagem vendedor = CatalogoDeDialogos.get().personagem(Seller.PERSONAGEM);
+    private final Retrato retratoVendedor = Retrato.de(vendedor.retrato());
     private int tempoVendedor, falaRestante;
-    private String fala = "A little stronger, every journey.";
+    private String fala = CatalogoDeDialogos.get().texto("vendedor.loja.esperando");
+    private Emocao emocao = Emocao.NEUTRO;
+    private final EntradaLateral entradaDaLoja = EntradaLateral.daDireita();
 
-    private static BufferedImage[] carregarVendedor() {
-        SpriteHandler folha = new SpriteHandler("sprites/objects/npc", "seller", 1);
-        return new BufferedImage[]{folha.getSpriteWithIndex(0, 0), folha.getSpriteWithIndex(1, 0)};
-    }
-
-    private void dizer(String texto) {
-        fala = texto;
+    private void dizer(String chave, Emocao expressao) {
+        fala = CatalogoDeDialogos.get().texto(chave);
+        emocao = expressao;
         falaRestante = FALA_DURA;
     }
 
@@ -113,7 +117,7 @@ public class TelaDoEspelho extends TelaDeMenu {
 
     /**
      * A escala da interface, ou a maior menor que caiba: a grade e o detalhe somam
-     * 572 x 250 pixels nativos, incluindo o vendedor; a 1280x720 a escala 3 não cabe. Mesmo cálculo da
+     * 572 x 266 pixels nativos, incluindo o vendedor; a 1280x720 a escala 3 não cabe. Mesmo cálculo da
      * TelaDeConquistas (regra de interface: telas que podem nao caber se ajustam).
      */
     private static int escala() {
@@ -154,8 +158,13 @@ public class TelaDoEspelho extends TelaDeMenu {
 
     @Override
     protected void atualizar() {
+        entradaDaLoja.tick();
+        if (entradaDaLoja.ativa()) return; // O comando que fecha a conversa não compra.
         tempoVendedor++;
-        if (falaRestante > 0 && --falaRestante == 0) fala = "A little stronger, every journey.";
+        if (falaRestante > 0 && --falaRestante == 0) {
+            fala = CatalogoDeDialogos.get().texto("vendedor.loja.esperando");
+            emocao = Emocao.NEUTRO;
+        }
         if (clarao > 0) clarao--;
         if (tremor > 0) tremor--;
         if (precoSubindo > 0) precoSubindo--;
@@ -210,7 +219,7 @@ public class TelaDoEspelho extends TelaDeMenu {
         int preco = m.custo(Espelho.nivel(nome(), m));
         switch (Espelho.comprar(gato, m)) {
             case FEITA -> {
-                dizer("A fine choice. Make it count!");
+                dizer("vendedor.loja.compra", Emocao.FELIZ);
                 Sound.play(Sounds.Coin);
                 clarao = CLARAO;
                 precoSubindo = PRECO_SOBE;
@@ -220,7 +229,8 @@ public class TelaDoEspelho extends TelaDeMenu {
             case ERRO_AO_SALVAR -> confirmacao.perguntar("Could not save",
                     new String[]{"Your coins and upgrades were kept.", "Check disk access and try again."}, () -> {});
             case SEM_MOEDAS, NO_MAXIMO -> {
-                dizer(nivelMaximo(m) ? "Already polished to perfection." : "A few more coins, little one.");
+                dizer(nivelMaximo(m) ? "vendedor.loja.maximo" : "vendedor.loja.sem_moedas",
+                        nivelMaximo(m) ? Emocao.MALICIOSO : Emocao.CONFUSO);
                 Sound.play(Sounds.Button);
                 tremor = TREMOR;
                 ultimaRecusada = i;
@@ -245,7 +255,7 @@ public class TelaDoEspelho extends TelaDeMenu {
                     FalhaDeSave.tentar(() -> {
                         Espelho.redistribuir(gato);
                         Sound.play(Sounds.Coin);
-                        dizer("A fresh start? Your coins are yours.");
+                        dizer("vendedor.loja.reembolso", Emocao.FELIZ);
                     });
                 });
     }
@@ -260,13 +270,16 @@ public class TelaDoEspelho extends TelaDeMenu {
 
     @Override
     protected void desenharConteudo(Graphics2D g) {
+        Graphics2D conteudo = (Graphics2D) g.create();
+        entradaDaLoja.aplicar(conteudo, Engine.alpha());
         int s = escala();
-        desenharFaixa(g, s);
+        desenharFaixa(conteudo, s);
         for (int i = 0; i < tabela.size(); i++) {
-            desenharQuadro(g, i, s);
+            desenharQuadro(conteudo, i, s);
         }
-        desenharDetalhe(g, s);
-        reembolso.render(g);
+        desenharDetalhe(conteudo, s);
+        reembolso.render(conteudo);
+        conteudo.dispose();
     }
 
     /** O saldo e de quem são as melhorias. */
@@ -277,13 +290,14 @@ public class TelaDoEspelho extends TelaDeMenu {
         int px = faixa.x + 6 * s, py = faixa.y + 5 * s;
         retrato.setColor(Palette.OUTLINE);
         retrato.fillRect(px, py, RETRATO * s, RETRATO * s);
-        retrato.drawImage(vendedor[(tempoVendedor / QUADRO_DO_VENDEDOR) % vendedor.length],
-                px, py, RETRATO * s, RETRATO * s, null);
+        int quadro = tempoVendedor % PISCADA < BOCA ? Retrato.PISCANDO
+                : falaRestante > FALA_DURA / 2 && (tempoVendedor / BOCA) % 2 == 0 ? Retrato.FALANDO : Retrato.ABERTO;
+        if (retratoVendedor != null) retrato.drawImage(retratoVendedor.quadro(emocao, quadro, 2 * s), px, py, null);
         retrato.dispose();
         Font grande = FontHandler.font(FontHandler.Game, 9f * s);
         Font fina = FontHandler.font(FontHandler.Septem, 7f * s);
         int tx = faixa.x + (RETRATO + 14) * s;
-        TextFx.draw(g, "The Merchant", grande, tx, faixa.y + 19 * s, Palette.TEXT, s);
+        TextFx.draw(g, vendedor.nome(), grande, tx, faixa.y + 19 * s, Palette.TEXT, s);
         int fy = faixa.y + 36 * s;
         int limiteFala = faixa.width - (RETRATO + 132) * s;
         for (String linha : quebrar(fala, fina, limiteFala)) {

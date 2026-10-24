@@ -244,6 +244,8 @@ public class Game implements Activity {
         Estatisticas.encerrar(idDaCorrida, segundosDaCorrida, abates, player.getLevel(), player.getName());
         this.acabou = true;
         Corrida.apagar(this.espaco);
+        com.retronova.game.dialogos.MemoriaDosDialogos.fimDeCorrida(Estatisticas.venceu(), segundosDaCorrida,
+                player.getLevel(), abates, player.getName());
         var fichaFinal = com.retronova.menus.ResumoFinalDoGato.capturar(player);
         Engine.backActivity();
         Engine.heapActivity(new GameOver(gato, onde, fichaFinal));

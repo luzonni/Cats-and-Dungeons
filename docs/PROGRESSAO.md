@@ -167,8 +167,8 @@ salva. O espelho aplica só a diferença nas compras no hub, pois aquele gato
 já será o da run. `Status` mostra `Base / Mirror / Run`; crítico inclui o
 efeito indireto da sorte na parte Run, explicado na ajuda.
 
-O vendedor aparece numa faixa própria acima da grade: retrato animado do NPC,
-nome e falas curtas ao comprar, recusar ou reembolsar. Usa a arte existente,
+O vendedor aparece numa faixa própria acima da grade: retrato com emoções do sistema de diálogos,
+nome do catálogo e falas em dialogos/textos.json ao comprar, recusar ou reembolsar. Usa a arte existente,
 paleta dos menus e ampliação inteira; saldo e dono ficam à direita.
 
 Compra: moedas, próximo efeito/custo, limite e níveis visíveis; som de moeda,
@@ -217,3 +217,8 @@ Roteiro de aceitação em uma cópia dos saves:
 Controle físico, percepção de timbre, sessão longa de 30 min e ritmo médio de
 jogadores continuam **a confirmar** por aceitação manual; não são resultados
 inferidos dos testes automatizados.
+
+Integração com feat/dialogos: conversa contextual antes da loja; concluir ou
+pular abre o espelho com entrada lateral. Condições de moedas usam a carteira
+permanente do gato, e o fim da run preserva tanto crédito único quanto memória
+de resultado para a próxima conversa. A vitrine de armas permanece em standby.

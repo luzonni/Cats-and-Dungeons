@@ -63,23 +63,44 @@ public final class Rodape {
             return;
         }
         int s = Configs.UiScale();
+        int x = Engine.window.largura() / 2 - largura(dicas) / 2;
+        int yTecla = Engine.window.altura() - Configs.Margin() - 8 * s;
+        desenharEm(g, dicas, x, yTecla, opacidade);
+    }
+
+    /** Largura total das dicas, em pixels de tela, no aparelho em uso. */
+    public static int largura(List<Dica> dicas) {
+        int s = Configs.UiScale();
         boolean controle = Entrada.usandoControle();
         Font fonte = FontHandler.font(FontHandler.Game, 5f * s);
-        int folgaInterna = 3 * s, entreTeclaEAcao = 3 * s, entreDicas = 10 * s;
-        int alturaTecla = 8 * s;
-
         int total = 0;
         for (int i = 0; i < dicas.size(); i++) {
             Dica d = dicas.get(i);
             String rotulo = controle ? d.botao() : d.tecla();
-            total += larguraDaTecla(rotulo, controle, fonte, folgaInterna, s) + entreTeclaEAcao
+            total += larguraDaTecla(rotulo, controle, fonte, 3 * s, s) + 3 * s
                     + FontHandler.getWidth(d.acao(), fonte);
             if (i < dicas.size() - 1) {
-                total += entreDicas;
+                total += 10 * s;
             }
         }
-        int x = Engine.window.largura() / 2 - total / 2;
-        int yTecla = Engine.window.altura() - Configs.Margin() - alturaTecla;
+        return total;
+    }
+
+    /**
+     * As mesmas dicas, a partir de um ponto: quem tem uma faixa própria (a caixa
+     * de diálogo) desenha o "continuar" dentro dela, com os glyphs de sempre.
+     *
+     * @param yTecla topo da tecla; a faixa tem 8 pixels nativos de altura
+     */
+    public static void desenharEm(Graphics2D g, List<Dica> dicas, int x, int yTecla, float opacidade) {
+        if (dicas.isEmpty() || opacidade <= 0.01f) {
+            return;
+        }
+        int s = Configs.UiScale();
+        boolean controle = Entrada.usandoControle();
+        Font fonte = FontHandler.font(FontHandler.Game, 5f * s);
+        int folgaInterna = 3 * s, entreTeclaEAcao = 3 * s, entreDicas = 10 * s;
+        int alturaTecla = 8 * s;
         int baseTexto = yTecla + alturaTecla - 2 * s;
         int meio = yTecla + alturaTecla / 2;
 
@@ -153,6 +174,7 @@ public final class Rodape {
             case "enter" -> List.of(Glyph.ENTER);
             case "esc", "escape" -> List.of(Glyph.ESC);
             case "space" -> List.of(Glyph.ESPACO);
+            case "click" -> List.of(Glyph.MOUSE_ESQ);
             case "q" -> List.of(Glyph.Q);
             case "e" -> List.of(Glyph.E);
             case "f" -> List.of(Glyph.F);

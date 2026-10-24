@@ -43,6 +43,7 @@ public final class VerificarProgressao {
         double vidaBase = Player.TEMPLATES[0].getLifeSize();
         double danoBase = Player.TEMPLATES[0].getDamage();
         Progresso.creditar("saldo-de-teste", "Muffin", 10000);
+        igual(10000, com.retronova.game.dialogos.Dialogos.contexto().moedas(), "dialogo usa saldo permanente");
         for (var m : Espelho.tabela()) {
             if (Espelho.comprar(gato, m) != Espelho.Compra.FEITA) throw new AssertionError(m.id());
         }
@@ -95,6 +96,23 @@ public final class VerificarProgressao {
         ImageIO.write(img, "png", Path.of("run-over.png").toFile());
         if (Progresso.moedas("Muffin") < antesDaMorte) throw new AssertionError("morte perdeu moedas");
         if (Corrida.espiar(1) != null) throw new AssertionError("morte deixou run retomavel");
+        // A conversa de verdade entrega a mesma loja; pular não reativa a vitrine antiga.
+        Game hub = new Game(0, new com.retronova.game.map.room.Room("beginning"), 0);
+        Engine.heapActivity(hub);
+        var lojista = Game.getMap().getEntities(com.retronova.game.objects.entities.NPCs.Seller.class).getFirst();
+        if (!com.retronova.game.dialogos.Dialogos.conversar("vendedor", lojista)) throw new AssertionError("sem conversa");
+        var conversa = Engine.sobreposta();
+        for (int i = 0; i < 35; i++) conversa.tick();
+        BufferedImage dialogo = new BufferedImage(Engine.window.largura(), Engine.window.altura(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D dg = dialogo.createGraphics(); Engine.desenharTudo(dg); dg.dispose();
+        ImageIO.write(dialogo, "png", Path.of("dialogo-vendedor.png").toFile());
+        com.retronova.engine.inputs.keyboard.KeyBoard.simular("Escape", true);
+        conversa.tick();
+        com.retronova.engine.inputs.keyboard.KeyBoard.simular("Escape", false);
+        for (int i = 0; i < 30 && Engine.sobreposta() == conversa; i++) conversa.tick();
+        if (!(Engine.sobreposta() instanceof TelaDoEspelho)) throw new AssertionError("dialogo nao abriu espelho");
+        for (int i = 0; i < 35; i++) Engine.sobreposta().tick();
+        System.out.println("[ok] conversa do vendedor -> espelho; saldo permanente e entrada protegida");
         System.out.println("[ok] atributos reais, templates, compra, refund, gatos, rerolls, retomada, standby e morte");
     }
 
