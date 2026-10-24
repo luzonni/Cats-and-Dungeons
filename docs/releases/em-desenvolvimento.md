@@ -1,5 +1,10 @@
 # Em desenvolvimento (depois da 0.1.3-alpha)
 
+- **Vendedor presente no espelho** (2026-10-23; `9714d43`). Faixa própria com
+  retrato animado do gato vendedor e respostas curtas a compras, recusa e
+  reembolso. Sprite original ampliado sem suavização, paleta e moldura dos menus;
+  saldo à direita e grade preservada. Testes e bancada em 640×360/1920×1080 passaram.
+
 - **Progressão permanente por gato e espelho do vendedor** (2026-10-23;
   `af950bf`, `71493bb`, `ca13fa4`, `9ebf2f0`, `feec150`). Save permanente v2
   separado das corridas, migração de ouro/upgrades, backup e recuperação.

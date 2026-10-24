@@ -1238,3 +1238,13 @@ Registrados para não se perderem. Revistos em 2026-10-21.
   continuam em standby, sem segundo ponto de compra.
 - `tools/GenCisterna.java` ainda escreve as plantas `cistern_1` a `6`, que o jogo
   não lê mais; os tiles que ele gera continuam em uso pelo `Gerador`.
+
+### Vendedor na interface do espelho
+
+TelaDoEspelho reserva uma faixa acima da grade para o retrato do próprio NPC,
+seu nome e uma fala curta. Usa os dois quadros acordados de seller.png, ampliados
+por escala inteira com nearest-neighbor, sem arte paralela. O relógio avança
+só no tick: quadro a cada 18 ticks; resposta de compra, recusa ou reembolso por
+180 ticks. Retrato de 48 pixels nativos, faixa de 64, saldo e dono à direita.
+A grade mantém 118×42; o cálculo da escala considera a faixa. Conferido em
+bancada isolada em 640×360 e 1920×1080.

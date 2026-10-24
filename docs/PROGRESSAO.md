@@ -167,6 +167,10 @@ salva. O espelho aplica só a diferença nas compras no hub, pois aquele gato
 já será o da run. `Status` mostra `Base / Mirror / Run`; crítico inclui o
 efeito indireto da sorte na parte Run, explicado na ajuda.
 
+O vendedor aparece numa faixa própria acima da grade: retrato animado do NPC,
+nome e falas curtas ao comprar, recusar ou reembolsar. Usa a arte existente,
+paleta dos menus e ampliação inteira; saldo e dono ficam à direita.
+
 Compra: moedas, próximo efeito/custo, limite e níveis visíveis; som de moeda,
 clarão de 18 ticks e preço subindo por 36. Recusa: tremor de 10 ticks.
 Setas/D-pad escolhem; Enter/A compra; clique compra; Esc/B volta. `Refund all`

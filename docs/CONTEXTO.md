@@ -225,7 +225,7 @@ docs/                          esta pasta
 | Morte e entrada de Run Over | ✅ | impacto de 24 ticks independente do zoom e voz própria por gato; queda lenta, chama ACO e fechamento para preto; título, painéis e barras animados em 1 s, reveláveis após o título; bancada e testes |
 | Relatório final em destaque | ✅ | quase toda a largura, na escala dos menus; 12 atributos finais, armas, elemento, passivas/cartas e dano de todas as fontes. Ficha imutável antes de sair da partida; abas Run report e Final build, com rolagem; moedas ganhas e saldo, sem loja |
 | Animação das armas na mão | ✅ | toda arma de mão respira, pesa no passo e se recolhe ao virar; espada sai da mão para o golpe e volta, com faísca de impacto; arco puxa a corda, treme, solta com coice e a corda vibra; cajados flutuam, pulsam, soltam faíscas do elemento e fazem o gesto de lançar no tick do tiro. Cajado do Azrael redesenhado pela arte oficial. Com controle real e em armas fora das três iniciais **a confirmar** |
-| Moedas e espelho do vendedor | ✅ | por gato; 11 melhorias, 47 níveis, 9190 moedas; migração, backup e recibo contra crédito duplicado; refund gratuito. Ver [PROGRESSAO.md](PROGRESSAO.md) |
+| Moedas e espelho do vendedor | ✅ | vendedor animado na interface, falas de compra/reembolso; por gato; 11 melhorias, 47 níveis, 9190 moedas; migração, backup e recibo contra crédito duplicado; refund gratuito. Ver [PROGRESSAO.md](PROGRESSAO.md) |
 | Conquistas (10) | ✅ | |
 | Controle de Xbox, foco por D-pad | ✅ | só Windows |
 | Tela de Controles | ✅ | aba Controls do Settings, teclado e controle, lida de `Acao`; rodapé com os mesmos glyphs. Sem remapeamento. Controle real e outras resoluções além de 800×450, 1280×720 e 1920×1080 **a confirmar** |
@@ -333,7 +333,7 @@ Vida +6 (5 níveis), dano +1 (5), alcance +0,5 (4), resistência +3 pp (4),
 velocidade +0,08 (5), coleta +10 pp (5), crítico +2 pp (5), sorte +1 (5),
 reroll +1 (3), carta +1 (1), moedas +10 pp (5). Tabela completa e estimativas
 em [PROGRESSAO.md](PROGRESSAO.md). Compra: clarão 18 ticks, recusa 10,
-preço subindo 36; grade 3 colunas de 118×42, detalhe 196, vão 6/10 e faixa 22.
+preço subindo 36; grade 3 colunas de 118×42, detalhe 196, vão 6/10 e faixa do vendedor 64. Retrato 48, quadros a cada 18 ticks; falas de compra/reembolso/recusa por 180 ticks.
 `gradlew verificarProgressao` testa objetos reais e captura as telas em pasta
 isolada; `-PbancadaResolucao=1280x720` altera a resolução da bancada.
 
