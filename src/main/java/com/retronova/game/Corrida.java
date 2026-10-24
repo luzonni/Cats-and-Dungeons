@@ -108,7 +108,13 @@ public final class Corrida {
     public static final int ESPACOS = 3;
 
     /** Onde os saves moram, ao lado do config.json. */
-    private static final String PASTA = com.retronova.engine.Foto.pastaDeSaves();
+    private static String PASTA = com.retronova.engine.Foto.pastaDeSaves();
+    private static Path legado = Paths.get("corrida.json");
+
+    static void usarPasta(Path pasta) {
+        PASTA = pasta.toString();
+        legado = pasta.resolve("corrida.json");
+    }
 
     /** O arquivo do espaço, contando de 1 como o jogador conta. */
     private static Path caminho(int espaco) {
@@ -132,7 +138,7 @@ public final class Corrida {
         if (com.retronova.engine.Foto.ligado()) {
             return;
         }
-        Path antigo = Paths.get("corrida.json");
+        Path antigo = legado;
         if (!Files.exists(antigo)) {
             return;
         }
@@ -425,14 +431,7 @@ public final class Corrida {
         Path destino = caminho(espaco);
         Path temporario = destino.resolveSibling(destino.getFileName() + ".tmp");
         try {
-            Files.createDirectories(destino.getParent());
-            Files.writeString(temporario, o.toJSONString(), StandardCharsets.UTF_8);
-            try {
-                Files.move(temporario, destino,
-                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            } catch (AtomicMoveNotSupportedException semAtomico) {
-                Files.move(temporario, destino, StandardCopyOption.REPLACE_EXISTING);
-            }
+            com.retronova.game.save.ArquivoSeguro.gravar(destino, o.toJSONString(), Corrida::interpretar);
         } catch (IOException e) {
             System.err.println("Corrida: falha ao gravar o ponto de retomada: " + e);
         }
@@ -525,11 +524,11 @@ public final class Corrida {
         }
         migrarOSaveAntigo();
         Path arquivo = caminho(espaco);
-        if (!Files.exists(arquivo)) {
+        if (!Files.exists(arquivo) && !Files.exists(com.retronova.game.save.ArquivoSeguro.backup(arquivo))) {
             return null;
         }
         try {
-            Corrida lida = interpretar(Files.readString(arquivo, StandardCharsets.UTF_8));
+            Corrida lida = com.retronova.game.save.ArquivoSeguro.ler(arquivo, Corrida::interpretar).valor();
             if (lida != null && com.retronova.game.save.Progresso.foiCreditada(lida.id)) {
                 // ACABOU E JÁ FOI PAGA. O jogo fechou entre o crédito das moedas e o
                 // apagar deste arquivo: retomar daria a corrida e as moedas de novo.
@@ -537,8 +536,12 @@ public final class Corrida {
                 return null;
             }
             return lida;
+        } catch (com.retronova.game.save.ArquivoSeguro.VersaoIncompativel futura) {
+            throw futura;
+        } catch (java.io.UncheckedIOException inacessivel) {
+            throw inacessivel;
         } catch (Exception e) {
-            return null;            // consumir() dirá o que houve, e apagará
+            throw new IllegalStateException("Nao foi possivel consultar a corrida", e);
         }
     }
 
@@ -589,21 +592,7 @@ public final class Corrida {
         if (!espacoValido(espaco)) {
             return null;
         }
-        migrarOSaveAntigo();
-        Path arquivo = caminho(espaco);
-        if (!Files.exists(arquivo)) {
-            return null;
-        }
-        Corrida lida = null;
-        try {
-            String conteudo = Files.readString(arquivo, StandardCharsets.UTF_8);
-            lida = interpretar(conteudo);
-            if (lida != null && com.retronova.game.save.Progresso.foiCreditada(lida.id)) {
-                lida = null;    // já paga: não se retoma (ver espiar)
-            }
-        } catch (Exception e) {
-            System.err.println("Corrida: save ilegível, descartado. " + e);
-        }
+        Corrida lida = espiar(espaco);
         apagar(espaco);
         return lida;
     }
@@ -615,11 +604,11 @@ public final class Corrida {
         JSONObject o = (JSONObject) new JSONParser().parse(conteudo);
         int versao = inteiro(o, "versao", -1);
         if (versao != 1 && versao != VERSAO) {
-            System.err.println("Corrida: formato desconhecido, save descartado.");
-            return null;
+            throw new com.retronova.game.save.ArquivoSeguro.VersaoIncompativel(versao);
         }
         // Versão 1 não tinha id: ganha um agora (ver VERSAO).
-        String id = o.get("id") instanceof String s && !s.isEmpty() ? s : novoId();
+        String id = o.get("id") instanceof String s && !s.isEmpty() ? s
+                : java.util.UUID.nameUUIDFromBytes(conteudo.getBytes(StandardCharsets.UTF_8)).toString();
         return new Corrida(id,
                 inteiro(o, "gato", 0),
                 (long) inteiro(o, "segundos", 0),
@@ -713,6 +702,7 @@ public final class Corrida {
         try {
             Path arquivo = caminho(espaco);
             Files.deleteIfExists(arquivo);
+            Files.deleteIfExists(com.retronova.game.save.ArquivoSeguro.backup(arquivo));
             Files.deleteIfExists(arquivo.resolveSibling(arquivo.getFileName() + ".tmp"));
         } catch (IOException e) {
             System.err.println("Corrida: falha ao apagar o save: " + e);

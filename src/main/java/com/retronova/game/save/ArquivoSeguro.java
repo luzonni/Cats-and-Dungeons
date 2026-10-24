@@ -1,6 +1,10 @@
 package com.retronova.game.save;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.StandardOpenOption;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -51,6 +55,13 @@ public final class ArquivoSeguro {
     public record Lido<T>(T valor, Origem origem) {
     }
 
+    /** Não tratar um save de uma versão futura como corrupção. */
+    public static final class VersaoIncompativel extends RuntimeException {
+        public VersaoIncompativel(long versao) {
+            super("Save de versao nao suportada: " + versao);
+        }
+    }
+
     public static Path backup(Path arquivo) {
         return arquivo.resolveSibling(arquivo.getFileName() + ".bak");
     }
@@ -61,14 +72,36 @@ public final class ArquivoSeguro {
 
     /** Grava o texto com as três etapas acima. */
     public static void gravar(Path arquivo, String texto, Leitor<?> validar) throws IOException {
+        try {
+            validar.ler(texto);
+        } catch (Exception invalido) {
+            throw new IOException("Conteudo de save invalido", invalido);
+        }
         Files.createDirectories(arquivo.toAbsolutePath().getParent());
         Path tmp = temporario(arquivo);
-        Files.writeString(tmp, texto, StandardCharsets.UTF_8);
+        try (FileChannel canal = FileChannel.open(tmp, StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+            ByteBuffer bytes = StandardCharsets.UTF_8.encode(texto);
+            while (bytes.hasRemaining()) {
+                canal.write(bytes);
+            }
+            canal.force(true);
+        }
         // Só o que lê vira backup: copiar um arquivo já estragado por cima do
         // .bak bom trocaria o último save válido por lixo.
         if (Files.exists(arquivo) && lePor(arquivo, validar)) {
-            Files.copy(arquivo, backup(arquivo), StandardCopyOption.REPLACE_EXISTING);
+            Path bak = backup(arquivo);
+            Path bakTmp = temporario(bak);
+            Files.copy(arquivo, bakTmp, StandardCopyOption.REPLACE_EXISTING);
+            try (FileChannel canal = FileChannel.open(bakTmp, StandardOpenOption.WRITE)) {
+                canal.force(true);
+            }
+            mover(bakTmp, bak);
         }
+        mover(tmp, arquivo);
+    }
+
+    private static void mover(Path tmp, Path arquivo) throws IOException {
         try {
             Files.move(tmp, arquivo, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (AtomicMoveNotSupportedException semAtomico) {
@@ -82,6 +115,10 @@ public final class ArquivoSeguro {
         if (existia) {
             try {
                 return new Lido<>(leitor.ler(texto(arquivo)), Origem.PRINCIPAL);
+            } catch (VersaoIncompativel futura) {
+                throw futura;
+            } catch (IOException inacessivel) {
+                throw new UncheckedIOException("Nao foi possivel ler " + arquivo, inacessivel);
             } catch (Exception ruim) {
                 System.err.println("[save] " + arquivo.getFileName() + " ilegivel: " + ruim.getMessage());
                 guardarCorrompido(arquivo);
@@ -93,6 +130,10 @@ public final class ArquivoSeguro {
                 T valor = leitor.ler(texto(bak));
                 System.err.println("[save] " + arquivo.getFileName() + " recuperado do backup.");
                 return new Lido<>(valor, Origem.BACKUP);
+            } catch (VersaoIncompativel futura) {
+                throw futura;
+            } catch (IOException inacessivel) {
+                throw new UncheckedIOException("Nao foi possivel ler " + bak, inacessivel);
             } catch (Exception tambemRuim) {
                 System.err.println("[save] backup de " + arquivo.getFileName() + " tambem ilegivel.");
             }

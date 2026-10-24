@@ -8,6 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -53,9 +56,6 @@ public final class Progresso {
 
     /** Os gatos que existem, pelo nome de players/*.json. A migração divide o ouro antigo entre eles. */
     public static final List<String> GATOS = List.of("Muffin", "Azrael", "Finn");
-
-    /** Quantos ids de corrida creditada ficam guardados. Bem mais do que as corridas abertas ao mesmo tempo (3). */
-    static final int IDS_GUARDADOS = 200;
 
     private static final String PASTA = com.retronova.engine.Foto.pastaDeSaves();
     private static Path arquivo = Paths.get(PASTA, "progresso.json");
@@ -112,13 +112,10 @@ public final class Progresso {
                 return 0;
             }
             creditadas.add(id);
-            while (creditadas.size() > IDS_GUARDADOS) {
-                creditadas.remove(creditadas.iterator().next());
-            }
             DoGato g = gato(gato);
             int m = Math.max(0, moedas);
-            g.moedas += m;
-            g.ganhas += m;
+            g.moedas = Math.addExact(g.moedas, m);
+            g.ganhas = Math.addExact(g.ganhas, m);
             return m;
         }
 
@@ -168,7 +165,10 @@ public final class Progresso {
             JSONObject o = (JSONObject) new JSONParser().parse(texto);
             long versao = o.get("versao") instanceof Number n ? n.longValue() : -1;
             if (versao != VERSAO) {
-                throw new IllegalStateException("versao " + versao + " desconhecida");
+                throw new ArquivoSeguro.VersaoIncompativel(versao);
+            }
+            if (!(o.get("gatos") instanceof JSONObject) || !(o.get("creditadas") instanceof JSONArray)) {
+                throw new IllegalArgumentException("Estrutura de progresso incompleta");
             }
             Dados d = new Dados();
             JSONObject gs = (JSONObject) o.get("gatos");
@@ -217,12 +217,14 @@ public final class Progresso {
         JSONObject o = (JSONObject) new JSONParser().parse(metaJson);
         Dados d = new Dados();
         int ouro = o.get("ouro") instanceof Number n ? n.intValue() : 0;
-        int porGato = (int) Math.ceil(Math.max(0, ouro) / (double) GATOS.size());
+        int saldo = Math.max(0, ouro);
+        int porGato = saldo / GATOS.size();
+        int restante = saldo % GATOS.size();
         Map<String, String> nomes = Map.of("VIGOR", "vida", "FORCA", "dano", "AGILIDADE", "velocidade",
                 "SORTE", "sorte", "IMA", "coleta");
         for (String gato : GATOS) {
             DoGato g = d.gato(gato);
-            g.moedas = porGato;
+            g.moedas = porGato + (restante-- > 0 ? 1 : 0);
             for (Map.Entry<String, String> e : nomes.entrySet()) {
                 if (o.get(e.getKey()) instanceof Number n && n.intValue() > 0) {
                     g.melhorias.put(e.getValue(), n.intValue());
@@ -254,23 +256,26 @@ public final class Progresso {
         origem = lido.origem();
         if (dados == null && lido.origem() == ArquivoSeguro.Origem.NOVO && Files.exists(metaAntigo)) {
             try {
-                dados = migrarDoMeta(Files.readString(metaAntigo));
+                Dados migrado = migrarDoMeta(Files.readString(metaAntigo));
+                gravar(migrado);
+                dados = migrado;
                 origem = ArquivoSeguro.Origem.PRINCIPAL;
-                gravar();
                 // O antigo fica ao lado, renomeado: a migração não destrói o original.
                 Files.move(metaAntigo, metaAntigo.resolveSibling("meta.json.migrado"),
                         StandardCopyOption.REPLACE_EXISTING);
                 System.out.println("[save] meta.json migrado para progresso.json (versao " + VERSAO + ").");
             } catch (Exception falha) {
-                System.err.println("[save] nao consegui migrar meta.json: " + falha.getMessage());
+                dados = null;
+                throw new IllegalStateException("Nao foi possivel migrar meta.json; original preservado", falha);
             }
         }
         if (dados == null) {
             dados = new Dados();
         }
+        recuperarCreditos();
     }
 
-    private static void gravar() {
+    private static void gravar(Dados candidato) {
         // Bancada: nunca mexe na progressão de verdade. Com o modo foto junto, a
         // pasta já é a isolada (build/foto/saves) e gravar é o que deixa testar o
         // crédito de moedas de ponta a ponta.
@@ -278,9 +283,70 @@ public final class Progresso {
             return;
         }
         try {
-            ArquivoSeguro.gravar(arquivo, dados.paraJson(), Dados::deJson);
+            ArquivoSeguro.gravar(arquivo, candidato.paraJson(), Dados::deJson);
         } catch (Exception falha) {
-            System.err.println("[save] nao foi possivel gravar progresso.json: " + falha.getMessage());
+            throw new IllegalStateException("Nao foi possivel gravar progresso.json", falha);
+        }
+    }
+
+    private static Dados copia() {
+        try {
+            return Dados.deJson(dados().paraJson());
+        } catch (Exception falha) {
+            throw new IllegalStateException(falha);
+        }
+    }
+
+    /** O recibo sobrevive ao fechamento entre o fim da corrida e o depósito. */
+    @SuppressWarnings("unchecked")
+    private static Path recibo(String id, String gato, int moedas) {
+        Path destino = arquivo.resolveSibling("credito-" + java.util.UUID.nameUUIDFromBytes(
+                id.getBytes(StandardCharsets.UTF_8)) + ".json");
+        if (Boolean.getBoolean("cd.bench") && !com.retronova.engine.Foto.ligado()) {
+            return destino;
+        }
+        JSONObject o = new JSONObject();
+        o.put("id", id);
+        o.put("gato", gato);
+        o.put("moedas", (long) Math.max(0, moedas));
+        try {
+            ArquivoSeguro.gravar(destino, o.toJSONString(), t -> new JSONParser().parse(t));
+            return destino;
+        } catch (IOException falha) {
+            throw new UncheckedIOException("Nao foi possivel guardar o credito da corrida", falha);
+        }
+    }
+
+    private static void removerRecibo(Path recibo) {
+        try {
+            Files.deleteIfExists(recibo);
+            Files.deleteIfExists(ArquivoSeguro.backup(recibo));
+        } catch (IOException falha) {
+            // O id no progresso impede duplicação na próxima abertura.
+            System.err.println("[save] recibo ja pago preservado: " + recibo);
+        }
+    }
+
+    private static void recuperarCreditos() {
+        Path pasta = arquivo.toAbsolutePath().getParent();
+        if (!Files.isDirectory(pasta)) {
+            return;
+        }
+        try (var recibos = Files.newDirectoryStream(pasta, "credito-*.json")) {
+            for (Path recibo : recibos) {
+                JSONObject o = (JSONObject) new JSONParser().parse(Files.readString(recibo));
+                String id = (String) o.get("id");
+                if (!dados.foiCreditada(id)) {
+                    Dados candidato = Dados.deJson(dados.paraJson());
+                    candidato.creditar(id, (String) o.get("gato"), ((Number) o.get("moedas")).intValue());
+                    gravar(candidato);
+                    dados = candidato;
+                }
+                removerRecibo(recibo);
+            }
+        } catch (Exception falha) {
+            dados = null;
+            throw new IllegalStateException("Credito pendente preservado para nova tentativa", falha);
         }
     }
 
@@ -310,24 +376,33 @@ public final class Progresso {
      */
     public static synchronized int creditar(String idDaCorrida, String gato, int moedas) {
         boolean nova = idDaCorrida != null && !idDaCorrida.isEmpty() && !dados().foiCreditada(idDaCorrida);
-        int entrou = dados().creditar(idDaCorrida, gato, moedas);
-        if (nova) {
-            gravar();   // grava mesmo com zero moedas: o id creditado também precisa ficar
+        if (!nova) {
+            return 0;
         }
+        Path recibo = recibo(idDaCorrida, gato, moedas);
+        Dados candidato = copia();
+        int entrou = candidato.creditar(idDaCorrida, gato, moedas);
+        gravar(candidato);
+        dados = candidato;
+        removerRecibo(recibo);
         return entrou;
     }
 
     public static synchronized boolean comprar(String gato, String melhoria, int custo, int nivelMaximo) {
-        boolean ok = dados().comprar(gato, melhoria, custo, nivelMaximo);
+        Dados candidato = copia();
+        boolean ok = candidato.comprar(gato, melhoria, custo, nivelMaximo);
         if (ok) {
-            gravar();
+            gravar(candidato);
+            dados = candidato;
         }
         return ok;
     }
 
     public static synchronized void redistribuir(String gato, int reembolso) {
-        dados().redistribuir(gato, reembolso);
-        gravar();
+        Dados candidato = copia();
+        candidato.redistribuir(gato, reembolso);
+        gravar(candidato);
+        dados = candidato;
     }
 
     /**
@@ -339,8 +414,8 @@ public final class Progresso {
         // Os ids creditados ficam: apagar a progressão não pode deixar uma corrida
         // velha ser creditada de novo.
         limpo.creditadas.addAll(dados().creditadas);
+        gravar(limpo);
         dados = limpo;
-        gravar();
     }
 
     // ------------------------------------------------------------- testes

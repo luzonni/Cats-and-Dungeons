@@ -82,7 +82,7 @@ class ProgressoTest {
         Files.writeString(pasta.resolve("meta.json"), "{\"ouro\":100,\"VIGOR\":2,\"IMA\":1,\"FORCA\":0}");
         recarregar();
         for (String gato : Progresso.GATOS) {
-            assertEquals(34, Progresso.moedas(gato), gato);
+            assertEquals(gato.equals("Muffin") ? 34 : 33, Progresso.moedas(gato), gato);
             assertEquals(2, Progresso.nivel(gato, "vida"), gato);
             assertEquals(1, Progresso.nivel(gato, "coleta"), gato);
             assertEquals(0, Progresso.nivel(gato, "dano"), gato);
@@ -120,7 +120,53 @@ class ProgressoTest {
     void versaoDesconhecida() throws Exception {
         Files.writeString(pasta.resolve("progresso.json"), "{\"versao\":99,\"gatos\":{}}");
         recarregar();
-        assertEquals(ArquivoSeguro.Origem.PERDIDO, Progresso.origem());
+        org.junit.jupiter.api.Assertions.assertThrows(ArquivoSeguro.VersaoIncompativel.class, Progresso::origem);
+        assertTrue(Files.exists(pasta.resolve("progresso.json")));
+    }
+
+    @Test
+    void falhaNoDepositoPreservaReciboERecuperaUmaVez() throws Exception {
+        Progresso.creditar("inicial", "Finn", 100);
+        Files.createDirectory(pasta.resolve("progresso.json.tmp"));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+                () -> Progresso.creditar("interrompida", "Finn", 50));
+        assertEquals(100, Progresso.moedas("Finn"));
+        Files.delete(pasta.resolve("progresso.json.tmp"));
+        recarregar();
+        assertEquals(150, Progresso.moedas("Finn"));
+        recarregar();
+        assertEquals(0, Progresso.creditar("interrompida", "Finn", 50));
+        assertEquals(150, Progresso.moedas("Finn"));
+    }
+
+    @Test
+    void compraEReembolsoSoMudamMemoriaDepoisDeGravar() throws Exception {
+        Progresso.creditar("inicial", "Muffin", 100);
+        Files.createDirectory(pasta.resolve("progresso.json.tmp"));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+                () -> Progresso.comprar("Muffin", "vida", 40, 5));
+        assertEquals(100, Progresso.moedas("Muffin"));
+        assertEquals(0, Progresso.nivel("Muffin", "vida"));
+        Files.delete(pasta.resolve("progresso.json.tmp"));
+        Progresso.comprar("Muffin", "vida", 40, 5);
+        Files.createDirectory(pasta.resolve("progresso.json.tmp"));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+                () -> Progresso.redistribuir("Muffin", 40));
+        assertEquals(60, Progresso.moedas("Muffin"));
+        assertEquals(1, Progresso.nivel("Muffin", "vida"));
+    }
+
+    @Test
+    void falhaNaMigracaoNaoArquivaOriginal() throws Exception {
+        Files.writeString(pasta.resolve("meta.json"), "{\"ouro\":90,\"VIGOR\":2}");
+        Files.createDirectory(pasta.resolve("progresso.json.tmp"));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, () -> Progresso.moedas("Finn"));
+        assertTrue(Files.exists(pasta.resolve("meta.json")));
+        assertFalse(Files.exists(pasta.resolve("meta.json.migrado")));
+        Files.delete(pasta.resolve("progresso.json.tmp"));
+        recarregar();
+        assertEquals(30, Progresso.moedas("Finn"));
+        assertEquals(2, Progresso.nivel("Finn", "vida"));
     }
 
     @Test

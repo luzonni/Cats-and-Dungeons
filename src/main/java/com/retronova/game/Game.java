@@ -220,7 +220,10 @@ public class Game implements Activity {
     }
 
     private void gameOver() {
-        this.acabou = true;
+        com.retronova.menus.FalhaDeSave.tentar(this::concluirCorrida);
+    }
+
+    private void concluirCorrida() {
         // MORREU, NAO HA O QUE RETOMAR. Sem isto o save do inicio da sala ficaria
         // no disco depois da morte, e o botao de continuar do menu ofereceria
         // desfazer a derrota — que e precisamente o que a permadeath proibe.
@@ -239,6 +242,7 @@ public class Game implements Activity {
             segundosDaCorrida = arena.getWaves().getSeconds();
         }
         Estatisticas.encerrar(idDaCorrida, segundosDaCorrida, abates, player.getLevel(), player.getName());
+        this.acabou = true;
         Corrida.apagar(this.espaco);
         var fichaFinal = com.retronova.menus.ResumoFinalDoGato.capturar(player);
         Engine.backActivity();
