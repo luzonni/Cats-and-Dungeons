@@ -57,7 +57,8 @@ Revisado em **2026-10-21** contra o código (commit `8a9cbb8` e a limpeza que ve
 - [ ] Ajustar as arenas — o campo gerado substituiu as arenas desenhadas na
       corrida; **a confirmar** se o item ainda vale para alguma delas
 - [ ] Alterar os sprites dos itens
-- [ ] Deixar mais claro que o vendedor é um vendedor
+- [x] Deixar mais claro que o vendedor é um vendedor: ele se apresenta e fala antes de abrir a loja (sistema de diálogos, 2026-10-23)
+- [x] Sistema de diálogos lineares com retratos e expressões (base). Escolhas de resposta e falas soltas durante a corrida: estrutura pronta, a fazer
 - ~~Mapas individuais por nível~~ — substituído pelo campo gerado a cada
       corrida (`Gerador`)
 - 🔄 Sprites dos bosses — o Rato Rei usa o escudeiro ampliado três vezes.
@@ -193,3 +194,10 @@ Ainda sem implementação, mantidas como referência criativa.
 Ideia registrada, sem detalhamento. Duas coisas no jogo se aproximam dela: o
 caça-níquel do baú (`Roleta`, desligado: o baú agora só abre) e a máquina de chiclete (`GumMachine`), que existe
 no código mas não está em nenhum mapa.
+
+## Entregue em 2026-10-23: progressão por personagem
+
+- [x] Save permanente separado, migração/backup e crédito único por run.
+- [x] Espelho somente no vendedor, refund e status em camadas; loja removida da morte.
+- [x] Armas extras em standby, preservando código e saves.
+- [ ] Validar ritmo econômico com jogadores e controle físico; ver [PROGRESSAO.md](../PROGRESSAO.md).

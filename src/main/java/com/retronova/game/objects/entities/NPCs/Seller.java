@@ -22,15 +22,50 @@ import java.util.Set;
 /**
  * O vendedor da antecamara.
  *
- * EM ESPERA, junto com o dinheiro. O gato comeca com 100 moedas e nada dentro da
- * corrida rende mais, entao esta loja so atende a antecamara. A mecanica de
- * dinheiro inteira (este vendedor, a {@code Store}, a moeda {@code Coin} e a
- * maquina de chiclete) fica de pe e sem uso ate o dinheiro ganhar um papel na
- * corrida sem fim. Ver docs/planejamento/ROADMAP.md.
+ * CONVERSA E ESPELHO. O diálogo contextual abre antes das melhorias permanentes;
+ * seu evento final chama abrirLoja. A antiga Store de armas fica em standby.
  */
-public class Seller extends NPC {
+public class Seller extends NPC implements com.retronova.game.dialogos.EventosDoDialogo.Lojista {
+
+    /** O id dele nos arquivos de diálogo (dialogos/personagens.json). */
+    public static final String PERSONAGEM = "vendedor";
+
+    /**
+     * O ESPELHO: o que o vendedor oferece agora. Moedas por melhorias permanentes
+     * do gato (ver game/espelho e menus/TelaDoEspelho).
+     *
+     * ELE ESTÁ NA ANTECÂMARA, que é o "entre corridas" do jogo: toda corrida começa
+     * nela (seleção de gato, "Try Again" e o "Restart" da pausa levam para lá),
+     * então o vendedor fica no caminho natural depois de morrer, sem tela nova e
+     * sem obrigar a comprar — o portão segue aberto ao lado dele.
+     */
+    public void abrirEspelho() {
+        com.retronova.menus.shared.TelaDeMenu.abrir(new com.retronova.menus.TelaDoEspelho(Game.getPlayer()));
+    }
+
+    /**
+     * A LOJA DE ARMAS, EM STANDBY. A vitrine com todas as armas de mão (VITRINE,
+     * loadStock, Store) não abre mais: as corridas usam só as três armas padrão e
+     * as outras estão em ItemIDs.EM_STANDBY. O código fica inteiro para voltar;
+     * para religar, chame {@link #abrirLojaDeArmas()} no clique.
+     */
+    @SuppressWarnings("unused")
+    private void abrirLojaDeArmas() {
+        Game.getInter().put("store", this.store, true);
+        Game.getInter().open("store");
+    }
 
     private final Store store;
+
+    /**
+     * A loja dele, entrando de lado (EntradaLateral). É o que o evento
+     * "abrir_loja_do_vendedor" chama no fim da conversa; entrega o espelho sem
+     * reativar a vitrine de armas. A entrada lateral pertence à TelaDoEspelho.
+     */
+    @Override
+    public void abrirLoja() {
+        abrirEspelho();
+    }
     private int countAnim;
 
     public Item[] stock;
@@ -165,9 +200,13 @@ public class Seller extends NPC {
         Player player = Game.getPlayer();
         countAnim++;
         if (player.getDistance(this) <= GameObject.SIZE() * 3) {
-            if (GameMap.clickOnRect(Mouse_Button.LEFT, this.getBounds())) {
-                Game.getInter().put("store", this.store, true);
-                Game.getInter().open("store");
+            // FALA ANTES DE VENDER. A conversa é escolhida pelos dados
+            // (dialogos/vendedor.json) e termina no evento "abrir_loja_do_vendedor",
+            // que chama abrirLoja() aqui. Sem conversa que sirva, a loja abre
+            // direto, como sempre abriu: o diálogo nunca fica no caminho da compra.
+            if (GameMap.clickOnRect(Mouse_Button.LEFT, this.getBounds())
+                    && !com.retronova.game.dialogos.Dialogos.conversar(PERSONAGEM, this)) {
+                abrirLoja();
             }
             if (countAnim >= 10) {
                 countAnim = 0;

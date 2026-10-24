@@ -44,6 +44,9 @@ public final class ArmasDeArea {
     // --------------------------------------------------------------- tick
 
     static void tick(Player gato) {
+        if (!ArmaExtra.ATIVAS) {
+            return;
+        }
         tempo++;
         Melhorias m = gato.getMelhorias();
         int raio = m.nivel(ArmaExtra.RAIO);
@@ -266,6 +269,9 @@ public final class ArmasDeArea {
     // ------------------------------------------------------------ render
 
     public static void render(Graphics2D g) {
+        if (!ArmaExtra.ATIVAS) {
+            return;
+        }
         if (relampagos.isEmpty() && ondas.isEmpty() && meteoros.isEmpty()) {
             return;
         }

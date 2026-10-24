@@ -42,60 +42,47 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class CorridaTest {
 
-    private static Path arquivo(int espaco) {
-        return Paths.get("saves", "corrida-" + espaco + ".json");
+    @org.junit.jupiter.api.io.TempDir
+    Path pasta;
+
+    private Path arquivo(int espaco) {
+        return pasta.resolve("corrida-" + espaco + ".json");
     }
 
-    private static final Path LEGADO = Paths.get("corrida.json");
-
-    /**
-     * Onde os saves de verdade ficam guardados enquanto os testes rodam.
-     *
-     * O caminho e relativo ao diretorio de trabalho, que na hora do teste e a raiz
-     * do projeto — a mesma em que o jogo grava. Sem este cuidado, rodar a suite
-     * apagaria as corridas de quem estivesse jogando na maquina.
-     */
-    private final List<Path> afastados = new ArrayList<>();
-
-    private void afastar(Path original) throws IOException {
-        if (!Files.exists(original)) {
-            return;
-        }
-        Path guardado = original.resolveSibling(original.getFileName() + ".teste-guardado");
-        Files.move(original, guardado, StandardCopyOption.REPLACE_EXISTING);
-        afastados.add(original);
-    }
+    private Path LEGADO;
 
     @BeforeEach
-    void afastarOsSavesReais() throws IOException {
-        afastar(LEGADO);
-        for (int i = 1; i <= Corrida.ESPACOS; i++) {
-            afastar(arquivo(i));
-        }
+    void isolarSaves() {
+        Corrida.usarPasta(pasta);
+        LEGADO = pasta.resolve("corrida.json");
     }
 
     @AfterEach
-    void devolverOsSavesReais() throws IOException {
-        Files.deleteIfExists(LEGADO);
-        for (int i = 1; i <= Corrida.ESPACOS; i++) {
-            Files.deleteIfExists(arquivo(i));
-        }
-        for (Path original : afastados) {
-            Path guardado = original.resolveSibling(original.getFileName() + ".teste-guardado");
-            if (Files.exists(guardado)) {
-                Files.createDirectories(original.getParent() == null
-                        ? Paths.get(".") : original.getParent());
-                Files.move(guardado, original, StandardCopyOption.REPLACE_EXISTING);
-            }
-        }
-        afastados.clear();
+    void restaurarPasta() {
+        Corrida.usarPasta(Paths.get(com.retronova.engine.Foto.pastaDeSaves()));
     }
-
     private static void escrever(Path onde, String json) throws IOException {
         if (onde.getParent() != null) {
             Files.createDirectories(onde.getParent());
         }
         Files.writeString(onde, json, StandardCharsets.UTF_8);
+    }
+
+    @Test
+    void recuperaBackupDaCorridaSemRessuscitarDepoisDeConsumir() throws Exception {
+        escrever(arquivo(1), "{quebrado");
+        escrever(arquivo(1).resolveSibling("corrida-1.json.bak"), valido(9));
+        Corrida recuperada = Corrida.consumir(1);
+        assertNotNull(recuperada);
+        assertEquals(9, recuperada.nivelDoGato());
+        assertNull(Corrida.espiar(1));
+        assertTrue(Files.exists(arquivo(1).resolveSibling("corrida-1.json.corrompido")));
+    }
+
+    @Test
+    void idLegadoPermaneceIgualEmLeiturasSeparadas() throws Exception {
+        escrever(arquivo(1), valido(4));
+        assertEquals(Corrida.espiar(1).id(), Corrida.espiar(1).id());
     }
 
     /** Um save valido, com o nivel do gato servindo de marca para saber de qual espaco veio. */
@@ -316,7 +303,7 @@ class CorridaTest {
         escrever(arquivo(1), "{nao e json");
 
         assertNull(Corrida.espiar(1));
-        assertTrue(Files.exists(arquivo(1)), "quem apaga e o consumir, e so ele");
+        assertTrue(Files.exists(arquivo(1).resolveSibling("corrida-1.json.corrompido")));
     }
 
     // ------------------------------------------------------- arquivo estragado
@@ -326,8 +313,8 @@ class CorridaTest {
     void versaoDeOutroFormato() throws IOException {
         escrever(arquivo(1), valido(7).replace("\"versao\":1", "\"versao\":99"));
 
-        assertNull(Corrida.consumir(1), "save de outro formato nao pode ser aplicado");
-        assertFalse(Files.exists(arquivo(1)),
+        org.junit.jupiter.api.Assertions.assertThrows(com.retronova.game.save.ArquivoSeguro.VersaoIncompativel.class, () -> Corrida.consumir(1));
+        assertTrue(Files.exists(arquivo(1)),
                 "recusar sem apagar deixaria o espaco quebrado para sempre");
     }
 

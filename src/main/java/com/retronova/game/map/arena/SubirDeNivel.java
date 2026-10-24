@@ -55,10 +55,24 @@ public class SubirDeNivel implements Activity {
     private static int trocas, pulos;
     private static final int TROCAS = 2, PULOS = 1;
 
+    /** Trocas a mais por corrida, vindas do espelho do vendedor (melhoria "rerolls"). */
+    private static int trocasExtras;
+
     /** Partida nova: valvulas cheias. Chamado por Estatisticas.reiniciar. */
     public static void reiniciar() {
-        trocas = TROCAS;
+        trocas = TROCAS + trocasExtras;
         pulos = PULOS;
+    }
+
+    /**
+     * O espelho mudou quantas trocas extras o gato tem: no inicio da corrida
+     * (Espelho.aplicar), numa compra na antecamara ou ao redistribuir. A
+     * diferenca entra ou sai das trocas que restam, sem ficar negativa.
+     */
+    public static void ajustarTrocasExtras(int extras) {
+        int novas = Math.max(0, extras);
+        trocas = Math.max(0, trocas + novas - trocasExtras);
+        trocasExtras = novas;
     }
 
     public static int trocas() {
@@ -72,7 +86,7 @@ public class SubirDeNivel implements Activity {
     /** Retomada. Negativo e "o save nao sabia": fica o valor de corrida nova. */
     public static void repor(int trocasGravadas, int pulosGravados) {
         if (trocasGravadas >= 0) {
-            trocas = Math.min(TROCAS, trocasGravadas);
+            trocas = Math.min(TROCAS + trocasExtras, trocasGravadas);
         }
         if (pulosGravados >= 0) {
             pulos = Math.min(PULOS, pulosGravados);
@@ -116,7 +130,7 @@ public class SubirDeNivel implements Activity {
         // Armas extras que o gato ja tem e ainda sobem: as mais desejadas.
         for (ArmaExtra a : ArmaExtra.values()) {
             int n = m.nivel(a);
-            if (n > 0 && n < ArmaExtra.NIVEL_MAXIMO) {
+            if (ArmaExtra.ATIVAS && n > 0 && n < ArmaExtra.NIVEL_MAXIMO) {
                 baralho.add(new Carta("WEAPON LV " + (n + 1), a.name(), a.nome(), a.efeito(n + 1), a.cor(),
                         () -> m.subirArma(a)));
                 pesos.add(3.0);
@@ -165,7 +179,9 @@ public class SubirDeNivel implements Activity {
         }
 
         mao.clear();
-        for (int i = 0; i < 3 && !baralho.isEmpty(); i++) {
+        // Tres cartas, mais as do espelho (melhoria "cartas").
+        int cartasNaMao = 3 + com.retronova.game.espelho.Espelho.cartasExtras(gato);
+        for (int i = 0; i < cartasNaMao && !baralho.isEmpty(); i++) {
             double total = pesos.stream().mapToDouble(Double::doubleValue).sum();
             double sorteio = Engine.RAND.nextDouble() * total;
             int k = 0;
@@ -298,6 +314,7 @@ public class SubirDeNivel implements Activity {
         Melhorias m = gato.getMelhorias();
         List<Object[]> itens = new ArrayList<>();
         for (var e : m.armas().entrySet()) {
+            if (!ArmaExtra.ATIVAS) continue;
             String sufixo = m.evoluiu(e.getKey()) ? "*" : String.valueOf(e.getValue());
             itens.add(new Object[]{com.retronova.game.items.Icone.de(e.getKey()), sufixo});
         }

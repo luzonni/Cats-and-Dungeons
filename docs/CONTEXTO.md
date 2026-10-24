@@ -47,11 +47,11 @@ um ano parado. Sem engine: tudo em Java puro.
 ./gradlew run -Pvitrine   # vendedor com todos os itens, dinheiro não cai
 ```
 
-**Modo bancada** (propriedades de sistema lidas em `Engine`, `Waves`, `Meta`,
+**Modo bancada** (propriedades de sistema lidas em `Engine`, `Waves`, `Progresso`,
 `Conquistas`): `-Dcd.bench=true` pula os menus e entra numa corrida no espaço de
 save 0, que não grava nada. Com ele: `-Dcd.gato=0|1|2` (Muffin, Azrael, Finn),
 `-Dcd.minuto=N`, `-Dcd.bau` (abre um baú; `-Dcd.roleta` é apelido), `-Dcd.fim`, `-Dcd.nivel`, `-Dcd.rei=1..4`,
-`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`, `-Dcd.buffs` (um nível de cada buff). A bancada e o modo foto pulam a abertura; `-Dcd.intro=completa|curta` a força. `-Dcd.perf=true` liga o
+`-Dcd.armas=RAIO,TREMOR,...`, `-Dcd.habilidade=1..3`, `-Dcd.buffs` (um nível de cada buff). `-Dcd.dialogo=<id da conversa>` começa na antecâmara e abre essa conversa com o vendedor, sem marcá-la como vista (`auto` escolhe como o jogo escolheria). A bancada e o modo foto pulam a abertura; `-Dcd.intro=completa|curta` a força. `-Dcd.perf=true` liga o
 medidor de quadros. O `build.gradle.kts` só repassa `-Pvitrine` ao `run`; **como
 o time passa os `-Dcd.*` (IDE, `java -jar`?) está a confirmar**.
 
@@ -75,7 +75,7 @@ monitor, -1 é sem limite). Junto com `-Dcd.perf=true`, servem para comparar o
 ritmo dos quadros. O F3 mostra o FPS com o alvo e um gráfico de tempo de quadro.
 
 Arquivos gerados em tempo de execução, todos no `.gitignore`: `config.json`,
-`saves/corrida-{1,2,3}.json`, `saves/meta.json`, `saves/conquistas.json`.
+`saves/corrida-{1,2,3}.json`, `saves/progresso.json`, `saves/conquistas.json`.
 
 ## 3. Mapa de pastas
 
@@ -90,7 +90,7 @@ src/main/java/com/retronova/
 ├── game/
 │   ├── Game.java              a Activity da partida: tick, render, fim de jogo
 │   ├── Corrida.java           save da corrida (3 espaços)
-│   ├── Meta.java              ouro e upgrades permanentes
+│   ├── save/Progresso.java     moedas, upgrades por gato e créditos únicos
 │   ├── Conquistas.java        10 conquistas
 │   ├── Estatisticas.java      números da corrida para a tela final
 │   ├── hud/                   HUD, hotbar, relógio, barra de chefe, flash de dano
@@ -129,6 +129,8 @@ docs/                          esta pasta
 | Hover e foco de todo elemento da interface | `menus/shared/Realce.java` |
 | Cartas de escolha (nível e elemento) | `menus/shared/MaoDeCartas.java` |
 | Transmutação da arma ao escolher o elemento | `game/objects/entities/Transmutacao.java` |
+| Diálogos (dados, escolha, memória, caixa, retratos) | `game/dialogos/` (`Dialogos` é a porta de entrada, `CaixaDeDialogo` a tela); dados em `resources/.../dialogos/`; retratos em `sprites/retratos/` por `tools/GenRetratos.java`; molduras por `tools/GenUiAssets.java`; voz por `tools/GenVozesDeDialogo.java`; guia em `docs/ARQUITETURA.md` ("Diálogos") |
+| Transição de tela entrando de lado | `menus/shared/EntradaLateral.java` (a loja do vendedor usa via `Inter.open`) |
 | Animação da arma na mão (respiro, passo, virada, flutuação, gesto do ataque) | `game/items/AnimacaoDaArma.java`, somada em `Item.naMao`; espada em `Sword`, arco e corda em `Bow` + `CordaDoArco`, cajado em `Wand`; como animar uma arma nova em `docs/ARQUITETURA.md` ("Animação das armas") |
 | Pose de cada arma na mão (punho, giro, boca) | `game/items/Poses.java` + `resources/.../poses.properties`, editor em `tools/EditorDePose.java` |
 | Modo foto (capturas de tela por roteiro) | `engine/Foto.java` |
@@ -152,7 +154,7 @@ docs/                          esta pasta
 | Baú: abertura na tela e recompensa | `utilities/Bau.java` → `game/map/arena/AberturaDoBau.java`; regra em `game/items/RecompensaDoBau.java`; arte em `tools/GenBau.java`, sons em `tools/GenSonsDoBau.java`. A `Roleta` (caça-níquel) está desligada |
 | Escolha de elemento (aos 45 s), com a cerimônia | `game/map/arena/EscolhaDeElemento.java`; áudio em `tools/GenSonsDaEscolha.java` |
 | Save | `game/Corrida.java`, `menus/Saves.java` |
-| Entre corridas | `game/Meta.java`, `menus/GameOver.java`, `menus/ApresentacaoDoFim.java`, `menus/LayoutDoFim.java`, `menus/ResumoFinalDoGato.java` (relatório, ficha final e loja) |
+| Entre corridas | `game/save/Progresso.java`, `game/espelho/`, `menus/TelaDoEspelho.java`, `menus/GameOver.java` (somente resultados); detalhes em [PROGRESSAO.md](PROGRESSAO.md) |
 | Vitória | `menus/Vitoria.java`, `Game.vencer` |
 | Música da arena | `game/map/arena/TrilhaDaArena.java`, `engine/sound/Musics.java` |
 | Controle | `engine/inputs/gamepad/`, `engine/inputs/Entrada.java`, `game/interfaces/Grade.java` |
@@ -212,29 +214,32 @@ docs/                          esta pasta
 | Vitória (encerrar ou continuar) | ✅ | |
 | XP, nível e cartas de nível (reroll 2, skip 1) | ✅ | |
 | Passivas (7 gerais + 1 exclusiva por gato) | ✅ | |
-| Armas extras (6) e evoluções (6) | ✅ | |
+| Armas extras (6) e evoluções (6) | ⏸️ | standby: código/ordinais e saves preservados, sem ataques nem ofertas; somente três armas padrão com elementos |
 | Timbre do mago | ✅ | cajado comum e grimório com efeito arcano próprio (`GenSomDoCajado`), 240 ms a -28 dB RMS; cajados elementais conservam seu elemento |
 | Sons das armas | ✅ | disparos no lançamento, cortes e orbitais no contato, explosões no impacto; recortes imediatos `hit_*` e `weapon_*`, com testes de ataque e loudness. Ver ARMAS e ARQUITETURA |
 | Baú (abre na tela, sem roleta) | ✅ | o caça-níquel antigo foi desligado e ficou no código (`Roleta`, `@Deprecated`) |
 | Fúria Felina | ✅ | |
 | Quebráveis (cura ou XP grande) | ✅ | |
 | Escolha de elemento | ✅ | oferecida aos 45 s de corrida, com cerimônia própria (antecipação, cartas em destaque, trilha, confirmação); áudio sintetizado provisório no timbre |
-| Ícones na identidade visual | ✅ | 34 ícones 16x16 num registro só (`Icone`): base DB32 (CC0) e desenhos no mesmo molde, todos na paleta; cada um reconhecível pela forma (`IconeTest`) |
+| Ícones na identidade visual | ✅ | 39 ícones 16x16 num registro só (`Icone`): base DB32 (CC0) e desenhos no mesmo molde, todos na paleta; cada um reconhecível pela forma (`IconeTest`) |
 | Gameplay na identidade visual | ✅ | armas, orbitais, coletáveis, números, barras e efeitos pelo registro de ícones e pelas famílias de cor; teto de 36 números no ar. Controle real e todas as evoluções em jogo **a confirmar** |
 | Portais e alavanca na identidade visual | ✅ | aro em pixels, centro escuro e luz em cinco tons ACO/VIDA; mesma animação para chegada e perigo. Alavanca sem moldura; halo OURO no tick. Conferido em bancada |
 | Morte e entrada de Run Over | ✅ | impacto de 24 ticks independente do zoom e voz própria por gato; queda lenta, chama ACO e fechamento para preto; título, painéis e barras animados em 1 s, reveláveis após o título; bancada e testes |
-| Relatório final em destaque | ✅ | quase toda a largura, na escala dos menus; 12 atributos finais, armas, elemento, passivas/cartas e dano de todas as fontes. Ficha imutável antes de sair da partida; abas de build e loja, com rolagem |
+| Relatório final em destaque | ✅ | quase toda a largura, na escala dos menus; 12 atributos finais, armas, elemento, passivas/cartas e dano de todas as fontes. Ficha imutável antes de sair da partida; abas Run report e Final build, com rolagem; moedas ganhas e saldo, sem loja |
 | Animação das armas na mão | ✅ | toda arma de mão respira, pesa no passo e se recolhe ao virar; espada sai da mão para o golpe e volta, com faísca de impacto; arco puxa a corda, treme, solta com coice e a corda vibra; cajados flutuam, pulsam, soltam faíscas do elemento e fazem o gesto de lançar no tick do tiro. Cajado do Azrael redesenhado pela arte oficial. Com controle real e em armas fora das três iniciais **a confirmar** |
-| Ouro e upgrades permanentes | ✅ | |
+| Moedas e espelho do vendedor | ✅ | vendedor animado na interface, falas de compra/reembolso; por gato; 11 melhorias, 47 níveis, 9190 moedas; migração, backup e recibo contra crédito duplicado; refund gratuito. Ver [PROGRESSAO.md](PROGRESSAO.md) |
+| Diálogos lineares com retratos | ✅ | base pronta e validada no vendedor: dados em JSON com condições e prioridade, 7 emoções, máquina de escrever, blips, conversas vistas em `saves/dialogos.json`. Escolhas de resposta e falas soltas (barks) ainda não; estrutura pronta |
+| Vendedor que fala | ✅ | conversa antes da loja, conforme o contexto (primeira vez, vitória, morte rápida ou longa, sem moedas, veterano, gato), e a loja entra deslizando; Esc/B pula direto para ela. Com controle real **a confirmar** |
+
 | Conquistas (10) | ✅ | |
 | Controle de Xbox, foco por D-pad | ✅ | só Windows |
 | Tela de Controles | ✅ | aba Controls do Settings, teclado e controle, lida de `Acao`; rodapé com os mesmos glyphs. Sem remapeamento. Controle real e outras resoluções além de 800×450, 1280×720 e 1920×1080 **a confirmar** |
 | Luz dinâmica, sombras, interpolação, VSync | ✅ | |
 | Música que acompanha a corrida | ✅ | |
 | Save no meio da corrida | ✅ | relógio, chefes vivos e números da corrida vão junto; ver ARQUITETURA |
-| Dinheiro | ⏸️ | **em espera, por decisão**: o gato começa com 100, nada rende moeda, só a antecâmara vende. `Seller`, `Store`, `Coin` e `GumMachine` ficam no código sem uso até o dinheiro ganhar papel |
+| Dinheiro legado | ⏸️ | Player.money/Coin/GumMachine e vitrine antiga em standby. Moedas permanentes são tempo + abates, gastas somente no vendedor |
 | Inventário | ⏸️ | **desativado, não removido**: o E abre a tela de Status (`TelaDeStatus`). Os dados do `Inventory` seguem em uso (arma da mão, hotbar, loja) |
-| Tela de Status (tecla E) | ✅ | atributos finais com bônus, armas, buffs; pausa a corrida |
+| Tela de Status (tecla E) | ✅ | atributos Base/Mirror/Run, saldo do gato, armas e buffs; pausa a corrida |
 | Plano de cartas com encaixes e status (HABILIDADES.md) | 🧪 | nenhuma fase implementada |
 
 Removidos em 2026-10-21 por serem inalcançáveis: o modo por ondas e salas
@@ -291,7 +296,7 @@ usava, e só fora da corrida sem fim). Estão no histórico do git.
 | Fúria | `Furia.java` (`MORTES = 30`; barra: `PARTES = 3`, cores da família roxa dos ícones) |
 | Elementos (multiplicadores de dano e cadência) | `Elemento.java` |
 | Raridades e desgaste das melhorias | `Raridade.java`, `Melhoria.desgaste` |
-| Ouro e preços da meta | `Meta.java` |
+| Moedas, custos/limites/efeitos do espelho | `resources/progressao/espelho.json`; tabela e estimativas em [PROGRESSAO.md](PROGRESSAO.md) |
 | Metas das conquistas | `Conquistas.java` |
 
 Ajuste fino da interface (cada classe lista os números no topo, numa seção
@@ -307,6 +312,7 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Números de dano e coleta | `NumeroDeDano` (`TAMANHO = 5`, `TAMANHO_CRITICO = 7`, `TAMANHO_POP = 8`, `POP = 5`, `JUNTAR = 12`, `VIDA = 0.6`, `VIDA_CRITICO = 0.9`, `MAXIMO_NO_AR = 36`); `Coleta.TICKS = 8`; `Furia.CLARAO = 60`; folhas da aura em `Arsenal` (`FOLHAS_DA_AURA = 3`, `GIRO_DAS_FOLHAS = 0.01`) |
 | Cerimônia da escolha de elemento | `EscolhaDeElemento` (`ANTECIPACAO = 42`, `ATRASO_ENTRE_CARTAS = 9`, `VIRADA = 16`, `SUBIDA = 40`, `DESCIDA_DAS_CARTAS = 10`, `TITULO_ACIMA_DAS_CARTAS = 30`, `VEU = 175`, `VINHETA = 200`, `FAISCAS_PARADA = 0.5`, `FAISCAS_NO_FOCO = 1.6`, `MAX_FAISCAS = 360`, `AURA_PARADA = 30`, `AURA_NO_FOCO = 70`, `PERIODO_DO_BRILHO = 150`, `SAIDA_DA_ARENA = 40`, `ENTRADA_DA_TRILHA = 70`, `VOLTA_DA_ARENA = 60`, `CONFIRMACAO = 36`, `INICIO_DO_VOO = 10`, `CLARAO = 14`, `FORCA_DO_CLARAO = 150`, `FAISCAS_DA_EXPLOSAO = 70`); níveis do áudio em `GenSonsDaEscolha` |
 | Abertura do baú | `AberturaDoBau` (`ENTRADA = 12`, `TREMOR = 18`, `TAMPA = 9`, `SUBIDA = 16`, `ATE_COLETAR = 8` ticks; `PREVIA_POR_ICONE = 9`, `PREVIA_VISIVEIS = 7`, `ZOOM_DO_BAU = 5`, `TREMOR_MAXIMO = 2`, `FAISCAS = 46`, `VIDA_DA_FAISCA = 34`, `CLARAO = 8`, `FORCA_DO_CLARAO = 110`, `VEU = 228`); níveis do áudio em `GenSonsDoBau` |
+| Caixa de diálogo | `CaixaDeDialogo` (`ENTRADA = 10`, `SAIDA = 8` ticks, `SUBIDA = 10` px, `CARENCIA = 10` ticks, `FATOR_DO_RETRATO = 2`, `LARGURA_MAXIMA = 392` px, `TAMANHO_DO_TEXTO = 8`, `ENTRELINHA = 13`, `PISCAR_MIN = 150`, `PISCAR_MAX = 320`, `PISCADA = 7`, `RESPIRO = 150`, `BOCA = 5`, `PULO = 6` ticks, `LETRAS_POR_BLIP = 2`); `MaquinaDeEscrever` (`LETRAS_POR_SEGUNDO = {28, 48, 90, instantâneo}`, `PAUSA_FRASE = 9`, `PAUSA_VIRGULA = 4` ticks); `EntradaLateral.DURACAO = 14` ticks; blips do vendedor a -34 dB RMS (`GenMixagem`) |
 | Transmutação da arma | `Transmutacao` (`ESTOURAR = 6`, `ASSENTAR = 12`, `ALTURA`, `ESTOURO`, `SEGUNDOS_DO_NOME`, `RAIO_DO_ANEL`, `FORCA_DO_ANEL`) |
 | Animação da arma na mão | `AnimacaoDaArma` (`RESPIRO_GRAUS = 2.5`, `PASSO_GRAUS = 6`, `PASSO_PX = 1`, `PASSO_ATRASO = 0.45`, `TROCA_DE_ANDAR = 0.15`, `VIRADA_TICKS = 7`, `VIRADA_GRAUS = 35`, `FLUTUA_GRAUS = 4`, `FLUTUA_PERIODO = 100`, `PREPARO_SUAVE = 0.3`); quanto o corpo afunda por quadro em `Player.AFUNDADO` (cópia do `GenGatos`) |
 | Cajado: gesto, halo e faíscas | `Wand` (`ANTECIPACAO = 12` ticks, `GESTO` = ação 3, volta 12, 16°/20°, 0/1 px, sem subida; `ORBE_PX = 2.5`, `HALO_PX = 3.2`, `HALO_CARGA_PX = 2.2`, `HALO_ALFA = 55`, `HALO_ALFA_CARGA = 70`, `PULSO_PERIODO = 48`, `PULSO = 0.12`, `FAISCAS = 10`, `FAISCA_A_CADA = {16, 10, 6}`, `FAISCAS_NO_TIRO = 3`, `FAISCA_VIDA = 36`); cor sem elemento `Familia.VERDE` |
@@ -316,7 +322,7 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Portal de nascimento | `Chegada`: chegada 24 + 30 + 18 ticks; folha 4×16×16, 6 ticks/quadro; `TAMANHO = 1,4` tiles; `Tom.PERIGO` → VIDA, `Tom.CHEGADA` → ACO (cinco tons) |
 | Morte do gato | `Player`: `MORTE_PARADA = 18`, `MORTE_TOMBO = 72`, `MORTE_APAGAR = 48` ticks; zoom final 1,6×; `ImpactoDaMorte.DURACAO = 24` ticks e `AMPLITUDE = 8` pixels da UI, antes do zoom; `EspiritoDoGato.SUBIDA = 12` pixels nativos, cinco fragmentos ACO |
 | Entrada de Run Over | `ApresentacaoDoFim`: `TOTAL = 60`, `TITULO = 18`; `RESUMO = 12`, `LOJA = 20`, `PAINEL = 22`; `BARRAS = 24`, `CRESCIMENTO = 30`; `OURO = 42`, `BRILHO = 18`; `DESLOCAMENTO = 8` pixels nativos |
-| Fim de corrida: relatório e loja | `LayoutDoFim`: margem 12, vão 10, abas 13, espaço das abas 10; colunas 24%/38%/38%, sem redução da escala dos menus. `GameOver`: cabeçalho 20, margem interna 12, atributos 38/16, dano 78/24, build 30/32 (topo/passo); loja 64/36/42 (topo/altura/passo), recuo 8, retrato até 48, `AVISO_FICA = 240` ticks |
+| Fim de corrida: relatório e build | `LayoutDoFim`: margem 12, vão 10, abas 13, espaço das abas 10; colunas 24%/38%/38%, sem redução da escala dos menus. `GameOver`: cabeçalho 20, margem interna 12, atributos 38/16, dano 78/24, build 30/32 (topo/passo); retrato até 48, `AVISO_FICA = 240` ticks |
 | Música na pausa | `Sound.ABAFADO_NA_PAUSA = 0.35` |
 | Painel do Settings | `Configuracoes.LARGURA_DO_PAINEL = 288` px nativos |
 | Tela de Controles | `PainelDeControles` (`VAO_ENTRE_COLUNAS = 12`, `FOLGA_DA_LINHA = 2`, `FOLGA_ANTES_DO_GRUPO = 3`, `ALTURA_DO_GRUPO = 9`, `VAO_ENTRE_TECLAS = 1`, `VAO_ANTES_DO_MOUSE = 6`, `FOLGA_DA_LINHA_DO_CONTROLE = 10`, `VAO_ENTRE_ROTULOS = 2`, `ALTURA_DA_LEGENDA = 16`, `ALTURA_DO_SELETOR = 11`, `FOLGA_DO_SELETOR = 6`); desenho em `DesenhoDoControle` (`LARGURA × ALTURA = 118×80`, `PECAS`, `BOTAO_DO_MEIO`, `LUZ`, `SOMBRA_DESCE = 3`, `SOMBRA_ALFA = 110`, cores de face `VERDE`, `VERMELHO`, `AZUL`, `AMARELO`) |
@@ -325,13 +331,25 @@ Ajuste fino da interface (cada classe lista os números no topo, numa seção
 | Laço: recuperação de ticks, superfície perdida | `Engine` (`MAX_CATCHUP = 5`, `QUADROS_ATE_RECRIAR = 60`) |
 | Resoluções oferecidas | `Window.COMUNS` (mais a do monitor) |
 
+### Espelho: números iniciais e verificação
+
+Moedas: segundos/6 + abates/8, bônus de vitória 200; morte/vitória 100%,
+abandono 50%, com ganho do espelho de até +50%. Custo completo: 9190/gato.
+Vida +6 (5 níveis), dano +1 (5), alcance +0,5 (4), resistência +3 pp (4),
+velocidade +0,08 (5), coleta +10 pp (5), crítico +2 pp (5), sorte +1 (5),
+reroll +1 (3), carta +1 (1), moedas +10 pp (5). Tabela completa e estimativas
+em [PROGRESSAO.md](PROGRESSAO.md). Compra: clarão 18 ticks, recusa 10,
+preço subindo 36; grade 3 colunas de 118×42, detalhe 196, vão 6/10 e faixa do vendedor 80. Retrato dos diálogos de 64, boca a cada 6 ticks, piscada a cada 180; respostas por 180 ticks; entrada lateral 14 ticks.
+`gradlew verificarProgressao` testa objetos reais e captura as telas em pasta
+isolada; `-PbancadaResolucao=1280x720` altera a resolução da bancada.
+
 ## 9. Próximos passos conhecidos
 
 Tirados do código e do [roadmap](planejamento/ROADMAP.md); nenhum tem dono
 definido:
 
-- Tirar o dinheiro da espera: dar a ele um papel na corrida sem fim (moedas
-  caindo, loja no meio da corrida) ou removê-lo.
+- Validar o ritmo econômico do espelho com jogadores; decidir futuramente se
+  a carteira deve ser compartilhada, mantendo níveis específicos por gato.
 - Arte própria do Rato Rei.
 - Decidir se o plano de [HABILIDADES.md](planejamento/HABILIDADES.md) continua,
   agora que as cartas seguem o modelo do Vampire Survivors.

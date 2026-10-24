@@ -1104,8 +1104,19 @@ public class Player extends Entity {
         Game.getMap().put(new Word(z, x, y, 1));
     }
 
+    private Item armaDeReserva;
+
     private void tickItemHand() {
         Item item = getInventory().getItemHand();
+        // SAVES ANTIGOS MANTÊM O INVENTÁRIO. A arma em standby não ataca;
+        // a padrão é montada uma vez, sem apagar os itens guardados no save.
+        if (item != null && !ItemIDs.PADRAO.contains(ItemIDs.values()[item.getID()])) {
+            if (armaDeReserva == null || armaDeReserva.elemento() != elemento()) {
+                armaDeReserva = Item.build(ItemIDs.valueOf(getArma()).ordinal());
+            }
+            item = armaDeReserva;
+            getInventory().setItemHand(item);
+        }
         if(item != null) {
             // A ANIMACAO ANDA ANTES DO TICK DA ARMA: o disparo que a arma marcar
             // agora fica no tempo zero do gesto, e o quadro deste tick ja o mostra.

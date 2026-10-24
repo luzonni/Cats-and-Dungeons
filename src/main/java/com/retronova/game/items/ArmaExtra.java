@@ -28,6 +28,9 @@ public enum ArmaExtra {
 
     public static final int NIVEL_MAXIMO = 5;
 
+    /** STANDBY: preservar ordinais e builds antigos, sem oferecer nem atacar. */
+    public static final boolean ATIVAS = false;
+
     private final String nome;
     private final String descricao;
     private final Color cor;

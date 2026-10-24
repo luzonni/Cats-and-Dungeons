@@ -21,6 +21,7 @@ import com.retronova.game.items.Passiva;
 import com.retronova.game.map.arena.Arena;
 import com.retronova.game.map.arena.SubirDeNivel;
 import com.retronova.game.objects.entities.Bonus;
+import com.retronova.game.espelho.Espelho;
 import com.retronova.game.objects.entities.Modifiers;
 import com.retronova.game.objects.entities.Player;
 import com.retronova.menus.shared.Realce;
@@ -119,11 +120,12 @@ public class TelaDeStatus extends TelaDeMenu {
 
     static List<Linha> atributos(Player gato) {
         List<Linha> l = new ArrayList<>();
-        l.add(new Linha("Health", (int) Math.ceil(gato.getLife()) + "/" + (int) gato.getLifeSize()
-                + bonus(gato, Modifiers.Life, 0), Palette.TEXT, null,
-                "Current and maximum health. Bonus from cards and upgrades in parentheses."));
-        l.add(new Linha("Damage", numero(gato.getDamage(), 0) + bonus(gato, Modifiers.Damage, 0),
-                Palette.TEXT, null, "Added to every hit, from every weapon."));
+        l.add(new Linha("Health", (int) Math.ceil(gato.getLife()) + "/" + (int) gato.getLifeSize(), Palette.TEXT,
+                camadas(gato, Modifiers.Life, Espelho.Efeito.VIDA, gato.getLifeSize(), 0),
+                "Current and maximum health. Max = base + mirror upgrades + this run's cards."));
+        l.add(new Linha("Damage", numero(gato.getDamage(), 0), Palette.TEXT,
+                camadas(gato, Modifiers.Damage, Espelho.Efeito.DANO, gato.getDamage(), 0),
+                "Added to every hit, from every weapon."));
         // A cadência é um INTERVALO em ticks: a tela mostra golpes por segundo, que
         // é o que o jogador sente, e o bônus na mesma unidade.
         double intervalo = gato.getAttackSpeed();
@@ -132,27 +134,65 @@ public class TelaDeStatus extends TelaDeMenu {
         l.add(new Linha("Attack speed", numero(porSeg, 1) + "/s" + diferenca(porSeg - porSegBase, 1),
                 Palette.TEXT, null, "Hand weapon attacks per second (" + numero(intervalo, 0)
                 + " ticks between attacks)."));
-        l.add(new Linha("Move speed", numero(gato.getSpeed(), 1) + bonus(gato, Modifiers.Speed, 1),
-                Palette.TEXT, null, "How fast the cat runs."));
-        l.add(new Linha("Range", numero(gato.getRange(), 1) + bonus(gato, Modifiers.Range, 1),
-                Palette.TEXT, null, "Reach of the hand weapon."));
+        l.add(new Linha("Move speed", numero(gato.getSpeed(), 1), Palette.TEXT,
+                camadas(gato, Modifiers.Speed, Espelho.Efeito.VELOCIDADE, gato.getSpeed(), 2),
+                "How fast the cat runs."));
+        l.add(new Linha("Range", numero(gato.getRange(), 1), Palette.TEXT,
+                camadas(gato, Modifiers.Range, Espelho.Efeito.ALCANCE, gato.getRange(), 1),
+                "Reach of the hand weapon."));
         double resistencia = gato.hasModifier(Modifiers.Resistance) ? gato.valueModifier(Modifiers.Resistance) : 0;
-        l.add(new Linha("Damage taken", "-" + porcento(Math.min(0.8, Math.max(0, resistencia))),
-                Palette.TEXT, null, "Cut from every hit you take. Capped at 80%."));
-        l.add(new Linha("Luck", numero(gato.getLuck(), 0) + bonus(gato, Modifiers.Luck, 0),
-                Palette.TEXT, null, "Luck points: " + porcento(gato.chanceDeSorte())
+        double resEspelho = Espelho.valor(gato, Espelho.Efeito.RESISTENCIA), resInata = Bonus.resistenciaInata(gato);
+        l.add(new Linha("Damage taken", "-" + porcento(Math.min(0.8, Math.max(0, resistencia))), Palette.TEXT,
+                camadasEmPorcento(resInata, resEspelho, resistencia - resEspelho - resInata),
+                "Cut from every hit you take. Capped at 80%. Base is the cat's own skill."));
+        l.add(new Linha("Luck", numero(gato.getLuck(), 0), Palette.TEXT,
+                camadas(gato, Modifiers.Luck, Espelho.Efeito.SORTE, gato.getLuck(), 0),
+                "Luck points: " + porcento(gato.chanceDeSorte())
                 + " chance roll. Also raises chest drops and critical chance."));
-        l.add(new Linha("Critical", porcento(Bonus.critico(gato)), Palette.TEXT, null,
-                "Chance for a hit to deal extra damage."));
+        double critico = Bonus.critico(gato), critEspelho = Espelho.valor(gato, Espelho.Efeito.CRITICO);
+        double critInato = Bonus.criticoInato(gato);
+        l.add(new Linha("Critical", porcento(critico), Palette.TEXT,
+                camadasEmPorcento(critInato, critEspelho, critico - critEspelho - critInato),
+                "Chance for a hit to deal extra damage. Run includes passives and luck."));
         l.add(new Linha("Area", porcento(Bonus.area(gato)), Palette.TEXT, null,
                 "Size of area weapons, relative to their base."));
         l.add(new Linha("Regen", numero(Bonus.regeneracao(gato), 1) + " HP/s", Palette.TEXT, null,
                 "Health recovered every second."));
         l.add(new Linha("XP gain", porcento(Bonus.crescimento(gato)), Palette.TEXT, null,
                 "Experience received, relative to the base."));
-        l.add(new Linha("Pickup range", porcento(Bonus.ima(gato)), Palette.TEXT, null,
+        double ima = Bonus.ima(gato), imaEspelho = Espelho.valor(gato, Espelho.Efeito.COLETA);
+        l.add(new Linha("Pickup range", porcento(ima), Palette.TEXT,
+                camadasEmPorcento(1, imaEspelho, ima - 1 - imaEspelho),
                 "How far XP gems fly to you, relative to the base."));
         return l;
+    }
+
+    // ---------------------------------------------------- base + espelho + corrida
+
+    /**
+     * AS TRÊS CAMADAS DE UM ATRIBUTO, na linha de baixo: o que é do gato, o que o
+     * espelho do vendedor soma e o que esta corrida somou (cartas, passivas). O
+     * número grande continua sendo o total; isto responde "de onde veio".
+     *
+     * A base é o total menos os modificadores; o espelho vem da tabela; a corrida
+     * é o resto dos modificadores (ver Espelho.decompor).
+     */
+    private static String camadas(Player gato, Modifiers mod, Espelho.Efeito efeito, double total, int casas) {
+        double modificador = gato.hasModifier(mod) ? gato.valueModifier(mod) : 0;
+        Espelho.Camadas c = Espelho.decompor(total - modificador, modificador, Espelho.valor(gato, efeito));
+        return "Base " + numero(c.base(), casas) + "   Mirror " + comSinal(c.espelho(), casas)
+                + "   Run " + comSinal(c.corrida(), casas);
+    }
+
+    private static String camadasEmPorcento(double base, double espelho, double corrida) {
+        return "Base " + porcento(base) + "   Mirror " + sinal(espelho) + "   Run " + sinal(corrida);
+    }
+
+    private static String comSinal(double v, int casas) {
+        if (Math.abs(v) < (casas == 0 ? 0.5 : Math.pow(10, -casas) / 2)) {
+            return "+0";
+        }
+        return (v > 0 ? "+" : "") + numero(v, casas);
     }
 
     private static List<Linha> corrida(Player gato) {
@@ -165,8 +205,11 @@ public class TelaDeStatus extends TelaDeMenu {
             l.add(new Linha("Kills", String.valueOf(Game.getWave().abates()), Palette.TEXT, null,
                     "Enemies defeated this run."));
         }
-        l.add(new Linha("Gold", String.valueOf(gato.getMoney()), Palette.TEXT, null,
-                "Coins carried. Spent only at the merchant before the run."));
+        // O SALDO DO ESPELHO, e nao mais o dinheiro da corrida (Player.money), que
+        // ficou sem uso com a loja de armas em standby.
+        l.add(new Linha("Coins", String.valueOf(com.retronova.game.save.Progresso.moedas(gato.getName())),
+                Palette.TEXT, null, "Saved coins. This run's coins are added when it ends. "
+                + "Spend them at the merchant's mirror."));
         l.add(new Linha("Rerolls", String.valueOf(SubirDeNivel.trocas()), Palette.TEXT, null,
                 "Level-up hands you can still reroll this run."));
         l.add(new Linha("Skips", String.valueOf(SubirDeNivel.pulos()), Palette.TEXT, null,
@@ -190,6 +233,7 @@ public class TelaDeStatus extends TelaDeMenu {
         }
         Melhorias m = gato.getMelhorias();
         for (Map.Entry<ArmaExtra, Integer> a : m.armas().entrySet()) {
+            if (!ArmaExtra.ATIVAS) continue;
             ArmaExtra arma = a.getKey();
             boolean evoluiu = m.evoluiu(arma);
             Evolucao ev = Evolucao.de(arma);
@@ -257,13 +301,6 @@ public class TelaDeStatus extends TelaDeMenu {
         return (p >= 0 ? "+" : "") + p + "%";
     }
 
-    /** " (+6)" com o que os modificadores somam a este atributo, ou nada. */
-    private static String bonus(Player gato, Modifiers mod, int casas) {
-        if (!gato.hasModifier(mod)) {
-            return "";
-        }
-        return diferenca(gato.valueModifier(mod), casas);
-    }
 
     private static String diferenca(double v, int casas) {
         if (Math.abs(v) < (casas == 0 ? 0.5 : 0.05)) {

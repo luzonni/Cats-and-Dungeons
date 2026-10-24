@@ -131,6 +131,20 @@ class ClasseTest {
     }
 
     @Test
+    @DisplayName("so as tres armas padrao ficam em jogo; as extras estao em standby")
+    void soAsArmasPadrao() {
+        for (ItemIDs id : ItemIDs.values()) {
+            if (Classe.de(id) != Classe.NENHUMA && id.jogavel()) {
+                assertTrue(ItemIDs.PADRAO.contains(id), id + " em jogo, mas nao e arma padrao");
+            }
+        }
+        for (ItemIDs id : ItemIDs.PADRAO) {
+            assertTrue(id.jogavel(), id + " e arma padrao e saiu de jogo");
+        }
+        assertTrue(!ItemIDs.Laser.jogavel() && ItemIDs.EM_STANDBY.contains(ItemIDs.Laser));
+    }
+
+    @Test
     @DisplayName("os itens em espera continuam fora de jogo")
     void emEsperaNaoEhJogavel() {
         assertTrue(ItemIDs.EM_ESPERA.contains(ItemIDs.Catnip));

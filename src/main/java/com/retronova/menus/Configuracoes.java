@@ -152,13 +152,17 @@ public class Configuracoes extends TelaDeMenu {
         // Grava ANTES de desempilhar: depois disso a partida ja nao e a corrente,
         // e a gravacao nao teria de quem fotografar o estado.
         encerrarAudicao(false);
-        Corrida.gravar();
-        voltarAoMenuPrincipal();
+        FalhaDeSave.tentar(() -> {
+            Corrida.gravarObrigatorio();
+            voltarAoMenuPrincipal();
+        });
     }
 
     private void sair() {
-        Corrida.gravar();
-        Engine.CLOSE();
+        FalhaDeSave.tentar(() -> {
+            Corrida.gravarObrigatorio();
+            Engine.CLOSE();
+        });
     }
 
     private boolean naAbaDaCorrida() {
@@ -277,6 +281,20 @@ public class Configuracoes extends TelaDeMenu {
         ui.add(OptionRow.toggle("Allow intro skip",
                 () -> Configs.PermitirPularAbertura() ? 1 : 0, v -> Configs.setPermitirPularAbertura(v != 0))
                 .desc("Allow a key, click or controller button to skip the opening. Off by default."));
+        // APAGAR A PROGRESSÃO SÓ DO MENU PRINCIPAL. Na pausa, com uma corrida
+        // aberta, o gato em jogo já carrega as melhorias aplicadas; apagar ali
+        // deixaria a corrida com números que o save não tem mais.
+        if (!naCorrida) {
+            ui.add(OptionRow.acao("Reset progress",
+                    () -> confirmacao.perguntar("Erase all progress?",
+                            new String[]{"Coins and upgrades of every cat.",
+                                    "Saved runs are kept. This cannot be undone."},
+                            () -> FalhaDeSave.tentar(com.retronova.game.save.Progresso::apagarTudo)))
+                    .desc("Erase the coins and permanent upgrades of all cats. Asks first."));
+        }
+        ui.add(OptionRow.cycle("Dialogue speed", Configs::VelocidadeDoTexto, Configs::setVelocidadeDoTexto,
+                new String[]{"Slow", "Normal", "Fast", "Instant"})
+                .desc("How fast dialogue text is typed. A click always completes the line."));
 
         // CONTROLS: só a escolha do aparelho é uma linha; o resto é o painel de
         // controles logo abaixo dela (ver PainelDeControles).

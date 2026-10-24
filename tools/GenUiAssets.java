@@ -42,7 +42,91 @@ public class GenUiAssets {
         write(new File(dir, "button_dark.png"), DEEP, MAIN, OUTLINE); // secundário
         icone(new File("src/main/resources/com/retronova/resources/sprites/objects/player/player_muffin_idle.png"),
               new File(dir, "icon.png"));
-        System.out.println("ok: button.png, button_dark.png, icon.png");
+        painelDoDialogo(new File(dir, "dialogo.png"));
+        molduraDoRetrato(new File(dir, "retrato.png"));
+        System.out.println("ok: button.png, button_dark.png, icon.png, dialogo.png, retrato.png");
+    }
+
+    // ---------------------------------------------------------------- diálogo
+    //
+    // A caixa de diálogo (game/dialogos/CaixaDeDialogo) em duas peças 9-slice,
+    // na mesma língua dos botões: contorno escuro, borda MAIN com luz em cima e
+    // sombra embaixo, e um rebite claro em cada canto como ornamento. A moldura
+    // do retrato ganha as orelhas dos botões, que é a assinatura da interface.
+
+    static final int ACCENT = 0xFFABB1C1;
+    /** Fundo do texto: o contorno puxado 30% para DEEP. Escuro para a letra clara ler. */
+    static final int FUNDO_DO_TEXTO = 0xFF2B2639;
+    /** Célula do painel; recortes 9-slice de 8 em todos os lados. */
+    static final int PAINEL = 24;
+    /** Célula da moldura do retrato: 24 de largura, 29 de altura (5 de orelha). Recortes 8, 8, 13, 8. */
+    static final int RETRATO_W = 24, RETRATO_H = 29, RETRATO_ORELHA = 5;
+
+    static void painelDoDialogo(File out) throws Exception {
+        BufferedImage img = new BufferedImage(PAINEL, PAINEL, BufferedImage.TYPE_INT_ARGB);
+        moldura(img, 0, PAINEL, PAINEL, 2, FUNDO_DO_TEXTO);
+        ImageIO.write(img, "png", out);
+    }
+
+    static void molduraDoRetrato(File out) throws Exception {
+        BufferedImage img = new BufferedImage(RETRATO_W, RETRATO_H, BufferedImage.TYPE_INT_ARGB);
+        moldura(img, RETRATO_ORELHA, RETRATO_W, RETRATO_H, 3, OUTLINE);
+        // As orelhas, iguais às dos botões: um triângulo MAIN com miolo claro.
+        for (boolean direita : new boolean[]{false, true}) {
+            for (int i = 0; i < RETRATO_ORELHA; i++) {
+                int y = RETRATO_ORELHA - 1 - i;
+                int larg = Math.round(EAR_W + (EAR_TIP - EAR_W) * (i / (float) (RETRATO_ORELHA - 1)));
+                for (int k = 0; k < larg; k++) {
+                    int x = direita ? RETRATO_W - 2 - k : 1 + k;
+                    boolean borda = k == larg - 1 || i == RETRATO_ORELHA - 1 || k == 0;
+                    img.setRGB(x, y, borda ? OUTLINE : (k == 1 && i >= 1 && i <= 2 ? LIGHT : MAIN));
+                }
+            }
+        }
+        ImageIO.write(img, "png", out);
+    }
+
+    /**
+     * Um painel com borda de {@code borda} pixels: contorno por fora, a borda MAIN
+     * com a linha de cima em LIGHT e a de baixo em DEEP, um fio de contorno por
+     * dentro e o miolo em {@code fundo}. Os cantos de fora são cortados (canto
+     * arredondado de um pixel) e cada canto ganha um rebite.
+     */
+    static void moldura(BufferedImage img, int topo, int w, int h, int borda, int fundo) {
+        for (int y = topo; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int dx = Math.min(x, w - 1 - x), dy = Math.min(y - topo, h - 1 - y);
+                int d = Math.min(dx, dy);
+                if (dx == 0 && dy == 0) {
+                    continue;   // canto arredondado
+                }
+                int c;
+                if (d == 0) {
+                    c = OUTLINE;
+                } else if (d <= borda) {
+                    if (y - topo == 1 && dx > 0) {
+                        c = LIGHT;
+                    } else if (h - 1 - y == 1 && dx > 0) {
+                        c = DEEP;
+                    } else {
+                        c = MAIN;
+                    }
+                } else if (d == borda + 1) {
+                    c = OUTLINE;
+                } else {
+                    c = fundo;
+                }
+                img.setRGB(x, y, c);
+            }
+        }
+        // Rebites nos quatro cantos, sobre a borda.
+        int[][] cantos = {{2, topo + 2}, {w - 4, topo + 2}, {2, h - 4}, {w - 4, h - 4}};
+        for (int[] c : cantos) {
+            img.setRGB(c[0], c[1], ACCENT);
+            img.setRGB(c[0] + 1, c[1], LIGHT);
+            img.setRGB(c[0], c[1] + 1, LIGHT);
+            img.setRGB(c[0] + 1, c[1] + 1, DEEP);
+        }
     }
 
     /**

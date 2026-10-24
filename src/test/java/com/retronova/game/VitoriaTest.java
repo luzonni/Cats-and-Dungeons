@@ -16,7 +16,7 @@ class VitoriaTest {
 
     @BeforeAll
     static void semGravarNoDisco() {
-        // Em modo bench o Meta nao grava: o teste nao mexe no meta.json de ninguem.
+        // Em modo bench o Progresso nao grava: o teste nao mexe no save de ninguem.
         benchAntes = System.getProperty("cd.bench");
         System.setProperty("cd.bench", "true");
     }
@@ -53,14 +53,15 @@ class VitoriaTest {
 
     @Test
     void resumoSomaOBonusSoQuandoVenceu() {
-        int base = Meta.ouroDaCorrida(1800, 400);
+        var regras = com.retronova.game.save.RegrasDeMoedas.atuais();
+        int base = regras.moedas(com.retronova.game.save.RegrasDeMoedas.Resultado.MORTE, 1800, 400, 1);
 
         Estatisticas.encerrar(1800, 400, 20, "Finn");
         assertEquals(base, Estatisticas.ouroGanho(), "sem vitoria, so o ouro da corrida");
 
         Estatisticas.registrarVitoria("Finn");
         Estatisticas.encerrar(1800, 400, 20, "Finn");
-        assertEquals(base + Meta.BONUS_DE_VITORIA, Estatisticas.ouroGanho(),
+        assertEquals(base + regras.bonusDeVitoria(), Estatisticas.ouroGanho(),
                 "com vitoria, o bonus entra no numero mostrado");
     }
 
@@ -68,6 +69,8 @@ class VitoriaTest {
     void vencerPagaMaisQueSobreviverAteOFim() {
         // Trinta minutos de tempo, sem nenhum abate, rendem 300. O bonus tem de ser
         // um acrescimo que se sinta, e nao um arredondamento.
-        assertTrue(Meta.BONUS_DE_VITORIA >= Meta.ouroDaCorrida(1800, 0) / 2);
+        var regras = com.retronova.game.save.RegrasDeMoedas.atuais();
+        assertTrue(regras.bonusDeVitoria() >= regras.moedas(
+                com.retronova.game.save.RegrasDeMoedas.Resultado.MORTE, 1800, 0, 1) / 2);
     }
 }

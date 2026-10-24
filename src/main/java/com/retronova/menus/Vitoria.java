@@ -10,7 +10,6 @@ import com.retronova.engine.sound.Sound;
 import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
-import com.retronova.game.Meta;
 import com.retronova.menus.shared.Button;
 import com.retronova.menus.shared.Rodape;
 import com.retronova.menus.shared.TelaDeMenu;
@@ -29,8 +28,8 @@ import java.util.List;
  * Ela PAUSA a corrida para o jogador respirar e ver o que ganhou, e pergunta o
  * que fazer: seguir na corrida sem fim, para quem quer ver até onde o gato
  * aguenta, ou encerrar agora na tela de resumo, com o bônus já pago. O bônus é
- * depositado ao vencer, e não ao escolher "terminar": fechar o jogo nesta tela não
- * perde nada.
+ * preservado no checkpoint de vitória e depositado ao encerrar. Fechar nesta
+ * tela mantém a vitória para a retomada, sem creditar duas vezes.
  *
  * Mesma moldura das outras telas de menu (ver TelaDeMenu). Esc e B valem "seguir":
  * voltar, aqui, é voltar para a partida.
@@ -125,11 +124,11 @@ public class Vitoria extends TelaDeMenu {
                 Palette.TEXT, s);
 
         Font valor = FontHandler.font(FontHandler.Game, 10f * s);
-        String bonus = "+" + Meta.BONUS_DE_VITORIA + " gold";
+        String bonus = "+" + com.retronova.game.save.RegrasDeMoedas.atuais().bonusDeVitoria() + " coins";
         TextFx.draw(g, bonus, valor, cx - FontHandler.getWidth(bonus, valor) / 2, p.y + 34 * s, OURO, s);
 
         Font miuda = FontHandler.font(FontHandler.Septem, 6f * s);
-        String dica = Estatisticas.venceu() ? "Already paid - closing the game keeps it" : "";
+        String dica = Estatisticas.venceu() ? "Paid when the run ends - closing the game keeps it" : "";
         TextFx.draw(g, dica, miuda, cx - FontHandler.getWidth(dica, miuda) / 2, p.y + 48 * s, Palette.LIGHT, s);
 
         for (Button botao : botoes) {

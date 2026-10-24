@@ -46,7 +46,7 @@ atual e à divisão clara entre motor e jogo.
 | `engine.inputs` | Teclado, mouse, controle (`gamepad/`) e modo de entrada (`Entrada`) |
 | `engine.io` | Leitura de JSON dos recursos |
 | `engine.sound` | Música, efeitos e curva de volume (`Ganho`) |
-| `com.retronova.game` | A partida (`Game`), o save (`Corrida`), a progressão entre corridas (`Meta`), as conquistas e as estatísticas da corrida |
+| `com.retronova.game` | A partida (`Game`), o save (`Corrida`), a progressão por gato (`save/Progresso`, `espelho/Espelho`), as conquistas e as estatísticas da corrida |
 | `game.map` | Mapa base, câmera, luz e sombra (`Atmosfera`) |
 | `game.map.arena` | Arena, horda (`Waves`), campo gerado (`Gerador`), cartas de nível, abertura do baú, escolha de elemento, música da arena |
 | `game.map.room` | Salas desenhadas à mão (hoje só a antecâmara) |
@@ -644,7 +644,7 @@ subindo 12 pixels nativos durante a segunda metade da queda e o apagamento.
 O véu chega a preto no fim, emendando no fundo preto da tela de resultados.
 
 `GameOver` usa `ApresentacaoDoFim`, relógio próprio de 60 ticks, sem mexer nos
-valores de `Estatisticas` ou `Meta`: título em 18 ticks; resumo começa em 12 e
+valores de `Estatisticas` ou `Progresso`: título em 18 ticks; resumo começa em 12 e
 colunas de detalhe em 20, cada painel leva 22; barras crescem entre 24 e 54; brilho único do
 ouro e botões entre 42 e 60. O deslocamento é de oito pixels nativos. O som do
 título toca uma vez, apenas na derrota. Conquistas aparecem depois da entrada.
@@ -662,7 +662,7 @@ identidade e resultado à esquerda, ficha final ao centro e dano por fonte à
 direita. `LayoutDoFim` usa toda a largura disponível menos 12 pixels nativos de
 margem por lado, vãos de dez e proporções 24%/38%/38%. A escala é a escolhida
 nos menus, sem encolher tudo para encaixar painéis fixos. Personagem tem retrato,
-nome, habilidade, tempo, abates, nível, baús, maior horda e ouro recebido.
+nome, habilidade, tempo, abates, nível, baús, maior horda, moedas recebidas e saldo do gato.
 
 `ResumoFinalDoGato.capturar(player)` é chamado ANTES de descartar o `Game`.
 Guarda cópias imutáveis das mesmas linhas que `TelaDeStatus` calcula: 12 atributos
@@ -670,17 +670,12 @@ finais, arma de mão, elemento, armas extras/evoluções, passivas e cartas, sem
 recalcular atributos na tela final nem consultar um personagem novo. Valores e
 ordem do dano também são copiados ao abrir `GameOver`; nenhuma fonte é descartada.
 
-As abas comuns (`Abas`) são `Run report`, `Final build` e `Upgrades`, acessíveis
-por clique, Q/E ou LB/RB. Listas que não cabem têm rolagem por mouse ou Up/Down;
-Left/Right escolhe a coluna de leitura e depois os botões. A loja fica em sua
-aba, nas duas colunas da direita, com cinco melhorias em duas colunas de cards.
-Só essa aba aceita compras; com interface ampliada, a loja rola e acompanha a
-linha focada, mantendo cliques dentro da área visível. O relatório é a apresentação inicial, preservando
-a entrada animada, o pulo seguro e o som da morte.
-
+As abas comuns (`Abas`) são `Run report` e `Final build`, acessíveis por clique,
+Q/E ou LB/RB. Listas que não cabem têm rolagem; Left/Right escolhe a coluna.
+A loja foi removida do fim da corrida: toda compra fica no vendedor da
+antecâmara, em `TelaDoEspelho`. `Try Again` leva ao hub sem obrigar a comprar.
 Geometria de `GameOver`: margem interna 12; cabeçalhos 20; atributos começam em
-38 com passo 16; dano em 78 com passo 24; build em 30 com passo 32. Loja começa
-em 64, cards de altura 36 e passo 42, com recuo de oito. Fontes do corpo Septem 8,
+38 com passo 16; dano em 78 com passo 24; build em 30 com passo 32. Fontes do corpo Septem 8,
 efeitos 6/7 e retrato de até 48 pixels nativos. Listas reservam espaço para seu
 rodapé. O retrato se adapta à altura, mantendo legíveis os números da corrida.
 
@@ -825,6 +820,176 @@ longa dourada-clara, esfera dourada grande com luz em cima à esquerda, colar ma
 escuro e o brilho verde, que não vai no PNG e é desenhado em jogo. É o mesmo PNG
 na mão, na hotbar, no seletor de gatos e na tela de Status.
 
+### Diálogos (`game/dialogos/`)
+
+Conversas lineares (sem escolha de resposta) com retrato, emoção, máquina de
+escrever e voz. A base serve a qualquer personagem; o primeiro é o vendedor da
+antecâmara. A estrutura não impede escolhas no futuro: uma fala pode ganhar
+opções que apontam para outra conversa, sem mudar a escolha nem a memória.
+
+**Peças:**
+
+| Peça | Papel |
+|---|---|
+| `Dialogos` | porta de entrada: `conversar(personagem, falante)`, `aoEvento(gatilho, falante)` e `escolher(...)`; `mostrarParaTeste(id, falante)` para a bancada |
+| `CatalogoDeDialogos` | lê `resources/.../dialogos/` e valida textos, personagens, condições e eventos |
+| `EscolhaDeConversa` | a regra de escolha, pura |
+| `Condicoes` | as condições aceitas nos dados, por nome |
+| `EventosDoDialogo` | o que um nome de evento faz (abrir loja, tocar som) |
+| `MemoriaDosDialogos` | conversas vistas e a última corrida, em `saves/dialogos.json` |
+| `CaixaDeDialogo`, `MaquinaDeEscrever`, `Retrato` | a tela, o texto letra a letra e o retrato com expressões |
+
+**Os arquivos** (o JSON não aceita comentário; chaves começadas por `_` são
+notas e são ignoradas):
+
+- `personagens.json`: quem fala.
+- `textos.json`: todas as frases, por chave. É o único lugar com texto de
+  diálogo, pronto para uma tradução futura (o jogo hoje é só em inglês).
+- um arquivo de conversas por personagem (`vendedor.json`).
+
+```jsonc
+// personagens.json
+"vendedor": {
+  "nome": "Merchant",                 // a aba (texto de tela, em inglês)
+  "retrato": "vendedor",              // sprites/retratos/vendedor.png
+  "voz": ["VozVendedor1", "VozVendedor2", "VozVendedor3"],  // nomes em Sounds, sorteados
+  "moldura": "dialogo",               // 9-slice em ui/ (o tema da caixa)
+  "conversas": "vendedor.json"        // arquivo das conversas dele
+}
+
+// vendedor.json, uma conversa
+{
+  "id": "vendedor.morte_rapida.a",    // único; é o que a memória grava
+  "gatilho": "interagir",             // interagir | fim_de_corrida | fala_solta | outro
+  "prioridade": 55,                   // maior toca primeiro; genéricas em 0
+  "repeticao": "always",              // "once" = uma vez por save
+  "condicoes": {                      // todas precisam valer (ver Condicoes)
+    "ultima_corrida": "morte",
+    "ultima_corrida_ate_segundos": 120
+  },
+  "falas": [
+    { "emocao": "smug", "texto": "vendedor.morte_rapida.a.1" },
+    { "emocao": "smug", "texto": "vendedor.morte_rapida.a.2",
+      "eventos": ["som:Coin"] }       // opcional: dispara quando a fala aparece
+  ],
+  "aoTerminar": ["abrir_loja_do_vendedor"]   // no fim ou ao pular
+}
+```
+
+`personagem` pode ir na conversa (dono) e em cada fala (quem fala naquela
+linha); sem ele, vale o dono do arquivo. `emocao` desconhecida vira `neutral`.
+
+**Emoções** (`Emocao`; a ordem é a das colunas do retrato, e emoção nova entra no fim):
+
+| Nos dados | Emoção | Expressão do vendedor |
+|---|---|---|
+| `neutral` | neutro | olhos abertos, boca de gato |
+| `happy` | feliz | olhos em arco, sorriso, bochechas coradas |
+| `sad` | triste | sobrancelhas subindo ao meio, olhar baixo, boca caída, lágrima |
+| `angry` | bravo | sobrancelhas descendo ao meio, olhos estreitos, boca reta |
+| `confused` | confuso | uma sobrancelha alta, olhos de tamanhos diferentes, boca torta |
+| `surprised` | surpreso | sobrancelhas altas, olhos grandes, boca em O |
+| `smug` | malicioso | pálpebra caída, uma sobrancelha erguida, sorriso de canto |
+
+O retrato (`sprites/retratos/<nome>.png`) tem uma coluna de 32×32 por emoção e
+três linhas: olhos abertos, piscada e boca aberta (a fala alterna as duas). A
+fala diz a emoção e o retrato troca sozinho, com um pulo de um pixel. Coluna que
+falta, ou vazia, cai na neutra; linha que falta, na de olhos abertos. Parado, o
+retrato pisca a cada 2,5 a 5 s e respira um pixel.
+
+**Condições** aceitas hoje: `primeiro_encontro`, `ultima_corrida`
+(`nenhuma`/`morte`/`vitoria`), `ultima_corrida_ate_segundos`,
+`ultima_corrida_desde_segundos`, `ultima_corrida_nivel_minimo`, `gato`,
+`moedas_minimo`, `moedas_maximo`, `ouro_minimo`, `vitorias_minimo`,
+`corridas_minimo`, `corridas_maximo`, `conversas_minimo`, `vista_no_maximo`.
+Condição desconhecida **reprova** a conversa e aparece no console e no
+`DialogosTest`.
+
+**A escolha** (`EscolhaDeConversa`): só as do gatilho e do personagem, que
+passam nas condições, sem as `once` já vistas; ganha a de maior prioridade; no
+empate, a menos vista, depois a vista há mais tempo, depois sorteio. Com isso a
+reação ao que acabou de acontecer passa na frente da rotina (como no Hades), e
+as genéricas giram sem repetir antes de todas tocarem.
+
+**A caixa** (`CaixaDeDialogo`): retrato na moldura com orelhas (`ui/retrato.png`)
+à esquerda, aba com o nome no desenho dos botões, painel `ui/dialogo.png` com a
+fala e, embaixo, as dicas com os glyphs da tela de Controles ("Continue"
+quando a fala acabou, com o botão do mouse, Espaço/Enter ou A conforme o
+aparelho em uso; Esc/B "Skip" sempre). O jogo pausa por baixo. O clique é lido
+à parte (`Mouse.click`), porque o `apertou()` das ações só lê teclas; o que for
+apertado na carência ou no deslize da loja é descartado.
+O primeiro clique, Enter, Espaço ou A completa a fala; o segundo passa. Esc/B
+pula a conversa e dispara os eventos do fim. Velocidade em Settings → Interface
+→ Dialogue speed (28, 48 ou 90 letras/s, ou instantânea), com pausa depois de
+fim de frase e de vírgula. Um blip da voz a cada duas letras, no volume dos
+efeitos. Entra subindo e aparecendo em 10 ticks e sai em 8. Tudo em ticks, com
+`Engine.alpha()` entre eles; nada é criado por quadro.
+
+**Gatilhos:** `Dialogos.conversar` (interação com o personagem; o vendedor usa
+no clique e no B do controle) e `Dialogos.aoEvento(gatilho, falante)` para
+eventos do jogo, em que qualquer personagem com conversa para aquele gatilho
+pode falar. Falas soltas durante a corrida (barks, gatilho `fala_solta`) usam a
+mesma escolha; falta o balão que não pausa o jogo, que não foi feito. No
+teclado, falar com o vendedor continua sendo o clique: a tecla de interagir do
+teclado foi uma decisão registrada no `AcaoTest` e não mudou.
+
+**Eventos** (`EventosDoDialogo`): o nome no dado aponta para um efeito
+registrado no código. Hoje: `abrir_loja_do_vendedor` (chama `abrirLoja()` do
+falante, que é um `Lojista`) e `som:<Sounds>`. Evento novo é um
+`EventosDoDialogo.registrar("nome", origem -> ...)`.
+
+**A loja entrando de lado:** `EntradaLateral` desloca o desenho da direita para o
+lugar em 14 ticks (ease-out) e bloqueia aperto enquanto desliza; a `Inter` a
+recebe em `open(nome, entrada)`. O espelho usa a mesma entrada, sem aceitar compra durante a transição.
+
+**Memória e migração.** `saves/dialogos.json` (versão 1) guarda, à parte do save
+da corrida, que é apagado na morte: `vistas` (id → vezes), `quando` (id →
+momento da última vez, em conversas tocadas), `conversas` (personagem → vezes),
+`relogio` e `ultimaCorrida` (`total`, `resultado`, `segundos`, `nivel`,
+`abates`, `gato`). O fim de corrida é gravado por `Game.gameOver` (morte, ou
+encerrar depois de vencer). Na bancada nada é gravado.
+
+**Integração com o espelho (2026-10-23).** `Seller.abrirLoja()` atende ao
+mesmo evento `abrir_loja_do_vendedor`, abrindo `TelaDoEspelho`. Concluir ou
+pular a conversa entrega o espelho; sem conversa elegível, abre diretamente.
+A vitrine de armas fica em standby. `EntradaLateral` também é usada pelo
+espelho, com entrada protegida por 14 ticks. O retrato e o nome vêm do mesmo
+`Personagem`/`Retrato`; respostas de compra e reembolso usam chaves em
+`dialogos/textos.json` e expressões da folha de emoções. As condições
+`moedas_*` e o alias legado `ouro_minimo` consultam a carteira permanente do
+gato atual. A memória continua em `saves/dialogos.json`, sem migração destrutiva.
+O resultado final usa `Estatisticas.venceu()`, preservando vitórias retomadas.
+**Como fazer:**
+
+- *Diálogo novo:* acrescente a conversa no arquivo do personagem, as frases em
+  `textos.json` e rode `./gradlew test` (o `DialogosTest` acusa texto,
+  condição ou evento faltando). Para ver: `-Dcd.bench=true -Dcd.dialogo=<id>`.
+- *Personagem novo:* entrada em `personagens.json`, arquivo de conversas, retrato
+  em `sprites/retratos/` (pode começar só com a coluna neutra) e, se quiser voz,
+  WAVs curtos + entradas em `Sounds`. Para ele falar, chame
+  `Dialogos.conversar("<id>", entidade)` na interação dele.
+- *Expressão nova num personagem:* desenhe a coluna da emoção no retrato (para
+  o vendedor, em `tools/GenRetratos.java`, e rode o gerador); emoção nova para
+  todos entra no fim de `Emocao`.
+- *Disparar por evento:* `Dialogos.aoEvento("fim_de_corrida", null)` onde o
+  evento acontece, e conversas com `"gatilho": "fim_de_corrida"` nos dados.
+- *Trocar a loja aberta:* alterar `Seller.abrirLoja()`, mantendo o evento dos dados.
+
+**Referências usadas:** a palestra *Breathing Life into Greek Myth: The Dialogue of
+Hades* (Greg Kasavin e Darren Korb, GDC 2021,
+[GDC Vault](https://gdcvault.com/play/1026975/Breathing-Life-into-Greek-Myth))
+e a *AI-driven Dynamic Dialog through Fuzzy Pattern Matching* (Elan Ruskin,
+Valve, GDC 2012, [GDC Vault](https://gdcvault.com/play/1015317/AI-driven-Dynamic-Dialog-through),
+[resumo de Emily Short](https://emshort.blog/2012/03/16/gdc-2012-talk-on-dynamic-dialogue/)),
+para condições, prioridade e a regra mais específica antes da genérica; o
+formato de diálogo do Stardew Valley ([wiki de modding](https://wiki.stardewvalley.net/Modding:Dialogue)),
+com retratos por emoção e neutro como padrão; o diálogo do Celeste
+([Everest](https://github-wiki-see.page/m/EverestAPI/Resources/wiki/Adding-Custom-Dialogue)),
+com retrato e expressão por linha; os blips por personagem do Undertale; e os
+[Game Accessibility Guidelines](https://gameaccessibilityguidelines.com/allow-players-to-progress-through-text-prompts-at-their-own-pace),
+para o avanço sempre por ação do jogador e o pulo. "Incraft" não foi
+encontrado com esse nome; **a confirmar** a referência.
+
 ## Persistência
 
 Tudo é JSON, gravado ao lado do executável (no `run`, a raiz do projeto):
@@ -833,7 +998,8 @@ Tudo é JSON, gravado ao lado do executável (no `run`, a raiz do projeto):
 |---|---|---|
 | `config.json` | `Configs` | opções; gravação atômica com `.tmp` e `.bak` |
 | `saves/corrida-N.json` (N = 1 a 3) | `Corrida` | a corrida interrompida. O gato: nível, vida, XP, inventário, melhorias, passivas, armas extras, evoluções, elemento. O andamento: relógio, abates, próximo chefe, Rato Rei, cerco, chefes vivos (tipo e fração de vida), níveis pendentes, trocas e pulos, carga da Fúria, números da tela final, vitória |
-| `saves/meta.json` | `Meta` | ouro e níveis dos upgrades permanentes |
+| `saves/progresso.json` | `save/Progresso` | moedas, níveis por gato e IDs de corridas pagas (v2); migra meta.json |
+| `saves/credito-<hash>.json` | `save/Progresso` | recibo durável pendente de depósito; repetido com idempotência na abertura |
 | `saves/conquistas.json` | `Conquistas` | o progresso das conquistas |
 
 **Permadeath.** Cada partida grava sempre no mesmo espaço, escolhido no início;
@@ -859,8 +1025,19 @@ permanentes) → o gato do save → o campo → os reinícios de corrida → o a
 do save → no primeiro tick, os chefes e a regravação. Os bônus vêm antes porque
 o upgrade de vida enche a barra; a vida gravada tem de ser a última palavra.
 
-`Meta` e `Conquistas` ficam fora dos espaços: apagar uma corrida não apaga o que
+`Progresso` e `Conquistas` ficam fora dos espaços: apagar uma corrida não apaga o que
 foi conquistado. No modo bancada (`-Dcd.bench`) nenhum dos dois grava.
+
+### Progressão permanente
+
+Contrato completo, pesquisa, formatos, recuperação, tabela econômica e roteiro
+manual em [PROGRESSAO.md](PROGRESSAO.md). `ArquivoSeguro` valida, força o
+arquivo temporário, troca e conserva backup válido; `Corrida` usa a mesma
+proteção. `Progresso` publica cópias somente após persistir. Um recibo antecede
+cada crédito final; o id pago e as moedas entram no mesmo save. Falhas de saída
+ou depósito permitem nova tentativa (`FalhaDeSave`) sem descartar a corrida.
+`Espelho` aplica bônus sobre gatos novos, soma só diferenças nas compras do
+hub e remove só sua camada ao reembolsar. A base continua em `players/*.json`.
 
 ## Controle
 
@@ -1226,9 +1403,18 @@ Registrados para não se perderem. Revistos em 2026-10-21.
   meio de um cerco volta com a tela vazia. A horda se refaz em segundos, e o aviso
   da pausa diz isso ("Enemies on screen are not kept"), mas é uma brecha
   consciente.
-- **Dinheiro em espera.** Não há fonte de moeda dentro da corrida: o gato começa
-  com 100 e só a loja da antecâmara as consome. `Seller`, `Store`, `Coin` e
-  `GumMachine` (com `GumInterface` e `GumPanel`) ficam no código, marcados como
-  em espera, até o dinheiro ganhar papel na corrida.
+- **Economia inicial a validar com jogadores.** Moedas permanentes e vendedor ativos;
+  preços e ritmo propostos em PROGRESSAO.md. Dinheiro local e máquinas antigas
+  continuam em standby, sem segundo ponto de compra.
 - `tools/GenCisterna.java` ainda escreve as plantas `cistern_1` a `6`, que o jogo
   não lê mais; os tiles que ele gera continuam em uso pelo `Gerador`.
+
+### Vendedor na interface do espelho
+
+TelaDoEspelho reutiliza o personagem `vendedor` do catálogo de diálogos:
+nome, retrato 32×32 com emoções e chaves de fala em `dialogos/textos.json`.
+Não usa mais o sprite de corpo inteiro ampliado. Retrato em fator 2 da escala
+da interface (64 pixels nativos), faixa de 80 e texto de compra/reembolso por
+180 ticks. Boca alterna a cada 6 ticks e piscada a cada 180. O relógio anda no
+tick e `Retrato` mantém o cache. Grade preservada; saldo à direita. A conversa
+com voz antecede a loja; a entrada lateral protege a primeira compra.

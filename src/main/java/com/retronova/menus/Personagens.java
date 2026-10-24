@@ -266,6 +266,10 @@ public class Personagens extends TelaDeMenu {
     }
 
     private void iniciar() {
+        FalhaDeSave.tentar(this::iniciarComSave);
+    }
+
+    private void iniciarComSave() {
         // Cala o menu ANTES de montar o jogo: o construtor de Room ja sobe a
         // trilha da antecamara, e um stopAll depois dele mataria as duas.
         Sound.stopAll();

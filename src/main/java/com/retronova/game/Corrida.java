@@ -108,7 +108,13 @@ public final class Corrida {
     public static final int ESPACOS = 3;
 
     /** Onde os saves moram, ao lado do config.json. */
-    private static final String PASTA = com.retronova.engine.Foto.pastaDeSaves();
+    private static String PASTA = com.retronova.engine.Foto.pastaDeSaves();
+    private static Path legado = Paths.get("corrida.json");
+
+    static void usarPasta(Path pasta) {
+        PASTA = pasta.toString();
+        legado = pasta.resolve("corrida.json");
+    }
 
     /** O arquivo do espaço, contando de 1 como o jogador conta. */
     private static Path caminho(int espaco) {
@@ -132,7 +138,7 @@ public final class Corrida {
         if (com.retronova.engine.Foto.ligado()) {
             return;
         }
-        Path antigo = Paths.get("corrida.json");
+        Path antigo = legado;
         if (!Files.exists(antigo)) {
             return;
         }
@@ -163,8 +169,20 @@ public final class Corrida {
      * corrida, e "relógio zerado, nenhum chefe ainda" é exatamente o que ele
      * descrevia. Os campos {@code nivel} e {@code dificuldade}, do tempo das salas,
      * são ignorados ao ler.
+     *
+     * VERSÃO 2: o {@code id} da corrida, que a progressão permanente usa para
+     * creditar as moedas uma vez só (ver save/Progresso). Um save da versão 1 é
+     * lido normalmente e ganha um id novo na leitura: ele nunca foi creditado,
+     * porque o crédito por id não existia.
      */
-    private static final long VERSAO = 1;
+    private static final long VERSAO = 2;
+
+    /** O id desta corrida. Ver o comentário de VERSAO. */
+    private final String id;
+
+    public String id() {
+        return this.id;
+    }
 
     /** Um chefe que estava vivo quando a corrida foi gravada. */
     public record ChefeVivo(EntityIDs tipo, double fracaoDeVida) {
@@ -219,9 +237,10 @@ public final class Corrida {
 
     private final Andamento andamento;
 
-    private Corrida(int gato, long segundos, double vida, double xp, int nivelDoGato,
+    private Corrida(String id, int gato, long segundos, double vida, double xp, int nivelDoGato,
                     int dinheiro, List<int[]> hotbar, List<int[]> mochila, List<int[]> passivos,
                     List<int[]> melhorias, int elemento, Andamento andamento) {
+        this.id = id;
         this.gato = gato;
         this.segundos = segundos;
         this.vida = vida;
@@ -311,6 +330,14 @@ public final class Corrida {
      */
     public static void gravar() {
         try {
+            gravarObrigatorio();
+        } catch (RuntimeException falha) {
+            System.err.println("[save] checkpoint nao gravado: " + falha);
+        }
+    }
+
+    /** Saídas explícitas só prosseguem quando o checkpoint foi gravado. */
+    public static void gravarObrigatorio() {
             Game jogo = Game.getGame();
             Player gato = Game.getPlayer();
             if (gato == null || gato.morrendo()) {
@@ -323,15 +350,11 @@ public final class Corrida {
                 return;
             }
             de(jogo, gato).escrever(jogo.getEspaco());
-        } catch (RuntimeException fora) {
-            // Game.getGame() lança quando a activity atual não é o jogo. Acontece
-            // em transição de tela, e ali não há o que gravar.
-        }
     }
 
     private static Corrida de(Game jogo, Player gato) {
         Inventory inv = gato.getInventory();
-        return new Corrida(
+        return new Corrida(jogo.getIdDaCorrida(),
                 jogo.getIndexPlayer(), jogo.getSeconds(), gato.getLife(), gato.getXp(), gato.getLevel(),
                 gato.getMoney(),
                 doSlots(inv.getHotbar(), inv.getHotbarSize()),
@@ -391,6 +414,7 @@ public final class Corrida {
         }
         JSONObject o = new JSONObject();
         o.put("versao", VERSAO);
+        o.put("id", id);
         o.put("gato", (long) gato);
         o.put("segundos", segundos);
         o.put("vida", vida);
@@ -411,16 +435,9 @@ public final class Corrida {
         Path destino = caminho(espaco);
         Path temporario = destino.resolveSibling(destino.getFileName() + ".tmp");
         try {
-            Files.createDirectories(destino.getParent());
-            Files.writeString(temporario, o.toJSONString(), StandardCharsets.UTF_8);
-            try {
-                Files.move(temporario, destino,
-                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            } catch (AtomicMoveNotSupportedException semAtomico) {
-                Files.move(temporario, destino, StandardCopyOption.REPLACE_EXISTING);
-            }
+            com.retronova.game.save.ArquivoSeguro.gravar(destino, o.toJSONString(), Corrida::interpretar);
         } catch (IOException e) {
-            System.err.println("Corrida: falha ao gravar o ponto de retomada: " + e);
+            throw new java.io.UncheckedIOException("Falha ao gravar ponto de retomada", e);
         }
     }
 
@@ -511,20 +528,68 @@ public final class Corrida {
         }
         migrarOSaveAntigo();
         Path arquivo = caminho(espaco);
-        if (!Files.exists(arquivo)) {
+        if (!Files.exists(arquivo) && !Files.exists(com.retronova.game.save.ArquivoSeguro.backup(arquivo))) {
             return null;
         }
         try {
-            return interpretar(Files.readString(arquivo, StandardCharsets.UTF_8));
+            Corrida lida = com.retronova.game.save.ArquivoSeguro.ler(arquivo, Corrida::interpretar).valor();
+            if (lida != null && com.retronova.game.save.Progresso.foiCreditada(lida.id)) {
+                // ACABOU E JÁ FOI PAGA. O jogo fechou entre o crédito das moedas e o
+                // apagar deste arquivo: retomar daria a corrida e as moedas de novo.
+                apagar(espaco);
+                return null;
+            }
+            return lida;
+        } catch (com.retronova.game.save.ArquivoSeguro.VersaoIncompativel futura) {
+            throw futura;
+        } catch (java.io.UncheckedIOException inacessivel) {
+            throw inacessivel;
         } catch (Exception e) {
-            return null;            // consumir() dirá o que houve, e apagará
+            throw new IllegalStateException("Nao foi possivel consultar a corrida", e);
         }
+    }
+
+    /** Um id novo de corrida. */
+    public static String novoId() {
+        return java.util.UUID.randomUUID().toString();
+    }
+
+    /**
+     * A corrida deste espaço foi ABANDONADA: o jogador começou outra por cima,
+     * apagou o espaço ou recomeçou pela pausa. Credita a fração de abandono das
+     * moedas (ver save/RegrasDeMoedas) e apaga o arquivo.
+     *
+     * O crédito é por id: se a corrida viva já foi creditada (o "Restart" da pausa
+     * credita com os números ao vivo antes de apagar), aqui só se apaga.
+     */
+    public static void abandonar(int espaco) {
+        Corrida c = espiar(espaco);
+        if (c != null) {
+            var regras = com.retronova.game.save.RegrasDeMoedas.atuais();
+            int segundos = (int) c.segundosDaCorrida();
+            int abates = c.andamento.relogio().abates();
+            var resultado = c.andamento.venceu()
+                    ? com.retronova.game.save.RegrasDeMoedas.Resultado.VITORIA
+                    : com.retronova.game.save.RegrasDeMoedas.Resultado.ABANDONO;
+            int moedas = regras.moedas(resultado, segundos, abates, ganancia(c.nomeDoGato()));
+            com.retronova.game.save.Progresso.creditar(c.id, c.nomeDoGato(), moedas);
+        }
+        apagar(espaco);
+    }
+
+    /**
+     * O multiplicador de moedas do gato. Um ponto só, para o espelho (etapa 2)
+     * entrar aqui sem que quem credita precise saber dele.
+     */
+    public static double ganancia(String gato) {
+        return com.retronova.game.espelho.Espelho.ganancia(gato);
     }
 
     /**
      * Lê e APAGA o arquivo. Ver o cabeçalho da classe para o porquê do apagar.
      *
-     * Apaga mesmo quando a leitura falha: um arquivo que não abre não vai abrir na
+     * O backup é tentado antes de descartar; formatos futuros e falhas de acesso
+     * são preservados. Corrupção é separada em .corrompido. Um arquivo ruim na
      * próxima tentativa, e deixá-lo no disco só faria o botão de continuar aparecer
      * para sempre sem nunca funcionar.
      */
@@ -532,18 +597,7 @@ public final class Corrida {
         if (!espacoValido(espaco)) {
             return null;
         }
-        migrarOSaveAntigo();
-        Path arquivo = caminho(espaco);
-        if (!Files.exists(arquivo)) {
-            return null;
-        }
-        Corrida lida = null;
-        try {
-            String conteudo = Files.readString(arquivo, StandardCharsets.UTF_8);
-            lida = interpretar(conteudo);
-        } catch (Exception e) {
-            System.err.println("Corrida: save ilegível, descartado. " + e);
-        }
+        Corrida lida = espiar(espaco);
         apagar(espaco);
         return lida;
     }
@@ -553,11 +607,14 @@ public final class Corrida {
             conteudo = conteudo.substring(1);       // BOM, mesmo caso do Configs
         }
         JSONObject o = (JSONObject) new JSONParser().parse(conteudo);
-        if (inteiro(o, "versao", -1) != VERSAO) {
-            System.err.println("Corrida: formato desconhecido, save descartado.");
-            return null;
+        int versao = inteiro(o, "versao", -1);
+        if (versao != 1 && versao != VERSAO) {
+            throw new com.retronova.game.save.ArquivoSeguro.VersaoIncompativel(versao);
         }
-        return new Corrida(
+        // Versão 1 não tinha id: ganha um agora (ver VERSAO).
+        String id = o.get("id") instanceof String s && !s.isEmpty() ? s
+                : java.util.UUID.nameUUIDFromBytes(conteudo.getBytes(StandardCharsets.UTF_8)).toString();
+        return new Corrida(id,
                 inteiro(o, "gato", 0),
                 (long) inteiro(o, "segundos", 0),
                 real(o, "vida", 1),
@@ -650,6 +707,7 @@ public final class Corrida {
         try {
             Path arquivo = caminho(espaco);
             Files.deleteIfExists(arquivo);
+            Files.deleteIfExists(com.retronova.game.save.ArquivoSeguro.backup(arquivo));
             Files.deleteIfExists(arquivo.resolveSibling(arquivo.getFileName() + ".tmp"));
         } catch (IOException e) {
             System.err.println("Corrida: falha ao apagar o save: " + e);

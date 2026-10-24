@@ -2,6 +2,13 @@
 
 Planejamento do arsenal. ✅ marca o que já existe no jogo.
 
+**Estado ativo em 2026-10-23:** somente espada/Muffin, varinha/Azrael e arco/Finn,
+com seus elementos. As demais armas da mão, as seis armas extras e suas
+evoluções estão em **standby**; o catálogo abaixo registra o código preservado,
+não o pool atual de recompensas. Haste, que só afetava as extras, também não é
+oferecida. O vendedor passou a vender somente melhorias permanentes;
+reativação e compatibilidade dos saves em [PROGRESSAO.md](../PROGRESSAO.md).
+
 Revisado em **2026-10-21** contra o código, depois da limpeza do modo por salas. Desde a versão anterior deste
 documento (2026-09-06) o arsenal passou a ter três camadas: a **arma da mão**,
 que define o gato; as **armas extras**, que se acumulam durante a corrida; e as

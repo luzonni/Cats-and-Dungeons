@@ -19,7 +19,6 @@ import com.retronova.engine.sound.Sounds;
 import com.retronova.game.Conquistas;
 import com.retronova.game.Estatisticas;
 import com.retronova.game.Game;
-import com.retronova.game.Meta;
 import com.retronova.game.map.room.Room;
 import com.retronova.game.objects.entities.Bonus;
 import com.retronova.game.objects.entities.Player;
@@ -41,20 +40,20 @@ import java.util.Map;
  * ANTES ERA SO "GAME OVER" E DOIS BOTOES. A corrida acabava sem dizer nada — nem
  * quanto tempo o gato aguentou, nem que arma carregou a build — e nada passava
  * para a proxima. Agora a tela fecha a corrida com os numeros dela (tempo,
- * abates, nivel, baus, maior horda e o dano de cada arma em barras) e abre a
- * loja de upgrades permanentes com o ouro ganho (ver Meta). E o momento em que
- * a derrota vira "so mais uma".
+ * abates, nivel, baus, maior horda e o dano de cada arma em barras), as moedas
+ * ganhas e o saldo do gato. E o momento em que a derrota vira "so mais uma".
+ *
+ * SEM LOJA. A loja de upgrades permanentes que morava aqui (terceira aba) saiu:
+ * toda compra acontece no espelho do vendedor, na antecamara (game/espelho), e
+ * o "Try Again" leva direto ate ele. Duas lojas eram duas regras de preco e dois
+ * lugares para o jogador procurar. O codigo da loja antiga esta no historico do
+ * git (feat/espelho); ver docs/ARQUITETURA.md, "Progressao permanente".
  */
 public class GameOver extends TelaDeMenu {
 
     // Geometria em pixels nativos; tudo é multiplicado pela escala da tela.
-    /** O relatório usa três colunas fluidas; a loja ocupa as duas da direita. */
-    /**
-     * As duas linhas precisam de espaço para corpo, contorno e sombra da fonte.
-     * A versão de 18 pixels apertava o efeito contra a borda inferior.
-     */
-    private static final int LOJA_TOPO = 64, LINHA_H = 36, LINHA_PASSO = 42;
-    private static final int MARGEM_INTERNA = 12, RECUO_DA_LINHA = 8;
+    /** O relatório usa três colunas fluidas. */
+    private static final int MARGEM_INTERNA = 12;
     private static final int ATRIBUTOS_TOPO = 38, ATRIBUTOS_PASSO = 16;
     private static final int DANO_TOPO = 78, DANO_PASSO = 24;
     private static final int BUILD_TOPO = 30, BUILD_PASSO = 32;
@@ -67,24 +66,26 @@ public class GameOver extends TelaDeMenu {
     private static final int AVISO_FICA = 240;
 
     private final List<Button> botoes = new ArrayList<>();
-    private final List<Rectangle> linhasDaLoja = new ArrayList<>();
     private int foco = -1;
-    /** Linha da loja em foco pelas setas e pelo controle, ou -1 com o foco nos botões. */
-    private int focoLoja = -1;
-    private int brilhoDaCompra = -1, desdeACompra;
     /** Ticks desde que a tela abriu; anima os avisos de conquista. */
     private int desdeOFim;
     private final ApresentacaoDoFim apresentacao = new ApresentacaoDoFim();
     private BufferedImage tituloPronto;
     private int escalaDoTitulo, baseDoTituloPronto;
-    private final Abas abas = new Abas("Run report", "Final build", "Upgrades");
+    private final Abas abas = new Abas("Run report", "Final build");
     private final ResumoFinalDoGato ficha;
     private final List<Map.Entry<String, Double>> danos;
-    private int rolagemDanos, rolagemAtributos, rolagemArmas, rolagemMelhorias, colunaRolagem, rolagemLoja;
+    private int rolagemDanos, rolagemAtributos, rolagemArmas, rolagemMelhorias, colunaRolagem;
     private LayoutDoFim layout;
 
     private final int gato;
     private final int espaco;
+
+    /** O nome do gato da corrida: as moedas e os upgrades sao dele (ver save/Progresso). */
+    private String nomeDoGato() {
+        return gato >= 0 && gato < com.retronova.game.objects.entities.Player.TEMPLATES.length
+                ? com.retronova.game.objects.entities.Player.TEMPLATES[gato].getName() : "";
+    }
 
     public GameOver(int gato, int espaco) {
         this(gato, espaco, Engine.getACTIVITY() instanceof Game
@@ -134,7 +135,7 @@ public class GameOver extends TelaDeMenu {
         return Configs.UiScale();
     }
 
-    private Rectangle painelResumo, painelLoja;
+    private Rectangle painelResumo;
 
     @Override
     protected void posicionar() {
@@ -144,15 +145,7 @@ public class GameOver extends TelaDeMenu {
         layout = LayoutDoFim.calcular(w, s, area.y, area.y + area.height,
                 Button.preferredHeight(), Configs.Margin());
         painelResumo = layout.personagem();
-        painelLoja = layout.loja();
         abas.posicionar(layout.abas().x, layout.abas().y, layout.abas().width);
-        linhasDaLoja.clear();
-        Meta.Permanente[] todos = Meta.Permanente.values();
-        for (int i = 0; i < todos.length; i++) {
-            int larguraLinha = (painelLoja.width - (2 * MARGEM_INTERNA + LayoutDoFim.VAO) * s) / 2;
-            linhasDaLoja.add(new Rectangle(painelLoja.x + MARGEM_INTERNA * s + (i / 3) * (larguraLinha + LayoutDoFim.VAO * s),
-                    painelLoja.y + (LOJA_TOPO + (i % 3) * LINHA_PASSO - rolagemLoja) * s, larguraLinha, LINHA_H * s));
-        }
         int largura = Button.preferredWidth();
         int altura = Button.preferredHeight();
         int by = layout.botoesY();
@@ -165,7 +158,6 @@ public class GameOver extends TelaDeMenu {
 
     @Override
     protected void atualizar() {
-        desdeACompra++;
         desdeOFim++;
         apresentacao.tick();
         if (desdeOFim == 1 && !Estatisticas.venceu()) Sound.play(Sounds.FimDaRun);
@@ -178,15 +170,8 @@ public class GameOver extends TelaDeMenu {
             if (apresentacao.aceitaPulo() && (clique || confirmar)) apresentacao.concluir();
             return;
         }
-        if (abas.tick()) { foco = -1; focoLoja = -1; }
-        if (abas.atual() == 2) {
-            int roda = Integer.signum(Mouse.Scroll());
-            if (roda != 0) {
-                rolagemLoja = Math.clamp(rolagemLoja + roda * LINHA_PASSO, 0, maximoRolagemLoja());
-                posicionar();
-            }
-        }
-        if (abas.atual() != 2) {
+        if (abas.tick()) { foco = -1; }
+        {
             int passo = Integer.signum(Mouse.Scroll());
             if (KeyBoard.KeyPressed("Down")) passo = 1;
             if (KeyBoard.KeyPressed("Up")) passo = -1;
@@ -199,73 +184,27 @@ public class GameOver extends TelaDeMenu {
                 else rolagemMelhorias = limitarRolagem(rolagemMelhorias + passo, ficha.melhorias().size(), layout.danos(), BUILD_TOPO, BUILD_PASSO);
             }
         }
-        // Loja: clicar numa linha compra o proximo nivel, se houver ouro.
-        Meta.Permanente[] todos = Meta.Permanente.values();
-        for (int i = 0; abas.atual() == 2 && i < linhasDaLoja.size(); i++) {
-            Rectangle r = linhasDaLoja.get(i);
-            if (areaDaLoja().contains(Mouse.getX(), Mouse.getY()) && r.contains(Mouse.getX(), Mouse.getY())) {
-                Engine.window.pointing();
-                if (Mouse.clickOn(Mouse_Button.LEFT, r)) {
-                    comprar(i);
-                }
-            }
-        }
-        // AS SETAS ANDAM NAS DUAS PARTES DA TELA. Cima e baixo percorrem a loja,
-        // e descer da ultima melhoria cai nos botoes; esquerda e direita escolhem
-        // o botao. A loja era so de clique, e o controle nao chegava nela.
-        if (abas.atual() == 2 && KeyBoard.KeyPressed("Up")) {
-            focoLoja = focoLoja < 0 ? todos.length - 1 : Math.max(0, focoLoja - 1);
-            foco = -1;
-        } else if (abas.atual() == 2 && KeyBoard.KeyPressed("Down")) {
-            if (focoLoja >= 0 && focoLoja < todos.length - 1) {
-                focoLoja++;
-            } else {
-                focoLoja = -1;
-                foco = Math.max(0, foco);
-            }
-        } else if (KeyBoard.KeyPressed("Right")) {
-            focoLoja = -1;
-            if (abas.atual() != 2 && foco < 0 && colunaRolagem == 0) colunaRolagem = 1;
+        // Esquerda e direita andam entre as colunas do relatorio e os botoes.
+        if (KeyBoard.KeyPressed("Right")) {
+            if (foco < 0 && colunaRolagem == 0) colunaRolagem = 1;
             else foco = (foco + 1) % botoes.size();
         } else if (KeyBoard.KeyPressed("Left")) {
-            focoLoja = -1;
-            if (abas.atual() != 2 && foco < 0 && colunaRolagem == 1) colunaRolagem = 0;
-            else if (abas.atual() != 2 && foco == 0) { foco = -1; colunaRolagem = 1; }
+            if (foco < 0 && colunaRolagem == 1) colunaRolagem = 0;
+            else if (foco == 0) { foco = -1; colunaRolagem = 1; }
             else foco = (foco <= 0 ? botoes.size() : foco) - 1;
         } else if (KeyBoard.KeyPressed("Enter")) {
-            if (abas.atual() == 2 && focoLoja >= 0) {
-                comprar(focoLoja);
-            } else if (foco >= 0) {
+            if (foco >= 0) {
                 botoes.get(foco).activate();
                 return;
             }
-        }
-        if (abas.atual() == 2 && focoLoja >= 0) {
-            Rectangle linha = linhasDaLoja.get(focoLoja), vista = areaDaLoja();
-            if (linha.y < vista.y) rolagemLoja -= (vista.y - linha.y) / escala();
-            if (linha.y + linha.height > vista.y + vista.height)
-                rolagemLoja += (linha.y + linha.height - vista.y - vista.height) / escala();
-            rolagemLoja = Math.clamp(rolagemLoja, 0, maximoRolagemLoja());
-            posicionar();
         }
         for (int i = 0; i < botoes.size(); i++) {
             Button botao = botoes.get(i);
             botao.tick();
             if (botao.isHovered()) {
                 foco = -1;
-                focoLoja = -1;
             }
             botao.setFocused(foco == i);
-        }
-    }
-
-    private void comprar(int linha) {
-        if (Meta.comprar(Meta.Permanente.values()[linha])) {
-            Sound.play(Sounds.Conquista);
-            brilhoDaCompra = linha;
-            desdeACompra = 0;
-        } else {
-            Sound.play(Sounds.Button);
         }
     }
 
@@ -274,7 +213,7 @@ public class GameOver extends TelaDeMenu {
     @Override
     protected List<Rodape.Dica> dicas() {
         if (!apresentacao.terminou()) return List.of(new Rodape.Dica("Enter", "A", "Reveal summary"));
-        return List.of(new Rodape.Dica("Q / E", "LB / RB", "Report / Build / Upgrades"),
+        return List.of(new Rodape.Dica("Q / E", "LB / RB", "Report / Build"),
                 new Rodape.Dica("Enter", "A", "Select"),
                 new Rodape.Dica("Esc", "B", "Main menu"));
     }
@@ -283,7 +222,7 @@ public class GameOver extends TelaDeMenu {
     protected void desenharConteudo(Graphics2D g) {
         int s = escala();
         abas.render(g);
-        if (apresentacao.terminou() && abas.atual() != 2 && Entrada.porFoco() && foco < 0)
+        if (apresentacao.terminou() && Entrada.porFoco() && foco < 0)
             Realce.marcadorDeFoco(g, colunaRolagem == 0 ? layout.atributos() : layout.danos(), s);
         Graphics2D resumo = camada(g, ApresentacaoDoFim.RESUMO, ApresentacaoDoFim.PAINEL, s);
         if (resumo != null) {
@@ -292,8 +231,7 @@ public class GameOver extends TelaDeMenu {
         }
         Graphics2D loja = camada(g, ApresentacaoDoFim.LOJA, ApresentacaoDoFim.PAINEL, s);
         if (loja != null) {
-            if (abas.atual() == 2) desenharLoja(loja, s);
-            else if (abas.atual() == 1) {
+            if (abas.atual() == 1) {
                 desenharBuild(loja, layout.atributos(), "Weapons & element", ficha.armas(), rolagemArmas, s);
                 desenharBuild(loja, layout.danos(), "Buffs & upgrades", ficha.melhorias(), rolagemMelhorias, s);
             } else {
@@ -472,7 +410,9 @@ public class GameOver extends TelaDeMenu {
                 {"Level", String.valueOf(Estatisticas.nivel())},
                 {"Chests", String.valueOf(Estatisticas.baus())},
                 {"Peak horde", String.valueOf(Estatisticas.maiorHorda())},
-                {"Gold earned", "+" + Estatisticas.ouroGanho()}
+                {"Coins earned", "+" + Estatisticas.ouroGanho()},
+                // O saldo depois do crédito: o que o gato leva ao espelho do vendedor.
+                {"Coin balance", String.valueOf(com.retronova.game.save.Progresso.moedas(nomeDoGato()))}
         };
         // Em janelas mais baixas o retrato cede espaço aos números, sem reduzir a fonte.
         int passo = Math.min(16 * s, Math.max(10 * s, (p.y + p.height - 12 * s - y) / valores.length));
@@ -574,89 +514,6 @@ public class GameOver extends TelaDeMenu {
             g.fillRect(p.x + MARGEM_INTERNA * s, y + 26 * s, p.width - 2 * MARGEM_INTERNA * s, s);
         }
         rodapeDaLista(g, p, inicio, linhas.size(), capacidade, s);
-    }
-
-    private void desenharLoja(Graphics2D g, int s) {
-        Rectangle p = painelLoja;
-        painel(g, p, "Upgrades", s);
-        Font f = FontHandler.font(FontHandler.Septem, 8f * s);
-        Font grande = FontHandler.font(FontHandler.Game, 8f * s);
-        String ouro = "Gold: " + Meta.ouro();
-        String ganho = "+" + Estatisticas.ouroGanho() + " this run";
-        contornado(g, ouro, grande, p.x + MARGEM_INTERNA * s, p.y + 34 * s, Palette.TEXT, s);
-        contornado(g, ganho, f, p.x + MARGEM_INTERNA * s, p.y + 47 * s, Palette.ACCENT, s);
-        double fase = (tempoDaApresentacao() - ApresentacaoDoFim.OURO) / ApresentacaoDoFim.BRILHO;
-        if (fase > 0 && fase < 1) {
-            Realce.clarear(g, new Rectangle(p.x + s, p.y + 24 * s, p.width - 2 * s, 27 * s),
-                    (float) Math.sin(fase * Math.PI) * 0.35f);
-        }
-
-        Graphics2D antes = g;
-        g = (Graphics2D) g.create();
-        g.clip(areaDaLoja());
-        Meta.Permanente[] todos = Meta.Permanente.values();
-        for (int i = 0; i < todos.length; i++) {
-            Meta.Permanente m = todos[i];
-            Rectangle r = linhasDaLoja.get(i);
-            int nivel = Meta.nivel(m);
-            boolean cheio = nivel >= Meta.Permanente.NIVEL_MAXIMO;
-            boolean podeComprar = !cheio && Meta.ouro() >= Meta.preco(m);
-            boolean sob = Entrada.porFoco() ? focoLoja == i : r.contains(Mouse.getX(), Mouse.getY());
-            // O realce comum (ver Realce) marca a linha sob o mouse ou o foco, MESMO
-            // SEM OURO: a cor clara diz "da para comprar", o realce diz "e aqui".
-            if (sob) {
-                Realce.brilho(g, r, 1f, s);
-            }
-            // A linha como um botão da casa: contorno, corpo MAIN (LIGHT com o mouse
-            // e ouro para comprar) e o fio claro no topo.
-            g.setColor(Palette.OUTLINE);
-            g.fillRect(r.x, r.y, r.width, r.height);
-            g.setColor(sob && podeComprar ? Palette.LIGHT : Palette.MAIN);
-            g.fillRect(r.x + s, r.y + s, r.width - 2 * s, r.height - 2 * s);
-            g.setColor(sob && podeComprar ? Palette.ACCENT : Palette.LIGHT);
-            g.fillRect(r.x + s, r.y + s, r.width - 2 * s, s);
-            if (sob && Entrada.porFoco()) {
-                Realce.marcadorDeFoco(g, r, s);
-            }
-            if (brilhoDaCompra == i && desdeACompra < 20) {
-                Realce.clarear(g, r, 1f - desdeACompra / 20f);
-            }
-            contornado(g, m.nome(), f, r.x + RECUO_DA_LINHA * s, r.y + 13 * s, Palette.TEXT, s);
-            contornado(g, m.efeito(), FontHandler.font(FontHandler.Septem, 7f * s), r.x + RECUO_DA_LINHA * s, r.y + 27 * s,
-                    Palette.ACCENT, s);
-            // Pips de nivel, na altura do nome; o preço, na do efeito.
-            for (int k = 0; k < Meta.Permanente.NIVEL_MAXIMO; k++) {
-                g.setColor(Palette.OUTLINE);
-                g.fillRect(r.x + r.width - 37 * s + k * 5 * s, r.y + 6 * s, 4 * s, 4 * s);
-                if (k < nivel) {
-                    g.setColor(Palette.TEXT);
-                    g.fillRect(r.x + r.width - 36 * s + k * 5 * s, r.y + 7 * s, 2 * s, 2 * s);
-                }
-            }
-            // O preço: claro se dá para comprar, o vermelho de aviso se falta ouro,
-            // numa plaquinha OUTLINE: o WARN direto sobre o MAIN da linha não se lia.
-            String preco = cheio ? "MAX" : Meta.preco(m) + "g";
-            int pw = FontHandler.getWidth(preco, f);
-            g.setColor(Palette.OUTLINE);
-            g.fillRect(r.x + r.width - (RECUO_DA_LINHA + 2) * s - pw, r.y + 18 * s, pw + 4 * s, 13 * s);
-            contornado(g, preco, f, r.x + r.width - RECUO_DA_LINHA * s - pw, r.y + 27 * s,
-                    cheio ? Palette.ACCENT : podeComprar ? Palette.TEXT : Palette.WARN, s);
-        }
-        g.dispose();
-        g = antes;
-        Font dica = FontHandler.font(FontHandler.Septem, 6f * s);
-        contornadoCentro(g, "Upgrades apply to every new run.", dica, p.x + p.width / 2, p.y + p.height - 13 * s,
-                Palette.LIGHT, s);
-    }
-
-    private Rectangle areaDaLoja() {
-        int s = escala();
-        return new Rectangle(painelLoja.x, painelLoja.y + LOJA_TOPO * s, painelLoja.width,
-                Math.max(1, painelLoja.height - (LOJA_TOPO + 24) * s));
-    }
-
-    private int maximoRolagemLoja() {
-        return Math.max(0, LOJA_TOPO + 2 * LINHA_PASSO + LINHA_H - (painelLoja.height / escala() - 24));
     }
 
     /** Fundo preto: nem a ilustração do título, nem o jogo congelado. */

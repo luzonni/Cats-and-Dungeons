@@ -104,7 +104,7 @@ public class GenMixagem {
     private static final Map<String, Double> MUSICAS = new LinkedHashMap<>();
 
     static {
-        camada(-34, "walking", "hover", "purr");
+        camada(-34, "walking", "hover", "purr", "voz_vendedor_1", "voz_vendedor_2", "voz_vendedor_3");
         camada(-28, "sword", "bowshoot", "laser", "bones", "button", "woosh",
                 "hit_fire", "hit_ice", "hit_water", "hit_wind", "hit_earth",
                 "hit_thunder", "weapon_blade", "weapon_magic", "weapon_throw",

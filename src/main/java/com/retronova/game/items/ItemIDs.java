@@ -118,8 +118,31 @@ public enum ItemIDs {
         EM_ESPERA = java.util.Collections.unmodifiableSet(fora);
     }
 
+    /**
+     * AS ARMAS DA MÃO EXTRAS, EM STANDBY.
+     *
+     * A corrida passou a usar só as três armas padrão — espada (Muffin), varinha
+     * (Azrael) e arco (Finn) —, com a variante do elemento escolhido. As outras
+     * armas de mão só chegavam ao jogador pela vitrine do vendedor, e o vendedor
+     * passou a vender só melhorias permanentes (o espelho). Elas ficam aqui,
+     * inteiras e construíveis (Item.build continua montando cada uma), só fora de
+     * qualquer oferta.
+     *
+     * PARA REATIVAR: retirar o ID do conjunto e ajustar a seleção da arma em
+     * Player.tickItemHand. A loja antiga continua desligada em Seller.
+     * Orbitais e armas de área têm a chave ArmaExtra.ATIVAS; seus níveis e
+     * evoluções permanecem no save, mas não atacam nem são oferecidos.
+     */
+    public static final java.util.Set<ItemIDs> EM_STANDBY = java.util.Collections.unmodifiableSet(
+            java.util.EnumSet.of(Laser, Kunai, ClawBlades, BloodyAxe, BowEletric, SwordFire,
+                    DangerousWand, Trident, Sickle, Silk, Furball, Axe));
+
+    /** As três armas padrão, uma por gato. A corrida só usa estas (com o elemento). */
+    public static final java.util.Set<ItemIDs> PADRAO = java.util.Collections.unmodifiableSet(
+            java.util.EnumSet.of(Sword, Wand, Bow));
+
     /** Este item pode ser oferecido ou vendido? */
     public boolean jogavel() {
-        return !EM_ESPERA.contains(this);
+        return !EM_ESPERA.contains(this) && !EM_STANDBY.contains(this);
     }
 }
