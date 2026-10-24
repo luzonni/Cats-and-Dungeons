@@ -109,6 +109,9 @@ public enum Passiva {
 
     /** Esta passiva pode sair para este gato? As exclusivas so para o dono. */
     public boolean disponivelPara(String nomeDoGato) {
+        if (this == PRESSA && !ArmaExtra.ATIVAS) {
+            return false; // Só altera armas extras: não oferecer uma carta sem efeito.
+        }
         return dono == null || dono.equals(nomeDoGato);
     }
 

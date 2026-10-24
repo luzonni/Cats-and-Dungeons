@@ -37,7 +37,9 @@ public enum Icone {
     // Raridades
     COMUM, RARO, EPICO, LENDARIO,
     // Coletáveis no chão
-    XP, XP_GRANDE;
+    XP, XP_GRANDE,
+    // Melhorias permanentes do espelho (as outras usam os ícones de atributo e passiva) e a moeda do saldo
+    ALCANCE, REROLL, CARTAS, GANANCIA, MOEDA;
 
     /** Lado do ícone, em pixels de arte. */
     public static final int LADO = 16;

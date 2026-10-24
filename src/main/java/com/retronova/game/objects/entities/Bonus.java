@@ -1,6 +1,5 @@
 package com.retronova.game.objects.entities;
 
-import com.retronova.game.Meta;
 import com.retronova.game.items.Passiva;
 
 /**
@@ -39,13 +38,24 @@ public final class Bonus {
         return Math.max(0.4, 1 - nivel(gato, Passiva.PRESSA) * Passiva.PRESSA.valorPorNivel());
     }
 
+    /** A chance de critico que vem do gato (a habilidade do Finn). A tela de Status a mostra como base. */
+    public static double criticoInato(Player gato) {
+        return e(gato, "Finn") ? 0.10 : 0;
+    }
+
+    /** A reducao de dano que vem do gato (a habilidade do Muffin). A tela de Status a mostra como base. */
+    public static double resistenciaInata(Player gato) {
+        return e(gato, "Muffin") ? 0.10 : 0;
+    }
+
     /** Chance de critico, de 0 a 1. A sorte tambem empurra um pouco. */
     public static double critico(Player gato) {
         if (gato == null) {
             return 0;
         }
         return nivel(gato, Passiva.CRITICO) * Passiva.CRITICO.valorPorNivel()
-                + (e(gato, "Finn") ? 0.10 : 0) + gato.chanceDeSorte() * 0.05;
+                + criticoInato(gato) + gato.chanceDeSorte() * 0.05
+                + com.retronova.game.espelho.Espelho.valor(gato, com.retronova.game.espelho.Espelho.Efeito.CRITICO);
     }
 
     /** Quantas flechas o arco solta por disparo: 1 mais o nivel do Voleio (max. 4). */
@@ -153,7 +163,7 @@ public final class Bonus {
     /** Multiplicador do alcance do ima de XP. */
     public static double ima(Player gato) {
         return 1 + nivel(gato, Passiva.IMA) * Passiva.IMA.valorPorNivel()
-                + (gato == null ? 0 : Meta.nivel(gato.getName(), Meta.Permanente.IMA)) * 0.10;
+                + com.retronova.game.espelho.Espelho.valor(gato, com.retronova.game.espelho.Espelho.Efeito.COLETA);
     }
 
     /** A habilidade do gato, em uma linha, para a selecao e a tela final. */
@@ -172,9 +182,9 @@ public final class Bonus {
      */
     public static void aplicarNoInicio(Player gato) {
         if (e(gato, "Muffin")) {
-            gato.addModifier(Modifiers.Resistance, 0.10);
+            gato.addModifier(Modifiers.Resistance, resistenciaInata(gato));
         }
-        Meta.aplicar(gato);
+        com.retronova.game.espelho.Espelho.aplicar(gato);
     }
 
     private static double sobra;

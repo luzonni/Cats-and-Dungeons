@@ -582,7 +582,7 @@ public final class Corrida {
      * entrar aqui sem que quem credita precise saber dele.
      */
     public static double ganancia(String gato) {
-        return 1.0;
+        return com.retronova.game.espelho.Espelho.ganancia(gato);
     }
 
     /**

@@ -1,5 +1,5 @@
 {
-  "_nota": "Progressao permanente: as regras de moedas e (etapa 2) a tabela do espelho. Unico lugar com estes numeros; ver docs/ARQUITETURA.md, Progressao permanente.",
+  "_nota": "Progressao permanente: as regras de moedas e a tabela do espelho do vendedor. Unico lugar com estes numeros; ver docs/ARQUITETURA.md, Progressao permanente.",
   "moedas": {
     "_nota": "Moedas de uma corrida = (segundos / segundosPorMoeda + abates / abatesPorMoeda + bonusDeVitoria se venceu) x fracao do resultado x ganancia do espelho. Creditadas UMA vez, no fim.",
     "segundosPorMoeda": 6,
@@ -10,5 +10,63 @@
       "vitoria": 1.0,
       "abandono": 0.5
     }
-  }
+  },
+  "melhorias": [
+    {
+      "_nota": "id = nome gravado no save (nunca mude); efeito = o que o codigo aplica (Espelho.Efeito); porNivel em unidades do jogo; exibicao multiplica para mostrar (100 = porcentagem); texto usa {v}; custos = preco de cada nivel, e o numero de custos e o nivel maximo.",
+      "id": "vida", "nome": "Vitality", "descricao": "More max health. Starts every run full.",
+      "icone": "VIGOR", "efeito": "vida", "porNivel": 6, "exibicao": 1, "casas": 0,
+      "texto": "+{v} max health", "custos": [40, 80, 140, 220, 320]
+    },
+    {
+      "id": "dano", "nome": "Might", "descricao": "Added to every hit, from every weapon.",
+      "icone": "FURIA", "efeito": "dano", "porNivel": 1, "exibicao": 1, "casas": 0,
+      "texto": "+{v} damage", "custos": [60, 120, 200, 300, 420]
+    },
+    {
+      "id": "alcance", "nome": "Keen Eye", "descricao": "Your hand weapon finds targets farther away.",
+      "icone": "ALCANCE", "efeito": "alcance", "porNivel": 0.5, "exibicao": 1, "casas": 1,
+      "texto": "+{v} range", "custos": [50, 110, 190, 290]
+    },
+    {
+      "id": "resistencia", "nome": "Thick Fur", "descricao": "Every hit you take hurts a little less.",
+      "icone": "ARMADURA", "efeito": "resistencia", "porNivel": 0.03, "exibicao": 100, "casas": 0,
+      "texto": "-{v}% damage taken", "custos": [80, 160, 260, 380]
+    },
+    {
+      "id": "velocidade", "nome": "Swiftness", "descricao": "Run faster, from the first step.",
+      "icone": "PATAS", "efeito": "velocidade", "porNivel": 0.08, "exibicao": 1, "casas": 2,
+      "texto": "+{v} move speed", "custos": [40, 80, 140, 220, 320]
+    },
+    {
+      "id": "coleta", "nome": "Magnet", "descricao": "XP gems fly to you from farther away.",
+      "icone": "IMA", "efeito": "coleta", "porNivel": 0.10, "exibicao": 100, "casas": 0,
+      "texto": "+{v}% pickup range", "custos": [30, 60, 100, 150, 210]
+    },
+    {
+      "id": "critico", "nome": "Precision", "descricao": "More hits land as critical hits.",
+      "icone": "CRITICO", "efeito": "critico", "porNivel": 0.02, "exibicao": 100, "casas": 0,
+      "texto": "+{v}% critical chance", "custos": [60, 120, 200, 300, 420]
+    },
+    {
+      "id": "sorte", "nome": "Fortune", "descricao": "Luck: more chest drops and critical hits.",
+      "icone": "INSTINTO", "efeito": "sorte", "porNivel": 1, "exibicao": 1, "casas": 0,
+      "texto": "+{v} luck", "custos": [40, 80, 140, 220, 320]
+    },
+    {
+      "id": "rerolls", "nome": "Second Thoughts", "descricao": "Reroll the level-up hand more times each run.",
+      "icone": "REROLL", "efeito": "rerolls", "porNivel": 1, "exibicao": 1, "casas": 0,
+      "texto": "+{v} rerolls per run", "custos": [100, 220, 400]
+    },
+    {
+      "id": "cartas", "nome": "Wider Hand", "descricao": "One more card to choose from on every level-up.",
+      "icone": "CARTAS", "efeito": "cartas", "porNivel": 1, "exibicao": 1, "casas": 0,
+      "texto": "+{v} card per level-up", "custos": [600]
+    },
+    {
+      "id": "moedas", "nome": "Greed", "descricao": "Every run pays more coins.",
+      "icone": "GANANCIA", "efeito": "moedas", "porNivel": 0.10, "exibicao": 100, "casas": 0,
+      "texto": "+{v}% coins per run", "custos": [60, 130, 220, 330, 460]
+    }
+  ]
 }

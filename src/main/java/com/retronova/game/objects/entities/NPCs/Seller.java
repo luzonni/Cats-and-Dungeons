@@ -30,6 +30,31 @@ import java.util.Set;
  */
 public class Seller extends NPC {
 
+    /**
+     * O ESPELHO: o que o vendedor oferece agora. Moedas por melhorias permanentes
+     * do gato (ver game/espelho e menus/TelaDoEspelho).
+     *
+     * ELE ESTÁ NA ANTECÂMARA, que é o "entre corridas" do jogo: toda corrida começa
+     * nela (seleção de gato, "Try Again" e o "Restart" da pausa levam para lá),
+     * então o vendedor fica no caminho natural depois de morrer, sem tela nova e
+     * sem obrigar a comprar — o portão segue aberto ao lado dele.
+     */
+    public void abrirEspelho() {
+        com.retronova.menus.shared.TelaDeMenu.abrir(new com.retronova.menus.TelaDoEspelho(Game.getPlayer()));
+    }
+
+    /**
+     * A LOJA DE ARMAS, EM STANDBY. A vitrine com todas as armas de mão (VITRINE,
+     * loadStock, Store) não abre mais: as corridas usam só as três armas padrão e
+     * as outras estão em ItemIDs.EM_STANDBY. O código fica inteiro para voltar;
+     * para religar, chame {@link #abrirLojaDeArmas()} no clique.
+     */
+    @SuppressWarnings("unused")
+    private void abrirLojaDeArmas() {
+        Game.getInter().put("store", this.store, true);
+        Game.getInter().open("store");
+    }
+
     private final Store store;
     private int countAnim;
 
@@ -166,8 +191,7 @@ public class Seller extends NPC {
         countAnim++;
         if (player.getDistance(this) <= GameObject.SIZE() * 3) {
             if (GameMap.clickOnRect(Mouse_Button.LEFT, this.getBounds())) {
-                Game.getInter().put("store", this.store, true);
-                Game.getInter().open("store");
+                abrirEspelho();
             }
             if (countAnim >= 10) {
                 countAnim = 0;

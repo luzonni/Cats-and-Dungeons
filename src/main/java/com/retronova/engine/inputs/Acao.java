@@ -72,7 +72,7 @@ public enum Acao {
     ABAS(Grupo.MENUS, "Switch tabs", "Previous and next tab.",
             Liga.teclas("Q", "E").pad(Comando.LB, Comando.RB)),
     ESCOLHER_CARTA(Grupo.MENUS, "Pick a card", "Pick a level-up card by its number.",
-            Liga.teclas("1", "2", "3").semControle()),
+            Liga.teclas("1", "2", "3", "4").semControle()),
     TROCAR_CARTAS(Grupo.MENUS, "Reroll cards", "Draw a new hand when leveling up, while rerolls last.",
             Liga.teclas("Q")),
     PULAR_NIVEL(Grupo.MENUS, "Skip level-up", "Take no card and heal 15% instead, while skips last.",

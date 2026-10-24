@@ -194,6 +194,9 @@ public class Melhorias {
     /** Armas que ainda podem sair na roleta: as que nao chegaram ao maximo. */
     public List<ArmaExtra> armasDisponiveis() {
         List<ArmaExtra> lista = new ArrayList<>();
+        if (!ArmaExtra.ATIVAS) {
+            return lista;
+        }
         for (ArmaExtra a : ArmaExtra.values()) {
             if (nivel(a) < ArmaExtra.NIVEL_MAXIMO) {
                 lista.add(a);
@@ -251,6 +254,9 @@ public class Melhorias {
 
     /** Uma evolucao pronta para sair do proximo bau: arma no maximo + passiva parceira. */
     public Evolucao evolucaoDisponivel() {
+        if (!ArmaExtra.ATIVAS) {
+            return null;
+        }
         for (Evolucao e : Evolucao.values()) {
             if (!evolucoes.contains(e) && nivel(e.arma()) >= ArmaExtra.NIVEL_MAXIMO
                     && nivel(e.passiva()) > 0) {

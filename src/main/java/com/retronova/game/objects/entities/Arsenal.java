@@ -67,6 +67,9 @@ public final class Arsenal {
     // -------------------------------------------------------------- tick
 
     public static void tick(Player gato) {
+        if (!ArmaExtra.ATIVAS) {
+            return;
+        }
         tempo++;
         ArmasDeArea.tick(gato);   // as de area tem relogio proprio
         Melhorias m = gato.getMelhorias();
@@ -187,6 +190,9 @@ public final class Arsenal {
      * interpolacao do gato, entao usa a posicao de tick dele e anda junto.
      */
     public static void render(Graphics2D g, Player gato) {
+        if (!ArmaExtra.ATIVAS) {
+            return;
+        }
         Melhorias m = gato.getMelhorias();
         int novelo = m.nivel(ArmaExtra.NOVELO);
         int grimorio = m.nivel(ArmaExtra.GRIMORIO);

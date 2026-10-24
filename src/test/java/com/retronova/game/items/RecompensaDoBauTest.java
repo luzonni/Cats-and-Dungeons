@@ -30,7 +30,7 @@ class RecompensaDoBauTest {
     }
 
     @Test
-    @DisplayName("sem arma nenhuma, arma sai perto de 55% das vezes")
+    @DisplayName("armas em standby não saem nos baús")
     void chanceDeArmaSemNenhuma() {
         Melhorias m = new Melhorias();
         int armas = 0, n = 20000;
@@ -39,21 +39,22 @@ class RecompensaDoBauTest {
                 armas++;
             }
         }
-        assertEquals(RecompensaDoBau.CHANCE_DE_ARMA_SEM_NENHUMA, armas / (double) n, 0.02);
+        assertEquals(0, armas);
     }
 
     @Test
-    @DisplayName("arma sorteada vem no próximo nível dela")
+    @DisplayName("build antiga mantém seus níveis sem oferecer armas em standby")
     void armaNoProximoNivel() {
         Melhorias m = new Melhorias();
-        ArmaExtra primeira = m.armasDisponiveis().getFirst();
+        ArmaExtra primeira = ArmaExtra.NOVELO;
         m.subirArma(primeira);
         for (int i = 0; i < 5000; i++) {
             RecompensaDoBau.Premio p = RecompensaDoBau.sortear(m, 0);
-            if (p.arma() != null) {
-                assertEquals(m.nivel(p.arma()) + 1, p.nivelNovo(), p.toString());
-            }
+            assertEquals(null, p.arma());
         }
+        assertEquals(1, m.nivel(primeira));
+        assertTrue(m.armasDisponiveis().isEmpty());
+        assertEquals(null, m.evolucaoDisponivel());
     }
 
     @Test
