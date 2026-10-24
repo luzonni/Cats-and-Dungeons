@@ -809,11 +809,15 @@ public class Game implements Activity {
     }
 
     public static void restart() {
-        Game.getInter().dispose();
+        com.retronova.menus.FalhaDeSave.tentar(Game::reiniciarComSave);
+    }
+
+    private static void reiniciarComSave() {
         Game game = getGame();
         // RECOMECAR E ABANDONAR esta corrida: ela rende a fracao de abandono das
         // moedas, com os numeros ao vivo (o save do espaco pode ter ate um minuto).
         game.creditarAbandono();
+        Game.getInter().dispose();
         GameMap map = new Room("beginning");
         Engine.backActivity();
         // Passa pela tela de transicao, como o inicio de partida: reiniciar e

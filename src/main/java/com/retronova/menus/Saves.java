@@ -277,11 +277,11 @@ public class Saves extends TelaDeMenu {
         String[] detalhes = new String[corrida.resumo().length + 1];
         detalhes[0] = "This cannot be undone:";
         System.arraycopy(corrida.resumo(), 0, detalhes, 1, corrida.resumo().length);
-        confirmacao.perguntar("Delete this run?", detalhes, () -> {
+        confirmacao.perguntar("Delete this run?", detalhes, () -> FalhaDeSave.tentar(() -> {
             // Apagar o espaco e abandonar a corrida: credita a parte de abandono.
             Corrida.abandonar(espaco);
             reler();
-        });
+        }));
     }
     // ---------------------------------------------------------------- render
 

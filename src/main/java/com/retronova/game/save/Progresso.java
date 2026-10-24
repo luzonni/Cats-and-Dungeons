@@ -210,7 +210,7 @@ public final class Progresso {
      * NADA SE PERDE: os upgrades antigos valiam para todos os gatos, então cada
      * gato recebe os mesmos níveis (com os nomes novos: VIGOR → vida, FORCA →
      * dano, AGILIDADE → velocidade, SORTE → sorte, IMA → coleta). O ouro guardado
-     * é dividido entre os três, arredondando para cima — dividir, e não copiar,
+     * é dividido entre os três, distribuindo o resto na ordem Muffin, Azrael, Finn — dividir, e não copiar,
      * porque copiar triplicaria o dinheiro do jogador.
      */
     public static Dados migrarDoMeta(String metaJson) throws Exception {

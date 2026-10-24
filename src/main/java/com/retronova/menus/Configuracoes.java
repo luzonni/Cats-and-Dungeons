@@ -152,13 +152,17 @@ public class Configuracoes extends TelaDeMenu {
         // Grava ANTES de desempilhar: depois disso a partida ja nao e a corrente,
         // e a gravacao nao teria de quem fotografar o estado.
         encerrarAudicao(false);
-        Corrida.gravar();
-        voltarAoMenuPrincipal();
+        FalhaDeSave.tentar(() -> {
+            Corrida.gravarObrigatorio();
+            voltarAoMenuPrincipal();
+        });
     }
 
     private void sair() {
-        Corrida.gravar();
-        Engine.CLOSE();
+        FalhaDeSave.tentar(() -> {
+            Corrida.gravarObrigatorio();
+            Engine.CLOSE();
+        });
     }
 
     private boolean naAbaDaCorrida() {
@@ -285,7 +289,7 @@ public class Configuracoes extends TelaDeMenu {
                     () -> confirmacao.perguntar("Erase all progress?",
                             new String[]{"Coins and upgrades of every cat.",
                                     "Saved runs are kept. This cannot be undone."},
-                            com.retronova.game.save.Progresso::apagarTudo))
+                            () -> FalhaDeSave.tentar(com.retronova.game.save.Progresso::apagarTudo)))
                     .desc("Erase the coins and permanent upgrades of all cats. Asks first."));
         }
 

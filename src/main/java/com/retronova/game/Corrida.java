@@ -330,6 +330,14 @@ public final class Corrida {
      */
     public static void gravar() {
         try {
+            gravarObrigatorio();
+        } catch (RuntimeException falha) {
+            System.err.println("[save] checkpoint nao gravado: " + falha);
+        }
+    }
+
+    /** Saídas explícitas só prosseguem quando o checkpoint foi gravado. */
+    public static void gravarObrigatorio() {
             Game jogo = Game.getGame();
             Player gato = Game.getPlayer();
             if (gato == null || gato.morrendo()) {
@@ -342,10 +350,6 @@ public final class Corrida {
                 return;
             }
             de(jogo, gato).escrever(jogo.getEspaco());
-        } catch (RuntimeException fora) {
-            // Game.getGame() lança quando a activity atual não é o jogo. Acontece
-            // em transição de tela, e ali não há o que gravar.
-        }
     }
 
     private static Corrida de(Game jogo, Player gato) {
@@ -433,7 +437,7 @@ public final class Corrida {
         try {
             com.retronova.game.save.ArquivoSeguro.gravar(destino, o.toJSONString(), Corrida::interpretar);
         } catch (IOException e) {
-            System.err.println("Corrida: falha ao gravar o ponto de retomada: " + e);
+            throw new java.io.UncheckedIOException("Falha ao gravar ponto de retomada", e);
         }
     }
 
@@ -584,7 +588,8 @@ public final class Corrida {
     /**
      * Lê e APAGA o arquivo. Ver o cabeçalho da classe para o porquê do apagar.
      *
-     * Apaga mesmo quando a leitura falha: um arquivo que não abre não vai abrir na
+     * O backup é tentado antes de descartar; formatos futuros e falhas de acesso
+     * são preservados. Corrupção é separada em .corrompido. Um arquivo ruim na
      * próxima tentativa, e deixá-lo no disco só faria o botão de continuar aparecer
      * para sempre sem nunca funcionar.
      */
