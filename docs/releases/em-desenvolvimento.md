@@ -1,5 +1,19 @@
 # Em desenvolvimento (depois da 0.1.3-alpha)
 
+- **Progressão permanente por gato e espelho do vendedor** (2026-10-23;
+  `af950bf`, `71493bb`, `ca13fa4`, `9ebf2f0`, `feec150`). Save permanente v2
+  separado das corridas, migração de ouro/upgrades, backup e recuperação.
+  Recibo durável e id pago impedem duplicar crédito durante o depósito;
+  compras e reembolso só alteram memória após persistir. Saídas e reset
+  permitem nova tentativa quando a gravação falha. Vendedor com 11 melhorias,
+  47 níveis por gato, refund integral e tabela central em JSON. Run Over
+  fica com relatório e build, moedas recebidas e saldo; Try Again volta ao hub.
+  Somente três armas padrão e elementos ativas; demais armas, evoluções e
+  Haste preservadas em standby. Status mostra Base/Mirror/Run. CI local e
+  230 testes passaram; bancada com atributos reais em 640×360, 1280×720 e
+  1920×1080. Pesquisa, formatos, estimativas e roteiro de aceitação em
+  [PROGRESSAO.md](../PROGRESSAO.md).
+
 - **Relatório final amplo, inspirado em Hades II** (2026-10-23; `b493edf`). Run Over ocupa a largura da janela, sem diminuir a escala
   dos menus para caber em dois painéis fixos. Personagem/resultado, 12 atributos
   finais e dano por fonte aparecem em três colunas. A ficha é capturada antes de

@@ -193,3 +193,10 @@ Ainda sem implementação, mantidas como referência criativa.
 Ideia registrada, sem detalhamento. Duas coisas no jogo se aproximam dela: o
 caça-níquel do baú (`Roleta`, desligado: o baú agora só abre) e a máquina de chiclete (`GumMachine`), que existe
 no código mas não está em nenhum mapa.
+
+## Entregue em 2026-10-23: progressão por personagem
+
+- [x] Save permanente separado, migração/backup e crédito único por run.
+- [x] Espelho somente no vendedor, refund e status em camadas; loja removida da morte.
+- [x] Armas extras em standby, preservando código e saves.
+- [ ] Validar ritmo econômico com jogadores e controle físico; ver [PROGRESSAO.md](../PROGRESSAO.md).

@@ -46,7 +46,7 @@ atual e à divisão clara entre motor e jogo.
 | `engine.inputs` | Teclado, mouse, controle (`gamepad/`) e modo de entrada (`Entrada`) |
 | `engine.io` | Leitura de JSON dos recursos |
 | `engine.sound` | Música, efeitos e curva de volume (`Ganho`) |
-| `com.retronova.game` | A partida (`Game`), o save (`Corrida`), a progressão entre corridas (`Meta`), as conquistas e as estatísticas da corrida |
+| `com.retronova.game` | A partida (`Game`), o save (`Corrida`), a progressão por gato (`save/Progresso`, `espelho/Espelho`), as conquistas e as estatísticas da corrida |
 | `game.map` | Mapa base, câmera, luz e sombra (`Atmosfera`) |
 | `game.map.arena` | Arena, horda (`Waves`), campo gerado (`Gerador`), cartas de nível, abertura do baú, escolha de elemento, música da arena |
 | `game.map.room` | Salas desenhadas à mão (hoje só a antecâmara) |
@@ -644,7 +644,7 @@ subindo 12 pixels nativos durante a segunda metade da queda e o apagamento.
 O véu chega a preto no fim, emendando no fundo preto da tela de resultados.
 
 `GameOver` usa `ApresentacaoDoFim`, relógio próprio de 60 ticks, sem mexer nos
-valores de `Estatisticas` ou `Meta`: título em 18 ticks; resumo começa em 12 e
+valores de `Estatisticas` ou `Progresso`: título em 18 ticks; resumo começa em 12 e
 colunas de detalhe em 20, cada painel leva 22; barras crescem entre 24 e 54; brilho único do
 ouro e botões entre 42 e 60. O deslocamento é de oito pixels nativos. O som do
 título toca uma vez, apenas na derrota. Conquistas aparecem depois da entrada.
@@ -662,7 +662,7 @@ identidade e resultado à esquerda, ficha final ao centro e dano por fonte à
 direita. `LayoutDoFim` usa toda a largura disponível menos 12 pixels nativos de
 margem por lado, vãos de dez e proporções 24%/38%/38%. A escala é a escolhida
 nos menus, sem encolher tudo para encaixar painéis fixos. Personagem tem retrato,
-nome, habilidade, tempo, abates, nível, baús, maior horda e ouro recebido.
+nome, habilidade, tempo, abates, nível, baús, maior horda, moedas recebidas e saldo do gato.
 
 `ResumoFinalDoGato.capturar(player)` é chamado ANTES de descartar o `Game`.
 Guarda cópias imutáveis das mesmas linhas que `TelaDeStatus` calcula: 12 atributos
@@ -670,17 +670,12 @@ finais, arma de mão, elemento, armas extras/evoluções, passivas e cartas, sem
 recalcular atributos na tela final nem consultar um personagem novo. Valores e
 ordem do dano também são copiados ao abrir `GameOver`; nenhuma fonte é descartada.
 
-As abas comuns (`Abas`) são `Run report`, `Final build` e `Upgrades`, acessíveis
-por clique, Q/E ou LB/RB. Listas que não cabem têm rolagem por mouse ou Up/Down;
-Left/Right escolhe a coluna de leitura e depois os botões. A loja fica em sua
-aba, nas duas colunas da direita, com cinco melhorias em duas colunas de cards.
-Só essa aba aceita compras; com interface ampliada, a loja rola e acompanha a
-linha focada, mantendo cliques dentro da área visível. O relatório é a apresentação inicial, preservando
-a entrada animada, o pulo seguro e o som da morte.
-
+As abas comuns (`Abas`) são `Run report` e `Final build`, acessíveis por clique,
+Q/E ou LB/RB. Listas que não cabem têm rolagem; Left/Right escolhe a coluna.
+A loja foi removida do fim da corrida: toda compra fica no vendedor da
+antecâmara, em `TelaDoEspelho`. `Try Again` leva ao hub sem obrigar a comprar.
 Geometria de `GameOver`: margem interna 12; cabeçalhos 20; atributos começam em
-38 com passo 16; dano em 78 com passo 24; build em 30 com passo 32. Loja começa
-em 64, cards de altura 36 e passo 42, com recuo de oito. Fontes do corpo Septem 8,
+38 com passo 16; dano em 78 com passo 24; build em 30 com passo 32. Fontes do corpo Septem 8,
 efeitos 6/7 e retrato de até 48 pixels nativos. Listas reservam espaço para seu
 rodapé. O retrato se adapta à altura, mantendo legíveis os números da corrida.
 
@@ -833,7 +828,8 @@ Tudo é JSON, gravado ao lado do executável (no `run`, a raiz do projeto):
 |---|---|---|
 | `config.json` | `Configs` | opções; gravação atômica com `.tmp` e `.bak` |
 | `saves/corrida-N.json` (N = 1 a 3) | `Corrida` | a corrida interrompida. O gato: nível, vida, XP, inventário, melhorias, passivas, armas extras, evoluções, elemento. O andamento: relógio, abates, próximo chefe, Rato Rei, cerco, chefes vivos (tipo e fração de vida), níveis pendentes, trocas e pulos, carga da Fúria, números da tela final, vitória |
-| `saves/meta.json` | `Meta` | ouro e níveis dos upgrades permanentes |
+| `saves/progresso.json` | `save/Progresso` | moedas, níveis por gato e IDs de corridas pagas (v2); migra meta.json |
+| `saves/credito-<hash>.json` | `save/Progresso` | recibo durável pendente de depósito; repetido com idempotência na abertura |
 | `saves/conquistas.json` | `Conquistas` | o progresso das conquistas |
 
 **Permadeath.** Cada partida grava sempre no mesmo espaço, escolhido no início;
@@ -859,8 +855,19 @@ permanentes) → o gato do save → o campo → os reinícios de corrida → o a
 do save → no primeiro tick, os chefes e a regravação. Os bônus vêm antes porque
 o upgrade de vida enche a barra; a vida gravada tem de ser a última palavra.
 
-`Meta` e `Conquistas` ficam fora dos espaços: apagar uma corrida não apaga o que
+`Progresso` e `Conquistas` ficam fora dos espaços: apagar uma corrida não apaga o que
 foi conquistado. No modo bancada (`-Dcd.bench`) nenhum dos dois grava.
+
+### Progressão permanente
+
+Contrato completo, pesquisa, formatos, recuperação, tabela econômica e roteiro
+manual em [PROGRESSAO.md](PROGRESSAO.md). `ArquivoSeguro` valida, força o
+arquivo temporário, troca e conserva backup válido; `Corrida` usa a mesma
+proteção. `Progresso` publica cópias somente após persistir. Um recibo antecede
+cada crédito final; o id pago e as moedas entram no mesmo save. Falhas de saída
+ou depósito permitem nova tentativa (`FalhaDeSave`) sem descartar a corrida.
+`Espelho` aplica bônus sobre gatos novos, soma só diferenças nas compras do
+hub e remove só sua camada ao reembolsar. A base continua em `players/*.json`.
 
 ## Controle
 
@@ -1226,9 +1233,8 @@ Registrados para não se perderem. Revistos em 2026-10-21.
   meio de um cerco volta com a tela vazia. A horda se refaz em segundos, e o aviso
   da pausa diz isso ("Enemies on screen are not kept"), mas é uma brecha
   consciente.
-- **Dinheiro em espera.** Não há fonte de moeda dentro da corrida: o gato começa
-  com 100 e só a loja da antecâmara as consome. `Seller`, `Store`, `Coin` e
-  `GumMachine` (com `GumInterface` e `GumPanel`) ficam no código, marcados como
-  em espera, até o dinheiro ganhar papel na corrida.
+- **Economia inicial a validar com jogadores.** Moedas permanentes e vendedor ativos;
+  preços e ritmo propostos em PROGRESSAO.md. Dinheiro local e máquinas antigas
+  continuam em standby, sem segundo ponto de compra.
 - `tools/GenCisterna.java` ainda escreve as plantas `cistern_1` a `6`, que o jogo
   não lê mais; os tiles que ele gera continuam em uso pelo `Gerador`.
