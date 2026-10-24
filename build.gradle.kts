@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 plugins {
     application
 }
@@ -65,6 +67,31 @@ tasks.test {
     useJUnitPlatform()
     // A suíte não deve abrir janela; qualquer teste que toque em AWT roda headless.
     systemProperty("java.awt.headless", "true")
+}
+
+// Teste integrado com janela: só roda quando pedido, sempre com saves descartáveis.
+val bancada = sourceSets.create("bancada") {
+    java.srcDir("tools/bancada")
+    compileClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
+    runtimeClasspath += sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath
+}
+
+tasks.named("check") { dependsOn(bancada.classesTaskName) }
+
+tasks.register<JavaExec>("verificarProgressao") {
+    group = "verification"
+    description = "Verifica espelho, atributos e saves no jogo, em pasta temporaria"
+    dependsOn(bancada.classesTaskName)
+    classpath = bancada.runtimeClasspath
+    mainClass = "com.retronova.engine.VerificarProgressao"
+    jvmArgs("--add-exports=java.desktop/sun.java2d.pipe.hw=ALL-UNNAMED",
+            "-Dsun.java2d.d3d=false", "-Dsun.java2d.opengl=false")
+    args(providers.gradleProperty("bancadaResolucao").getOrElse("1920x1080"))
+    doFirst {
+        val pasta = Files.createTempDirectory(layout.buildDirectory.get().asFile.toPath(), "progressao-")
+        workingDir = pasta.toFile()
+        println("Bancada isolada: $pasta")
+    }
 }
 
 tasks.named<JavaExec>("run") {

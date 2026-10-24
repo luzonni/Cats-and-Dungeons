@@ -608,6 +608,69 @@ public class GenIcones {
                 ".........a......",
                 "......aaa.......",
                 "................"}));
+
+        // ------------------------------------------------------------ espelho
+        // As melhorias permanentes do vendedor que não tinham ícone: as outras
+        // reaproveitam os de atributo e passiva (vida = VIGOR, dano = FURIA...).
+        // Alcance: a luneta do pacote, em metal e couro.
+        ICONES.put("alcance", new DoPacote("telescope1.png",
+                Map.of(Material.NEUTRO, Familia.ACO), Familia.TERRA, null, null));
+        // Ganância (mais moedas por corrida): o saco do pacote, em ouro.
+        ICONES.put("ganancia", new DoPacote("item_sack.png", Map.of(), Familia.OURO, null, null));
+        // Reroll: o anel de "girar de novo", com a ponta de seta no fim do arco.
+        ICONES.put("reroll", new Desenhado(cores('a', Familia.RARO), new String[] {
+                "................",
+                "................",
+                "......aaaa..a...",
+                "....aaaaaaaaa...",
+                "...aaa....aaa...",
+                "...aa....aaaa...",
+                "..aaa...........",
+                "..aa............",
+                "..aa........aa..",
+                "..aaa.......aa..",
+                "...aa......aaa..",
+                "...aaa....aaa...",
+                "....aaaaaaaa....",
+                "......aaaa......",
+                "................",
+                "................"}));
+        // Cartas extras: três cartas em leque, a da frente com o "+".
+        ICONES.put("cartas", new Desenhado(cores('a', Familia.ACO, 'b', Familia.ACO, 'c', Familia.EPICO), new String[] {
+                "................",
+                "................",
+                "........cccccc..",
+                ".....aaacccccc..",
+                "..bbbaaacccccc..",
+                "..bbbaaacccCcc..",
+                "..bbbaaaccCCCc..",
+                "..bbbaaacccCcc..",
+                "..bbbaaacccccc..",
+                "..bbbaaacccccc..",
+                "..bbbaaacccccc..",
+                "..bbbaaacccccc..",
+                "..bbbaaaaaa.....",
+                "..bbbbbb........",
+                "................",
+                "................"}));
+        // Moeda: o saldo do espelho. Aro, miolo marcado e brilho em cima à esquerda.
+        ICONES.put("moeda", new Desenhado(cores('a', Familia.OURO), new String[] {
+                "................",
+                "................",
+                ".....aaaaaa.....",
+                "....aAAaaaaa....",
+                "...aAaaaaaaaa...",
+                "..aaa000000aaa..",
+                "..aa0aaaaaa0aa..",
+                "..aa0aa00aa0aa..",
+                "..aa0aa00aa0aa..",
+                "..aa0aaaaaa0aa..",
+                "..aaa000000aaa..",
+                "...aaaaaaaaaa...",
+                "....aaaaaaaa....",
+                ".....aaaaaa.....",
+                "................",
+                "................"}));
     }
 
     public static void main(String[] args) throws Exception {
