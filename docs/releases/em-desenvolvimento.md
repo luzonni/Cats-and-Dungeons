@@ -1,5 +1,13 @@
 # Em desenvolvimento (depois da 0.1.3-alpha)
 
+- **Espelho integrado à branch de diálogos** (2026-10-23; `f6df258`). Merge local
+  de feat/dialogos na feat/espelho. Vendedor conversa antes das compras; concluir
+  ou pular abre o espelho, com entrada lateral protegida. Interface reutiliza
+  Personagem/Retrato, emoções e catálogo de textos. Condições usam a carteira
+  permanente do gato; memória usa o resultado de vitória salvo. Vitrine de
+  armas permanece em standby. Bancada verifica conversa → espelho e saldo,
+  além das compras, atributos, retomada e morte, em 640×360 e 1920×1080.
+
 - **Vendedor presente no espelho** (2026-10-23; `9714d43`). Faixa própria com
   retrato animado do gato vendedor e respostas curtas a compras, recusa e
   reembolso. Sprite original ampliado sem suavização, paleta e moldura dos menus;

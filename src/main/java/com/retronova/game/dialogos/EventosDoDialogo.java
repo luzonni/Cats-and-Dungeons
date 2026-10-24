@@ -9,8 +9,8 @@ import java.util.function.Consumer;
  *
  * Os arquivos citam o evento pelo nome; quem decide o que o nome faz é o registro
  * daqui. É o que deixa trocar o efeito sem tocar no sistema de diálogos nem nos
- * dados: "abrir_loja_do_vendedor" abre hoje a Store do vendedor, e amanhã abrirá
- * a loja do espelho trocando uma linha em {@link #registrar}.
+ * dados: "abrir_loja_do_vendedor" abre hoje o espelho do vendedor, preservando
+ * o contrato dos dados pelo tratador em {@link #registrar}.
  *
  * Um evento pode ter argumento depois de ":" — "som:Coin" toca o som Coin.
  */

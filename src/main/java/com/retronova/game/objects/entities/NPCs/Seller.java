@@ -22,11 +22,8 @@ import java.util.Set;
 /**
  * O vendedor da antecamara.
  *
- * EM ESPERA, junto com o dinheiro. O gato comeca com 100 moedas e nada dentro da
- * corrida rende mais, entao esta loja so atende a antecamara. A mecanica de
- * dinheiro inteira (este vendedor, a {@code Store}, a moeda {@code Coin} e a
- * maquina de chiclete) fica de pe e sem uso ate o dinheiro ganhar um papel na
- * corrida sem fim. Ver docs/planejamento/ROADMAP.md.
+ * CONVERSA E ESPELHO. O diálogo contextual abre antes das melhorias permanentes;
+ * seu evento final chama abrirLoja. A antiga Store de armas fica em standby.
  */
 public class Seller extends NPC implements com.retronova.game.dialogos.EventosDoDialogo.Lojista {
 
@@ -62,8 +59,8 @@ public class Seller extends NPC implements com.retronova.game.dialogos.EventosDo
 
     /**
      * A loja dele, entrando de lado (EntradaLateral). É o que o evento
-     * "abrir_loja_do_vendedor" chama no fim da conversa; a loja do espelho, quando
-     * existir, troca o que este evento abre sem mexer no diálogo.
+     * "abrir_loja_do_vendedor" chama no fim da conversa; entrega o espelho sem
+     * reativar a vitrine de armas. A entrada lateral pertence à TelaDoEspelho.
      */
     @Override
     public void abrirLoja() {
